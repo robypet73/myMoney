@@ -1,0 +1,684 @@
+<title>myMoney</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra fissa con marchio, pannello di ricerca a tutta larghezza, elenco risultati a righe; dettaglio in un pannello laterale */
+:root {
+  --bg: #F2F5F3;
+  --surface: #FFFFFF;
+  --sunken: #E8EEEB;
+  --ink: #14211C;
+  --muted: #5A6B64;
+  --line: #D7E0DC;
+  --accent: #0A6B57;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEFE8;
+  --up: #11805B;
+  --down: #BE3F2A;
+  --shadow: 0 1px 2px rgba(20, 33, 28, .06), 0 8px 24px rgba(20, 33, 28, .06);
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1412; --surface: #151D1A; --sunken: #1B2521; --ink: #E4EDE9; --muted: #92A39C;
+    --line: #26332E; --accent: #46C29E; --accent-ink: #08130F; --accent-soft: #183029;
+    --up: #5BCB8E; --down: #F0806A; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1412; --surface: #151D1A; --sunken: #1B2521; --ink: #E4EDE9; --muted: #92A39C;
+  --line: #26332E; --accent: #46C29E; --accent-ink: #08130F; --accent-soft: #183029;
+  --up: #5BCB8E; --down: #F0806A; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Barra superiore */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
+.brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; }
+.brand-mark svg { display: block; }
+.brand b { color: var(--accent); font-weight: 700; }
+.demo-pill { margin-left: auto; font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; white-space: nowrap; }
+
+/* Ricerca */
+.intro { padding-block: 28px 18px; }
+.intro h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.025em; line-height: 1.1; margin: 0 0 6px; text-wrap: balance; }
+.intro p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.search { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 16px; display: grid; gap: 14px; }
+.qbox { display: flex; gap: 10px; align-items: center; background: var(--sunken); border: 1px solid transparent; border-radius: var(--r); padding: 0 12px; }
+.qbox:focus-within { border-color: var(--accent); background: var(--surface); }
+.qbox svg { flex: none; color: var(--muted); }
+.qbox input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 13px 0; font-size: 16px; outline: none; }
+.qbox kbd { font-family: var(--f-mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+.chips-quick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chips-quick span { font-size: 12px; color: var(--muted); margin-right: 4px; }
+.qchip { border: 1px solid var(--line); background: transparent; border-radius: 99px; padding: 3px 11px; font-size: 13px; cursor: pointer; }
+.qchip:hover { border-color: var(--accent); color: var(--accent); }
+
+.adv-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.adv-toggle button { border: 0; background: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+.adv-toggle button svg { transition: transform .2s; }
+.adv-toggle button[aria-expanded="false"] svg { transform: rotate(-90deg); }
+.link-btn { border: 0; background: none; color: var(--accent); cursor: pointer; font-size: 14px; padding: 4px 0; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 14px; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label, .field .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+.field select { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 10px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg label { flex: 1; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); font-weight: 500; text-align: center; padding: 7px 4px; cursor: pointer; border-left: 1px solid var(--line); }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-row input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.range-row output { font-size: 13px; min-width: 52px; text-align: right; }
+
+/* Risultati */
+.res-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 26px 10px; }
+.res-head h2 { font-family: var(--f-display); font-weight: 500; font-size: 20px; margin: 0; letter-spacing: -.01em; }
+.res-head h2 .num { font-family: var(--f-display); font-weight: 700; color: var(--accent); }
+.sort { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.sort select { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 8px; color: var(--ink); }
+
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) 70px 90px 80px 80px 110px 20px; gap: 14px; align-items: center; }
+.cols-head { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; padding: 0 16px 8px; }
+.cols-head span:not(:first-child) { text-align: right; }
+.list { display: grid; gap: 8px; padding-bottom: 48px; }
+.row { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 14px 16px; cursor: pointer; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.row:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.row-main { min-width: 0; display: grid; gap: 5px; }
+.row-name { font-weight: 600; font-size: 15.5px; line-height: 1.3; }
+.row-ids { font-size: 12.5px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.row-ids .tk { color: var(--ink); font-weight: 500; }
+.tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.tag { font-size: 11.5px; border-radius: 5px; padding: 1px 7px; background: var(--sunken); color: var(--muted); }
+.tag.ac { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.metric { text-align: right; font-size: 14px; display: block; }
+.metric small { display: none; }
+.pos { color: var(--up); }
+.neg { color: var(--down); }
+.spark { display: block; width: 110px; height: 34px; }
+.chev { color: var(--muted); justify-self: end; }
+.empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 32px 16px; text-align: center; color: var(--muted); }
+.empty strong { display: block; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+
+@media (max-width: 760px) {
+  .cols-head { display: none; }
+  .row.cols { grid-template-columns: repeat(3, minmax(0, 1fr)) auto; row-gap: 12px; }
+  .row-main { grid-column: 1 / -1; }
+  .metric { text-align: left; }
+  .metric small { display: block; font-family: var(--f-body); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .row .m-aum { display: none; }
+  .spark { width: 84px; }
+  .chev { display: none; }
+}
+
+/* Dettaglio */
+dialog.detail { padding: 0; border: 0; margin: 0 0 0 auto; height: 100%; max-height: 100%; width: min(900px, 100%); max-width: 100%; background: var(--bg); color: var(--ink); box-shadow: -12px 0 40px rgba(0,0,0,.18); }
+dialog.detail::backdrop { background: rgba(10, 20, 16, .45); }
+dialog.detail[open] { animation: slide .22s ease-out; }
+@keyframes slide { from { transform: translateX(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { dialog.detail[open] { animation: none; } .row { transition: none; } }
+.d-inner { padding-block: calc(18px + env(safe-area-inset-top, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)); padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+.d-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.d-bar .crumb { font-size: 13px; color: var(--muted); }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; flex: none; }
+.d-title h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -.02em; line-height: 1.12; margin: 0 0 8px; text-wrap: balance; }
+.d-ids { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--muted); }
+.copy { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 1px 8px; font-size: 12px; cursor: pointer; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
+.nav-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px; margin-bottom: 12px; }
+.nav-now .lbl, .k { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+.nav-val { font-family: var(--f-mono); font-size: 30px; font-weight: 500; letter-spacing: -.02em; line-height: 1.15; }
+.nav-val small { font-size: 15px; color: var(--muted); margin-left: 4px; }
+.nav-chg { font-family: var(--f-mono); font-size: 14px; }
+.periods { display: flex; gap: 2px; background: var(--sunken); border-radius: 8px; padding: 3px; flex-wrap: wrap; }
+.periods button { border: 0; background: transparent; border-radius: 6px; padding: 5px 11px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); }
+.periods button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.chart { position: relative; width: 100%; height: 280px; touch-action: pan-y; }
+.chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { fill: var(--muted); font-family: var(--f-mono); font-size: 11px; }
+.tip { position: absolute; top: 0; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 7px; padding: 5px 9px; font-size: 12px; white-space: nowrap; transform: translateX(-50%); }
+.tip b { font-family: var(--f-mono); font-weight: 500; display: block; font-size: 13px; }
+.pstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+.pstats div { display: grid; gap: 2px; min-width: 0; }
+.pstats .v { font-family: var(--f-mono); font-size: 15px; }
+
+.d-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.card h3 { font-family: var(--f-display); font-weight: 500; font-size: 17px; margin: 0 0 12px; letter-spacing: -.01em; }
+.perf { width: 100%; border-collapse: collapse; font-size: 14px; }
+.perf td { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.perf tr:last-child td { border-bottom: 0; }
+.perf td:last-child { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px 16px; margin: 0; font-size: 14px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; text-align: right; font-weight: 500; overflow-wrap: anywhere; }
+.bars { display: grid; gap: 9px; list-style: none; padding: 0; margin: 0; }
+.bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; font-size: 13.5px; }
+.bars .bn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bars .bv { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.bars .track { grid-column: 1 / -1; height: 5px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
+.bars .fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.desc { margin: 0; color: var(--muted); max-width: 70ch; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+@media (max-width: 680px) {
+  .d-grid { grid-template-columns: minmax(0, 1fr); }
+  .pstats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chart { height: 230px; }
+  .nav-val { font-size: 26px; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 12 L5.5 7 L8.5 9.5 L14.5 3" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>my<b>Money</b></span>
+    </div>
+    <span class="demo-pill">Dati dimostrativi</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Trova il tuo prossimo ETF</h1>
+    <p>Cerca per nome, ticker, ISIN o indice, oppure restringi l'elenco con i parametri che contano: costi, dimensione, replica, dividendi e area geografica.</p>
+  </section>
+
+  <section class="search" aria-label="Ricerca ETF">
+    <div class="qbox">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Es. MSCI World, VWCE, IE00B4L5Y983, oro…" autocomplete="off" aria-label="Cerca ETF per nome, ticker, ISIN o indice">
+      <kbd>/</kbd>
+    </div>
+    <div class="chips-quick">
+      <span>Ricerche rapide</span>
+      <button class="qchip" type="button" data-q="MSCI World">MSCI World</button>
+      <button class="qchip" type="button" data-q="S&amp;P 500">S&amp;P 500</button>
+      <button class="qchip" type="button" data-preset="cheap">TER sotto 0,15%</button>
+      <button class="qchip" type="button" data-preset="bond">Obbligazionari</button>
+      <button class="qchip" type="button" data-preset="dist">A distribuzione</button>
+    </div>
+
+    <div class="adv-toggle">
+      <button type="button" id="advBtn" aria-expanded="true" aria-controls="filters">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Filtri avanzati
+      </button>
+      <button type="button" class="link-btn" id="reset">Azzera filtri</button>
+    </div>
+
+    <div class="filters" id="filters">
+      <div class="field"><label for="f-asset">Asset class</label><select id="f-asset"></select></div>
+      <div class="field"><label for="f-region">Area geografica</label><select id="f-region"></select></div>
+      <div class="field"><label for="f-focus">Focus</label><select id="f-focus"></select></div>
+      <div class="field"><label for="f-provider">Emittente</label><select id="f-provider"></select></div>
+      <div class="field">
+        <span class="lbl" id="dist-lbl">Dividendi</span>
+        <div class="seg" role="radiogroup" aria-labelledby="dist-lbl">
+          <label><input type="radio" name="dist" id="dist-all" value="" checked>Tutti</label>
+          <label><input type="radio" name="dist" id="dist-acc" value="Accumulazione">Acc</label>
+          <label><input type="radio" name="dist" id="dist-dis" value="Distribuzione">Dist</label>
+        </div>
+      </div>
+      <div class="field"><label for="f-repl">Replica</label><select id="f-repl"></select></div>
+      <div class="field"><label for="f-cur">Valuta del fondo</label><select id="f-cur"></select></div>
+      <div class="field"><label for="f-dom">Domicilio</label><select id="f-dom"></select></div>
+      <div class="field">
+        <label for="f-ter">TER massimo</label>
+        <div class="range-row"><input id="f-ter" type="range" min="0.05" max="0.60" step="0.01" value="0.60"><output id="ter-out" class="num" for="f-ter">0,60%</output></div>
+      </div>
+      <div class="field">
+        <label for="f-aum">Patrimonio minimo</label>
+        <select id="f-aum">
+          <option value="0">Qualsiasi</option>
+          <option value="500">Oltre € 500 Mln</option>
+          <option value="1000">Oltre € 1 Mld</option>
+          <option value="5000">Oltre € 5 Mld</option>
+          <option value="20000">Oltre € 20 Mld</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-age">Anni dal lancio</label>
+        <select id="f-age">
+          <option value="0">Qualsiasi</option>
+          <option value="3">Almeno 3 anni</option>
+          <option value="5">Almeno 5 anni</option>
+          <option value="10">Almeno 10 anni</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div class="res-head">
+    <h2 id="count" aria-live="polite"></h2>
+    <div class="sort">
+      <label for="sort">Ordina per</label>
+      <select id="sort">
+        <option value="aum">Patrimonio</option>
+        <option value="ter">TER più basso</option>
+        <option value="r1">Rendimento 1 anno</option>
+        <option value="r3">Rendimento 3 anni</option>
+        <option value="name">Nome</option>
+      </select>
+    </div>
+  </div>
+  <div class="cols cols-head" aria-hidden="true">
+    <span>ETF</span><span>TER</span><span>Patrimonio</span><span>1 anno</span><span>3 anni ann.</span><span>Ultimo anno</span><span></span>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+
+<dialog class="detail" id="detail" aria-labelledby="d-name">
+  <div class="d-inner" id="d-body"></div>
+</dialog>
+
+<script>
+const TODAY = new Date(2026, 9, 23, 12);
+const DAY = 864e5;
+
+// Dati dimostrativi: anagrafiche approssimative, NAV storico simulato.
+const ETFS = [
+  { name: "iShares Core MSCI World UCITS ETF USD (Acc)", ticker: "SWDA", isin: "IE00B4L5Y983", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "MSCI World", ter: 0.20, aum: 98400, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 108.42, mu: 0.095, sig: 0.15, n: 1395,
+    top: [["Apple",4.9],["NVIDIA",4.8],["Microsoft",4.4],["Amazon",2.7],["Meta Platforms",1.8],["Alphabet A",1.5],["Broadcom",1.3],["Alphabet C",1.3],["Tesla",1.1],["JPMorgan Chase",0.9]],
+    b1: ["Paesi", [["Stati Uniti",71.5],["Giappone",5.4],["Regno Unito",3.5],["Canada",3.1],["Francia",2.6],["Altri",13.9]]],
+    b2: ["Settori", [["Tecnologia",25.8],["Finanza",16.4],["Industria",10.9],["Beni voluttuari",10.3],["Sanità",10.1],["Altri",26.5]]] },
+  { name: "Vanguard FTSE All-World UCITS ETF (USD) Accumulating", ticker: "VWCE", isin: "IE00BK5BQT80", provider: "Vanguard", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "FTSE All-World", ter: 0.19, aum: 21800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2019-07-23", nav: 141.18, mu: 0.09, sig: 0.145, n: 3720,
+    top: [["Apple",4.3],["NVIDIA",4.2],["Microsoft",3.9],["Amazon",2.4],["Meta Platforms",1.6],["Alphabet A",1.3],["Broadcom",1.2],["Taiwan Semiconductor",1.1],["Alphabet C",1.1],["Tesla",1.0]],
+    b1: ["Paesi", [["Stati Uniti",62.5],["Giappone",5.8],["Regno Unito",3.3],["Cina",2.9],["Canada",2.8],["Altri",22.7]]],
+    b2: ["Settori", [["Tecnologia",26.4],["Finanza",15.9],["Industria",11.8],["Beni voluttuari",13.1],["Sanità",9.6],["Altri",23.2]]] },
+  { name: "iShares Core S&P 500 UCITS ETF USD (Acc)", ticker: "CSPX", isin: "IE00B5BMR087", provider: "iShares", asset: "Azionario", region: "Stati Uniti", focus: "Large cap", index: "S&P 500", ter: 0.07, aum: 104900, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2010-05-19", nav: 640.12, mu: 0.12, sig: 0.16, n: 503,
+    top: [["NVIDIA",7.3],["Apple",6.9],["Microsoft",6.4],["Amazon",3.9],["Meta Platforms",2.8],["Broadcom",2.5],["Alphabet A",2.1],["Tesla",1.9],["Alphabet C",1.7],["Berkshire Hathaway B",1.6]],
+    b1: ["Paesi", [["Stati Uniti",99.6],["Altri",0.4]]],
+    b2: ["Settori", [["Tecnologia",32.5],["Finanza",13.4],["Beni voluttuari",10.5],["Sanità",10.0],["Comunicazione",9.6],["Altri",24.0]]] },
+  { name: "Xtrackers MSCI Emerging Markets UCITS ETF 1C", ticker: "XMME", isin: "IE00BTJRMP35", provider: "Xtrackers", asset: "Azionario", region: "Mercati emergenti", focus: "Large & mid cap", index: "MSCI Emerging Markets", ter: 0.18, aum: 6200, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-06-21", nav: 58.31, mu: 0.055, sig: 0.17, n: 1250,
+    top: [["Taiwan Semiconductor",9.8],["Tencent",4.6],["Samsung Electronics",2.9],["Alibaba",2.7],["HDFC Bank",1.4],["Reliance Industries",1.2],["Xiaomi",1.2],["Meituan",1.0],["PDD Holdings",0.9],["ICICI Bank",0.9]],
+    b1: ["Paesi", [["Cina",26.5],["India",18.6],["Taiwan",18.4],["Corea del Sud",9.9],["Brasile",4.4],["Altri",22.2]]],
+    b2: ["Settori", [["Tecnologia",23.9],["Finanza",22.6],["Beni voluttuari",13.4],["Comunicazione",9.5],["Industria",6.8],["Altri",23.8]]] },
+  { name: "iShares Core MSCI EM IMI UCITS ETF USD (Acc)", ticker: "EIMI", isin: "IE00BKM4GZ66", provider: "iShares", asset: "Azionario", region: "Mercati emergenti", focus: "Small, mid & large cap", index: "MSCI Emerging Markets IMI", ter: 0.18, aum: 20800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2014-05-30", nav: 35.84, mu: 0.05, sig: 0.165, n: 3240,
+    top: [["Taiwan Semiconductor",8.7],["Tencent",4.0],["Samsung Electronics",2.5],["Alibaba",2.4],["HDFC Bank",1.2],["Reliance Industries",1.1],["Xiaomi",1.0],["Meituan",0.9],["PDD Holdings",0.8],["Infosys",0.8]],
+    b1: ["Paesi", [["Cina",24.8],["India",20.1],["Taiwan",19.2],["Corea del Sud",10.4],["Brasile",4.3],["Altri",21.2]]],
+    b2: ["Settori", [["Tecnologia",23.1],["Finanza",21.0],["Beni voluttuari",12.6],["Industria",8.4],["Comunicazione",8.6],["Altri",26.3]]] },
+  { name: "iShares Core MSCI Europe UCITS ETF EUR (Acc)", ticker: "IMAE", isin: "IE00B4K48X80", provider: "iShares", asset: "Azionario", region: "Europa", focus: "Large & mid cap", index: "MSCI Europe", ter: 0.12, aum: 6100, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 88.63, mu: 0.075, sig: 0.155, n: 410,
+    top: [["ASML",2.8],["SAP",2.5],["Nestlé",2.2],["Novo Nordisk",2.0],["Roche",1.9],["AstraZeneca",1.9],["Novartis",1.8],["HSBC",1.7],["Shell",1.7],["Siemens",1.4]],
+    b1: ["Paesi", [["Regno Unito",22.4],["Francia",16.0],["Svizzera",14.9],["Germania",14.7],["Paesi Bassi",7.0],["Altri",25.0]]],
+    b2: ["Settori", [["Finanza",21.8],["Industria",17.6],["Sanità",14.2],["Beni di consumo",9.1],["Tecnologia",7.4],["Altri",29.9]]] },
+  { name: "Amundi FTSE MIB UCITS ETF Dist", ticker: "FMI", isin: "FR0010010827", provider: "Amundi", asset: "Azionario", region: "Italia", focus: "Large cap", index: "FTSE MIB", ter: 0.18, aum: 910, cur: "EUR", repl: "Fisica completa", dist: "Distribuzione", dom: "Francia", inception: "2003-11-14", nav: 36.21, mu: 0.07, sig: 0.21, n: 40,
+    top: [["UniCredit",13.2],["Intesa Sanpaolo",12.1],["Ferrari",9.0],["Enel",8.0],["Eni",6.0],["Generali",4.8],["Stellantis",4.1],["Leonardo",3.7],["Prysmian",3.6],["Moncler",2.4]],
+    b1: ["Paesi", [["Italia",88.4],["Paesi Bassi",11.6]]],
+    b2: ["Settori", [["Finanza",41.2],["Beni voluttuari",15.3],["Utility",12.6],["Industria",11.9],["Energia",7.2],["Altri",11.8]]] },
+  { name: "Xtrackers MSCI Japan UCITS ETF 1C", ticker: "XMJP", isin: "LU0274209740", provider: "Xtrackers", asset: "Azionario", region: "Giappone", focus: "Large & mid cap", index: "MSCI Japan", ter: 0.12, aum: 4500, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Lussemburgo", inception: "2007-01-09", nav: 82.05, mu: 0.065, sig: 0.16, n: 185,
+    top: [["Toyota Motor",5.0],["Mitsubishi UFJ",3.8],["Sony Group",3.6],["Hitachi",3.0],["Sumitomo Mitsui",2.4],["Recruit Holdings",2.0],["Tokyo Electron",1.9],["Keyence",1.8],["Mitsubishi Corp",1.7],["Nintendo",1.7]],
+    b1: ["Paesi", [["Giappone",100]]],
+    b2: ["Settori", [["Industria",23.4],["Beni voluttuari",17.0],["Finanza",15.6],["Tecnologia",13.5],["Comunicazione",8.2],["Altri",22.3]]] },
+  { name: "iShares Automation & Robotics UCITS ETF USD (Acc)", ticker: "RBOT", isin: "IE00BYZK4552", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Tematico", index: "iSTOXX FactSet Automation & Robotics", ter: 0.40, aum: 3050, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2016-09-08", nav: 14.62, mu: 0.095, sig: 0.22, n: 162,
+    top: [["NVIDIA",1.4],["Teradyne",1.2],["Rockwell Automation",1.1],["Keyence",1.0],["Intuitive Surgical",1.0],["ABB",0.9],["Fanuc",0.9],["Siemens",0.9],["Cognex",0.8],["Yaskawa Electric",0.8]],
+    b1: ["Paesi", [["Stati Uniti",52.1],["Giappone",17.4],["Taiwan",6.2],["Germania",4.8],["Svizzera",3.1],["Altri",16.4]]],
+    b2: ["Settori", [["Tecnologia",58.3],["Industria",27.1],["Sanità",8.2],["Beni voluttuari",4.0],["Altri",2.4]]] },
+  { name: "iShares Developed Markets Property Yield UCITS ETF", ticker: "IWDP", isin: "IE00B1FZS350", provider: "iShares", asset: "Immobiliare", region: "Globale", focus: "REIT", index: "FTSE EPRA Nareit Developed Dividend+", ter: 0.59, aum: 1120, cur: "USD", repl: "Fisica completa", dist: "Distribuzione", dom: "Irlanda", inception: "2006-11-03", nav: 22.41, mu: 0.035, sig: 0.19, n: 338,
+    top: [["Prologis",6.5],["Welltower",5.0],["Equinix",4.4],["Simon Property",3.1],["Realty Income",2.8],["Public Storage",2.6],["Digital Realty",2.6],["Goodman Group",2.0],["Vonovia",1.7],["Mitsui Fudosan",1.5]],
+    b1: ["Paesi", [["Stati Uniti",64.2],["Giappone",9.1],["Australia",6.0],["Regno Unito",4.4],["Singapore",3.2],["Altri",13.1]]],
+    b2: ["Settori", [["Industriale e logistica",17.5],["Sanità",14.1],["Commerciale",13.2],["Residenziale",12.8],["Uffici",8.9],["Altri",33.5]]] },
+  { name: "iShares Core Euro Government Bond UCITS ETF (Dist)", ticker: "IEGA", isin: "IE00B4WXJJ64", provider: "iShares", asset: "Obbligazionario", region: "Eurozona", focus: "Governativo", index: "Bloomberg Euro Treasury", ter: 0.07, aum: 7900, cur: "EUR", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2009-04-17", nav: 113.48, mu: 0.012, sig: 0.06, n: 382,
+    top: [["BTP 3,85% 2034",0.9],["OAT 3,00% 2033",0.8],["Bund 2,60% 2034",0.8],["BTP 4,00% 2035",0.7],["OAT 0,00% 2031",0.7],["Bonos 3,15% 2033",0.6],["Bund 0,00% 2031",0.6],["BTP 1,65% 2032",0.6],["OAT 2,75% 2029",0.6],["Bund 2,20% 2028",0.5]],
+    b1: ["Emittenti", [["Francia",23.5],["Italia",21.8],["Germania",19.4],["Spagna",13.3],["Belgio",4.6],["Altri",17.4]]],
+    b2: ["Scadenze", [["1-3 anni",21.6],["3-5 anni",18.2],["5-7 anni",14.1],["7-10 anni",17.3],["Oltre 10 anni",28.8]]] },
+  { name: "iShares $ Treasury Bond 7-10yr UCITS ETF (Dist)", ticker: "IBTM", isin: "IE00B1FZS798", provider: "iShares", asset: "Obbligazionario", region: "Stati Uniti", focus: "Governativo", index: "ICE US Treasury 7-10 Year", ter: 0.07, aum: 4600, cur: "USD", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2006-12-01", nav: 158.04, mu: 0.016, sig: 0.08, n: 28,
+    top: [["T-Note 4,25% 2034",8.4],["T-Note 4,00% 2034",8.1],["T-Note 4,375% 2034",7.9],["T-Note 3,875% 2033",7.6],["T-Note 4,50% 2033",7.2],["T-Note 3,50% 2033",6.8],["T-Note 4,125% 2035",6.5],["T-Note 2,875% 2032",5.4],["T-Note 4,625% 2035",5.2],["T-Note 2,75% 2032",4.9]],
+    b1: ["Emittenti", [["Tesoro USA",100]]],
+    b2: ["Scadenze", [["7-8 anni",34.6],["8-9 anni",30.2],["9-10 anni",35.2]]] },
+  { name: "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged (Acc)", ticker: "AGGH", isin: "IE00BDBRDM35", provider: "iShares", asset: "Obbligazionario", region: "Globale", focus: "Aggregato", index: "Bloomberg Global Aggregate (EUR hedged)", ter: 0.10, aum: 11300, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-11-21", nav: 4.96, mu: 0.012, sig: 0.05, n: 12940,
+    top: [["T-Note 4,25% 2034",0.3],["Cina 2,52% 2033",0.3],["T-Note 4,00% 2034",0.3],["JGB 0,80% 2034",0.2],["Gilt 4,25% 2034",0.2],["BTP 3,85% 2034",0.2],["OAT 3,00% 2033",0.2],["Bund 2,60% 2034",0.2],["Fannie Mae 30Y 5,0%",0.2],["Freddie Mac 30Y 5,5%",0.2]],
+    b1: ["Paesi", [["Stati Uniti",40.8],["Cina",9.4],["Giappone",9.8],["Francia",5.6],["Germania",4.9],["Altri",29.5]]],
+    b2: ["Tipologia", [["Governativi",54.1],["Societari",18.3],["Cartolarizzati",13.2],["Agenzie",10.1],["Altri",4.3]]] },
+  { name: "Invesco Physical Gold ETC", ticker: "SGLD", isin: "IE00B579F325", provider: "Invesco", asset: "Materie prime", region: "Globale", focus: "Oro", index: "LBMA Gold Price PM", ter: 0.12, aum: 20100, cur: "USD", repl: "Fisica (ETC)", dist: "Accumulazione", dom: "Irlanda", inception: "2009-07-02", nav: 331.60, mu: 0.08, sig: 0.15, n: 1,
+    top: [["Lingotti d'oro allocati",100]],
+    b1: ["Custodia", [["Londra (JPMorgan)",100]]],
+    b2: ["Sottostante", [["Oro fisico",100]]] },
+];
+
+/* ---------- Utilità ---------- */
+const fmt = (v, d = 2) => v.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v, d = 2) => v == null ? "—" : (v > 0 ? "+" : "") + fmt(v * 100, d) + "%";
+const cls = v => v == null ? "" : v >= 0 ? "pos" : "neg";
+const aumTxt = m => m >= 1000 ? "€ " + fmt(m / 1000, 1) + " Mld" : "€ " + fmt(m, 0) + " Mln";
+const dateTxt = (t, o = { day: "2-digit", month: "short", year: "numeric" }) => new Date(t).toLocaleDateString("it-IT", o);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const curSym = c => c === "EUR" ? "€" : c === "USD" ? "$" : c;
+
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// NAV simulato: passeggiata log-normale su giorni lavorativi, riallineata al rendimento atteso e all'ultimo NAV.
+function buildSeries(e) {
+  const r = rng(hash(e.isin));
+  const g = () => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
+  const t = [], x = [];
+  const d = new Date(e.inception + "T12:00:00");
+  const dt = 1 / 252;
+  let acc = 0;
+  while (d <= TODAY) {
+    const wd = d.getDay();
+    if (wd > 0 && wd < 6) {
+      let z = g(); if (r() < 0.012) z *= 2.6;
+      acc += e.sig * Math.sqrt(dt) * z;
+      t.push(d.getTime()); x.push(acc);
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  const n = x.length - 1;
+  const target = Math.log(1 + e.mu) * (n / 252);
+  const fix = target - x[n];
+  const v = x.map((y, i) => Math.exp(y + fix * i / n));
+  const k = e.nav / v[n];
+  return { t, v: v.map(y => y * k) };
+}
+
+function idxFrom(s, ts) { // primo indice con data >= ts
+  let lo = 0, hi = s.t.length - 1;
+  if (ts > s.t[hi]) return hi;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (s.t[m] < ts) lo = m + 1; else hi = m; }
+  return lo;
+}
+function back(months, years = 0) { const d = new Date(TODAY); d.setMonth(d.getMonth() - months); d.setFullYear(d.getFullYear() - years); return d.getTime(); }
+function retSince(s, ts, annualize) {
+  if (ts < s.t[0]) return null;
+  const i = idxFrom(s, ts);
+  const r = s.v[s.v.length - 1] / s.v[i] - 1;
+  if (!annualize) return r;
+  const yrs = (s.t[s.t.length - 1] - s.t[i]) / (365.25 * DAY);
+  return Math.pow(1 + r, 1 / yrs) - 1;
+}
+
+ETFS.forEach(e => {
+  e.s = buildSeries(e);
+  e.r1 = retSince(e.s, back(12), false);
+  e.r3 = retSince(e.s, back(0, 3), true);
+  e.age = (TODAY - new Date(e.inception)) / (365.25 * DAY);
+});
+
+/* ---------- Filtri ---------- */
+const $ = id => document.getElementById(id);
+const SELECTS = { "f-asset": ["asset", "Tutte"], "f-region": ["region", "Tutte"], "f-focus": ["focus", "Tutti"], "f-provider": ["provider", "Tutti"], "f-repl": ["repl", "Tutte"], "f-cur": ["cur", "Tutte"], "f-dom": ["dom", "Tutti"] };
+for (const [id, [key, all]] of Object.entries(SELECTS)) {
+  const vals = [...new Set(ETFS.map(e => e[key]))].sort((a, b) => a.localeCompare(b, "it"));
+  $(id).innerHTML = `<option value="">${all}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join("");
+}
+
+function state() {
+  const st = { q: $("q").value.trim().toLowerCase(), ter: +$("f-ter").value, aum: +$("f-aum").value, age: +$("f-age").value, dist: document.querySelector('input[name="dist"]:checked').value };
+  for (const [id, [key]] of Object.entries(SELECTS)) st[key] = $(id).value;
+  return st;
+}
+
+function matches(e, st) {
+  if (st.q) {
+    const hay = [e.name, e.ticker, e.isin, e.index, e.provider, e.region, e.asset, e.focus].join(" ").toLowerCase();
+    if (!st.q.split(/\s+/).every(w => hay.includes(w))) return false;
+  }
+  for (const [, [key]] of Object.entries(SELECTS)) if (st[key] && e[key] !== st[key]) return false;
+  if (st.dist && e.dist !== st.dist) return false;
+  if (e.ter > st.ter + 1e-9) return false;
+  if (e.aum < st.aum) return false;
+  if (e.age < st.age) return false;
+  return true;
+}
+
+function sparkSvg(e) {
+  const s = e.s, i0 = idxFrom(s, back(12)), pts = [];
+  const step = Math.max(1, Math.floor((s.v.length - i0) / 60));
+  for (let i = i0; i < s.v.length; i += step) pts.push(s.v[i]);
+  pts.push(s.v[s.v.length - 1]);
+  const mn = Math.min(...pts), mx = Math.max(...pts), W = 110, H = 34;
+  const xy = pts.map((p, i) => [i / (pts.length - 1) * W, H - 3 - (p - mn) / (mx - mn || 1) * (H - 6)]);
+  const line = xy.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join("");
+  const col = (e.r1 ?? 0) >= 0 ? "var(--up)" : "var(--down)";
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${line}L${W} ${H}L0 ${H}Z" fill="${col}" fill-opacity=".1"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+function render() {
+  const st = state();
+  const sort = $("sort").value;
+  const res = ETFS.filter(e => matches(e, st)).sort((a, b) =>
+    sort === "ter" ? a.ter - b.ter :
+    sort === "r1" ? (b.r1 ?? -9) - (a.r1 ?? -9) :
+    sort === "r3" ? (b.r3 ?? -9) - (a.r3 ?? -9) :
+    sort === "name" ? a.name.localeCompare(b.name, "it") : b.aum - a.aum);
+  $("count").innerHTML = `<span class="num">${res.length}</span> ${res.length === 1 ? "ETF trovato" : "ETF trovati"}`;
+  if (!res.length) {
+    $("list").innerHTML = `<div class="empty"><strong>Nessun ETF corrisponde ai criteri</strong>Allarga il TER massimo o togli qualche filtro per vedere altri fondi.</div>`;
+    return;
+  }
+  $("list").innerHTML = res.map(e => `
+    <button class="row cols" type="button" data-isin="${e.isin}">
+      <span class="row-main">
+        <span class="row-name">${esc(e.name)}</span>
+        <span class="row-ids"><span class="tk num">${e.ticker}</span><span class="num">${e.isin}</span><span>${esc(e.provider)}</span></span>
+        <span class="tags"><span class="tag ac">${e.asset}</span><span class="tag">${e.region}</span><span class="tag">${e.focus}</span><span class="tag">${e.dist === "Accumulazione" ? "Acc" : "Dist"}</span><span class="tag">${e.repl}</span></span>
+      </span>
+      <span class="metric num"><small>TER</small>${fmt(e.ter)}%</span>
+      <span class="metric num m-aum"><small>Patrimonio</small>${aumTxt(e.aum)}</span>
+      <span class="metric num ${cls(e.r1)}"><small>1 anno</small>${pct(e.r1, 1)}</span>
+      <span class="metric num ${cls(e.r3)}"><small>3 anni ann.</small>${pct(e.r3, 1)}</span>
+      ${sparkSvg(e)}
+      <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>`).join("");
+}
+
+/* ---------- Dettaglio ---------- */
+const PERIODS = [["1M", () => back(1)], ["6M", () => back(6)], ["YTD", () => new Date(TODAY.getFullYear(), 0, 1).getTime()], ["1A", () => back(12)], ["3A", () => back(0, 3)], ["5A", () => back(0, 5)], ["Max", () => 0]];
+let cur = null, curPeriod = "1A";
+
+function openDetail(isin) {
+  const e = ETFS.find(x => x.isin === isin); if (!e) return;
+  cur = e;
+  const s = e.s, last = s.v[s.v.length - 1], prev = s.v[s.v.length - 2], chg = last / prev - 1;
+  const ytdBase = idxFrom(s, new Date(TODAY.getFullYear(), 0, 1).getTime()) - 1;
+  const perf = [
+    ["1 mese", retSince(s, back(1))], ["3 mesi", retSince(s, back(3))], ["6 mesi", retSince(s, back(6))],
+    ["Da inizio anno", ytdBase >= 0 ? last / s.v[ytdBase] - 1 : null], ["1 anno", retSince(s, back(12))],
+    ["3 anni (annualizzato)", retSince(s, back(0, 3), true)], ["5 anni (annualizzato)", retSince(s, back(0, 5), true)],
+    ["Dal lancio (annualizzato)", retSince(s, 0, true)],
+  ];
+  const facts = [
+    ["Indice replicato", e.index], ["Emittente", e.provider], ["Asset class", e.asset], ["Area geografica", e.region], ["Focus", e.focus],
+    ["Data di lancio", dateTxt(new Date(e.inception + "T12:00:00"))], ["Domicilio", e.dom], ["Valuta del fondo", e.cur],
+    ["Replica", e.repl], ["Dividendi", e.dist], ["TER", fmt(e.ter) + "% annuo"], ["Patrimonio", aumTxt(e.aum)],
+    ["Numero di titoli", e.n.toLocaleString("it-IT")],
+  ];
+  const bars = (items) => { const mx = Math.max(...items.map(i => i[1])); return `<ul class="bars">${items.map(([n, w]) => `<li><span class="bn">${esc(n)}</span><span class="bv">${fmt(w, 1)}%</span><span class="track"><span class="fill" style="width:${(w / mx * 100).toFixed(1)}%;display:block"></span></span></li>`).join("")}</ul>`; };
+
+  $("d-body").innerHTML = `
+    <div class="d-bar">
+      <span class="crumb">ETF · ${esc(e.asset)} · ${esc(e.region)}</span>
+      <button class="icon-btn" type="button" id="d-close" aria-label="Chiudi dettaglio">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="d-title">
+      <h2 id="d-name">${esc(e.name)}</h2>
+      <div class="d-ids">
+        <span>Ticker <b class="num">${e.ticker}</b></span>
+        <span>ISIN <b class="num" id="d-isin">${e.isin}</b> <button class="copy" type="button" id="d-copy">Copia</button></span>
+        <span class="tags"><span class="tag ac">${e.dist === "Accumulazione" ? "Accumulazione" : "Distribuzione"}</span><span class="tag">TER ${fmt(e.ter)}%</span></span>
+      </div>
+    </div>
+
+    <section class="card" aria-label="Andamento del NAV">
+      <div class="nav-head">
+        <div class="nav-now">
+          <div class="lbl">NAV al ${dateTxt(s.t[s.t.length - 1])}</div>
+          <div class="nav-val">${fmt(last)}<small>${e.cur}</small></div>
+          <div class="nav-chg ${cls(chg)}">${pct(chg)} oggi</div>
+        </div>
+        <div class="periods" role="group" aria-label="Periodo del grafico">
+          ${PERIODS.filter(([, f]) => f() >= s.t[0] || f() === 0).map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === curPeriod}">${p}</button>`).join("")}
+        </div>
+      </div>
+      <div class="chart" id="chart"></div>
+      <div class="pstats" id="pstats"></div>
+    </section>
+
+    <p class="desc">L'ETF replica l'indice ${esc(e.index)} con replica ${esc(e.repl.toLowerCase())}. ${e.dist === "Accumulazione" ? "I proventi vengono reinvestiti nel fondo." : "I proventi vengono distribuiti periodicamente agli investitori."} Valuta del fondo ${e.cur}, domicilio ${esc(e.dom)}.</p>
+
+    <div class="d-grid">
+      <section class="card"><h3>Rendimenti</h3>
+        <table class="perf"><tbody>${perf.map(([k, v]) => `<tr><td>${k}</td><td class="${cls(v)}">${pct(v)}</td></tr>`).join("")}</tbody></table>
+      </section>
+      <section class="card"><h3>Dati principali</h3>
+        <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+      </section>
+      <section class="card"><h3>${e.top.length > 1 ? "Prime 10 posizioni" : "Posizioni"}</h3>${bars(e.top)}</section>
+      <section class="card"><h3>${esc(e.b1[0])}</h3>${bars(e.b1[1])}<h3 style="margin-top:20px">${esc(e.b2[0])}</h3>${bars(e.b2[1])}</section>
+    </div>
+    <p class="note">Dati dimostrativi: anagrafiche e pesi approssimativi, NAV storico simulato. Non costituiscono una raccomandazione di investimento.</p>`;
+
+  if (!PERIODS.some(([p, f]) => p === curPeriod && (f() >= s.t[0] || f() === 0))) curPeriod = "Max";
+  const dlg = $("detail");
+  if (!dlg.open) dlg.showModal();
+  dlg.scrollTop = 0;
+  $("d-close").onclick = () => dlg.close();
+  $("d-copy").onclick = async (ev) => {
+    const b = ev.currentTarget;
+    try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; }
+    catch { const r = document.createRange(); r.selectNodeContents($("d-isin")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); b.textContent = "Selezionato"; }
+    setTimeout(() => (b.textContent = "Copia"), 1600);
+  };
+  document.querySelectorAll(".periods button").forEach(b => b.onclick = () => {
+    curPeriod = b.dataset.p;
+    document.querySelectorAll(".periods button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    drawChart();
+  });
+  drawChart();
+}
+
+function niceTicks(mn, mx, count = 5) {
+  const span = mx - mn || 1, raw = span / count, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+  const out = []; for (let v = Math.ceil(mn / step) * step; v <= mx + 1e-9; v += step) out.push(+v.toFixed(10));
+  return { ticks: out, step };
+}
+
+function drawChart() {
+  const e = cur, s = e.s, box = $("chart"); if (!box) return;
+  const from = PERIODS.find(p => p[0] === curPeriod)[1]();
+  const i0 = from === 0 ? 0 : idxFrom(s, from), n = s.v.length;
+  const step = Math.max(1, Math.floor((n - i0) / 420));
+  const T = [], V = [];
+  for (let i = i0; i < n; i += step) { T.push(s.t[i]); V.push(s.v[i]); }
+  if (T[T.length - 1] !== s.t[n - 1]) { T.push(s.t[n - 1]); V.push(s.v[n - 1]); }
+
+  const W = box.clientWidth, H = box.clientHeight, pl = 4, pr = 58, pt = 10, pb = 26;
+  const mn0 = Math.min(...V), mx0 = Math.max(...V), pad = (mx0 - mn0) * 0.08 || mx0 * 0.02;
+  const { ticks } = niceTicks(mn0 - pad, mx0 + pad, H < 250 ? 4 : 5);
+  const lo = Math.min(ticks[0], mn0 - pad), hi = Math.max(ticks[ticks.length - 1], mx0 + pad);
+  const X = t => pl + (t - T[0]) / (T[T.length - 1] - T[0]) * (W - pl - pr);
+  const Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const up = V[V.length - 1] >= V[0], col = up ? "var(--up)" : "var(--down)";
+  const line = T.map((t, i) => (i ? "L" : "M") + X(t).toFixed(1) + " " + Y(V[i]).toFixed(1)).join("");
+  const dec = hi < 10 ? 2 : hi < 100 ? 1 : 0;
+
+  // Etichette dell'asse X: date distribuite in modo uniforme
+  const spanDays = (T[T.length - 1] - T[0]) / DAY;
+  const xo = spanDays > 900 ? { year: "numeric" } : spanDays > 80 ? { month: "short", year: "2-digit" } : { day: "2-digit", month: "short" };
+  const nx = W < 420 ? 3 : 5, xt = [];
+  for (let k = 0; k < nx; k++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (k + 0.5) / nx);
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="NAV di ${esc(e.ticker)} nel periodo ${curPeriod}">
+    <defs><linearGradient id="gfill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".22"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="grid" x1="${pl}" x2="${W - pr + 6}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${W - pr + 10}" y="${Y(v) + 4}">${fmt(v, dec)}</text>`).join("")}
+    ${xt.map(t => `<text class="axis" x="${X(t)}" y="${H - 6}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
+    <path d="${line}L${X(T[T.length - 1])} ${H - pb}L${X(T[0])} ${H - pb}Z" fill="url(#gfill)"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${X(T[T.length - 1])}" cy="${Y(V[V.length - 1])}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/>
+    <g id="hover" visibility="hidden"><line id="hl" class="grid" y1="${pt}" y2="${H - pb}" stroke-dasharray="3 3" style="stroke:var(--muted)"/><circle id="hc" r="4.5" fill="${col}" stroke="var(--surface)" stroke-width="2"/></g>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" id="hit"/>
+  </svg><div class="tip" id="tip" hidden></div>`;
+
+  const hit = box.querySelector("#hit"), g = box.querySelector("#hover"), tip = box.querySelector("#tip");
+  const move = ev => {
+    const r = box.getBoundingClientRect(), x = ev.clientX - r.left;
+    const tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
+    let j = 0, best = Infinity; for (let k = 0; k < T.length; k++) { const d = Math.abs(T[k] - tt); if (d < best) { best = d; j = k; } }
+    const cx = X(T[j]), cy = Y(V[j]);
+    g.setAttribute("visibility", "visible");
+    box.querySelector("#hl").setAttribute("x1", cx); box.querySelector("#hl").setAttribute("x2", cx);
+    box.querySelector("#hc").setAttribute("cx", cx); box.querySelector("#hc").setAttribute("cy", cy);
+    tip.hidden = false;
+    tip.innerHTML = `<b>${fmt(V[j])} ${e.cur}</b>${dateTxt(T[j])} · <span>${pct(V[j] / V[0] - 1)}</span>`;
+    const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px";
+    tip.style.top = (cy > 70 ? cy - 58 : cy + 14) + "px";
+  };
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+
+  // Statistiche del periodo
+  const lr = []; for (let i = Math.max(i0, 1); i < n; i++) lr.push(Math.log(s.v[i] / s.v[i - 1]));
+  const mean = lr.reduce((a, b) => a + b, 0) / lr.length;
+  const vol = Math.sqrt(lr.reduce((a, b) => a + (b - mean) ** 2, 0) / (lr.length - 1)) * Math.sqrt(252);
+  let peak = s.v[i0], mdd = 0; for (let i = i0; i < n; i++) { peak = Math.max(peak, s.v[i]); mdd = Math.min(mdd, s.v[i] / peak - 1); }
+  const r = s.v[n - 1] / s.v[i0] - 1;
+  $("pstats").innerHTML = [
+    ["Rendimento periodo", `<span class="${cls(r)}">${pct(r)}</span>`],
+    ["Volatilità annua", fmt(vol * 100) + "%"],
+    ["Max drawdown", `<span class="neg">${pct(mdd)}</span>`],
+    ["Min / max", `${fmt(Math.min(...V))} / ${fmt(Math.max(...V))}`],
+  ].map(([k, v]) => `<div><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+}
+
+/* ---------- Eventi ---------- */
+$("list").addEventListener("click", ev => { const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
+$("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => $("detail").open && drawChart(), 120); });
+
+$("q").addEventListener("input", render);
+document.querySelectorAll(".filters select, .filters input, #sort").forEach(el => el.addEventListener("input", render));
+$("f-ter").addEventListener("input", () => ($("ter-out").textContent = fmt(+$("f-ter").value) + "%"));
+document.addEventListener("keydown", ev => { if (ev.key === "/" && document.activeElement.tagName !== "INPUT") { ev.preventDefault(); $("q").focus(); } });
+
+function resetFilters() {
+  Object.keys(SELECTS).forEach(id => ($(id).value = ""));
+  $("f-ter").value = "0.60"; $("ter-out").textContent = "0,60%";
+  $("f-aum").value = "0"; $("f-age").value = "0"; $("dist-all").checked = true;
+}
+$("reset").addEventListener("click", () => { resetFilters(); render(); });
+document.querySelectorAll(".qchip").forEach(b => b.addEventListener("click", () => {
+  resetFilters(); $("q").value = b.dataset.q || "";
+  if (b.dataset.preset === "cheap") { $("f-ter").value = "0.15"; $("ter-out").textContent = "0,15%"; }
+  if (b.dataset.preset === "bond") $("f-asset").value = "Obbligazionario";
+  if (b.dataset.preset === "dist") $("dist-dis").checked = true;
+  render();
+}));
+$("advBtn").addEventListener("click", ev => {
+  const b = ev.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
+  b.setAttribute("aria-expanded", open); $("filters").hidden = !open;
+  try { localStorage.setItem("mm-adv", open ? "1" : "0"); } catch {}
+});
+try { if (localStorage.getItem("mm-adv") === "0") { $("advBtn").setAttribute("aria-expanded", "false"); $("filters").hidden = true; } } catch {}
+
+render();
+</script>
