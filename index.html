@@ -678,7 +678,9 @@ const sectorsOf = e => (e.b2 && e.b2[0] === "Settori" ? e.b2[1].filter(([n, w]) 
   const D = window.ETFDATA; if (!D || !D.etfs) return;
   for (const [isin, d] of Object.entries(D.etfs)) {
     const e = ETFS.find(x => x.isin === isin); if (!e) continue;
-    ["ter", "aum", "dist", "dom", "inception", "cur", "index", "n"].forEach(k => { if (d[k] != null) e[k] = d[k]; });
+    ["ter", "aum", "dist", "dom", "inception", "cur", "n"].forEach(k => { if (d[k] != null) e[k] = d[k]; });
+    if (d.index && !/ETC/.test(e.repl)) e.index = d.index;
+    if (d.holdingsDate) e.hdate = d.holdingsDate;
     if (d.repl && d.repl !== "Fisica" && !/ETC/.test(e.repl)) e.repl = d.repl;
     if (d.top && d.top.length) e.top = d.top;
     if (d.countries && e.b1 && e.b1[0] === "Paesi") e.b1 = ["Paesi", d.countries];
@@ -873,7 +875,7 @@ function openDetail(isin) {
     <section>
       <div class="price">
         <div>
-          <div class="big">${fmt(last)}<small>${e.cur}</small></div>
+          <div class="big">${fmt(last)}<small>${e.pcur || e.cur}</small></div>
           <div class="chg n"><span class="${cls(chg)}">${pct(chg)}</span> <span class="k">${dateTxt(s.t[s.t.length - 1], { day: "numeric", month: "short" })}</span></div>
         </div>
         <div class="periods" role="group" aria-label="Periodo">${avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === curPeriod}">${p}</button>`).join("")}</div>
@@ -893,7 +895,7 @@ function openDetail(isin) {
 
     <section class="sec"><h3>Dati</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
-      <p class="fc-note">${window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio. Posizioni e ripartizioni sono indicative.</p>
+      <p class="fc-note">${window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio${e.fromJe ? `, indice, titoli, paesi e settori${e.hdate ? " (composizione al " + e.hdate + ")" : ""}` : ". Posizioni e ripartizioni sono indicative"}.</p>
     </section>
 
     <div class="cols2">
@@ -1460,7 +1462,7 @@ function applyPrices() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
   for (const [isin, s] of Object.entries(PR.series)) {
     const e = byIsin(isin); if (!e || !s.t || s.t.length < 50) continue;
-    e.s = { t: s.t, v: s.v }; e.real = true; e.src = s.source; e.sym = s.symbol; e.r1 = retSince(e.s, back(12)); e.r3 = retSince(e.s, back(0, 3), true); calcStats(e); if (s.adv > 0) e.adv = s.adv;
+    e.s = { t: s.t, v: s.v }; e.real = true; e.src = s.source; e.sym = s.symbol; e.pcur = s.currency; e.r1 = retSince(e.s, back(12)); e.r3 = retSince(e.s, back(0, 3), true); calcStats(e); if (s.adv > 0) e.adv = s.adv;
   }
 }
 
@@ -1680,7 +1682,7 @@ const GL = {
   adv: { t: "Volume medio giornaliero", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di eseguire ordini.", how: "Il volume sulla borsa può sottostimare la liquidità reale, perché i market maker creano e rimborsano quote.", ref: [["Oltre 10 Mln €", "ottimo"], ["1–10 Mln €", "adeguato per importi piccoli"], ["Sotto 1 Mln €", "prudenza"]], links: ["trading"] },
   spr: { t: "Spread denaro-lettera", what: "Differenza tra il miglior prezzo di vendita e di acquisto, in percentuale. È un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
   rend: { t: "Rendimenti 1A, 3A, da inizio", what: "Variazione di prezzo dell'ETF su un anno, su tre e su cinque anni (annualizzata) e dal lancio (annualizzata).", use: "Confronta la redditività di ETF diversi.", how: "Confronta ETF simili sullo stesso periodo. Per gli ETF a distribuzione il rendimento di prezzo non include i dividendi pagati. Il passato non garantisce il futuro.", ref: [["1 anno", "molto variabile, poco indicativo"], ["3–5 anni", "più significativo"], ["Da inizio", "dipende dall'epoca di lancio"]] },
-  settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (dati indicativi, non verificati sulla fonte). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
+  settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (da justETF quando scaricati, altrimenti indicativi). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
   borsa: { t: "Borsa di quotazione", what: "Le borse su cui l'ETF è quotato, dalla tabella delle quotazioni di justETF. Stesso ETF e stesso ISIN, ma ticker e valuta di negoziazione cambiano da borsa a borsa.", use: "Ti dice dove puoi comprarlo con il tuo broker.", how: "Scegli di solito la borsa in euro con più volume e spread più stretto, per esempio Borsa Italiana, Xetra o Euronext Amsterdam. Controlla ticker e valuta nel tuo broker prima di operare.", ref: [] },
   parametri: { t: "Guida ai parametri", group: ["rend", "ter", "aum", "repl", "dist", "dom", "cur", "settore", "borsa", "liq", "adv", "spr", "vol", "dd", "sharpe"] },
 };

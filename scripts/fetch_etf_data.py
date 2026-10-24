@@ -67,7 +67,7 @@ def top_n(lst, k=5):
     """Primi k più un «Altri» con il resto, come nelle ripartizioni di index.html."""
     head = lst[:k]
     rest = round(100 - sum(x[1] for x in head), 1)
-    return head + ([["Altri", rest]] if rest > 0.05 and len(lst) > k else [])
+    return head + ([["Altri", rest]] if rest >= 0.5 and len(lst) > k else [])
 
 
 def parse(isin):
@@ -95,16 +95,16 @@ def parse(isin):
         out["cur"] = cur
     idx = tid(h, "tl_etf-basics_value_index-name")
     if idx:
-        out["index"] = idx
+        out["index"] = idx.replace("®", "").strip()
     n = num(tid(h, "tl_etf-holdings_top-holdings_count"))
     if n:
         out["n"] = int(n)
     top = rows(h, "etf-holdings_top-holdings_row", "tl_etf-holdings_top-holdings_link_name", "tl_etf-holdings_top-holdings_value_percentage", ".")
     if top:
         out["top"] = top[:10]
-    ref = tid(h, "tl_etf-holdings_reference-date")
-    if ref:
-        out["holdingsDate"] = ref
+    m = re.search(r"\d{2}/\d{2}/\d{4}", tid(h, "tl_etf-holdings_reference-date") or "")
+    if m:
+        out["holdingsDate"] = m.group(0)
     dom = tid(h, "tl_etf-basics_value_domicile-country")
     if dom:
         out["domEn"] = dom
