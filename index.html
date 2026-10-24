@@ -316,6 +316,13 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .pos .ops { margin-top: 0; }
 @media (max-width: 480px) { .pos .wl { display: none; } .pos .qi { width: 64px; } }
 .atrow input.at-d { flex: 1 1 130px; }
+.lots td:first-child { white-space: nowrap; }
+.hleg { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; font-size: var(--fs-s); }
+.hleg .lt { flex: none; }
+.tip.mx { background: color-mix(in srgb, var(--bg) 90%, transparent); padding: 4px 10px; border-radius: 10px; text-align: left; }
+.tip.mx b { text-align: center; }
+.tip .tl { display: flex; align-items: center; gap: 6px; font-family: var(--m); }
+.tip .tl .sw { display: inline-block; }
 .lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .fc-note.err { color: var(--down); }
 .rn { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
@@ -430,6 +437,22 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   </section>
 
   <section class="sec pf-sec"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
+  <section class="sec pf-sec" id="hist-sec"><h3>Storico<button type="button" class="i" data-g="storico" aria-label="Informazioni: storico">i</button></h3>
+    <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button></div></div>
+    <div class="chart" id="hist-chart"></div>
+    <ul class="leg hleg" id="hist-leg"></ul>
+    <h3 style="margin-top:28px">Acquisti e vendite</h3>
+    <form class="lotform" id="op-form">
+      <select id="op-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
+      <select id="op-etf" aria-label="ETF"></select>
+      <input id="op-date" type="date" aria-label="Data" required>
+      <input id="op-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
+      <input id="op-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
+      <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel" hidden>Annulla</button>
+    </form>
+    <p class="fc-note" id="hist-msg" aria-live="polite"></p>
+    <div class="scroll"><table class="eft lots" id="hist-tbl"></table></div>
+  </section>
   <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
 </main>
 
@@ -1030,10 +1053,10 @@ const hasBase = x => x.qty > 0 || x.weight > 0;
 const simStart = pf => Math.max(dateMs(pf.start), ...pf.positions.filter(hasBase).map(x => dateMs(byIsin(x.isin).inception)));
 function pfLots(pf) {
   const st = simStart(pf), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0), out = [];
-  pf.positions.forEach(x => {
+  pf.positions.forEach((x, pi) => {
     const p = priceAt(byIsin(x.isin), st), q = x.weight > 0 ? pf.amount * x.weight / W / p : x.qty > 0 ? x.qty : 0;
-    if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p });
-    x.txs.forEach(t => out.push({ isin: x.isin, date: t.date, qty: t.qty, price: t.price }));
+    if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p, base: true });
+    x.txs.forEach((t, ti) => out.push({ isin: x.isin, date: t.date, qty: t.qty, price: t.price, pi, ti }));
   });
   return out.sort(byDate);
 }
@@ -1153,7 +1176,7 @@ function pfBuild(pf) {
   idx[0] = 100;
   for (let m = 1; m < n; m++) idx[m] = idx[m - 1] * (V[m - 1] > 0 ? (V[m] - flow[m]) / V[m - 1] : 1);
   const last = n - 1, vh = es.map((_, i) => units[i][last] * px[i][last]);
-  return { pf, es, isins, t, V, cost, idx, qty, costH, vh, flow, cw: vh.map(v => v / V[last]), last, lastPx: px.map(p => p[last]), act: es.map((_, i) => i).filter(i => qty[i] > 1e-9) };
+  return { pf, es, isins, t, V, units, px, cost, idx, qty, costH, vh, flow, cw: vh.map(v => v / V[last]), last, lastPx: px.map(p => p[last]), act: es.map((_, i) => i).filter(i => qty[i] > 1e-9) };
 }
 function pfStats(P) {
   const r = []; for (let m = 1; m <= P.last; m++) r.push(P.idx[m] / P.idx[m - 1] - 1);
@@ -1355,7 +1378,7 @@ const justEtf = isin => `https://www.justetf.com/en/etf-profile.html?isin=${isin
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
 function renderEmpty() {
   PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
-  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
   $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
   $("pf-comp").innerHTML = '<p class="fc-note">' + "Aggiungi un ETF con quantità o peso, oppure registra un'operazione nelle posizioni" + '</p>';
 }
@@ -1366,7 +1389,7 @@ function renderPf() {
   renderPfs();
   $("to-draft").hidden = dr;
   $("kind").textContent = dr ? "Draft · simulazione" : "Acquistato"; $("kind").className = "kind" + (dr ? " draft" : "");
-  renderPos();
+  renderPos(); renderHist();
   if (!pfLots(pfCur).length) return renderEmpty();
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const nReal = P.es.filter(e => e.real).length;
@@ -1410,14 +1433,14 @@ function renderPf() {
   ].map(x => `<li>${x}</li>`).join("");
 
   renderRb(); updDef();
-  drawPfNav(); drawEF();
+  drawPfNav(); drawEF(); drawHist();
 }
 function fillSel() { $("pf-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join(""); $("pf-sel").value = pfCur.id; }
 function showView(v) {
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
   try { history.replaceState(null, "", { port: "#portafoglio", pfs: "#portafogli", search: "#cerca" }[v]); } catch {}
-  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); });
+  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); drawHist(); });
 }
 function applyPrices() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
@@ -1468,7 +1491,7 @@ const DEF_KEY = "mm-default";
 const getDef = () => { try { return localStorage.getItem(DEF_KEY); } catch { return null; } };
 function updDef() { const b = $("pf-def"), on = !!pfCur && getDef() === pfCur.id; b.textContent = on ? "★ Predefinito" : "☆ Predefinito"; b.setAttribute("aria-pressed", on); }
 /* ---------- Draft: composizione, dimensionamento, aggiunta da ricerca ---------- */
-let DRSIZE = [], AT = [], openPos = null, editOp = null;
+let DRSIZE = [], AT = [], editOp = null, opEtf = null, histMode = "val";
 // Nuovi ETF: in una simulazione prendono un peso uguale (gli altri pesi si riproporzionano); in un portafoglio con operazioni partono senza posizione iniziale.
 function addPos(pf, isins) {
   const fresh = isins.filter(i => !pf.positions.some(x => x.isin === i)); if (!fresh.length) return 0;
@@ -1480,27 +1503,13 @@ function addPos(pf, isins) {
   return k;
 }
 const posVal = x => (x.weight != null ? x.weight : x.qty);
-function opRow(x, held) {
-  const e = byIsin(x.isin), ed = editOp != null ? x.txs[editOp] : null;
-  const list = x.txs.length ? `<table class="eft ops"><thead><tr><th>Data</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${x.txs.map((t, i) => { const g = t.qty > 0 ? e.live / t.price - 1 : null;
-    return `<tr data-i="${i}"><td class="n">${dateTxt(dateMs(t.date))}</td><td class="n ${t.qty < 0 ? "sell" : ""}">${t.qty < 0 ? "−" : ""}${fmt(Math.abs(t.qty), 0)}</td><td class="n">${fmt(t.price)}</td><td class="n">${t.qty < 0 ? "+ " : ""}${eur(Math.abs(t.qty * t.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button></td></tr>`; }).join("")}</tbody></table>` : "";
-  return `<tr class="oprow"><td colspan="4">${list}
-    <form class="lotform" id="op-form"><select id="op-op" aria-label="Operazione"><option value="1"${ed && ed.qty < 0 ? "" : " selected"}>Acquisto</option><option value="-1"${ed && ed.qty < 0 ? " selected" : ""}>Vendita</option></select>
-      <input id="op-date" type="date" max="${ymd(Date.now())}" value="${ed ? ed.date : ymd(Date.now())}" aria-label="Data" required>
-      <input id="op-qty" type="number" min="0" step="any" placeholder="Quantità" value="${ed ? Math.abs(ed.qty) : ""}" aria-label="Quantità" required>
-      <input id="op-price" type="number" min="0" step="any" placeholder="Prezzo" value="${ed ? ed.price : e.live.toFixed(2)}" ${ed ? 'data-touched="1" ' : ""}aria-label="Prezzo" required>
-      <button type="submit">${ed ? "Salva" : "Aggiungi"}</button>${ed ? '<button type="button" id="op-cancel">Annulla</button>' : ""}</form>
-    <p class="fc-note">Totale ${fmt(held, 0)} quote</p></td></tr>`;
-}
 function renderPos() {
   const pf = pfCur, have = new Set(pf.positions.map(x => x.isin)), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0);
-  if (openPos && !have.has(openPos)) openPos = null;
-  const held = {}; pfLots(pf).forEach(l => (held[l.isin] = (held[l.isin] || 0) + l.qty));
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
   $("dr-add").innerHTML = ETFS.filter(e => !have.has(e.isin)).sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
   $("dr-add-btn").disabled = !$("dr-add").value; $("dr-norm").hidden = !W;
-  $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th>Operazioni</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x), open = openPos === x.isin;
-    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}"><select class="qu" aria-label="Unità ${e.ticker}"><option value="q"${u === "q" ? " selected" : ""}>quote</option><option value="w"${u === "w" ? " selected" : ""}>%</option></select></span></td><td class="n"><button type="button" class="ghost opb" aria-expanded="${open}">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " operazione" : " operazioni") : "Aggiungi"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>${open ? opRow(x, held[x.isin] || 0) : ""}`; }).join("")}</tbody>` : "";
+  $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x);
+    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}"><select class="qu" aria-label="Unità ${e.ticker}"><option value="q"${u === "q" ? " selected" : ""}>quote</option><option value="w"${u === "w" ? " selected" : ""}>%</option></select></span></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
   $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : "");
   const rows = pf.positions.filter(hasBase).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
@@ -1509,6 +1518,55 @@ function renderPos() {
   $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
   DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
   $("dr-own").disabled = !DRSIZE.length;
+}
+function renderHist() {
+  const pf = pfCur, es = ETFS.slice().sort((a, b) => a.ticker.localeCompare(b.ticker));
+  if (!opEtf || !byIsin(opEtf)) opEtf = (pf.positions[0] || {}).isin || es[0].isin;
+  $("op-etf").innerHTML = es.map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join(""); $("op-etf").value = opEtf;
+  $("op-date").max = ymd(Date.now()); if (!$("op-date").value) $("op-date").value = ymd(Date.now());
+  if (!$("op-price").value) opSuggest();
+  const lots = pfLots(pf).reverse();
+  $("hist-tbl").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
+    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
+}
+// Composizione nel tempo: aree impilate per ETF (in € o in %), con i punti di acquisto e vendita sull'asse.
+function histOrder(P) {
+  const peak = P.isins.map((_, i) => { let mx = 0; for (let m = 0; m <= P.last; m++) mx = Math.max(mx, P.units[i][m] * P.px[i][m]); return mx; });
+  return P.isins.map((_, i) => i).filter(i => peak[i] > 0).sort((a, b) => peak[b] - peak[a]);
+}
+function drawHist() {
+  const box = $("hist-chart"); if (!PF || !box) return; const P = PF, W = box.clientWidth, H = box.clientHeight; if (!W) return;
+  const order = histOrder(P), n = P.t.length, step = Math.max(1, Math.floor((n - 1) / 360)), ix = [];
+  for (let m = 0; m < n; m += step) ix.push(m); if (ix[ix.length - 1] !== n - 1) ix.push(n - 1);
+  const T = ix.map(m => P.t[m]), val = order.map(i => ix.map(m => Math.max(0, P.units[i][m] * P.px[i][m]))), tot = ix.map((_, k) => val.reduce((a, s) => a + s[k], 0));
+  const isPct = histMode === "pct", ser = isPct ? val.map(s => s.map((v, k) => (tot[k] > 0 ? v / tot[k] * 100 : 0))) : val, cost = ix.map(m => P.cost[m]);
+  const pl = 0, pr = 62, pt = 8, pb = 24, mx = isPct ? 100 : Math.max(...tot, ...cost) * 1.06 || 1, ticks = isPct ? [0, 50, 100] : niceTicks(0, mx, 3);
+  const X = t => pl + (t - T[0]) / ((T[T.length - 1] - T[0]) || 1) * (W - pl - pr), Y = v => pt + (mx - v) / mx * (H - pt - pb);
+  let base = ix.map(() => 0); const bands = ser.map(s => { const lo = base, hi = s.map((v, k) => lo[k] + v); base = hi; return { lo, hi }; });
+  const pts = (a) => a.map((v, k) => X(T[k]).toFixed(1) + " " + Y(v).toFixed(1));
+  const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
+  const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
+  const col = k => `var(--c${(k % 6) + 1})`;
+  const ops = pfLots(P.pf).filter(l => !l.base).map(l => ({ x: X(Math.min(Math.max(dateMs(l.date), T[0]), T[T.length - 1])), buy: l.qty > 0 }));
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${isPct ? "Composizione" : "Valore per ETF"} nel tempo">
+    ${ticks.map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${isPct ? v + "%" : fmt(v, 0)}</text>`).join("")}
+    ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
+    ${bands.map((b, k) => `<path d="M${pts(b.hi).join("L")}L${pts(b.lo).reverse().join("L")}Z" fill="${col(k)}" fill-opacity=".38"/><path d="M${pts(b.hi).join("L")}" fill="none" stroke="${col(k)}" stroke-width="1.4" stroke-linejoin="round"/>`).join("")}
+    ${isPct ? "" : `<path d="M${pts(cost).join("L")}" fill="none" stroke="var(--fg)" stroke-width="1.2" stroke-dasharray="3 3"/>`}
+    ${ops.map(o => `<circle cx="${o.x.toFixed(1)}" cy="${H - pb}" r="3.5" fill="${o.buy ? "var(--up)" : "var(--down)"}" stroke="var(--bg)" stroke-width="1.5"/>`).join("")}
+    <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/></g>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip mx" hidden></div>`;
+  $("hist-leg").innerHTML = order.map((i, k) => `<li><span class="sw" style="background:${col(k)}"></span><span class="lt">${P.es[i].ticker}</span></li>`).join("");
+  const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hit = box.querySelector(".hit");
+  const move = ev => {
+    const x = ev.clientX - box.getBoundingClientRect().left, tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
+    let j = 0, bd = Infinity; for (let q = 0; q < T.length; q++) { const d = Math.abs(T[q] - tt); if (d < bd) { bd = d; j = q; } }
+    const cx = X(T[j]); g.setAttribute("visibility", "visible"); hl.setAttribute("x1", cx); hl.setAttribute("x2", cx);
+    tip.hidden = false; tip.innerHTML = `<b>${eur(tot[j])}</b>${dateTxt(T[j])}` + order.map((i, k) => ({ k, s: ser[k][j] })).filter(r => r.s > 0).map(r => `<span class="tl"><i class="sw" style="background:${col(r.k)}"></i>${P.es[order[r.k]].ticker} ${isPct ? fmt(r.s, 1) + "%" : eur(r.s)}</span>`).join("");
+    const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px"; tip.style.top = "0px";
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
 }
 function openAddTo(isins) {
   if (!isins.length) return;
@@ -1581,6 +1639,7 @@ const GL = {
   maxsharpe: { t: "Massimo Sharpe", what: "Il portafoglio con il miglior rendimento per unità di rischio sulla frontiera.", use: "È considerato il punto più efficiente.", how: "Tende a concentrarsi sugli ETF che sono andati meglio: usa il tetto di peso per evitare portafogli troppo concentrati.", ref: [] },
   cap: { t: "Peso massimo per ETF", what: "Limite alla quota di ogni ETF nei portafogli calcolati per la frontiera e per il ribilanciamento.", use: "Evita risultati estremi, per esempio il 90% in un solo ETF.", how: "Con meno di 4 ETF il tetto basso non si può rispettare e viene tolto.", ref: [["Valori usuali", "30–40%"]] },
   rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
+  storico: { t: "Storico del portafoglio", what: "Come sono cambiati nel tempo il valore e la composizione del portafoglio, ETF per ETF, in base alle quantità possedute e ai prezzi di ogni giorno. I punti sull'asse sono gli acquisti (verdi) e le vendite (rossi).", use: "Mostra l'effetto delle tue operazioni: quando hai aumentato o ridotto un ETF e come è cambiato il peso di ciascuno.", how: "«Valore» mostra l'importo per ETF in euro con la linea tratteggiata dell'investito; «Composizione» mostra la quota percentuale. Le righe «Iniziale · simulato» sono quantità senza data: si considerano aperte alla data «Da». Con prezzi simulati anche il grafico lo è.", ref: [] },
   prev: { t: "Previsioni sull'indice", what: "Obiettivi pubblicati da banche d'investimento per l'indice che l'ETF replica (non per l'ETF), con orizzonti diversi indicati su ogni riga.", use: "Danno un'idea delle aspettative degli analisti.", how: "Guarda l'intervallo tra le banche, non un singolo numero. La media sul portafoglio copre solo gli ETF con previsioni disponibili. Ogni riga rimanda alla fonte.", ref: [["Affidabilità", "le previsioni a 12 mesi sbagliano spesso di molti punti"]] },
   draft: { t: "Draft e acquistato", what: "Un portafoglio con operazioni (data, quantità, prezzo) è acquistato. Senza operazioni è un draft: una simulazione con ETF, quantità o pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Registra acquisti a oggi» trasforma le quantità in operazioni ai prezzi correnti.", ref: [] },
   dim: { t: "Dimensionamento", what: "Dall'importo e dai pesi calcola quante quote intere comprare ai prezzi correnti.", use: "Ti dice quanto spendere per ETF e quanto resta non investito.", how: "Il residuo è dovuto alle quote intere. Non include commissioni del broker.", ref: [] },
@@ -1651,13 +1710,13 @@ function editPf(fn) {
   const pf = ownPf(); pf.positions = c.positions; pf.amount = c.amount; pf.start = c.start; commit(pf.id); return "";
 }
 const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
-function resetForm() { editOp = null; openPos = null; }
-function opSuggest() { const p = $("op-price"), d = $("op-date"), e = openPos && byIsin(openPos); if (p && d && e && !p.dataset.touched && d.value && !isNaN(dateMs(d.value))) p.value = priceAt(e, dateMs(d.value)).toFixed(2); }
+function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
+function opSuggest() { const e = byIsin($("op-etf").value), d = $("op-date").value, p = $("op-price"); if (e && d && !isNaN(dateMs(d)) && !p.dataset.touched) p.value = priceAt(e, dateMs(d)).toFixed(2); }
+$("op-etf").addEventListener("change", () => { opEtf = $("op-etf").value; opSuggest(); }); $("op-date").addEventListener("change", opSuggest);
+$("op-price").addEventListener("input", () => ($("op-price").dataset.touched = "1"));
 const posOf = el => pfCur.positions.find(x => x.isin === el.closest("tr[data-isin]").dataset.isin);
 $("pos-tbl").addEventListener("change", ev => {
-  const t = ev.target;
-  if (t.id === "op-date") return opSuggest();
-  const row = t.closest("tr[data-isin]"); if (!row || !(t.classList.contains("qi") || t.classList.contains("qu"))) return;
+  const t = ev.target, row = t.closest("tr[data-isin]"); if (!row || !(t.classList.contains("qi") || t.classList.contains("qu"))) return;
   const isin = row.dataset.isin, unit = row.querySelector(".qu").value, v = row.querySelector(".qi").value;
   const err = editPf(c => { const x = c.positions.find(p => p.isin === isin), st = simStart(c), pr = priceAt(byIsin(isin), st), W = c.positions.reduce((a, p) => a + (p.weight > 0 ? p.weight : 0), 0);
     if (t.classList.contains("qu")) { // cambio unità: converte al prezzo della data di partenza
@@ -1666,48 +1725,39 @@ $("pos-tbl").addEventListener("change", ev => {
     } else { const n = Math.max(0, +v || 0); if (unit === "w") { x.weight = n; x.qty = null; } else { x.qty = n; x.weight = null; } } });
   err ? msg(err, true) : msg("");
 });
-$("pos-tbl").addEventListener("input", ev => { if (ev.target.id === "op-price") ev.target.dataset.touched = "1"; });
 $("pos-tbl").addEventListener("click", ev => {
-  const b = ev.target.closest("button"); if (!b) return;
-  if (b.id === "op-cancel") { editOp = null; return renderPos(); }
-  if (b.classList.contains("opb")) { const isin = b.closest("tr").dataset.isin; openPos = openPos === isin ? null : isin; editOp = null; return renderPos(); }
-  const opTr = b.closest(".ops tr[data-i]"), isin = openPos;
-  if (opTr && b.classList.contains("ed")) { editOp = +opTr.dataset.i; renderPos(); return $("op-form").scrollIntoView({ block: "center", behavior: "smooth" }); }
-  if (opTr && b.classList.contains("del")) { const i = +opTr.dataset.i, err = editPf(c => c.positions.find(p => p.isin === isin).txs.splice(i, 1)); editOp = null; return err ? msg("Non puoi eliminarla: " + err, true) : msg("Operazione eliminata"); }
-  if (b.classList.contains("del") && b.closest("tr[data-isin]")) {
-    const x = posOf(b); if (x.txs.length && !confirm(`Rimuovere ${byIsin(x.isin).ticker} e le sue ${x.txs.length} operazioni?`)) return;
-    const err = editPf(c => { c.positions = c.positions.filter(p => p.isin !== x.isin); }); err ? msg(err, true) : msg("");
-  }
+  const b = ev.target.closest(".del"); if (!b) return;
+  const x = posOf(b); if (x.txs.length && !confirm(`Rimuovere ${byIsin(x.isin).ticker} e le sue ${x.txs.length} operazioni?`)) return;
+  const err = editPf(c => { c.positions = c.positions.filter(p => p.isin !== x.isin); }); err ? msg(err, true) : msg("");
 });
-$("pos-tbl").addEventListener("submit", ev => {
-  ev.preventDefault(); const isin = openPos, e = byIsin(isin);
-  const date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
-  if (!date || isNaN(dateMs(date))) return msg("Data non valida", true);
-  if (dateMs(date) > Date.now() + DAY) return msg("La data è nel futuro", true);
-  if (date < e.inception) return msg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
-  if (!(qty > 0) || !(price > 0)) return msg("Quantità e prezzo devono essere maggiori di zero", true);
-  const wasEdit = editOp != null, err = editPf(c => { const x = c.positions.find(p => p.isin === isin), t = { date, price, qty: sgn * qty }; if (wasEdit) x.txs[editOp] = t; else x.txs.push(t); x.txs.sort(byDate); });
-  if (err) return msg(err, true);
-  editOp = null; renderPos(); msg(wasEdit ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
+/* Storico: modulo e tabella delle operazioni */
+const hmsg = (t, bad) => { const m = $("hist-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
+function resetOp() { editOp = null; $("op-submit").textContent = "Aggiungi"; $("op-cancel").hidden = true; $("op-qty").value = ""; $("op-op").value = "1"; $("op-date").value = ymd(Date.now()); delete $("op-price").dataset.touched; opSuggest(); }
+$("op-cancel").addEventListener("click", () => { resetOp(); hmsg(""); });
+$("op-form").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const isin = $("op-etf").value, e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
+  if (!date || isNaN(dateMs(date))) return hmsg("Data non valida", true);
+  if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
+  if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
+  if (!(qty > 0) || !(price > 0)) return hmsg("Quantità e prezzo devono essere maggiori di zero", true);
+  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
+  if (err) return hmsg(err, true);
+  resetOp(); hmsg(ed ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
 });
-$("ef-cap").addEventListener("change", () => PF && renderPf());
-$("rb-goal").addEventListener("change", () => PF && renderRb());
-$("rb-apply").addEventListener("click", () => {
-  if (!RB || !RB.length) return;
-  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const x = pf.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }); commit(pf.id); return msg("Pesi aggiornati"); }
-  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(2), qty: r.dq }); x.txs.sort(byDate); } }));
-  if (err) { $("rb-note").textContent = err; return; }
-  msg(`Ribilanciamento applicato: ${n} operazioni`);
+$("hist-tbl").addEventListener("click", ev => {
+  const b = ev.target.closest(".del"), tr = b && b.closest("tr[data-pi]"); if (!tr) return;
+  const pi = +tr.dataset.pi, ti = +tr.dataset.ti, x = pfCur.positions[pi], t = x && x.txs[ti]; if (!t) return;
+  if (b.classList.contains("ed")) {
+    $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-price").value = t.price; $("op-price").dataset.touched = "1";
+    editOp = { pi, ti }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
+  } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1)); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
 });
-$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
-$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
-$("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
-$("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
-$("sel-add").addEventListener("click", () => openAddTo([...SEL]));
+$("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
 const editBase = fn => { const err = editPf(fn); err ? msg(err, true) : msg(""); };
 $("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editBase(c => { c.amount = v; }); else renderPf(); });
 $("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editBase(c => { c.start = v; }); else renderPf(); });
-$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (!isin) return; const hadTx = hasTx(pfCur); editBase(c => addPos(c, [isin])); if (hadTx) { openPos = isin; renderPos(); } });
+$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (!isin) return; opEtf = isin; editBase(c => addPos(c, [isin])); });
 $("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
   if (!DRSIZE.length) return; const today = ymd(Date.now());
@@ -1771,7 +1821,7 @@ $("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLo
 $("pf-reb").addEventListener("click", () => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("pf-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => deletePf(pfCur)));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; pfCur.description = ev.target.value.trim().slice(0, 500); commit(pfCur.id); });
-let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); } }, 120); });
+let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); } }, 120); });
 
 /* App installabile: service worker (solo su http/https) e pulsante «Installa app» quando il browser lo permette */
 let deferredInstall = null;
