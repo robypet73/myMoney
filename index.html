@@ -176,8 +176,25 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .io { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
 .io button, .io .btn { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--fg); }
 .io button:hover, .io .btn:hover { border-color: var(--fg); }
-.newpf { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--fg); cursor: pointer; margin: 0 auto 10px 0; }
+.newpf { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--fg); cursor: pointer; margin: 0; }
 .newpf:hover { border-color: var(--fg); }
+.newpf[aria-pressed="true"] { border-color: var(--fg); }
+.pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 10px 0; }
+.live { padding-top: 32px; }
+.live .big { font-size: clamp(38px, 7vw, 56px); }
+.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 18px 16px; padding-top: 28px; }
+.rets > div { display: grid; gap: 2px; min-width: 0; border-top: 1.5px solid var(--hair); padding-top: 10px; }
+.rets .n { font-size: 18px; letter-spacing: -.03em; }
+.rets .sub { font-family: var(--m); font-size: 12px; color: var(--soft); }
+.rets .sub.pos { color: var(--up); } .rets .sub.neg { color: var(--down); }
+.capr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.capr select, .rbctl select, .lotform #lot-op { appearance: none; -webkit-appearance: none; border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: 13px; color: var(--fg); cursor: pointer; }
+.rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: 13px; cursor: pointer; }
+.rbctl button:disabled { opacity: .35; cursor: default; }
+.buy { color: var(--up); } .sell { color: var(--down); }
+.lotform #lot-cancel { background: none; color: var(--soft); border: 1px solid var(--hair); }
+.act { white-space: nowrap; }
 .lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: 13.5px; min-width: 0; }
 #lot-etf { flex: 1 1 220px; text-overflow: ellipsis; }
@@ -229,14 +246,21 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 <main class="wrap" id="v-port">
   <section class="pf-sel">
     <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
-    <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
+    <div class="pfbtns">
+      <button type="button" class="newpf" id="pf-def" aria-pressed="false">☆ Predefinito</button>
+      <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
+    </div>
     <span class="badge" id="badge"></span>
+  </section>
+  <section class="live" aria-label="Valore e rendimenti">
+    <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div>
+    <div class="rets" id="rets"></div>
   </section>
   <section class="kpi" id="kpi" aria-label="Sintesi"></section>
 
   <section class="pf-sec" aria-label="NAV del portafoglio">
     <div class="price">
-      <div><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div></div>
+      <span></span>
       <div class="periods" role="group" aria-label="Periodo" id="pf-periods"></div>
     </div>
     <div class="chart" id="pf-chart"></div>
@@ -246,20 +270,38 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   <section class="sec pf-sec"><h3>Acquisti</h3>
     <div class="rn"><label class="k" for="pf-name">Nome</label><input id="pf-name" autocomplete="off"></div>
     <form class="lotform" id="lot-form">
+      <select id="lot-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
       <select id="lot-etf" aria-label="ETF"></select>
-      <input id="lot-date" type="date" aria-label="Data di acquisto" required>
+      <input id="lot-date" type="date" aria-label="Data dell'operazione" required>
       <input id="lot-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
-      <input id="lot-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo di acquisto" required>
-      <button type="submit">Aggiungi</button>
+      <input id="lot-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
+      <button type="submit" id="lot-submit">Aggiungi</button>
+      <button type="button" id="lot-cancel" hidden>Annulla</button>
     </form>
     <p class="fc-note" id="lot-msg" aria-live="polite"></p>
     <div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
   <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
 
   <section class="sec pf-sec"><h3>Frontiera efficiente</h3>
+    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label>
+      <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
     <div class="chart tall" id="pf-ef"></div>
     <div class="scroll"><table class="eft" id="pf-eft"></table></div>
     <p class="fc-note" id="ef-note"></p>
+  </section>
+
+  <section class="sec pf-sec"><h3>Ribilanciamento</h3>
+    <div class="rbctl">
+      <select id="rb-goal" aria-label="Obiettivo">
+        <option value="vol">Stessa volatilità, più rendimento</option>
+        <option value="ret">Stesso rendimento, meno volatilità</option>
+        <option value="maxS">Massimo Sharpe</option>
+        <option value="minV">Minima varianza</option>
+      </select>
+      <button type="button" id="rb-apply" disabled>Applica operazioni</button>
+    </div>
+    <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
+    <p class="fc-note" id="rb-note"></p>
   </section>
 
   <section class="sec pf-sec"><h3>Previsioni sull'indice · 12 mesi</h3><div id="pf-fc"></div></section>
@@ -731,6 +773,7 @@ const byIsin = i => ETFS.find(e => e.isin === i);
 const dateMs = s => new Date(s + "T12:00:00").getTime();
 const eur = v => "€ " + fmt(v, 0);
 const eurS = v => (v > 0 ? "+" : v < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 0);
+const eurS2 = v => (v > 0 ? "+" : v < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 2);
 const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return hi; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo; };
 const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
 const LS_KEY = "mm-portfolios-v1";
@@ -756,7 +799,11 @@ const buildSamples = () => SAMPLE_SPECS.map(sp => ({ id: sp.id, name: sp.name, c
 let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null;
 function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
 function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, portfolios: USER })); } catch {} }
-function allPf() { PFLIST = [...USER, ...buildSamples().filter(s => !USER.some(u => u.id === s.id))]; }
+function allPf() { const s = buildSamples(); s.forEach(x => x.lots.sort(byDate)); PFLIST = [...USER, ...s.filter(x => !USER.some(u => u.id === x.id))]; }
+
+const byDate = (a, b) => a.date.localeCompare(b.date) || b.qty - a.qty;
+// Una vendita non può superare la quantità posseduta in quel momento (lotti ordinati per data).
+function sellErr(lots) { const q = {}; for (const l of lots) { q[l.isin] = (q[l.isin] || 0) + l.qty; if (q[l.isin] < -1e-9) return `vendita di ${byIsin(l.isin).ticker} del ${l.date} superiore alla quantità posseduta`; } return ""; }
 
 // Valida un portafoglio importato: restituisce { pf, err }.
 function cleanPf(p) {
@@ -770,10 +817,10 @@ function cleanPf(p) {
     if (!byIsin(isin)) return err.push(`acquisto ${n}: ISIN ${isin || "mancante"} non disponibile`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(l.date || "") || isNaN(dateMs(l.date))) return err.push(`acquisto ${n}: data non valida (AAAA-MM-GG)`);
     if (dateMs(l.date) > Date.now() + DAY) return err.push(`acquisto ${n}: data nel futuro`);
-    if (!(qty > 0) || !(price > 0)) return err.push(`acquisto ${n}: quantità o prezzo non validi`);
+    if (!isFinite(qty) || qty === 0 || !(price > 0)) return err.push(`acquisto ${n}: quantità (negativa = vendita) o prezzo non validi`);
     lots.push({ isin, date: l.date, qty, price });
   });
-  lots.sort((a, b) => a.date.localeCompare(b.date));
+  lots.sort(byDate); if (!err.length) { const se = sellErr(lots); if (se) err.push(se); }
   return { pf: { id, name, currency: String(p.currency || "EUR"), lots }, err };
 }
 
@@ -806,21 +853,23 @@ function alignPx(es, start) {
   return { t: base, px };
 }
 function pfBuild(pf) {
-  const isins = [...new Set(pf.lots.map(l => l.isin))], es = isins.map(byIsin);
-  const { t, px } = alignPx(es, dateMs(pf.lots[0].date)), n = t.length;
+  const lots = [...pf.lots].sort(byDate);
+  const isins = [...new Set(lots.map(l => l.isin))], es = isins.map(byIsin);
+  const { t, px } = alignPx(es, dateMs(lots[0].date)), n = t.length;
   const units = es.map(() => new Float64Array(n)), flow = new Float64Array(n), cost = new Float64Array(n);
   const qty = es.map(() => 0), costH = es.map(() => 0);
-  pf.lots.forEach(l => {
+  lots.forEach(l => {
     const i = isins.indexOf(l.isin), k = idxOf(t, dateMs(l.date));
     for (let m = k; m < n; m++) units[i][m] += l.qty;
-    flow[k] += l.qty * px[i][k]; cost[k] += l.qty * l.price; qty[i] += l.qty; costH[i] += l.qty * l.price;
+    flow[k] += l.qty * px[i][k]; cost[k] += l.qty * l.price;
+    if (l.qty > 0) { qty[i] += l.qty; costH[i] += l.qty * l.price; } else { costH[i] += l.qty * (qty[i] ? costH[i] / qty[i] : 0); qty[i] += l.qty; }
   });
   const V = new Float64Array(n), idx = new Float64Array(n);
   for (let m = 0; m < n; m++) { let s = 0; for (let i = 0; i < es.length; i++) s += units[i][m] * px[i][m]; V[m] = s; if (m) cost[m] += cost[m - 1]; }
   idx[0] = 100;
   for (let m = 1; m < n; m++) idx[m] = idx[m - 1] * (V[m - 1] > 0 ? (V[m] - flow[m]) / V[m - 1] : 1);
   const last = n - 1, vh = es.map((_, i) => units[i][last] * px[i][last]);
-  return { pf, es, isins, t, V, cost, idx, qty, costH, vh, cw: vh.map(v => v / V[last]), last };
+  return { pf, es, isins, t, V, cost, idx, qty, costH, vh, flow, cw: vh.map(v => v / V[last]), last, lastPx: px.map(p => p[last]), act: es.map((_, i) => i).filter(i => qty[i] > 1e-9) };
 }
 function pfStats(P) {
   const r = []; for (let m = 1; m <= P.last; m++) r.push(P.idx[m] / P.idx[m - 1] - 1);
@@ -832,7 +881,7 @@ function pfStats(P) {
 }
 
 // Frontiera efficiente long-only da portafogli casuali, rendimenti e covarianze storici (rf = 0).
-function frontier(P) {
+function frontierOld(P) {
   const start = Math.max(back(0, 5), ...P.es.map(e => e.s.t[0]));
   const { t, px } = alignPx(P.es, start), k = px.length;
   if (k < 2 || t.length < 60) return null;
@@ -859,6 +908,62 @@ function frontier(P) {
   for (const p of srt) if (p.v > minV.v && p.r > best) { best = p.r; line.push(p); }
   const cur = ev(P.cw);
   return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, cur, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+}
+
+// Frontiera efficiente long-only sugli ETF ancora in portafoglio, con tetto opzionale al peso; rendimenti e covarianze storici, rf = 0.
+function frontier(P, cap = 1) {
+  const act = P.act, es = act.map(i => P.es[i]), k = es.length;
+  if (k < 2 || k * cap < 1 - 1e-9) return null;
+  const start = Math.max(back(0, 5), ...es.map(e => e.s.t[0]));
+  const { t, px } = alignPx(es, start);
+  if (t.length < 60) return null;
+  const R = px.map(p => p.slice(1).map((x, j) => x / p[j] - 1)), nn = R[0].length;
+  const mu = R.map(r => r.reduce((a, b) => a + b, 0) / nn);
+  const C = R.map((a, i) => R.map((b, j) => { let s = 0; for (let m = 0; m < nn; m++) s += (a[m] - mu[i]) * (b[m] - mu[j]); return s / (nn - 1) * 252; }));
+  const M = mu.map(x => x * 252);
+  const ev = w => { let r = 0, v = 0; for (let i = 0; i < k; i++) { r += w[i] * M[i]; for (let j = 0; j < k; j++) v += w[i] * w[j] * C[i][j]; } return { r, v: Math.sqrt(Math.max(v, 0)), w }; };
+  const tot = act.reduce((a, i) => a + P.vh[i], 0), cw = act.map(i => P.vh[i] / tot);
+  const ok = w => w.every(x => x <= cap + 1e-9);
+  const rnd = rng(12345), pts = [];
+  if (cap >= 1) for (let i = 0; i < k; i++) pts.push(ev(Array.from({ length: k }, (_, j) => +(i === j))));
+  for (let n = 0, got = 0; n < 150000 && got < 40000; n++) {
+    const p = [1, 1.5, 3][n % 3], w = Array.from({ length: k }, () => Math.pow(-Math.log(rnd() || 1e-9), p)), s = w.reduce((a, b) => a + b, 0), x = w.map(v => v / s);
+    if (ok(x)) { pts.push(ev(x)); got++; }
+  }
+  if (pts.length < 200) return null;
+  const refine = (best, score) => {
+    let b = best, sb = score(b); const rr = rng(99);
+    for (let it = 0; it < 6000; it++) {
+      const step = it < 3000 ? 0.08 : 0.02, w = b.w.map(x => Math.max(0, x + (rr() - 0.5) * step)), s = w.reduce((a, c) => a + c, 0); if (!s) continue;
+      const x = w.map(v => v / s); if (!ok(x)) continue;
+      const c = ev(x), sc = score(c); if (sc > sb) { b = c; sb = sc; }
+    }
+    return b;
+  };
+  const best = (score) => pts.reduce((a, p) => (score(p) > score(a) ? p : a));
+  const cur = ev(cw), pen = 50;
+  const sMin = p => -p.v, sSh = p => p.r / p.v, sVol = p => p.r - pen * Math.max(0, p.v - cur.v), sRet = p => -p.v - pen * Math.max(0, cur.r - p.r);
+  const minV = refine(best(sMin), sMin), maxS = refine(best(sSh), sSh), vol = refine(best(sVol), sVol), ret = refine(best(sRet), sRet);
+  pts.push(minV, maxS, vol, ret);
+  const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let top = minV.r;
+  for (const p of srt) if (p.v > minV.v && p.r > top) { top = p.r; line.push(p); }
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, ev, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+}
+
+// Ribilanciamento: operazioni (a quantità intere, ai prezzi correnti) per portare il portafoglio sull'obiettivo scelto.
+let RB = null;
+function renderRb() {
+  const P = PF, F = EF, tb = $("rb-tbl"), note = $("rb-note"), btn = $("rb-apply");
+  if (!F) { tb.innerHTML = ""; RB = null; btn.disabled = true; note.textContent = P.act.length < 2 ? "Servono almeno 2 ETF in portafoglio" : "Tetto di peso non realizzabile"; return; }
+  const T = F[$("rb-goal").value], Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
+  const rows = F.act.map((ai, j) => { const e = P.es[ai], pr = e.live, tq = Math.round(Vn * T.w[j] / pr); return { e, j, pr, tq, dq: tq - P.qty[ai], cur: P.qty[ai] * pr / Vn }; });
+  const val2 = rows.map(r => r.tq * r.pr), s2 = val2.reduce((a, b) => a + b, 0), w2 = val2.map(v => v / s2);
+  const a = F.ev(rows.map(r => r.cur)), b = F.ev(w2), cash = -rows.reduce((x, r) => x + r.dq * r.pr, 0);
+  RB = rows.filter(r => r.dq !== 0).map(r => ({ isin: r.e.isin, dq: r.dq, pr: r.pr }));
+  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${r.e.ticker}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody>`;
+  const m = (x) => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)}`;
+  note.innerHTML = `Ora ${m(a)}<br>Dopo ${m(b)} · residuo ${eurS2(cash)}`;
+  btn.disabled = !RB.length;
 }
 
 /* ---------- Portafoglio: grafici ---------- */
@@ -927,14 +1032,14 @@ const donut = items => {
   const R = 42, C = 2 * Math.PI * R; let off = 0;
   return `<svg class="donut" viewBox="0 0 120 120" aria-hidden="true">${items.map(([, p], i) => { const len = C * p / 100, seg = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--c${(i % 6) + 1})" stroke-width="14" stroke-dasharray="${Math.max(len - 1.5, 0.1)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`; off += len; return seg; }).join("")}</svg>`;
 };
-const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => m.set(e[key], (m.get(e[key]) || 0) + P.cw[i] * 100)); return [...m].sort((a, b) => b[1] - a[1]); };
+const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => { if (P.cw[i] > 1e-9) m.set(e[key], (m.get(e[key]) || 0) + P.cw[i] * 100); }); return [...m].sort((a, b) => b[1] - a[1]); };
 
 /* ---------- Portafoglio: pagina ---------- */
 const justEtf = isin => `https://www.justetf.com/it/etf-profile.html?isin=${isin}`;
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
 function renderEmpty() {
-  PF = null; EF = null; $("badge").textContent = "";
-  ["kpi", "pf-big", "pf-periods", "pf-chart", "pf-lots", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "pf-lots", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
   $("pf-chg").textContent = "Nessun acquisto"; $("ef-note").textContent = "";
   $("pf-comp").innerHTML = '<p class="fc-note">Aggiungi il primo acquisto dal modulo qui sotto</p>';
 }
@@ -949,26 +1054,25 @@ function renderPf() {
     ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", `${eurS(pl)} <span style="font-size:13px">${pct(pl / inv, 1)}</span>`, cls(pl)],
     ["Rendimento annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
     ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
-  ].map(([k, v, c]) => `<div><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
-  $("pf-big").innerHTML = `${fmt(val, 0)}<small>€</small>`;
-  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">dal ${dateTxt(P.t[0], { day: "numeric", month: "short", year: "numeric" })}</span>`;
+  ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
+  liveUpdate(true);
   const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0]);
   if (!avail.some(([p]) => p === pfPeriod)) pfPeriod = "Max";
   $("pf-periods").innerHTML = avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === pfPeriod}">${p}</button>`).join("");
 
-  const order = P.es.map((_, i) => i).sort((a, b) => P.vh[b] - P.vh[a]);
+  const order = P.act.slice().sort((a, b) => P.vh[b] - P.vh[a]);
   $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1;
     const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
       <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
-  $("pf-lots").innerHTML = `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), last = P.vh[P.isins.indexOf(l.isin)] / P.qty[P.isins.indexOf(l.isin)]; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n">${fmt(l.qty, 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${eur(l.qty * l.price)}</td><td class="n ${cls(last / l.price - 1)}">${pct(last / l.price - 1, 1)}</td><td>${P.pf.sample ? "" : `<button type="button" class="del" data-i="${oi}" aria-label="Elimina acquisto">×</button>`}</td></tr>`; }).join("")}</tbody>`;
+  $("pf-lots").innerHTML = `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), g = l.qty > 0 ? P.lastPx[P.isins.indexOf(l.isin)] / l.price - 1 : null; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" data-i="${oi}" aria-label="Modifica" title="Modifica">✎</button><button type="button" class="del" data-i="${oi}" aria-label="Elimina" title="Elimina">×</button></td></tr>`; }).join("")}</tbody>`;
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
     return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
 
-  EF = frontier(P);
-  const wl = w => P.es.map((e, i) => [e.ticker, w[i]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
+  EF = frontier(P, +$("ef-cap").value);
+  const wl = w => (EF ? EF.act : []).map((ai, j) => [P.es[ai].ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
   $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento</th><th>Volatilità</th><th>Sharpe</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
-  $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
+  $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
 
   let cov = 0, acc = 0;
   const blocks = order.map(i => { const e = P.es[i], fc = FC[e.ticker], ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
@@ -984,6 +1088,7 @@ function renderPf() {
     "Prezzi nella valuta di quotazione, senza conversione",
   ].map(x => `<li>${x}</li>`).join("");
 
+  renderRb(); updDef();
   $("io-del").hidden = !!pfCur.sample;
   drawPfNav(); drawEF();
 }
@@ -1002,6 +1107,46 @@ function applyPrices() {
   }
 }
 
+/* ---------- Rendimenti in tempo reale ---------- */
+const gauss = () => { let u = 0; while (!u) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); };
+const lastBefore = (t, ms) => { let lo = 0, hi = t.length; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo - 1; };
+// Rendimento a pesi temporali (neutro rispetto ad acquisti e vendite) e utile in euro per ogni periodo, al prezzo corrente.
+function livePerf(P) {
+  const n = P.last, Vl = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0);
+  const li = n >= 1 && P.V[n - 1] > 0 ? P.idx[n - 1] * (Vl - P.flow[n]) / P.V[n - 1] : P.idx[n];
+  const flows = b => { let s = 0; for (let m = b + 1; m <= n; m++) s += P.flow[m]; return s; };
+  const since = start => { const b = Math.max(lastBefore(P.t, start), 0); return { r: li / P.idx[b] - 1, e: Vl - P.V[b] - flows(b) }; };
+  const d = new Date(P.t[n]), y = d.getFullYear(), at = (yy, mm, dd) => new Date(yy, mm, dd).getTime();
+  const day = n >= 1 && P.V[n - 1] > 0 ? { r: li / P.idx[n - 1] - 1, e: Vl - P.V[n - 1] - P.flow[n] } : null;
+  const bE = lastBefore(P.t, at(y, 0, 1)), bS = Math.max(lastBefore(P.t, at(y - 1, 0, 1)), 0);
+  const prev = bE > bS ? { r: P.idx[bE] / P.idx[bS] - 1, e: P.V[bE] - P.V[bS] - (flows(bS) - flows(bE)) } : null;
+  return { Vl, items: [
+    ["Oggi", day], ["Settimana", since(at(y, d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)))], ["Mese", since(at(y, d.getMonth(), 1))],
+    ["Anno", since(at(y, 0, 1))], [String(y - 1), prev], ["Dall'inizio", { r: li / 100 - 1, e: Vl - P.cost[n] }],
+  ] };
+}
+function liveUpdate(force) {
+  const P = PF; if (!P || (!force && (document.hidden || $("v-port").hidden))) return;
+  const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.es.some(e => !e.real);
+  $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
+  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">${sim ? "simulato" : "live"} · ${new Date().toLocaleTimeString("it-IT")}</span>`;
+  $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
+  const kv = k => $("kpi").querySelector(`[data-k="${k}"] .n`);
+  if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").innerHTML = `${eurS(pl)} <span style="font-size:13px">${pct(pl / inv, 1)}</span>`; }
+}
+// Con prezzi reali la quotazione corrente arriva da prices.js (aggiornato da fetch_prices.py --watch); altrimenti oscilla in modo simulato.
+function applyLive() {
+  const PR = window.PRICES; if (!PR || !PR.series) return;
+  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) e.live = s.last.price; }
+}
+function startLive() {
+  ETFS.forEach(e => (e.live = e.s.v[e.s.v.length - 1])); applyLive();
+  setInterval(() => { if (PF) PF.es.forEach(e => { if (!e.real) e.live *= Math.exp(e.sig * Math.sqrt(1 / (252 * 23400)) * gauss()); }); liveUpdate(); }, 1000);
+  if (window.PRICES) setInterval(() => { const s = document.createElement("script"); s.src = "prices.js?t=" + Date.now(); s.onload = () => { applyLive(); s.remove(); }; s.onerror = () => s.remove(); document.head.appendChild(s); }, 5000);
+}
+const DEF_KEY = "mm-default";
+const getDef = () => { try { return localStorage.getItem(DEF_KEY); } catch { return null; } };
+function updDef() { const b = $("pf-def"), on = !!pfCur && getDef() === pfCur.id; b.textContent = on ? "★ Predefinito" : "☆ Predefinito"; b.setAttribute("aria-pressed", on); }
 /* ---------- Eventi ---------- */
 $("list").addEventListener("click", ev => { const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
 $("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
@@ -1016,9 +1161,9 @@ $("fbtn").addEventListener("click", ev => {
 document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELECT/.test(document.activeElement.tagName)) { ev.preventDefault(); $("q").focus(); } });
 
 /* ---------- Avvio ---------- */
-applyPrices(); loadUser(); allPf(); pfCur = PFLIST[0]; fillSel();
+applyPrices(); startLive(); loadUser(); allPf(); pfCur = PFLIST.find(p => p.id === getDef()) || PFLIST.find(p => p.id === "prova-bilanciato") || PFLIST[0]; fillSel();
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showView(b.dataset.v)));
-$("pf-sel").addEventListener("change", ev => { pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); renderPf(); });
+$("pf-sel").addEventListener("change", ev => { pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
 $("pf-comp").addEventListener("click", ev => { const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin); });
 $("io-exp").addEventListener("click", exportJson);
@@ -1048,20 +1193,44 @@ function ownPf() { // un portafoglio di prova si modifica su una copia personale
   const c = { id, name: pfCur.name.replace("Prova · ", "") + " (mio)", currency: pfCur.currency, lots: pfCur.lots.map(l => ({ ...l })) };
   USER.unshift(c); return c;
 }
+let editIdx = null;
+function resetForm() { editIdx = null; $("lot-submit").textContent = "Aggiungi"; $("lot-cancel").hidden = true; $("lot-qty").value = ""; $("lot-op").value = "1"; delete $("lot-price").dataset.touched; suggestPrice(); }
+$("lot-cancel").addEventListener("click", () => { resetForm(); $("lot-msg").textContent = ""; });
 $("lot-form").addEventListener("submit", ev => {
   ev.preventDefault();
-  const e = byIsin($("lot-etf").value), date = $("lot-date").value, qty = +$("lot-qty").value, price = +$("lot-price").value, m = $("lot-msg");
+  const e = byIsin($("lot-etf").value), date = $("lot-date").value, sgn = +$("lot-op").value, qty = +$("lot-qty").value, price = +$("lot-price").value, m = $("lot-msg");
   const bad = t => { m.textContent = t; m.className = "fc-note err"; };
   if (!date || isNaN(dateMs(date))) return bad("Data non valida");
   if (dateMs(date) > Date.now() + DAY) return bad("La data è nel futuro");
   if (date < e.inception) return bad(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`);
   if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
-  const pf = ownPf(); pf.lots.push({ isin: e.isin, date, qty, price }); pf.lots.sort((a, b) => a.date.localeCompare(b.date));
-  commit(pf.id);
-  $("lot-qty").value = ""; delete $("lot-price").dataset.touched; suggestPrice();
-  m.textContent = "Acquisto aggiunto"; m.className = "fc-note";
+  const lots = pfCur.lots.map(l => ({ ...l })), lot = { isin: e.isin, date, qty: sgn * qty, price };
+  if (editIdx != null) lots[editIdx] = lot; else lots.push(lot);
+  lots.sort(byDate); const se = sellErr(lots); if (se) return bad(se.charAt(0).toUpperCase() + se.slice(1));
+  const wasEdit = editIdx != null, pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm();
+  m.textContent = wasEdit ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta"; m.className = "fc-note";
 });
-$("pf-lots").addEventListener("click", ev => { const b = ev.target.closest(".del"); if (!b || pfCur.sample) return; pfCur.lots.splice(+b.dataset.i, 1); commit(pfCur.id); });
+$("pf-lots").addEventListener("click", ev => {
+  const ed = ev.target.closest(".ed"), d = ev.target.closest(".del:not(.ed)"), m = $("lot-msg");
+  if (ed) {
+    const l = pfCur.lots[+ed.dataset.i]; if (!l) return;
+    $("lot-etf").value = l.isin; $("lot-date").value = l.date; $("lot-op").value = l.qty < 0 ? "-1" : "1"; $("lot-qty").value = Math.abs(l.qty); $("lot-price").value = l.price; $("lot-price").dataset.touched = "1";
+    editIdx = +ed.dataset.i; $("lot-submit").textContent = "Salva"; $("lot-cancel").hidden = false; m.textContent = ""; $("lot-form").scrollIntoView({ block: "center", behavior: "smooth" });
+  } else if (d) {
+    const lots = pfCur.lots.filter((_, i) => i !== +d.dataset.i), se = sellErr(lots);
+    if (se) { m.textContent = "Non puoi eliminarlo: " + se; m.className = "fc-note err"; return; }
+    const pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm(); m.textContent = "Operazione eliminata"; m.className = "fc-note";
+  }
+});
+$("ef-cap").addEventListener("change", () => PF && renderPf());
+$("rb-goal").addEventListener("change", () => PF && renderRb());
+$("rb-apply").addEventListener("click", () => {
+  if (!RB || !RB.length) return;
+  const today = new Date().toISOString().slice(0, 10), lots = pfCur.lots.map(l => ({ ...l })).concat(RB.map(r => ({ isin: r.isin, date: today, qty: r.dq, price: +r.pr.toFixed(2) }))).sort(byDate), se = sellErr(lots);
+  if (se) { $("rb-note").textContent = se; return; }
+  const n = RB.length, pf = ownPf(); pf.lots = lots; commit(pf.id); $("lot-msg").textContent = `Ribilanciamento applicato: ${n} operazioni`; $("lot-msg").className = "fc-note";
+});
+$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
 $("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
 $("pf-new").addEventListener("click", () => {
   const pf = { id: "pf-" + Date.now().toString(36), name: `Portafoglio ${USER.length + 1}`, currency: "EUR", lots: [] };
