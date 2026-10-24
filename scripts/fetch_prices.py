@@ -49,15 +49,18 @@ def parse_chart(payload):
     """Restituisce (valuta, [timestamp ms a mezzogiorno UTC], [chiusure], ultima quotazione) senza giorni vuoti."""
     res = payload["chart"]["result"][0]
     closes = res["indicators"]["quote"][0]["close"]
-    t, v = [], []
-    for ts, c in zip(res.get("timestamp", []), closes):
+    vols = res["indicators"]["quote"][0].get("volume") or [None] * len(closes)
+    t, v, tv = [], [], []
+    for ts, c, vol in zip(res.get("timestamp", []), closes, vols):
         if c is None:
             continue
+        tv.append(float(c) * float(vol or 0) / 1e6)
         day = datetime.fromtimestamp(ts, timezone.utc).replace(hour=12, minute=0, second=0, microsecond=0)
         t.append(int(day.timestamp() * 1000))
         v.append(round(float(c), 4))
     meta = res["meta"]
-    last = {"price": meta.get("regularMarketPrice") or (v[-1] if v else None), "time": meta.get("regularMarketTime")}
+    last = {"price": meta.get("regularMarketPrice") or (v[-1] if v else None), "time": meta.get("regularMarketTime"),
+            "adv": round(sum(tv[-60:]) / len(tv[-60:]), 2) if tv else None}  # volume medio giornaliero 3 mesi, in milioni di valuta
     return meta.get("currency", ""), t, v, last
 
 
@@ -77,7 +80,7 @@ def main():
             cur, t, v, last = parse_chart(payload)
             if len(t) < 50:
                 print(f"{ticker} {sym}: pochi dati ({len(t)})"); continue
-            out[isin] = {"symbol": sym, "currency": cur, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "last": last, "t": t, "v": v}
+            out[isin] = {"symbol": sym, "currency": cur, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "adv": last.pop("adv", None), "last": last, "t": t, "v": v}
             print(f"{ticker} {sym} {cur}: {len(t)} giorni, ultimo {v[-1]}")
         except Exception as e:  # rete, formato, limiti: si prosegue con gli altri
             print(f"{ticker} {isin}: errore {e}")
@@ -94,7 +97,7 @@ def main():
             for isin, s in out.items():
                 try:
                     payload = get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(s['symbol'])}?range=1d&interval=1m")
-                    s["last"] = parse_chart(payload)[3]
+                    s["last"] = parse_chart(payload)[3]; s["last"].pop("adv", None)
                 except Exception as e:
                     print(f"{isin}: errore {e}")
             write(path, out)
