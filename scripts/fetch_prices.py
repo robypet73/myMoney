@@ -11,6 +11,7 @@ Per ogni ISIN cerca il simbolo su Yahoo Finance. Se la ricerca sceglie la borsa 
 indica il simbolo a mano in SYMBOLS (es. "IE00B5BMR087": "CSPX.L").
 """
 import json
+import re
 import sys
 import time
 import urllib.parse
@@ -39,23 +40,24 @@ def get_json(url):
         return json.load(r)
 
 
-def candidates(isin):
+def candidates(isin, ticker=None):
     """Simboli Yahoo per l'ISIN: quello forzato in SYMBOLS, altrimenti i risultati della ricerca."""
     if isin in SYMBOLS:
         s = SYMBOLS[isin]
         return [s] if isinstance(s, str) else list(s)
     data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 10, "newsCount": 0}))
     out = [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
-    out += EXTRA.get(isin, []) + [ISINS[isin] + s for s in SUFFIXES]
+    ticker = ticker or ISINS.get(isin)
+    out += EXTRA.get(isin, []) + ([ticker + s for s in SUFFIXES] if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker) else [])
     return list(dict.fromkeys(out))
 
 
-def best_listing(isin):
+def best_listing(isin, ticker=None, rng=None):
     """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
     found, ref = [], None
-    for sym in candidates(isin):
+    for sym in candidates(isin, ticker):
         try:
-            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={RANGE}&interval=1d"))
+            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={rng or RANGE}&interval=1d"))
         except Exception:
             continue
         time.sleep(0.3)

@@ -306,6 +306,8 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-m); min-width: 0; }
 #op-op { flex: 0 0 110px; }
+#op-etf { flex: 1 1 220px; }
+#dr-add { flex: 1 1 260px; }
 #op-date { flex: 0 0 150px; }
 #op-qty, #op-price { flex: 0 0 110px; }
 .qcell { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
@@ -404,7 +406,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
     <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
     <div class="scroll"><table class="eft pos" id="pos-tbl"></table></div>
-    <div class="lotform" style="margin-top:12px"><select id="dr-add" aria-label="ETF da aggiungere"></select><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button></div>
+    <div class="lotform" style="margin-top:12px"><input id="dr-add" list="etf-dl" placeholder="Cerca ETF: nome, ticker o ISIN" autocomplete="off" aria-label="ETF da aggiungere"><datalist id="etf-dl"></datalist><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button></div>
     <p class="fc-note" id="dr-note"></p>
     <p class="fc-note" id="lot-msg" aria-live="polite"></p>
   </section>
@@ -444,12 +446,13 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
     <h3 style="margin-top:28px">Acquisti e vendite</h3>
     <form class="lotform" id="op-form">
       <select id="op-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
-      <select id="op-etf" aria-label="ETF"></select>
+      <input id="op-etf" list="etf-dl" placeholder="ETF (nome o ISIN)" autocomplete="off" aria-label="ETF">
       <input id="op-date" type="date" aria-label="Data" required>
       <input id="op-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
       <input id="op-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
       <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel" hidden>Annulla</button>
     </form>
+    <p class="fc-note" id="op-name"></p>
     <p class="fc-note" id="hist-msg" aria-live="polite"></p>
     <div class="scroll"><table class="eft lots" id="hist-tbl"></table></div>
   </section>
@@ -508,6 +511,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 
 <script src="prices.js"></script>
 <script src="etfdata.js"></script>
+<script src="catalog.js"></script>
 <script>
 const TODAY = new Date(2026, 9, 23, 12);
 const DAY = 864e5;
@@ -637,6 +641,23 @@ ETFS.forEach(e => {
   e.age = (TODAY - new Date(e.inception)) / (365.25 * DAY);
 });
 
+// Catalogo completo (catalog.js, da justETF): tutti gli ETF dello screener. Quelli oltre ai dettagliati qui sopra non hanno una serie di prezzi: hanno rendimenti, rischio e anagrafica dello screener.
+const CAT = [];
+(function () {
+  const C = window.CATALOG; if (!C || !C.rows) return;
+  const ix = Object.fromEntries(C.cols.map((c, i) => [c, i])), have = new Set(ETFS.map(e => e.isin)), dv = x => (x == null ? null : x / 100);
+  const ann = (x, y) => (x == null ? null : Math.pow(1 + x / 100, 1 / y) - 1);
+  for (const r of C.rows) {
+    const g = k => r[ix[k]]; if (have.has(g("isin"))) continue;
+    CAT.push({ cat: true, isin: g("isin"), name: g("name"), ticker: g("ticker") && g("ticker") !== "-" ? g("ticker") : g("isin"), provider: g("prov"), asset: g("asset"), region: g("region"), focus: "", index: "",
+      ter: g("ter"), aum: g("aum"), cur: g("cur"), repl: g("repl"), dist: g("dist"), dom: g("dom"), inception: g("inc"), n: g("n"), sust: g("sust"), dy: g("div"),
+      rw: dv(g("rw")), rm1: dv(g("r1m")), rm3: dv(g("r3m")), rm6: dv(g("r6m")), ytd: dv(g("ytd")), r1: dv(g("r1")), rc3: dv(g("r3")), rc5: dv(g("r5")), r3: ann(g("r3"), 3), r5: ann(g("r5"), 5),
+      vol1: dv(g("vol1")), vol3: dv(g("vol3")), vol5: dv(g("vol5")), dd1: dv(g("dd1")), ddmax: dv(g("dd")), sh1: g("sh1"), exch: [], sector: [], s: null,
+      age: g("inc") ? (TODAY - new Date(g("inc"))) / (365.25 * DAY) : null });
+  }
+})();
+const ALL = ETFS.concat(CAT), BYISIN = new Map(ALL.map(e => [e.isin, e]));
+
 // Liquidità: volume medio giornaliero (€ Mln) e spread denaro-lettera (%) sono stime indicative; con prezzi reali il volume arriva dai dati scaricati.
 const LIQ = { SWDA: [150, .03], VWCE: [60, .06], CSPX: [200, .02], XMME: [5, .15], EIMI: [40, .08], IMAE: [8, .07], FMI: [1.5, .12], XMJP: [2, .12], RBOT: [4, .12], IWDP: [2, .15], IEGA: [20, .05], IBTM: [15, .04], AGGH: [25, .05], SGLD: [60, .05] };
 const liqRating = e => (e.spr <= 0.08 && e.adv >= 10 ? "Alta" : e.spr <= 0.15 && e.adv >= 2 ? "Media" : "Bassa");
@@ -703,7 +724,7 @@ const FMULTI = [ // chiave, etichetta, lettura del valore, elenco fisso (se manc
   ["cur", "Valuta", e => e.cur],
   ["dom", "Domicilio", e => e.dom],
   ["exch", "Borsa", e => e.exch, EXCH_ALL],
-  ["liq", "Liquidità", e => liqRating(e), ["Alta", "Media", "Bassa"]],
+  ["liq", "Liquidità", e => (e.adv == null ? null : liqRating(e)), ["Alta", "Media", "Bassa"]],
 ];
 const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la visualizzazione, passo
   ["r1", "Rend. 1A", e => e.r1, "%", 100, 1],
@@ -747,9 +768,9 @@ function filterLabel(def, kind) {
   return def[1];
 }
 function buildFilters() {
-  const opts = (k, get, fixed) => fixed || [...new Set(ETFS.flatMap(e => flat(get(e))))].filter(Boolean).sort((a, b) => a.localeCompare(b, "it"));
+  const opts = (k, get, fixed) => fixed || [...new Set(ALL.flatMap(e => flat(get(e))))].filter(Boolean).sort((a, b) => a.localeCompare(b, "it"));
   const multi = FMULTI.map(def => { const [k, label, get, fixed] = def;
-    return `<details class="fd" data-k="${k}"><summary>${esc(label)}</summary><div class="pop">${opts(k, get, fixed).map(o => `<label class="opt"><input type="checkbox" data-k="${k}" value="${esc(o)}"><span>${esc(o)}</span><em>${ETFS.filter(e => flat(get(e)).includes(o)).length}</em></label>`).join("")}</div></details>`; }).join("");
+    return `<details class="fd" data-k="${k}"><summary>${esc(label)}</summary><div class="pop">${opts(k, get, fixed).map(o => `<label class="opt"><input type="checkbox" data-k="${k}" value="${esc(o)}"><span>${esc(o)}</span><em>${ALL.filter(e => flat(get(e)).includes(o)).length}</em></label>`).join("")}</div></details>`; }).join("");
   const range = FRANGE.map(def => { const [k, label, , unit, , step] = def;
     return `<details class="fd" data-r="${k}"><summary>${esc(label)}</summary><div class="pop"><div class="rng"><input type="number" step="${step}" placeholder="Min" data-r="${k}" data-i="0" aria-label="${esc(label)} minimo"><span class="u">–</span><input type="number" step="${step}" placeholder="Max" data-r="${k}" data-i="1" aria-label="${esc(label)} massimo"><span class="u">${esc(unit)}</span></div></div></details>`; }).join("");
   $("filters").innerHTML = multi + range + '<button class="clear ghost" type="button" id="clear" hidden>Azzera filtri</button>';
@@ -786,7 +807,7 @@ const SORTS = { // chiave: [etichetta, lettura, direzione iniziale]
   vol: ["Volatilità", e => e.vol1, "asc"], sh: ["Sharpe", e => e.sh1, "desc"], dd: ["Max drawdown", e => e.dd1, "desc"],
   ter: ["TER", e => e.ter, "asc"], aum: ["Patrimonio", e => e.aum, "desc"], adv: ["Volume", e => e.adv, "desc"], spr: ["Spread", e => e.spr, "asc"], name: ["Nome", e => e.name, "asc"],
 };
-let sortKey = "r1", sortDir = "desc";
+let sortKey = "aum", sortDir = "desc";
 $("sort").innerHTML = Object.entries(SORTS).map(([k, v]) => `<option value="${k}">${v[0]}</option>`).join("");
 function setSort(k) { if (k === sortKey) sortDir = sortDir === "desc" ? "asc" : "desc"; else { sortKey = k; sortDir = SORTS[k][2]; } render(); }
 $("sort").addEventListener("change", ev => { sortKey = ev.target.value; sortDir = SORTS[sortKey][2]; render(); });
@@ -806,7 +827,9 @@ function sparkSvg(e) {
 }
 
 const SEL = new Set();
-function render() {
+let shown = 100;
+function render(more) {
+  if (!more) shown = 100;
   syncFilters();
   const nAct = activeCount();
   $("clear").hidden = !nAct;
@@ -814,26 +837,26 @@ function render() {
   if (nAct) $("fbtn").insertAdjacentHTML("beforeend", '<span class="dot"></span>');
 
   const get = SORTS[sortKey][1], dir = sortDir === "desc" ? -1 : 1;
-  const res = ETFS.filter(matches).sort((a, b) => {
+  const res = ALL.filter(matches).sort((a, b) => {
     const x = get(a), y = get(b);
     if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
     return (typeof x === "string" ? x.localeCompare(y, "it") : x - y) * dir;
   });
-  const sim = res.some(e => !e.real);
-  $("count").textContent = res.length + " ETF" + (sim ? " · rendimenti simulati" : "");
+  const sim = res.some(e => !e.cat && !e.real);
+  $("count").textContent = res.length.toLocaleString("it-IT") + " ETF" + (sim ? " · rendimenti simulati" : "");
   $("sort").value = sortKey; $("sort-dir").textContent = sortDir === "desc" ? "↓" : "↑";
   const H = (k, t, c = "") => `<button type="button" data-s="${k}" class="${c}${sortKey === k ? " on" : ""}">${t}${sortKey === k ? (sortDir === "desc" ? " ↓" : " ↑") : ""}</button>`;
   $("lh").innerHTML = `<span></span>${H("r1", "1A")}${H("r3", "3A ann.", "c3")}${H("vol", "Vol.", "cv")}${H("ter", "TER", "ct")}<span></span>`;
-  $("list").innerHTML = res.length ? res.map(e => `
-    <div class="rowwrap"><label class="chk" aria-label="Seleziona ${e.ticker}"><input type="checkbox" data-isin="${e.isin}"${SEL.has(e.isin) ? " checked" : ""}><i></i></label>
+  $("list").innerHTML = res.length ? res.slice(0, shown).map(e => `
+    <div class="rowwrap"><label class="chk" aria-label="Seleziona ${esc(e.ticker)}"><input type="checkbox" data-isin="${e.isin}"${SEL.has(e.isin) ? " checked" : ""}><i></i></label>
     <button class="row" type="button" data-isin="${e.isin}">
-      <span class="main"><span class="nm">${esc(e.name)}</span><span class="id n">${e.ticker} · ${e.isin} · <span class="liq ${liqRating(e).toLowerCase()}">●</span> liquidità ${liqRating(e).toLowerCase()}</span></span>
+      <span class="main"><span class="nm">${esc(e.name)}</span><span class="id n">${e.ticker === e.isin ? "" : e.ticker + " · "}${e.isin}${e.adv == null ? "" : ` · <span class="liq ${liqRating(e).toLowerCase()}">●</span> liquidità ${liqRating(e).toLowerCase()}`}</span></span>
       <span class="v n ${cls(e.r1)}">${pct(e.r1, 1)}</span>
       <span class="v n c3 ${cls(e.r3)}">${pct(e.r3, 1)}</span>
-      <span class="v n cv">${fmt(e.vol1 * 100, 1)}%</span>
-      <span class="v n ct">${fmt(e.ter)}%</span>
-      ${sparkSvg(e)}
-    </button></div>`).join("") : `<div class="empty">Nessun risultato: allarga i filtri</div>`;
+      <span class="v n cv">${e.vol1 == null ? "—" : fmt(e.vol1 * 100, 1) + "%"}</span>
+      <span class="v n ct">${e.ter == null ? "—" : fmt(e.ter) + "%"}</span>
+      ${e.s ? sparkSvg(e) : '<span class="spark"></span>'}
+    </button></div>`).join("") + (res.length > shown ? `<button type="button" class="ghost" id="more" style="margin:16px auto;display:block">Mostra altri ${Math.min(200, res.length - shown).toLocaleString("it-IT")} di ${(res.length - shown).toLocaleString("it-IT")}</button>` : "") : `<div class="empty">Nessun risultato: allarga i filtri</div>`;
 }
 
 /* ---------- Dettaglio ---------- */
@@ -842,8 +865,43 @@ let cur = null, curPeriod = "1A";
 
 const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione${ib("liq")}</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio${ib("adv")}</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread${ib("spr")}</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
 
+// Dettaglio di un ETF del catalogo senza serie di prezzi: rendimenti, rischio e anagrafica dello screener di justETF.
+const pxMissing = e => `Prezzi storici non disponibili: per il grafico e le simulazioni aggiungi <b>${e.isin}</b> a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a> (una riga per ISIN); i prezzi arrivano entro pochi minuti.`;
+function openDetailCat(e) {
+  cur = e;
+  const perf = [["1 sett.", e.rw], ["1M", e.rm1], ["3M", e.rm3], ["6M", e.rm6], ["YTD", e.ytd], ["1A", e.r1], ["3A", e.rc3], ["5A", e.rc5]];
+  const risk = [["Volatilità 1A", e.vol1], ["Volatilità 3A", e.vol3], ["Volatilità 5A", e.vol5], ["Max drawdown 1A", e.dd1], ["Max drawdown", e.ddmax]];
+  const facts = [["TER", e.ter == null ? "—" : fmt(e.ter) + "%"], ["Patrimonio", e.aum == null ? "—" : aumTxt(e.aum)], ["Dividendi", e.dist || "—"], ["Replica", e.repl || "—"],
+    ["Valuta", e.cur || "—"], ["Domicilio", e.dom || "—"], ["Lancio", e.inception ? dateTxt(new Date(e.inception + "T12:00:00")) : "—"], ["Emittente", e.provider || "—"],
+    ["Titoli", e.n ? e.n.toLocaleString("it-IT") : "—"], ["Categoria", e.asset || "—"], ["Area", e.region || "—"]];
+  const gen = window.CATALOG && window.CATALOG.generated ? dateTxt(Date.parse(window.CATALOG.generated)) : "";
+  $("d-body").innerHTML = `
+    <div class="d-top">
+      <div>
+        <h2 id="d-name">${esc(e.name)}</h2>
+        <div class="id n">${esc(e.ticker)} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> · <a class="src" href="https://finance.yahoo.com/lookup/?s=${e.isin}" target="_blank" rel="noopener">Yahoo ↗</a></div>
+        <button type="button" class="ghost" id="d-add" style="margin-top:12px">Aggiungi a portafoglio</button>
+      </div>
+      <button class="icon close" type="button" id="d-close" aria-label="Chiudi">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <section class="sec"><h3>Rendimenti${ib("rend")}</h3>
+      <div class="stats">${perf.map(([k, v]) => `<div><span class="k">${k}</span><span class="n ${cls(v)}">${v == null ? "—" : pct(v, 1)}</span></div>`).join("")}</div>
+      <p class="fc-note">In EUR, totali; 3A e 5A cumulati</p></section>
+    <section class="sec"><h3>Rischio</h3>
+      <div class="stats">${risk.map(([k, v]) => `<div><span class="k">${k}${k.startsWith("Vol") ? ib("vol") : ib("dd")}</span><span class="n">${v == null ? "—" : k.startsWith("Vol") ? fmt(v * 100, 1) + "%" : pct(v, 1)}</span></div>`).join("")}</div></section>
+    <section class="sec"><h3>Dati</h3>
+      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <p class="fc-note">Da <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a>${gen ? ", aggiornati il " + gen : ""}. </p><p class="fc-note" id="d-px">${e.tried ? "" : "Carico i prezzi…"}</p></section>`;
+  const dlg = $("detail"); if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0;
+  $("d-close").onclick = () => dlg.close();
+  $("d-add").onclick = () => { dlg.close(); openAddTo([e.isin]); };
+  $("d-isin").onclick = async ev => { const b = ev.currentTarget; try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; setTimeout(() => (b.textContent = e.isin), 1200); } catch {} };
+}
 function openDetail(isin) {
-  const e = ETFS.find(x => x.isin === isin); if (!e) return;
+  const e = byIsin(isin); if (!e) return;
+  if (e.cat && !e.s) { openDetailCat(e); if (!e.tried) loadSeries(isin).then(ok => { if (ok && cur === e && $("detail").open) openDetail(isin); else if (cur === e && $("d-px")) $("d-px").innerHTML = pxMissing(e); }); else if ($("d-px")) $("d-px").innerHTML = pxMissing(e); return; }
   cur = e;
   const s = e.s, last = s.v[s.v.length - 1], chg = last / s.v[s.v.length - 2] - 1;
   const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= s.t[0]);
@@ -854,9 +912,9 @@ function openDetail(isin) {
     ["3A ann.", retSince(s, back(0, 3), true)], ["5A ann.", retSince(s, back(0, 5), true)], ["10A ann.", retSince(s, back(0, 10), true)], ["Lancio ann.", retSince(s, 0, true)],
   ];
   const facts = [
-    ["Indice", e.index], ["TER", fmt(e.ter) + "%"], ["Patrimonio", aumTxt(e.aum)], ["Dividendi", e.dist],
-    ["Replica", e.repl], ["Valuta", e.cur], ["Domicilio", e.dom], ["Lancio", dateTxt(new Date(e.inception + "T12:00:00"))],
-    ["Emittente", e.provider], ["Titoli", e.n.toLocaleString("it-IT")],
+    ["Indice", e.index || "—"], ["TER", e.ter == null ? "—" : fmt(e.ter) + "%"], ["Patrimonio", e.aum == null ? "—" : aumTxt(e.aum)], ["Dividendi", e.dist || "—"],
+    ["Replica", e.repl || "—"], ["Valuta", e.cur || "—"], ["Domicilio", e.dom || "—"], ["Lancio", e.inception ? dateTxt(new Date(e.inception + "T12:00:00")) : "—"],
+    ["Emittente", e.provider || "—"], ["Titoli", e.n ? e.n.toLocaleString("it-IT") : "—"],
   ];
   const bars = items => { const mx = Math.max(...items.map(i => i[1])); return `<ul class="bars">${items.map(([n, w]) => `<li><span>${esc(n)}</span><span class="n">${fmt(w, 1)}%</span><i><b style="width:${(w / mx * 100).toFixed(1)}%"></b></i></li>`).join("")}</ul>`; };
 
@@ -875,7 +933,7 @@ function openDetail(isin) {
     <section>
       <div class="price">
         <div>
-          <div class="big">${fmt(last)}<small>${e.pcur || e.cur}</small></div>
+          <div class="big">${fmt(last)}<small>${e.pcur || e.cur}${e.fx ? " · da " + e.fx : ""}</small></div>
           <div class="chg n"><span class="${cls(chg)}">${pct(chg)}</span> <span class="k">${dateTxt(s.t[s.t.length - 1], { day: "numeric", month: "short" })}</span></div>
         </div>
         <div class="periods" role="group" aria-label="Periodo">${avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === curPeriod}">${p}</button>`).join("")}</div>
@@ -889,20 +947,20 @@ function openDetail(isin) {
       <div class="stats">${perf.map(([k, v]) => `<div><span class="k">${k}</span><span class="n ${cls(v)}">${pct(v, 1)}</span></div>`).join("")}</div>
     </section>
 
-    ${liqHtml(e)}
+    ${e.adv != null && e.spr != null ? liqHtml(e) : ""}
 
     ${fcHtml(e)}
 
     <section class="sec"><h3>Dati</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
-      <p class="fc-note">${window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio${e.fromJe ? `, indice, titoli, paesi e settori${e.hdate ? " (composizione al " + e.hdate + ")" : ""}` : ". Posizioni e ripartizioni sono indicative"}.</p>
+      <p class="fc-note">${e.cat ? "Dati da" : window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${e.cat && window.CATALOG && window.CATALOG.generated ? dateTxt(Date.parse(window.CATALOG.generated)) : VERIFIED}: TER, patrimonio, replica, lancio${e.cat ? "" : e.fromJe ? `, indice, titoli, paesi e settori${e.hdate ? " (composizione al " + e.hdate + ")" : ""}` : ". Posizioni e ripartizioni sono indicative"}.</p>
     </section>
 
-    <div class="cols2">
+    ${e.top ? `<div class="cols2">
       <section class="sec"><h3>Posizioni</h3>${bars(e.top)}</section>
       <section class="sec"><h3>${esc(e.b1[0])}</h3>${bars(e.b1[1])}</section>
       <section class="sec"><h3>${esc(e.b2[0])}</h3>${bars(e.b2[1])}</section>
-    </div>`;
+    </div>` : ""}`;
 
   const dlg = $("detail");
   if (!dlg.open) dlg.showModal();
@@ -1043,12 +1101,31 @@ function fcList(fc) {
   return `<ul class="fc">${rows}${info}</ul><p class="fc-note">${spot}</p>`;
 }
 function fcHtml(e) {
-  const fc = FC[e.ticker];
+  const fc = e.cat ? null : FC[e.ticker];
   return `<section class="sec"><h3>Previsioni sull'indice · fonti ufficiali${fc ? " · " + esc(fc.ref) : ""}</h3>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</section>`;
 }
 
+/* ---------- Serie di prezzi on demand (data/p/ISIN.js) per gli ETF del catalogo ---------- */
+function attachSeries(e, d) {
+  e.s = { t: d.d.map(x => x * 86400000 + 43200000), v: d.v }; e.real = true; e.src = d.source; e.sym = d.symbol; e.pcur = d.currency; e.fx = d.fx; e.live = d.v[d.v.length - 1];
+  if (d.adv > 0) e.adv = d.adv;
+}
+function loadSeries(isin) {
+  const e = byIsin(isin); if (!e) return Promise.resolve(false);
+  if (e.s) return Promise.resolve(true);
+  if (e.loading) return e.loading;
+  return (e.loading = new Promise(res => {
+    const s = document.createElement("script"); s.src = `data/p/${isin}.js?v=${Math.floor(Date.now() / 3600000)}`;
+    const done = ok => { s.remove(); e.tried = true; e.loading = null; res(ok); };
+    s.onload = () => { const d = window.PX && window.PX[isin]; if (d && d.d && d.v) { attachSeries(e, d); done(true); } else done(false); };
+    s.onerror = () => done(false); document.head.appendChild(s);
+  }));
+}
+const WATCH_URL = "https://github.com/robypet73/myMoney/edit/main/watchlist.txt";
+const incMs = e => (e.inception ? dateMs(e.inception) : e.s ? e.s.t[0] : 0);
+
 /* ---------- Portafoglio: dati, JSON, motore ---------- */
-const byIsin = i => ETFS.find(e => e.isin === i);
+const byIsin = i => BYISIN.get(i);
 const dateMs = s => new Date(s + "T12:00:00").getTime();
 const eur = v => "€ " + fmt(v, 0);
 const eurS = v => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 0);
@@ -1060,16 +1137,17 @@ const ICO_X = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-
 const hasTx = p => p.positions.some(x => x.txs.length);
 const isDraft = p => !!p && !hasTx(p); // draft = simulazione: nessuna operazione registrata
 const ymd = ms => new Date(ms).toISOString().slice(0, 10);
-const defStart = isins => ymd(Math.max(back(0, 3), ...isins.map(i => dateMs(byIsin(i).inception))));
+const defStart = isins => ymd(Math.max(back(0, 3), ...isins.map(i => incMs(byIsin(i)))));
 const mkPos = (isin, o = {}) => ({ isin, qty: o.qty != null ? o.qty : null, weight: o.weight != null ? o.weight : null, txs: o.txs || [] });
 const mkPf = o => ({ currency: "EUR", description: "", amount: 10000, start: ymd(back(0, 3)), positions: [], ...o });
 const clonePf = p => ({ ...p, positions: p.positions.map(x => ({ ...x, txs: x.txs.map(t => ({ ...t })) })) });
 // Posizione iniziale (quantità o peso %) aperta alla data di partenza, non prima del lancio degli ETF; le operazioni si aggiungono.
 const hasBase = x => x.qty > 0 || x.weight > 0;
-const simStart = pf => Math.max(dateMs(pf.start), ...pf.positions.filter(hasBase).map(x => dateMs(byIsin(x.isin).inception)));
+const simStart = pf => Math.max(dateMs(pf.start), ...pf.positions.filter(x => hasBase(x) && byIsin(x.isin).s).map(x => Math.max(incMs(byIsin(x.isin)), byIsin(x.isin).s.t[0])));
 function pfLots(pf) {
   const st = simStart(pf), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0), out = [];
   pf.positions.forEach((x, pi) => {
+    if (!byIsin(x.isin).s) return; // senza prezzi scaricati l'ETF resta fuori dal calcolo
     const p = priceAt(byIsin(x.isin), st), q = x.weight > 0 ? pf.amount * x.weight / W / p : x.qty > 0 ? x.qty : 0;
     if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p, base: true });
     x.txs.forEach((t, ti) => out.push({ isin: x.isin, date: t.date, qty: t.qty, price: t.price, pi, ti }));
@@ -1399,6 +1477,8 @@ function renderEmpty() {
   $("pf-comp").innerHTML = '<p class="fc-note">' + "Aggiungi un ETF con quantità o peso, oppure registra un'operazione nelle posizioni" + '</p>';
 }
 function renderPf() {
+  const need = pfCur.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s && !e.tried);
+  if (need.length) { const id = pfCur.id; Promise.all(need.map(e => loadSeries(e.isin))).then(() => { if (pfCur && pfCur.id === id) renderPf(); }); }
   const dr = isDraft(pfCur);
   const own = !pfCur.sample; $("pf-name").hidden = !own; $("pf-descr").hidden = !own; $("pf-name").value = pfCur.name; $("pf-descr").value = pfCur.description || "";
   $("pf-desc-ro").hidden = own; $("pf-desc-ro").textContent = pfCur.description || "";
@@ -1435,7 +1515,7 @@ function renderPf() {
   $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
 
   let cov = 0, acc = 0;
-  const blocks = order.map(i => { const e = P.es[i], fc = FC[e.ticker], ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
+  const blocks = order.map(i => { const e = P.es[i], fc = e.cat ? null : FC[e.ticker], ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
     if (m != null) { cov += P.cw[i]; acc += P.cw[i] * m; }
     return `<div class="fb"><h4><span>${e.ticker}<em>${fc ? esc(fc.ref) : esc(e.index)}</em></span><span class="n ${cls(m)}">${m == null ? "—" : pct(m, 1)}</span></h4>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</div>`; });
   const tot = cov ? acc / cov : null;
@@ -1531,17 +1611,26 @@ function addPos(pf, isins) {
   const all = pf.positions.filter(x => x.weight != null); if (!m || !es) all.forEach(x => (x.weight = +(100 / all.length).toFixed(1)));
   return k;
 }
+// Scelta dell'ETF tra tutto il catalogo: l'elenco dei suggerimenti segue ciò che si scrive.
+function etfFind(q, n = 40) {
+  const w = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const res = w.length ? ALL.filter(e => { const t = (e.name + " " + e.ticker + " " + e.isin).toLowerCase(); return w.every(x => t.includes(x)); }) : ETFS;
+  return res.slice(0, n);
+}
+function fillDl(q) { $("etf-dl").innerHTML = etfFind(q).map(e => `<option value="${e.isin}" label="${esc((e.ticker === e.isin ? "" : e.ticker + " · ") + e.name)}"></option>`).join(""); }
+const resolveEtf = v => { v = (v || "").trim(); return byIsin(v.toUpperCase()) ? v.toUpperCase() : (etfFind(v, 1)[0] || {}).isin || ""; };
+document.addEventListener("input", ev => { if (ev.target.id === "dr-add" || ev.target.id === "op-etf") fillDl(ev.target.value); });
 const posVal = x => (x.weight != null ? x.weight : x.qty);
 function renderPos() {
   const pf = pfCur, have = new Set(pf.positions.map(x => x.isin)), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0);
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
-  $("dr-add").innerHTML = ETFS.filter(e => !have.has(e.isin)).sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
-  $("dr-add-btn").disabled = !$("dr-add").value; $("dr-norm").hidden = !W;
+  fillDl(""); $("dr-norm").hidden = !W;
   $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x);
     return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}"><select class="qu" aria-label="Unità ${e.ticker}"><option value="q"${u === "q" ? " selected" : ""}>quote</option><option value="w"${u === "w" ? " selected" : ""}>%</option></select></span></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
+  const noPx = pf.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s);
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
-  $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : "");
-  const rows = pf.positions.filter(hasBase).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
+  $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, primo prezzo disponibile` : "") + (noPx.length ? `${W || clamp ? "<br>" : ""}Senza prezzi, esclusi dal calcolo: ${noPx.map(e => esc(e.ticker)).join(", ")}${noPx.every(e => e.tried) ? ` · aggiungili a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : " · carico…"}` : "");
+  const rows = pf.positions.filter(x => hasBase(x) && byIsin(x.isin).s).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
   const spent = rows.filter(r => r.w).reduce((a, r) => a + r.cost, 0), anyW = rows.some(r => r.w);
   $("dim-sec").hidden = !rows.length;
   $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
@@ -1549,9 +1638,9 @@ function renderPos() {
   $("dr-own").disabled = !DRSIZE.length;
 }
 function renderHist() {
-  const pf = pfCur, es = ETFS.slice().sort((a, b) => a.ticker.localeCompare(b.ticker));
-  if (!opEtf || !byIsin(opEtf)) opEtf = (pf.positions[0] || {}).isin || es[0].isin;
-  $("op-etf").innerHTML = es.map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join(""); $("op-etf").value = opEtf;
+  const pf = pfCur;
+  if (!opEtf || !byIsin(opEtf)) opEtf = (pf.positions[0] || {}).isin || ETFS[0].isin;
+  if (document.activeElement !== $("op-etf")) $("op-etf").value = opEtf; { const e = byIsin(resolveEtf($("op-etf").value)); $("op-name").textContent = e ? e.name + (e.s ? "" : " · prezzi non scaricati") : ""; }
   $("op-date").max = ymd(Date.now()); if (!$("op-date").value) $("op-date").value = ymd(Date.now());
   if (!$("op-price").value) opSuggest();
   const lots = pfLots(pf).reverse();
@@ -1603,6 +1692,7 @@ function openAddTo(isins) {
   const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
   $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
     <select id="at-pf" aria-label="Portafoglio">${opts}</select><div id="at-body"></div>
+    <p class="fc-note" id="at-px"></p>
     <div class="io"><button type="submit" class="primary">Aggiungi</button><button type="button" class="ghost" id="at-cancel">Annulla</button><span id="at-msg" class="fc-note"></span></div>`;
   const body = () => {
     $("at-body").innerHTML = ($("at-pf").value === "@new" ? '<div class="newf"><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>' : "")
@@ -1611,6 +1701,8 @@ function openAddTo(isins) {
   };
   $("at-pf").addEventListener("change", body); body();
   $("addto").showModal();
+  const miss = AT.filter(i => !byIsin(i).s && !byIsin(i).tried);
+  if (miss.length) Promise.all(miss.map(loadSeries)).then(() => { const still = AT.map(byIsin).filter(e => !e.s), n = $("at-px"); if (n) n.innerHTML = still.length ? `Senza prezzi, esclusi dal calcolo: ${still.map(e => esc(e.ticker)).join(", ")} · <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : ""; });
 }
 $("addto").addEventListener("click", ev => { if (ev.target.id === "at-cancel" || ev.target.closest("#at-x") || ev.target === $("addto")) $("addto").close(); });
 $("addto").addEventListener("submit", ev => {
@@ -1705,7 +1797,7 @@ $("info").addEventListener("click", ev => { if (ev.target === $("info") || ev.ta
 
 /* ---------- Eventi ---------- */
 /* ---------- Eventi ---------- */
-$("list").addEventListener("click", ev => { const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
+$("list").addEventListener("click", ev => { if (ev.target.closest("#more")) { shown += 200; return render(true); } const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
 $("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
 let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => $("detail").open && drawChart(), 120); });
 $("q").addEventListener("input", render);
@@ -1740,8 +1832,8 @@ function editPf(fn) {
 }
 const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
 function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
-function opSuggest() { const e = byIsin($("op-etf").value), d = $("op-date").value, p = $("op-price"); if (e && d && !isNaN(dateMs(d)) && !p.dataset.touched) p.value = priceAt(e, dateMs(d)).toFixed(2); }
-$("op-etf").addEventListener("change", () => { opEtf = $("op-etf").value; opSuggest(); }); $("op-date").addEventListener("change", opSuggest);
+function opSuggest() { const e = byIsin(resolveEtf($("op-etf").value)), d = $("op-date").value, p = $("op-price"); if (e && e.s && d && !isNaN(dateMs(d)) && !p.dataset.touched) p.value = priceAt(e, dateMs(d)).toFixed(2); }
+$("op-etf").addEventListener("change", () => { const i = resolveEtf($("op-etf").value); if (i) { opEtf = i; $("op-etf").value = i; const e = byIsin(i); $("op-name").textContent = e.name + (e.s ? "" : " · carico i prezzi…"); loadSeries(i).then(ok => { $("op-name").textContent = e.name + (ok ? "" : " · prezzi non disponibili"); opSuggest(); }); } opSuggest(); }); $("op-date").addEventListener("change", opSuggest);
 $("op-price").addEventListener("input", () => ($("op-price").dataset.touched = "1"));
 const posOf = el => pfCur.positions.find(x => x.isin === el.closest("tr[data-isin]").dataset.isin);
 $("pos-tbl").addEventListener("change", ev => {
@@ -1765,7 +1857,8 @@ function resetOp() { editOp = null; $("op-submit").textContent = "Aggiungi"; $("
 $("op-cancel").addEventListener("click", () => { resetOp(); hmsg(""); });
 $("op-form").addEventListener("submit", ev => {
   ev.preventDefault();
-  const isin = $("op-etf").value, e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
+  const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
+  if (!e) return hmsg("Scegli un ETF dall'elenco", true);
   if (!date || isNaN(dateMs(date))) return hmsg("Data non valida", true);
   if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
   if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
@@ -1783,10 +1876,25 @@ $("hist-tbl").addEventListener("click", ev => {
   } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1)); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
 });
 $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
+/* Rimessi: ribilanciamento, predefinito, nome, selezione dalla ricerca */
+$("ef-cap").addEventListener("change", () => PF && renderPf());
+$("rb-goal").addEventListener("change", () => PF && renderRb());
+$("rb-apply").addEventListener("click", () => {
+  if (!RB || !RB.length) return;
+  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const x = pf.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }); commit(pf.id); return msg("Pesi aggiornati"); }
+  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(2), qty: r.dq }); x.txs.sort(byDate); } }));
+  if (err) { $("rb-note").textContent = err; return; }
+  msg(`Ribilanciamento applicato: ${n} operazioni`);
+});
+$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
+$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
+$("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
+$("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
+$("sel-add").addEventListener("click", () => openAddTo([...SEL]));
 const editBase = fn => { const err = editPf(fn); err ? msg(err, true) : msg(""); };
 $("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editBase(c => { c.amount = v; }); else renderPf(); });
 $("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editBase(c => { c.start = v; }); else renderPf(); });
-$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (!isin) return; opEtf = isin; editBase(c => addPos(c, [isin])); });
+$("dr-add-btn").addEventListener("click", () => { const isin = resolveEtf($("dr-add").value); if (!isin) return msg("Scegli un ETF dall'elenco", true); opEtf = isin; $("dr-add").value = ""; editBase(c => addPos(c, [isin])); });
 $("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
   if (!DRSIZE.length) return; const today = ymd(Date.now());

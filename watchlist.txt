@@ -1,0 +1,2 @@
+# ETF di cui scaricare i prezzi per grafico e portafogli: un ISIN per riga.
+# I primi 150 ETF per patrimonio sono già inclusi. Dopo aver salvato il file i prezzi arrivano entro pochi minuti.

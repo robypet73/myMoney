@@ -1,0 +1,37 @@
+name: Aggiorna serie ETF
+
+# Scarica da Yahoo Finance i prezzi degli ETF in watchlist.txt e dei più grandi del catalogo (data/p/ISIN.js).
+on:
+  schedule:
+    - cron: "11 20 * * 0"   # ogni domenica sera (UTC)
+  push:
+    branches: [main]
+    paths: [watchlist.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: serie
+  cancel-in-progress: false
+
+jobs:
+  serie:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Scarica le serie
+        run: python3 scripts/fetch_series.py
+      - name: Salva su main
+        run: |
+          git add data
+          if git diff --cached --quiet; then echo "Nessuna novità"; exit 0; fi
+          git config user.name "myMoney serie"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "Serie ETF aggiornate"
+          git pull --rebase origin main
+          git push origin HEAD:main

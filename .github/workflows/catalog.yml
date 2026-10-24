@@ -1,0 +1,33 @@
+name: Aggiorna catalogo ETF
+
+# Scarica l'elenco completo degli ETF da justETF e aggiorna catalog.js su main (la pagina su GitHub Pages lo legge).
+on:
+  schedule:
+    - cron: "37 4 * * 1"   # ogni lunedì alle 04:37 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalogo
+  cancel-in-progress: false
+
+jobs:
+  catalogo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Scarica il catalogo
+        run: python3 scripts/fetch_catalog.py
+      - name: Salva su main
+        run: |
+          if git diff --quiet -- catalog.js; then echo "Nessuna novità"; exit 0; fi
+          git config user.name "myMoney catalogo"
+          git config user.email "actions@users.noreply.github.com"
+          git add catalog.js
+          git commit -m "Catalogo ETF aggiornato"
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -1,6 +1,6 @@
 // Service worker di myMoney: rende l'app installabile e utilizzabile anche senza rete.
 // Aumenta VERSION quando cambi l'elenco dei file in CORE.
-const VERSION = "mymoney-v3";
+const VERSION = "mymoney-v4";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -16,12 +16,12 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  const fresh = req.mode === "navigate" || (url.origin === location.origin && /(^|\/)(index\.html|prices\.js|etfdata\.js)$/.test(url.pathname));
+  const fresh = req.mode === "navigate" || (url.origin === location.origin && (/(^|\/)(index\.html|prices\.js|etfdata\.js|catalog\.js)$/.test(url.pathname) || /\/data\/p\/[^/]+\.js$/.test(url.pathname)));
   if (fresh) {
     e.respondWith(fetch(req).then(r => { if (r.ok) caches.open(VERSION).then(c => c.put(req, r.clone())); return r; })
       .catch(() => caches.match(req, { ignoreSearch: true }).then(r => r
         || (req.mode === "navigate" ? caches.match("index.html")
-          : /(prices|etfdata)\.js$/.test(url.pathname) ? new Response(url.pathname.endsWith("prices.js") ? "window.PRICES=null;" : "window.ETFDATA=null;", { headers: { "Content-Type": "text/javascript" } })
+          : /(prices|etfdata|catalog)\.js$/.test(url.pathname) ? new Response(url.pathname.endsWith("prices.js") ? "window.PRICES=null;" : url.pathname.endsWith("catalog.js") ? "window.CATALOG=null;" : "window.ETFDATA=null;", { headers: { "Content-Type": "text/javascript" } })
           : new Response("", { status: 504 })))));
     return;
   }
