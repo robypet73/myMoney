@@ -683,12 +683,14 @@ function drawChart() {
   const nx = W < 420 ? 3 : 4, xt = [];
   for (let k = 0; k < nx; k++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (k + 0.5) / nx);
 
+  const art = splitArt(T, V, V.map(() => V[0]), X, Y, "gf");
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="NAV ${esc(e.ticker)} ${curPeriod}">
-    <defs><linearGradient id="gf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".12"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <defs>${art.defs}</defs>
     ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, dec)}</text>`).join("")}
     ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
-    <path d="${line}L${X(T[T.length - 1])} ${H - pb}L${X(T[0])} ${H - pb}Z" fill="url(#gf)"/>
-    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/>
+    ${art.fills}
+    <line x1="${pl}" x2="${W - pr}" y1="${Y(V[0])}" y2="${Y(V[0])}" stroke="var(--soft)" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="${line}" fill="none" stroke="${art.stroke}" stroke-width="1.7" stroke-linejoin="round"/>
     <g id="hv" visibility="hidden"><line id="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-width="1" stroke-dasharray="2 3"/><circle id="hc" r="4" fill="${col}" stroke="var(--bg)" stroke-width="2"/></g>
     <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" id="hit"/>
   </svg><div class="tip" id="tip" hidden></div>`;
@@ -967,6 +969,28 @@ function renderRb() {
 }
 
 /* ---------- Portafoglio: grafici ---------- */
+// Colora verde dove la serie sta sopra la linea di riferimento e rosso dove sta sotto: tratto sfumato e aree tra le due linee.
+function splitArt(T, V, B, X, Y, gid) {
+  const n = T.length, col = d => (d >= 0 ? "var(--up)" : "var(--down)");
+  let cur = { c: col(V[0] - B[0]), top: [[T[0], V[0]]], bot: [[T[0], B[0]]] };
+  const runs = [], xs = X(T[0]), xe = X(T[n - 1]), span = xe - xs || 1, stops = [[0, cur.c]];
+  for (let i = 1; i < n; i++) {
+    const d0 = V[i - 1] - B[i - 1], d1 = V[i] - B[i];
+    if ((d0 >= 0) !== (d1 >= 0)) {
+      const f = d0 / (d0 - d1), tx = T[i - 1] + f * (T[i] - T[i - 1]), vy = V[i - 1] + f * (V[i] - V[i - 1]), by = B[i - 1] + f * (B[i] - B[i - 1]), c = col(d1), o = (X(tx) - xs) / span;
+      cur.top.push([tx, vy]); cur.bot.push([tx, by]); runs.push(cur); stops.push([o, cur.c], [o, c]);
+      cur = { c, top: [[tx, vy]], bot: [[tx, by]] };
+    }
+    cur.top.push([T[i], V[i]]); cur.bot.push([T[i], B[i]]);
+  }
+  runs.push(cur); stops.push([1, cur.c]);
+  const pth = r => [...r.top, ...r.bot.slice().reverse()].map((q, k) => (k ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join("") + "Z";
+  return {
+    defs: `<linearGradient id="${gid}s" gradientUnits="userSpaceOnUse" x1="${xs}" x2="${xe}" y1="0" y2="0">${stops.map(([o, c]) => `<stop offset="${Math.min(Math.max(o, 0), 1).toFixed(4)}" stop-color="${c}"/>`).join("")}</linearGradient>`,
+    fills: runs.map(r => `<path d="${pth(r)}" fill="${r.c}" fill-opacity=".17"/>`).join(""),
+    stroke: `url(#${gid}s)`,
+  };
+}
 function drawLine(box, T, S, label, gid) {
   const W = box.clientWidth, H = box.clientHeight; if (!W || !T.length) return;
   const pl = 0, pr = 62, pt = 8, pb = 24;
@@ -977,14 +1001,14 @@ function drawLine(box, T, S, label, gid) {
   const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
   const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
   const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
-  const m = S[0], ref = S[1];
+  const m = S[0], ref = S[1], art = splitArt(T, m, ref || m.map(() => m[0]), X, Y, gid);
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
-    <defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--fg)" stop-opacity=".08"/><stop offset="1" stop-color="var(--fg)" stop-opacity="0"/></linearGradient></defs>
+    <defs>${art.defs}</defs>
     ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 0)}</text>`).join("")}
     ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
-    <path d="${path(m)}L${X(T[T.length - 1])} ${H - pb}L${X(T[0])} ${H - pb}Z" fill="url(#${gid})"/>
+    ${art.fills}
     ${ref ? `<path d="${path(ref)}" fill="none" stroke="var(--soft)" stroke-width="1.2" stroke-dasharray="3 3"/>` : ""}
-    <path d="${path(m)}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="${path(m)}" fill="none" stroke="${art.stroke}" stroke-width="1.8" stroke-linejoin="round"/>
     <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/><circle class="hc" r="4" fill="var(--fg)" stroke="var(--bg)" stroke-width="2"/></g>
     <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip" hidden></div>`;
   const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hc = box.querySelector(".hc"), hit = box.querySelector(".hit");
