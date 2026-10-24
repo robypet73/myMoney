@@ -2,13 +2,14 @@
 
 Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un solo file, `index.html`, senza build né dipendenze. Si apre direttamente nel browser e gira su GitHub Pages.
 
-## Come lavorare (automatico)
+## Come lavorare (automatico, senza chiedere)
 
+- **All'inizio di ogni nuova chat** allinea subito la copia locale a `origin/main`: `git fetch origin main`, `git checkout main`, `git merge --ff-only origin/main` (il file `.claude/settings.json` lo fa già all'avvio della sessione). Se ci sono modifiche locali non salvate o la storia è divergente, risolvi tu in modo sicuro e continua: non chiedere conferma.
 - Lavora **solo sul branch `main`**. Non creare branch né pull request, salvo richiesta esplicita.
-- Dopo ogni modifica, senza chiedere conferma:
+- **Ogni modifica va committata e pushata su `origin main`**, subito e senza chiedere conferma:
   1. verifica (vedi "Verifica");
   2. commit con messaggio breve in italiano;
-  3. `git push origin main`;
+  3. `git push origin main` (se il push è rifiutato perché `main` è avanzato, fai `git pull --ff-only` o `git pull --rebase origin main` e riprova);
   4. se hai lo strumento Artifact, ripubblica `index.html` con lo stesso `file_path` per mantenere l'URL.
 - Rispondi in italiano, in modo breve: cosa hai cambiato, cosa hai verificato, cosa resta aperto.
 - Non cancellare dati o branch senza richiesta.
@@ -34,6 +35,8 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 - Prezzi: `scripts/fetch_prices.py` scarica da Yahoo Finance e scrive `prices.js` accanto a `index.html` (`--watch N` aggiorna le quotazioni ogni N secondi). Senza `prices.js` la pagina usa un NAV simulato.
 - Previsioni degli esperti: oggetto `FC` in `index.html`, una voce per ticker, ognuna con banca, obiettivo, orizzonte e URL. Aggiornale con una ricerca web e riporta sempre il link.
 - Liquidità (volume, spread) in `LIQ`: stime indicative finché non ci sono dati reali.
+- **Dati degli ETF da fonti ufficiali con URL di verifica.** TER, patrimonio, replica, data di lancio e domicilio in `ETFS` vengono da justETF (`https://www.justetf.com/en/etf-profile.html?isin=ISIN`), prezzi da Yahoo Finance. Se non puoi aprire le pagine (rete bloccata), usa la ricerca web con `allowed_domains: ["justetf.com"]`, riporta la data della verifica (`VERIFIED`) e distingui sempre ciò che è verificato da ciò che è indicativo (posizioni, ripartizioni, numero di titoli).
+- **Le spiegazioni «i»** stanno nell'oggetto `GL` (cos'è, a cosa serve, come si usa, parametri di riferimento, link). Ogni nuova informazione rilevante nella pagina deve avere la sua «i» (`ib("chiave")`) e una voce in `GL`; i link di approfondimento vanno presi da fonti reali e verificate.
 
 ## Modello dei portafogli (JSON)
 

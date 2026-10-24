@@ -14,6 +14,7 @@
   --fill: #F1F2F1;
   --up: #12865F;
   --down: #D2462F;
+  --ctl-h: 34px; /* altezza comune di campi, pulsanti e pill */
   --fs-l: 26px; /* grande: valori di sintesi */
   --fs-m: 15px; /* medio: informazioni */
   --fs-s: 12px; /* piccolo: note e commenti */
@@ -41,7 +42,7 @@ header .wrap { padding-block: 28px 0; }
 /* Ricerca */
 .search { padding-block: 56px 0; }
 .q { display: flex; align-items: center; gap: 14px; border-bottom: 1.5px solid var(--fg); }
-.q input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; padding: 8px 0 12px; }
+.q input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; padding: 10px 0; }
 .q input::placeholder { color: var(--soft); opacity: .6; }
 .q input::-webkit-search-cancel-button { display: none; }
 .icon { border: 0; background: none; padding: 6px; cursor: pointer; color: var(--soft); display: grid; place-items: center; border-radius: 8px; position: relative; }
@@ -131,11 +132,11 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
-.pf-sel { padding-block: 48px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.pf-sel { padding-block: 48px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
 .selwrap { position: relative; max-width: 100%; }
-.selwrap::after { content: ""; position: absolute; right: 4px; bottom: 18px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
-.pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; padding: 4px 36px 8px 0; cursor: pointer; max-width: 100%; }
-.badge { font-size: var(--fs-s); color: var(--soft); padding-bottom: 12px; }
+.selwrap::after { content: ""; position: absolute; right: 4px; top: 50%; margin-top: -7px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
+.pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; height: 40px; padding: 0 36px 0 0; cursor: pointer; max-width: 100%; }
+.badge { font-size: var(--fs-s); color: var(--soft); }
 .badge a { color: inherit; }
 .badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
 .badge.real i { background: var(--up); }
@@ -166,7 +167,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 
 .eft { width: 100%; border-collapse: collapse; font-size: var(--fs-m); margin-top: 18px; min-width: 420px; }
-.eft th, .eft td { padding: 9px 0 9px 12px; border-bottom: 1px solid var(--hair); text-align: right; vertical-align: top; white-space: nowrap; }
+.eft th, .eft td { padding: 9px 0 9px 12px; border-bottom: 1px solid var(--hair); text-align: right; vertical-align: middle; white-space: nowrap; }
 .eft th { font-size: var(--fs-s); font-weight: 500; color: var(--soft); }
 .eft th:first-child, .eft td:first-child { text-align: left; padding-left: 0; white-space: normal; }
 .eft .wl { display: block; font-size: var(--fs-s); color: var(--soft); margin-top: 2px; }
@@ -182,7 +183,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .newpf { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: var(--fs-s); color: var(--fg); cursor: pointer; margin: 0; }
 .newpf:hover { border-color: var(--fg); }
 .newpf[aria-pressed="true"] { border-color: var(--fg); }
-.pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 10px 0; }
+.pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 0 0; }
 .live { padding-top: 32px; }
 .live .big { font-size: var(--fs-l); }
 .rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 18px 16px; padding-top: 28px; }
@@ -191,7 +192,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .rets .sub { font-family: var(--m); font-size: var(--fs-s); color: var(--soft); }
 .rets .sub.pos { color: var(--up); } .rets .sub.neg { color: var(--down); }
 .capr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.capr select, .rbctl select, .lotform #lot-op { appearance: none; -webkit-appearance: none; border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-s); color: var(--fg); cursor: pointer; }
+.capr select, .rbctl select { appearance: none; -webkit-appearance: none; border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-s); color: var(--fg); cursor: pointer; }
 .rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
 .rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .rbctl button:disabled { opacity: .35; cursor: default; }
@@ -214,11 +215,25 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .primary { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 8px 18px; font-size: var(--fs-s); cursor: pointer; }
 .ghost { border: 1px solid var(--hair); background: none; color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-s); cursor: pointer; }
 .ghost:hover { border-color: var(--fg); }
-.kind { font-size: var(--fs-s); border: 1px solid var(--hair); border-radius: 99px; padding: 3px 10px; color: var(--soft); margin-bottom: 12px; white-space: nowrap; }
+.kind { font-size: var(--fs-s); border: 1px solid var(--hair); border-radius: 99px; padding: 3px 10px; color: var(--soft); white-space: nowrap; }
 .kind.draft { color: var(--c3); border-color: var(--c3); }
 #draft-sec .lotform button, #lots-sec .lotform button { white-space: nowrap; }
-.wi { width: 84px; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 8px; padding: 6px 8px; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
+.wi { width: 72px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); border-radius: 0; padding: 4px 0; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
 .rn input[type="number"], .rn input[type="date"] { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: var(--fs-m); }
+.i { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; padding: 0; border: 1px solid var(--soft); border-radius: 50%; background: none; color: var(--soft); font: 500 var(--fs-s)/1 var(--f); text-transform: none; letter-spacing: 0; cursor: pointer; vertical-align: -3px; }
+.i:hover { color: var(--fg); border-color: var(--fg); }
+#info { width: min(460px, 100%); }
+.gl { display: grid; gap: 14px; padding-bottom: 24px; border-bottom: 1px solid var(--hair); }
+.gl h4 { margin: 0; font-size: var(--fs-m); font-weight: 500; }
+.gl dl { margin: 0; display: grid; gap: 14px; }
+.gl dt { font-size: var(--fs-s); color: var(--soft); margin-bottom: 3px; }
+.gl dd { margin: 0; font-size: var(--fs-m); line-height: 1.5; }
+.gl ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.gl li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--hair); padding-bottom: 8px; }
+.gl li span:first-child { color: var(--soft); }
+.gl li span.n { text-align: right; }
+.gl .lk { display: grid; gap: 6px; }
+.gl .lk a { color: var(--fg); text-underline-offset: 3px; }
 #addto { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
 .at { display: grid; gap: 14px; }
 .at h2 { font-size: var(--fs-m); font-weight: 500; letter-spacing: -.03em; margin: 0; }
@@ -227,7 +242,23 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .at .lotform input { flex: 1 1 110px; }
 .atk { flex: 0 0 56px; }
 .at .io { margin-top: 4px; }
-.act { white-space: nowrap; }
+/* Allineamento: stessa altezza per tutti i controlli, righe a due linee allineate sulla linea di base */
+.newpf, .io button, .io .btn, .ghost, .primary, .rbctl button, .lotform button, .capr select, .rbctl select, .lotform select, .lotform input, .rn input[type="number"], .rn input[type="date"], .at select, .filters select, .clear, .tabs button { box-sizing: border-box; height: var(--ctl-h); padding-block: 0; display: inline-flex; align-items: center; }
+.newpf, .io button, .io .btn, .ghost, .primary, .rbctl button, .lotform button { padding-inline: 16px; }
+.lotform select, .lotform input, .rn input[type="number"], .rn input[type="date"], .at select { padding-inline: 14px; }
+.lotform, .rbctl, .capr, .io { align-items: center; }
+.hrow, .row { align-items: baseline; }
+.row .spark { align-self: center; }
+.nm, .nm-btn { line-height: 20px; }
+.id { line-height: 16px; }
+.v { line-height: 20px; }
+.v small { line-height: 16px; margin-top: 3px; }
+.hrow .main, .row .main { gap: 3px; }
+.eft .wl.nmx { font-family: var(--f); }
+.lots th:nth-child(2), .lots td:nth-child(2) { text-align: left; padding-left: 0; }
+.del { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; vertical-align: middle; }
+.del svg { display: block; }
+.act { text-align: right; white-space: nowrap; }
 .lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-m); min-width: 0; }
 #lot-etf { flex: 1 1 220px; text-overflow: ellipsis; }
@@ -235,7 +266,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 #lot-qty, #lot-price { flex: 0 0 110px; }
 .lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .fc-note.err { color: var(--down); }
-.rn { display: flex; gap: 10px; align-items: baseline; margin-bottom: 14px; }
+.rn { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
 #pf-name { border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font-size: var(--fs-m); padding: 4px 0; min-width: 0; flex: 1; max-width: 320px; }
 .del { border: 0; background: none; color: var(--soft); cursor: pointer; padding: 0 2px; font-size: var(--fs-m); line-height: 1; }
 .del:hover { color: var(--down); }
@@ -301,18 +332,18 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
     <div class="chart" id="pf-chart"></div>
   </section>
 
-  <section class="sec pf-sec"><h3>Composizione</h3><div id="pf-comp"></div>
+  <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div>
     <div class="io"><button type="button" id="to-draft">Duplica come draft</button></div></section>
-  <section class="sec pf-sec" id="draft-sec" hidden><h3>Composizione target</h3>
+  <section class="sec pf-sec" id="draft-sec" hidden><h3>Composizione target<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft">i</button></h3>
     <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Simula da</label><input id="dr-start" type="date" style="max-width:160px"></div>
     <div class="scroll"><table class="eft" id="dr-tbl"></table></div>
     <div class="lotform" style="margin-top:12px"><select id="dr-add" aria-label="ETF da aggiungere"></select><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button></div>
     <p class="fc-note" id="dr-note"></p>
-    <h3 style="margin-top:28px">Dimensionamento ai prezzi correnti</h3>
+    <h3 style="margin-top:28px">Dimensionamento ai prezzi correnti<button type="button" class="i" data-g="dim" aria-label="Informazioni: dimensionamento">i</button></h3>
     <div class="scroll"><table class="eft" id="dr-size"></table></div>
     <div class="io"><button type="button" id="dr-own">Converti in acquistato</button></div>
   </section>
-  <section class="sec pf-sec" id="lots-sec"><h3>Acquisti</h3>
+  <section class="sec pf-sec" id="lots-sec"><h3>Acquisti<button type="button" class="i" data-g="inv" aria-label="Informazioni: investito">i</button></h3>
     <div class="rn"><label class="k" for="pf-name">Nome</label><input id="pf-name" autocomplete="off"></div>
     <form class="lotform" id="lot-form">
       <select id="lot-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
@@ -327,15 +358,15 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
     <div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
   <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
 
-  <section class="sec pf-sec"><h3>Frontiera efficiente</h3>
-    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label>
+  <section class="sec pf-sec"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
+    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label><button type="button" class="i" data-g="cap" aria-label="Informazioni: peso massimo">i</button>
       <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
     <div class="chart tall" id="pf-ef"></div>
     <div class="scroll"><table class="eft" id="pf-eft"></table></div>
     <p class="fc-note" id="ef-note"></p>
   </section>
 
-  <section class="sec pf-sec"><h3>Ribilanciamento</h3>
+  <section class="sec pf-sec"><h3>Ribilanciamento<button type="button" class="i" data-g="rib" aria-label="Informazioni: ribilanciamento">i</button></h3>
     <div class="rbctl">
       <select id="rb-goal" aria-label="Obiettivo">
         <option value="vol">Stessa volatilità, più rendimento</option>
@@ -349,7 +380,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
     <p class="fc-note" id="rb-note"></p>
   </section>
 
-  <section class="sec pf-sec"><h3>Previsioni sull'indice · 12 mesi</h3><div id="pf-fc"></div></section>
+  <section class="sec pf-sec"><h3>Previsioni sull'indice · 12 mesi<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
   <section class="sec pf-sec"><h3>Dati JSON</h3>
     <textarea id="json-box" spellcheck="false" aria-label="JSON del portafoglio" placeholder="Esporta per ottenere il JSON del portafoglio, oppure incolla qui un JSON e premi Importa"></textarea>
     <div class="io">
@@ -396,7 +427,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   </section>
 
   <div class="bar">
-    <span id="count" aria-live="polite"></span>
+    <span><span id="count" aria-live="polite"></span><button type="button" class="i" data-g="parametri" aria-label="Informazioni: guida ai parametri">i</button></span>
     <select id="sort" aria-label="Ordina">
       <option value="aum">Patrimonio</option>
       <option value="ter">TER</option>
@@ -410,12 +441,13 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
     </select>
   </div>
   <div class="list" id="list"></div>
-  <p class="foot">Anagrafiche indicative · NAV simulato · Previsioni con fonte</p>
+  <p class="foot">Anagrafiche da justETF · NAV simulato · Previsioni con fonte</p>
 </main>
 
 <div class="selbar" id="selbar" hidden><div class="wrap"><span id="sel-n"></span><span class="grow"></span><button type="button" id="sel-clear" class="ghost">Azzera</button><button type="button" id="sel-add" class="primary">Aggiungi a portafoglio</button></div></div>
 
 <dialog id="detail" aria-labelledby="d-name"><div class="d" id="d-body"></div></dialog>
+<dialog id="info" aria-labelledby="info-title"><div class="d" id="info-body"></div></dialog>
 <dialog id="addto" aria-labelledby="at-title"><form id="at-form" class="at"></form></dialog>
 
 <script src="prices.js"></script>
@@ -424,60 +456,62 @@ const TODAY = new Date(2026, 9, 23, 12);
 const DAY = 864e5;
 
 // Dati dimostrativi: anagrafiche approssimative, NAV storico simulato.
+// TER, patrimonio (€ Mln), replica, data di lancio e domicilio verificati su justETF il 24 ott 2026 (link nel dettaglio); posizioni, ripartizioni e numero di titoli sono indicativi.
+const VERIFIED = "24 ott 2026";
 const ETFS = [
-  { name: "iShares Core MSCI World UCITS ETF USD (Acc)", ticker: "SWDA", isin: "IE00B4L5Y983", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "MSCI World", ter: 0.20, aum: 98400, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 108.42, mu: 0.095, sig: 0.15, n: 1395,
+  { name: "iShares Core MSCI World UCITS ETF USD (Acc)", ticker: "SWDA", isin: "IE00B4L5Y983", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "MSCI World", ter: 0.20, aum: 132896, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 108.42, mu: 0.095, sig: 0.15, n: 1395,
     top: [["Apple",4.9],["NVIDIA",4.8],["Microsoft",4.4],["Amazon",2.7],["Meta Platforms",1.8],["Alphabet A",1.5],["Broadcom",1.3],["Alphabet C",1.3],["Tesla",1.1],["JPMorgan Chase",0.9]],
     b1: ["Paesi", [["Stati Uniti",71.5],["Giappone",5.4],["Regno Unito",3.5],["Canada",3.1],["Francia",2.6],["Altri",13.9]]],
     b2: ["Settori", [["Tecnologia",25.8],["Finanza",16.4],["Industria",10.9],["Beni voluttuari",10.3],["Sanità",10.1],["Altri",26.5]]] },
-  { name: "Vanguard FTSE All-World UCITS ETF (USD) Accumulating", ticker: "VWCE", isin: "IE00BK5BQT80", provider: "Vanguard", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "FTSE All-World", ter: 0.19, aum: 21800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2019-07-23", nav: 141.18, mu: 0.09, sig: 0.145, n: 3720,
+  { name: "Vanguard FTSE All-World UCITS ETF (USD) Accumulating", ticker: "VWCE", isin: "IE00BK5BQT80", provider: "Vanguard", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "FTSE All-World", ter: 0.14, aum: 55656, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2019-07-23", nav: 141.18, mu: 0.09, sig: 0.145, n: 3720,
     top: [["Apple",4.3],["NVIDIA",4.2],["Microsoft",3.9],["Amazon",2.4],["Meta Platforms",1.6],["Alphabet A",1.3],["Broadcom",1.2],["Taiwan Semiconductor",1.1],["Alphabet C",1.1],["Tesla",1.0]],
     b1: ["Paesi", [["Stati Uniti",62.5],["Giappone",5.8],["Regno Unito",3.3],["Cina",2.9],["Canada",2.8],["Altri",22.7]]],
     b2: ["Settori", [["Tecnologia",26.4],["Finanza",15.9],["Beni voluttuari",13.1],["Industria",11.8],["Sanità",9.6],["Altri",23.2]]] },
-  { name: "iShares Core S&P 500 UCITS ETF USD (Acc)", ticker: "CSPX", isin: "IE00B5BMR087", provider: "iShares", asset: "Azionario", region: "Stati Uniti", focus: "Large cap", index: "S&P 500", ter: 0.07, aum: 104900, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2010-05-19", nav: 640.12, mu: 0.12, sig: 0.16, n: 503,
+  { name: "iShares Core S&P 500 UCITS ETF USD (Acc)", ticker: "CSPX", isin: "IE00B5BMR087", provider: "iShares", asset: "Azionario", region: "Stati Uniti", focus: "Large cap", index: "S&P 500", ter: 0.07, aum: 139790, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2010-05-19", nav: 640.12, mu: 0.12, sig: 0.16, n: 503,
     top: [["NVIDIA",7.3],["Apple",6.9],["Microsoft",6.4],["Amazon",3.9],["Meta Platforms",2.8],["Broadcom",2.5],["Alphabet A",2.1],["Tesla",1.9],["Alphabet C",1.7],["Berkshire Hathaway B",1.6]],
     b1: ["Paesi", [["Stati Uniti",99.6],["Altri",0.4]]],
     b2: ["Settori", [["Tecnologia",32.5],["Finanza",13.4],["Beni voluttuari",10.5],["Sanità",10.0],["Comunicazione",9.6],["Altri",24.0]]] },
-  { name: "Xtrackers MSCI Emerging Markets UCITS ETF 1C", ticker: "XMME", isin: "IE00BTJRMP35", provider: "Xtrackers", asset: "Azionario", region: "Mercati emergenti", focus: "Large & mid cap", index: "MSCI Emerging Markets", ter: 0.18, aum: 6200, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-06-21", nav: 58.31, mu: 0.055, sig: 0.17, n: 1250,
+  { name: "Xtrackers MSCI Emerging Markets UCITS ETF 1C", ticker: "XMME", isin: "IE00BTJRMP35", provider: "Xtrackers", asset: "Azionario", region: "Mercati emergenti", focus: "Large & mid cap", index: "MSCI Emerging Markets", ter: 0.18, aum: 12336, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-06-21", nav: 58.31, mu: 0.055, sig: 0.17, n: 1250,
     top: [["Taiwan Semiconductor",9.8],["Tencent",4.6],["Samsung Electronics",2.9],["Alibaba",2.7],["HDFC Bank",1.4],["Reliance Industries",1.2],["Xiaomi",1.2],["Meituan",1.0],["PDD Holdings",0.9],["ICICI Bank",0.9]],
     b1: ["Paesi", [["Cina",26.5],["India",18.6],["Taiwan",18.4],["Corea del Sud",9.9],["Brasile",4.4],["Altri",22.2]]],
     b2: ["Settori", [["Tecnologia",23.9],["Finanza",22.6],["Beni voluttuari",13.4],["Comunicazione",9.5],["Industria",6.8],["Altri",23.8]]] },
-  { name: "iShares Core MSCI EM IMI UCITS ETF USD (Acc)", ticker: "EIMI", isin: "IE00BKM4GZ66", provider: "iShares", asset: "Azionario", region: "Mercati emergenti", focus: "Small, mid & large cap", index: "MSCI Emerging Markets IMI", ter: 0.18, aum: 20800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2014-05-30", nav: 35.84, mu: 0.05, sig: 0.165, n: 3240,
+  { name: "iShares Core MSCI EM IMI UCITS ETF USD (Acc)", ticker: "EIMI", isin: "IE00BKM4GZ66", provider: "iShares", asset: "Azionario", region: "Mercati emergenti", focus: "Small, mid & large cap", index: "MSCI Emerging Markets IMI", ter: 0.18, aum: 39624, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2014-05-30", nav: 35.84, mu: 0.05, sig: 0.165, n: 3240,
     top: [["Taiwan Semiconductor",8.7],["Tencent",4.0],["Samsung Electronics",2.5],["Alibaba",2.4],["HDFC Bank",1.2],["Reliance Industries",1.1],["Xiaomi",1.0],["Meituan",0.9],["PDD Holdings",0.8],["Infosys",0.8]],
     b1: ["Paesi", [["Cina",24.8],["India",20.1],["Taiwan",19.2],["Corea del Sud",10.4],["Brasile",4.3],["Altri",21.2]]],
     b2: ["Settori", [["Tecnologia",23.1],["Finanza",21.0],["Beni voluttuari",12.6],["Comunicazione",8.6],["Industria",8.4],["Altri",26.3]]] },
-  { name: "iShares Core MSCI Europe UCITS ETF EUR (Acc)", ticker: "IMAE", isin: "IE00B4K48X80", provider: "iShares", asset: "Azionario", region: "Europa", focus: "Large & mid cap", index: "MSCI Europe", ter: 0.12, aum: 6100, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 88.63, mu: 0.075, sig: 0.155, n: 410,
+  { name: "iShares Core MSCI Europe UCITS ETF EUR (Acc)", ticker: "IMAE", isin: "IE00B4K48X80", provider: "iShares", asset: "Azionario", region: "Europa", focus: "Large & mid cap", index: "MSCI Europe", ter: 0.12, aum: 15902, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 88.63, mu: 0.075, sig: 0.155, n: 410,
     top: [["ASML",2.8],["SAP",2.5],["Nestlé",2.2],["Novo Nordisk",2.0],["Roche",1.9],["AstraZeneca",1.9],["Novartis",1.8],["HSBC",1.7],["Shell",1.7],["Siemens",1.4]],
     b1: ["Paesi", [["Regno Unito",22.4],["Francia",16.0],["Svizzera",14.9],["Germania",14.7],["Paesi Bassi",7.0],["Altri",25.0]]],
     b2: ["Settori", [["Finanza",21.8],["Industria",17.6],["Sanità",14.2],["Beni di consumo",9.1],["Tecnologia",7.4],["Altri",29.9]]] },
-  { name: "Amundi FTSE MIB UCITS ETF Dist", ticker: "FMI", isin: "FR0010010827", provider: "Amundi", asset: "Azionario", region: "Italia", focus: "Large cap", index: "FTSE MIB", ter: 0.18, aum: 910, cur: "EUR", repl: "Fisica completa", dist: "Distribuzione", dom: "Francia", inception: "2003-11-14", nav: 36.21, mu: 0.07, sig: 0.21, n: 40,
+  { name: "Amundi FTSE MIB UCITS ETF Dist", ticker: "FMI", isin: "FR0010010827", provider: "Amundi", asset: "Azionario", region: "Italia", focus: "Large cap", index: "FTSE MIB", ter: 0.35, aum: 698, cur: "EUR", repl: "Fisica completa", dist: "Distribuzione", dom: "Francia", inception: "2003-11-03", nav: 36.21, mu: 0.07, sig: 0.21, n: 40,
     top: [["UniCredit",13.2],["Intesa Sanpaolo",12.1],["Ferrari",9.0],["Enel",8.0],["Eni",6.0],["Generali",4.8],["Stellantis",4.1],["Leonardo",3.7],["Prysmian",3.6],["Moncler",2.4]],
     b1: ["Paesi", [["Italia",88.4],["Paesi Bassi",11.6]]],
     b2: ["Settori", [["Finanza",41.2],["Beni voluttuari",15.3],["Utility",12.6],["Industria",11.9],["Energia",7.2],["Altri",11.8]]] },
-  { name: "Xtrackers MSCI Japan UCITS ETF 1C", ticker: "XMJP", isin: "LU0274209740", provider: "Xtrackers", asset: "Azionario", region: "Giappone", focus: "Large & mid cap", index: "MSCI Japan", ter: 0.12, aum: 4500, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Lussemburgo", inception: "2007-01-09", nav: 82.05, mu: 0.065, sig: 0.16, n: 185,
+  { name: "Xtrackers MSCI Japan UCITS ETF 1C", ticker: "XMJP", isin: "LU0274209740", provider: "Xtrackers", asset: "Azionario", region: "Giappone", focus: "Large & mid cap", index: "MSCI Japan", ter: 0.12, aum: 6325, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Lussemburgo", inception: "2007-01-09", nav: 82.05, mu: 0.065, sig: 0.16, n: 185,
     top: [["Toyota Motor",5.0],["Mitsubishi UFJ",3.8],["Sony Group",3.6],["Hitachi",3.0],["Sumitomo Mitsui",2.4],["Recruit Holdings",2.0],["Tokyo Electron",1.9],["Keyence",1.8],["Mitsubishi Corp",1.7],["Nintendo",1.7]],
     b1: ["Paesi", [["Giappone",100]]],
     b2: ["Settori", [["Industria",23.4],["Beni voluttuari",17.0],["Finanza",15.6],["Tecnologia",13.5],["Comunicazione",8.2],["Altri",22.3]]] },
-  { name: "iShares Automation & Robotics UCITS ETF USD (Acc)", ticker: "RBOT", isin: "IE00BYZK4552", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Tematico", index: "iSTOXX FactSet Automation & Robotics", ter: 0.40, aum: 3050, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2016-09-08", nav: 14.62, mu: 0.095, sig: 0.22, n: 162,
+  { name: "iShares Automation & Robotics UCITS ETF USD (Acc)", ticker: "RBOT", isin: "IE00BYZK4552", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Tematico", index: "iSTOXX FactSet Automation & Robotics", ter: 0.40, aum: 4872, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2016-09-08", nav: 14.62, mu: 0.095, sig: 0.22, n: 162,
     top: [["NVIDIA",1.4],["Teradyne",1.2],["Rockwell Automation",1.1],["Keyence",1.0],["Intuitive Surgical",1.0],["ABB",0.9],["Fanuc",0.9],["Siemens",0.9],["Cognex",0.8],["Yaskawa Electric",0.8]],
     b1: ["Paesi", [["Stati Uniti",52.1],["Giappone",17.4],["Taiwan",6.2],["Germania",4.8],["Svizzera",3.1],["Altri",16.4]]],
     b2: ["Settori", [["Tecnologia",58.3],["Industria",27.1],["Sanità",8.2],["Beni voluttuari",4.0],["Altri",2.4]]] },
-  { name: "iShares Developed Markets Property Yield UCITS ETF", ticker: "IWDP", isin: "IE00B1FZS350", provider: "iShares", asset: "Immobiliare", region: "Globale", focus: "REIT", index: "FTSE EPRA Nareit Developed Dividend+", ter: 0.59, aum: 1120, cur: "USD", repl: "Fisica completa", dist: "Distribuzione", dom: "Irlanda", inception: "2006-11-03", nav: 22.41, mu: 0.035, sig: 0.19, n: 338,
+  { name: "iShares Developed Markets Property Yield UCITS ETF", ticker: "IWDP", isin: "IE00B1FZS350", provider: "iShares", asset: "Immobiliare", region: "Globale", focus: "REIT", index: "FTSE EPRA Nareit Developed Dividend+", ter: 0.59, aum: 796, cur: "USD", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2006-10-20", nav: 22.41, mu: 0.035, sig: 0.19, n: 338,
     top: [["Prologis",6.5],["Welltower",5.0],["Equinix",4.4],["Simon Property",3.1],["Realty Income",2.8],["Public Storage",2.6],["Digital Realty",2.6],["Goodman Group",2.0],["Vonovia",1.7],["Mitsui Fudosan",1.5]],
     b1: ["Paesi", [["Stati Uniti",64.2],["Giappone",9.1],["Australia",6.0],["Regno Unito",4.4],["Singapore",3.2],["Altri",13.1]]],
     b2: ["Settori", [["Logistica",17.5],["Sanità",14.1],["Commerciale",13.2],["Residenziale",12.8],["Uffici",8.9],["Altri",33.5]]] },
-  { name: "iShares Core Euro Government Bond UCITS ETF (Dist)", ticker: "IEGA", isin: "IE00B4WXJJ64", provider: "iShares", asset: "Obbligazionario", region: "Eurozona", focus: "Governativo", index: "Bloomberg Euro Treasury", ter: 0.07, aum: 7900, cur: "EUR", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2009-04-17", nav: 113.48, mu: 0.012, sig: 0.06, n: 382,
+  { name: "iShares Core Euro Government Bond UCITS ETF (Dist)", ticker: "IEGA", isin: "IE00B4WXJJ64", provider: "iShares", asset: "Obbligazionario", region: "Eurozona", focus: "Governativo", index: "Bloomberg Euro Treasury", ter: 0.07, aum: 5388, cur: "EUR", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2009-04-17", nav: 113.48, mu: 0.012, sig: 0.06, n: 382,
     top: [["BTP 3,85% 2034",0.9],["OAT 3,00% 2033",0.8],["Bund 2,60% 2034",0.8],["BTP 4,00% 2035",0.7],["OAT 0,00% 2031",0.7],["Bonos 3,15% 2033",0.6],["Bund 0,00% 2031",0.6],["BTP 1,65% 2032",0.6],["OAT 2,75% 2029",0.6],["Bund 2,20% 2028",0.5]],
     b1: ["Emittenti", [["Francia",23.5],["Italia",21.8],["Germania",19.4],["Spagna",13.3],["Belgio",4.6],["Altri",17.4]]],
     b2: ["Scadenze", [["1-3 anni",21.6],["3-5 anni",18.2],["5-7 anni",14.1],["7-10 anni",17.3],["Oltre 10 anni",28.8]]] },
-  { name: "iShares $ Treasury Bond 7-10yr UCITS ETF (Dist)", ticker: "IBTM", isin: "IE00B1FZS798", provider: "iShares", asset: "Obbligazionario", region: "Stati Uniti", focus: "Governativo", index: "ICE US Treasury 7-10 Year", ter: 0.07, aum: 4600, cur: "USD", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2006-12-01", nav: 158.04, mu: 0.016, sig: 0.08, n: 28,
+  { name: "iShares $ Treasury Bond 7-10yr UCITS ETF (Dist)", ticker: "IBTM", isin: "IE00B1FZS798", provider: "iShares", asset: "Obbligazionario", region: "Stati Uniti", focus: "Governativo", index: "ICE US Treasury 7-10 Year", ter: 0.07, aum: 3388, cur: "USD", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2006-12-08", nav: 158.04, mu: 0.016, sig: 0.08, n: 28,
     top: [["T-Note 4,25% 2034",8.4],["T-Note 4,00% 2034",8.1],["T-Note 4,375% 2034",7.9],["T-Note 3,875% 2033",7.6],["T-Note 4,50% 2033",7.2],["T-Note 3,50% 2033",6.8],["T-Note 4,125% 2035",6.5],["T-Note 2,875% 2032",5.4],["T-Note 4,625% 2035",5.2],["T-Note 2,75% 2032",4.9]],
     b1: ["Emittenti", [["Tesoro USA",100]]],
     b2: ["Scadenze", [["7-8 anni",34.6],["8-9 anni",30.2],["9-10 anni",35.2]]] },
-  { name: "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged (Acc)", ticker: "AGGH", isin: "IE00BDBRDM35", provider: "iShares", asset: "Obbligazionario", region: "Globale", focus: "Aggregato", index: "Bloomberg Global Aggregate (EUR hedged)", ter: 0.10, aum: 11300, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-11-21", nav: 4.96, mu: 0.012, sig: 0.05, n: 12940,
+  { name: "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged (Acc)", ticker: "AGGH", isin: "IE00BDBRDM35", provider: "iShares", asset: "Obbligazionario", region: "Globale", focus: "Aggregato", index: "Bloomberg Global Aggregate (EUR hedged)", ter: 0.10, aum: 2611, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-11-21", nav: 4.96, mu: 0.012, sig: 0.05, n: 12940,
     top: [["T-Note 4,25% 2034",0.3],["Cina 2,52% 2033",0.3],["T-Note 4,00% 2034",0.3],["JGB 0,80% 2034",0.2],["Gilt 4,25% 2034",0.2],["BTP 3,85% 2034",0.2],["OAT 3,00% 2033",0.2],["Bund 2,60% 2034",0.2],["Fannie Mae 30Y 5,0%",0.2],["Freddie Mac 30Y 5,5%",0.2]],
     b1: ["Paesi", [["Stati Uniti",40.8],["Giappone",9.8],["Cina",9.4],["Francia",5.6],["Germania",4.9],["Altri",29.5]]],
     b2: ["Tipologia", [["Governativi",54.1],["Societari",18.3],["Cartolarizzati",13.2],["Agenzie",10.1],["Altri",4.3]]] },
-  { name: "Invesco Physical Gold ETC", ticker: "SGLD", isin: "IE00B579F325", provider: "Invesco", asset: "Materie prime", region: "Globale", focus: "Oro", index: "LBMA Gold Price PM", ter: 0.12, aum: 20100, cur: "USD", repl: "Fisica (ETC)", dist: "Accumulazione", dom: "Irlanda", inception: "2009-07-02", nav: 331.60, mu: 0.08, sig: 0.15, n: 1,
+  { name: "Invesco Physical Gold ETC", ticker: "SGLD", isin: "IE00B579F325", provider: "Invesco", asset: "Materie prime", region: "Globale", focus: "Oro", index: "LBMA Gold Price PM", ter: 0.12, aum: 26175, cur: "USD", repl: "Fisica (ETC)", dist: "Accumulazione", dom: "Irlanda", inception: "2009-06-25", nav: 331.60, mu: 0.08, sig: 0.15, n: 1,
     top: [["Lingotti d'oro allocati",100]],
     b1: ["Custodia", [["Londra",100]]],
     b2: ["Sottostante", [["Oro fisico",100]]] },
@@ -650,7 +684,7 @@ function render() {
 const PERIODS = [["1M", () => back(1)], ["6M", () => back(6)], ["YTD", () => new Date(TODAY.getFullYear(), 0, 1).getTime()], ["1A", () => back(12)], ["3A", () => back(0, 3)], ["5A", () => back(0, 5)], ["Max", () => 0]];
 let cur = null, curPeriod = "1A";
 
-const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/it/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
+const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione${ib("liq")}</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio${ib("adv")}</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread${ib("spr")}</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
 
 function openDetail(isin) {
   const e = ETFS.find(x => x.isin === isin); if (!e) return;
@@ -674,7 +708,7 @@ function openDetail(isin) {
     <div class="d-top">
       <div>
         <h2 id="d-name">${esc(e.name)}</h2>
-        <div class="id n">${e.ticker} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/it/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></div>
+        <div class="id n">${e.ticker} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></div>
         <button type="button" class="ghost" id="d-add" style="margin-top:12px">Aggiungi a portafoglio</button>
       </div>
       <button class="icon close" type="button" id="d-close" aria-label="Chiudi">
@@ -704,7 +738,8 @@ function openDetail(isin) {
     ${fcHtml(e)}
 
     <section class="sec"><h3>Dati</h3>
-      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <p class="fc-note">Verificato su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio. Posizioni e ripartizioni sono indicative.</p>
     </section>
 
     <div class="cols2">
@@ -815,7 +850,7 @@ function drawChart() {
     ["Volatilità", fmt(vol * 100) + "%"],
     ["Max drawdown", pct(mdd)],
     ["Min – Max", `${fmt(Math.min(...V))} – ${fmt(Math.max(...V))}`],
-  ].map(([k, v]) => `<div><span class="k">${k}</span><span class="n">${v}</span></div>`).join("");
+  ].map(([k, v]) => `<div><span class="k">${k}${{ Volatilità: ib("vol"), "Max drawdown": ib("dd") }[k] || ""}</span><span class="n">${v}</span></div>`).join("");
 }
 
 /* ---------- Previsioni per indice (fonti con link) ---------- */
@@ -871,6 +906,8 @@ const eurS = v => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + "
 const eurS2 = v => (Math.round(v * 100) > 0 ? "+" : Math.round(v * 100) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 2);
 const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return hi; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo; };
 const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
+const ICO_ED = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 12l.6-2.7 6.9-6.9a1.2 1.2 0 011.7 0l.4.4a1.2 1.2 0 010 1.7L4.7 11.4 2 12z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+const ICO_X = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
 const isDraft = p => !!p && p.kind === "draft";
 const ymd = ms => new Date(ms).toISOString().slice(0, 10);
 const defStart = isins => ymd(Math.max(back(0, 3), ...isins.map(i => dateMs(byIsin(i).inception))));
@@ -905,6 +942,8 @@ const draftSample = () => ({ id: "prova-draft", name: "Prova · Draft 60/40", cu
   start: defStart(["IE00B5BMR087", "IE00B4K48X80", "IE00BKM4GZ66", "IE00B4WXJJ64", "IE00B579F325"]),
   items: [{ isin: "IE00B5BMR087", weight: 36 }, { isin: "IE00B4K48X80", weight: 12 }, { isin: "IE00BKM4GZ66", weight: 12 }, { isin: "IE00B4WXJJ64", weight: 30 }, { isin: "IE00B579F325", weight: 10 }] });
 const buildSamples = () => [...buildSamplesOwned(), draftSample()];
+const KI = { Valore: "val", Investito: "inv", Utile: "utile", "Rendimento annuo": "ann", Volatilità: "vol", "Max drawdown": "dd", Sharpe: "sharpe" };
+const FI = { TER: "ter", Patrimonio: "aum", Replica: "repl", Dividendi: "dist", Valuta: "cur", Domicilio: "dom" };
 let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null;
 function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
 function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, portfolios: USER })); } catch {} }
@@ -1191,7 +1230,7 @@ const donut = items => {
 const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => { if (P.cw[i] > 1e-9) m.set(e[key], (m.get(e[key]) || 0) + P.cw[i] * 100); }); return [...m].sort((a, b) => b[1] - a[1]); };
 
 /* ---------- Portafoglio: pagina ---------- */
-const justEtf = isin => `https://www.justetf.com/it/etf-profile.html?isin=${isin}`;
+const justEtf = isin => `https://www.justetf.com/en/etf-profile.html?isin=${isin}`;
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
 function renderEmpty() {
   PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
@@ -1211,10 +1250,10 @@ function renderPf() {
   $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
   $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
   $("kpi").innerHTML = [
-    ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", `${eurS(pl)} <span style="font-size:var(--fs-s)">${pct(pl / inv, 1)}</span>`, cls(pl)],
+    ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)],
     ["Rendimento annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
     ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
-  ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
+  ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}${KI[k] ? ib(KI[k]) : ""}</span><span class="n ${c}">${v}</span></div>`).join("");
   liveUpdate(true);
   const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0]);
   if (!avail.some(([p]) => p === pfPeriod)) pfPeriod = "Max";
@@ -1225,13 +1264,13 @@ function renderPf() {
     const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
       <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
-  $("pf-lots").innerHTML = dr ? "" : `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), g = l.qty > 0 ? P.lastPx[P.isins.indexOf(l.isin)] / l.price - 1 : null; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" data-i="${oi}" aria-label="Modifica" title="Modifica">✎</button><button type="button" class="del" data-i="${oi}" aria-label="Elimina" title="Elimina">×</button></td></tr>`; }).join("")}</tbody>`;
+  $("pf-lots").innerHTML = dr ? "" : `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), g = l.qty > 0 ? P.lastPx[P.isins.indexOf(l.isin)] / l.price - 1 : null; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" data-i="${oi}" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" data-i="${oi}" aria-label="Elimina" title="Elimina">${ICO_X}</button></td></tr>`; }).join("")}</tbody>`;
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
     return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
 
   EF = frontier(P, +$("ef-cap").value);
   const wl = w => (EF ? EF.act : []).map((ai, j) => [P.es[ai].ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
-  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento</th><th>Volatilità</th><th>Sharpe</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
+  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Min varianza": ib("minvar"), "Max Sharpe": ib("maxsharpe") }[n] || ""}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
   $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
 
   let cov = 0, acc = 0;
@@ -1290,9 +1329,9 @@ function liveUpdate(force) {
   const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.es.some(e => !e.real);
   $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
   $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">${sim ? "simulato" : "live"} · ${new Date().toLocaleTimeString("it-IT")}</span>`;
-  $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
+  $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}${ib("twr")}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
   const kv = k => $("kpi").querySelector(`[data-k="${k}"] .n`);
-  if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").innerHTML = `${eurS(pl)} <span style="font-size:var(--fs-s)">${pct(pl / inv, 1)}</span>`; }
+  if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").textContent = eurS(pl); }
 }
 // Con prezzi reali la quotazione corrente arriva da prices.js (aggiornato da fetch_prices.py --watch); altrimenti oscilla in modo simulato.
 function applyLive() {
@@ -1321,7 +1360,7 @@ function renderDraft() {
   const pf = pfCur, tot = pf.items.reduce((a, i) => a + i.weight, 0), have = new Set(pf.items.map(i => i.isin));
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
   $("dr-add").innerHTML = ETFS.filter(e => !have.has(e.isin)).sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
-  $("dr-tbl").innerHTML = `<thead><tr><th>ETF</th><th>Peso %</th><th></th></tr></thead><tbody>${pf.items.map((it, i) => { const e = byIsin(it.isin); return `<tr><td class="n">${e.ticker}<span class="wl">${esc(e.name)}</span></td><td><input class="wi" type="number" min="0" max="100" step="0.1" value="${it.weight}" data-i="${i}" aria-label="Peso ${e.ticker}"></td><td class="act"><button type="button" class="del" data-i="${i}" aria-label="Rimuovi ${e.ticker}">×</button></td></tr>`; }).join("")}</tbody>`;
+  $("dr-tbl").innerHTML = `<thead><tr><th>ETF</th><th>Peso %${ib("peso")}</th><th></th></tr></thead><tbody>${pf.items.map((it, i) => { const e = byIsin(it.isin); return `<tr><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><input class="wi" type="number" min="0" max="100" step="0.1" value="${it.weight}" data-i="${i}" aria-label="Peso ${e.ticker}"></td><td class="act"><button type="button" class="del" data-i="${i}" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>`;
   const st = pf.items.length ? simStart(pf) : dateMs(pf.start), clamp = st > dateMs(pf.start);
   $("dr-note").innerHTML = pf.items.length ? `Totale <span class="n">${fmt(tot, 1)}%</span>${Math.abs(tot - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}${clamp ? ` · simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : ""}` : "";
   const rows = pf.items.filter(i => i.weight > 0).map(i => { const e = byIsin(i.isin), pr = e.live, amt = pf.amount * i.weight / tot, q = Math.floor(amt / pr); return { e, w: i.weight / tot, amt, pr, q, cost: q * pr }; });
@@ -1375,6 +1414,62 @@ $("addto").addEventListener("submit", ev => {
   $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showView("port");
 });
 function updSel() { const n = SEL.size; $("selbar").hidden = !n; $("sel-n").textContent = n + (n === 1 ? " selezionato" : " selezionati"); }
+
+/* ---------- Spiegazioni (pannello "i") ---------- */
+const JE = "https://www.justetf.com/en/";
+const GL_LINKS = {
+  scelta: ["justETF · Come scegliere un ETF", JE + "academy/make-the-right-etf-selection.html"],
+  globale: ["justETF · Come scegliere un ETF globale", JE + "academy/how-to-choose-a-global-etf.html"],
+  ter: ["justETF · TER e costo totale (TCO)", JE + "news/etf/cost-of-etfs-total-expense-ratio-ter-vs-total-cost-of-ownership-tco.html"],
+  liq: ["justETF · Liquidità degli ETF", JE + "news/etf/etf-liquidity-what-you-need-to-know.html"],
+  trading: ["justETF · Come funziona la negoziazione", JE + "academy/how-does-etf-trading-work.html"],
+  guida: ["justETF · Guida completa agli ETF", JE + "academy/ultimate-guide.html"],
+};
+const GL = {
+  val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
+  inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra ogni operazione con data, quantità e prezzo reali. Una vendita riduce l'investito.", ref: [] },
+  utile: { t: "Utile", what: "Valore attuale meno investito, in euro. Include anche quanto hai già incassato con le vendite.", use: "Mostra il guadagno o la perdita complessivi in euro.", how: "Non è un rendimento in percentuale: per quello guarda i rendimenti per periodo.", ref: [] },
+  ann: { t: "Rendimento annuo", what: "Rendimento composto riportato su base annua, calcolato in modo da non risentire di quando versi o vendi (a pesi temporali).", use: "Permette di confrontare portafogli e indici con durate diverse.", how: "Compare dopo 6 mesi di storia: prima sarebbe poco significativo. Confrontalo con quello di un indice di riferimento.", ref: [["Azionario globale, lungo periodo (ordine di grandezza storico)", "6–8% annuo"], ["Obbligazionario, lungo periodo", "2–4% annuo"], ["Nota", "non sono previsioni"]] },
+  twr: { t: "Rendimenti per periodo", what: "Oggi, settimana, mese, anno, anno precedente e dall'inizio. La percentuale ignora quando hai versato o venduto; l'importo in euro è il guadagno effettivo del periodo.", use: "Mostra come sta andando il portafoglio sui diversi orizzonti.", how: "Oggi parte dalla chiusura precedente, settimana dal lunedì, mese dal giorno 1, anno dal 1° gennaio. Se hai iniziato dopo, il periodo parte dal tuo primo acquisto.", ref: [["Periodi brevi", "molto variabili, poco indicativi"], ["Confronto utile", "con l'indice dello stesso periodo"]] },
+  vol: { t: "Volatilità", what: "Quanto oscilla il prezzo: deviazione standard dei rendimenti giornalieri, riportata su base annua.", use: "È la misura più usata del rischio di oscillazione.", how: "In un anno normale il prezzo si muove di circa ±1 volta la volatilità attorno al rendimento medio (nel 68% dei casi). Scegli un livello che ti permette di non vendere nei momenti brutti.", ref: [["Obbligazioni governative a breve", "2–5%"], ["Obbligazioni aggregate", "4–8%"], ["Azioni globali", "12–18%"], ["Azioni mercati emergenti", "15–22%"], ["Oro", "12–18%"], ["Azioni di un solo settore o tema", "20–30%"]], links: ["guida"] },
+  dd: { t: "Massimo calo (drawdown)", what: "La perdita più grande dal massimo precedente al minimo successivo nel periodo.", use: "Mostra quanto potresti vedere scendere il portafoglio in una fase negativa.", how: "Chiediti se sopporteresti quel calo senza vendere. Il periodo breve non include le crisi più gravi.", ref: [["Azionario globale in crisi (2008, 2020)", "da −35% a oltre −50%"], ["Obbligazionario aggregato (2022)", "circa −10% / −20%"], ["Regola pratica", "il calo massimo accettabile guida il mix azioni/obbligazioni"]], links: ["guida"] },
+  sharpe: { t: "Indice di Sharpe", what: "Rendimento annuo diviso volatilità: quanto rendimento ottieni per ogni unità di rischio. Qui il tasso privo di rischio è zero.", use: "Confronta portafogli o ETF con rischi diversi.", how: "Più alto è meglio, ma su pochi anni è instabile. Con tassi privi di rischio positivi i valori reali sono più bassi di questi.", ref: [["Sotto 0,5", "basso"], ["0,5 – 1", "buono"], ["Sopra 1", "molto buono, spesso su periodi favorevoli"]] },
+  peso: { t: "Composizione, peso e prezzo medio", what: "Il peso è la quota del valore del portafoglio in quell'ETF. Il prezzo medio di carico (PMC) è il costo medio per quota di ciò che possiedi: con le vendite si usa il costo medio.", use: "Il peso mostra la diversificazione e i rischi di concentrazione. Il PMC confrontato col prezzo attuale dà l'utile per ETF.", how: "Controlla che nessun ETF pesi più di quanto vuoi. Dopo forti rialzi i pesi si spostano: valuta un ribilanciamento.", ref: [["ETF globale ampio", "può essere il nucleo, anche oltre 50%"], ["ETF tematico o settoriale (regola pratica)", "meno del 5–10%"]], links: ["scelta"] },
+  frontiera: { t: "Frontiera efficiente", what: "Curva dei portafogli con il massimo rendimento possibile per ogni livello di rischio, ottenuta combinando in modi diversi gli ETF che già possiedi (solo posizioni lunghe). Usa rendimenti, volatilità e correlazioni storici.", use: "Mostra se con gli stessi ETF si poteva avere più rendimento a parità di rischio, o meno rischio a parità di rendimento.", how: "Se il punto Attuale sta sotto la curva, esiste una combinazione migliore sul passato. È un indizio, non una previsione: i dati storici cambiano e il risultato dipende molto dal periodo.", ref: [["Attuale vicino alla curva", "composizione già efficiente"], ["Attuale lontano sotto la curva", "possibile miglioramento con un ribilanciamento"]] },
+  minvar: { t: "Minima varianza", what: "Il portafoglio con la volatilità più bassa ottenibile con gli ETF scelti.", use: "È il punto di partenza a sinistra della frontiera: meno rischio possibile.", how: "Utile se vuoi ridurre le oscillazioni. Spesso pesa molto sulle obbligazioni.", ref: [] },
+  maxsharpe: { t: "Massimo Sharpe", what: "Il portafoglio con il miglior rendimento per unità di rischio sulla frontiera.", use: "È considerato il punto più efficiente.", how: "Tende a concentrarsi sugli ETF che sono andati meglio: usa il tetto di peso per evitare portafogli troppo concentrati.", ref: [] },
+  cap: { t: "Peso massimo per ETF", what: "Limite alla quota di ogni ETF nei portafogli calcolati per la frontiera e per il ribilanciamento.", use: "Evita risultati estremi, per esempio il 90% in un solo ETF.", how: "Con meno di 4 ETF il tetto basso non si può rispettare e viene tolto.", ref: [["Valori usuali", "30–40%"]] },
+  rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
+  prev: { t: "Previsioni sull'indice", what: "Obiettivi pubblicati da banche d'investimento per l'indice che l'ETF replica (non per l'ETF), con orizzonti diversi indicati su ogni riga.", use: "Danno un'idea delle aspettative degli analisti.", how: "Guarda l'intervallo tra le banche, non un singolo numero. La media sul portafoglio copre solo gli ETF con previsioni disponibili. Ogni riga rimanda alla fonte.", ref: [["Affidabilità", "le previsioni a 12 mesi sbagliano spesso di molti punti"]] },
+  draft: { t: "Draft e acquistato", what: "Un portafoglio acquistato elenca operazioni reali (data, quantità, prezzo). Un draft è una simulazione: scegli ETF, pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Converti in acquistato» registra gli acquisti di oggi ai prezzi correnti.", ref: [] },
+  dim: { t: "Dimensionamento", what: "Dall'importo e dai pesi calcola quante quote intere comprare ai prezzi correnti.", use: "Ti dice quanto spendere per ETF e quanto resta non investito.", how: "Il residuo è dovuto alle quote intere. Non include commissioni del broker.", ref: [] },
+  ter: { t: "TER (costo annuo)", what: "Costo annuo di gestione in percentuale del patrimonio. È già dentro il prezzo, non si paga a parte.", use: "Permette di confrontare ETF che replicano lo stesso indice.", how: "Confronta solo ETF simili. 0,10 punti in più su 10.000 € sono 10 € l'anno, e si sommano negli anni. Il TER non include spread, commissioni di negoziazione e differenze di replica.", ref: [["ETF S&P 500 (justETF)", "0,03–0,19%"], ["ETF MSCI World (justETF)", "0,05–0,50%"], ["Obbligazioni governative", "0,05–0,20%"], ["Tematici e settoriali", "0,35–0,70%"]], links: ["ter", "scelta"] },
+  aum: { t: "Patrimonio", what: "Valore totale gestito dall'ETF (fund size).", use: "Indica dimensione e solidità. Fondi piccoli rischiano di essere chiusi.", how: "Il patrimonio non garantisce la liquidità di mercato: guarda anche volume e spread.", ref: [["Sotto 100 Mln €", "rischio di chiusura più alto (soglia citata da justETF)"], ["Sopra 1 Mld €", "solido"]], links: ["globale"] },
+  repl: { t: "Replica", what: "Come l'ETF segue l'indice: fisica completa (compra tutti i titoli), fisica a campione (ne compra una selezione) o sintetica (con un contratto swap).", use: "Incide su precisione, costi e rischio di controparte.", how: "Per indici ampi e liquidi la replica fisica è la scelta più semplice. La sintetica ha un rischio di controparte, limitato dalla normativa UCITS.", ref: [["Oro fisico (ETC)", "garantito da metallo custodito"]], links: ["scelta"] },
+  dist: { t: "Accumulazione o distribuzione", what: "Un ETF ad accumulazione reinveste dividendi e cedole nel fondo. Uno a distribuzione li paga a intervalli.", use: "Cambia il flusso di cassa e il momento in cui si pagano le tasse.", how: "Per crescere nel lungo periodo si usa spesso l'accumulazione; per avere un reddito periodico la distribuzione. La fiscalità dipende dal tuo caso: verifica con un professionista.", ref: [], links: ["guida"] },
+  dom: { t: "Domicilio", what: "Paese in cui il fondo è registrato, per esempio Irlanda o Lussemburgo.", use: "Influisce sulle ritenute sui dividendi esteri.", how: "Gli ETF su azioni USA domiciliati in Irlanda hanno di solito una ritenuta più bassa di quelli di altri paesi. La tutela UCITS è la stessa.", ref: [["Irlanda e Lussemburgo", "domicili più comuni per ETF europei"]] },
+  cur: { t: "Valuta", what: "Valuta in cui è denominato il fondo. Può differire da quella di quotazione e da quella dei titoli.", use: "Il rischio di cambio dipende dalle valute dei titoli rispetto al tuo euro.", how: "Le versioni «hedged» coprono il cambio con un piccolo costo. Qui i prezzi sono nella valuta di quotazione, senza conversione.", ref: [] },
+  liq: { t: "Liquidità", what: "Quanto è facile comprare o vendere l'ETF senza spostare il prezzo. Dipende da volume, spread, numero di market maker e liquidità dei titoli sottostanti.", use: "Una liquidità bassa fa costare di più ogni operazione.", how: "Usa ordini con limite di prezzo ed evita apertura e chiusura del mercato. Guarda lo spread per qualche giorno prima di operare.", ref: [["Alta (soglie di questa pagina)", "spread fino a 0,08% e volume da 10 Mln €/giorno"], ["Media", "spread fino a 0,15% e volume da 2 Mln €/giorno"], ["Bassa", "oltre queste soglie"]], links: ["liq", "trading"] },
+  adv: { t: "Volume medio giornaliero", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di eseguire ordini.", how: "Il volume sulla borsa può sottostimare la liquidità reale, perché i market maker creano e rimborsano quote.", ref: [["Oltre 10 Mln €", "ottimo"], ["1–10 Mln €", "adeguato per importi piccoli"], ["Sotto 1 Mln €", "prudenza"]], links: ["trading"] },
+  spr: { t: "Spread denaro-lettera", what: "Differenza tra il miglior prezzo di vendita e di acquisto, in percentuale. È un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
+  parametri: { t: "Guida ai parametri", group: ["ter", "aum", "repl", "dist", "dom", "cur", "liq", "adv", "spr", "vol", "dd", "sharpe"] },
+};
+const ib = k => `<button type="button" class="i" data-g="${k}" aria-label="Informazioni: ${esc(GL[k].t)}">i</button>`;
+function glItem(k) {
+  const g = GL[k], row = (l, t) => (t ? `<div><dt>${l}</dt><dd>${esc(t)}</dd></div>` : "");
+  const refs = g.ref && g.ref.length ? `<div><dt>Parametri di riferimento</dt><dd><ul>${g.ref.map(([a, b]) => `<li><span>${esc(a)}</span><span class="n">${esc(b)}</span></li>`).join("")}</ul></dd></div>` : "";
+  const links = g.links ? `<div><dt>Approfondisci</dt><dd class="lk">${g.links.map(x => `<a href="${GL_LINKS[x][1]}" target="_blank" rel="noopener">${esc(GL_LINKS[x][0])} ↗</a>`).join("")}</dd></div>` : "";
+  return `<article class="gl"><h4>${esc(g.t)}</h4><dl>${row("Cos'è", g.what)}${row("A cosa serve", g.use)}${row("Come si usa", g.how)}${refs}${links}</dl></article>`;
+}
+function openInfo(k) {
+  const g = GL[k]; if (!g) return;
+  $("info-body").innerHTML = `<div class="d-top"><h2 id="info-title">${esc(g.t)}</h2><button class="icon close" type="button" id="info-x" aria-label="Chiudi"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+    ${(g.group || [k]).map(glItem).join("")}
+    <p class="fc-note">Spiegazioni generali a scopo informativo: non sono consulenza finanziaria o fiscale.</p>`;
+  $("info").showModal(); $("info").scrollTop = 0;
+}
+document.addEventListener("click", ev => { const b = ev.target.closest(".i"); if (b) { ev.preventDefault(); ev.stopPropagation(); openInfo(b.dataset.g); } }, true);
+$("info").addEventListener("click", ev => { if (ev.target === $("info") || ev.target.closest("#info-x")) $("info").close(); });
 
 /* ---------- Eventi ---------- */
 /* ---------- Eventi ---------- */
