@@ -35,14 +35,28 @@ def get_json(url):
         return json.load(r)
 
 
-def find_symbol(isin):
+def candidates(isin):
+    """Simboli Yahoo per l'ISIN: quello forzato in SYMBOLS, altrimenti i risultati della ricerca."""
     if isin in SYMBOLS:
-        return SYMBOLS[isin]
-    data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 6, "newsCount": 0}))
-    for q in data.get("quotes", []):
-        if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol"):
-            return q["symbol"]
-    return None
+        return [SYMBOLS[isin]]
+    data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 10, "newsCount": 0}))
+    return [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
+
+
+def best_listing(isin):
+    """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
+    found = []
+    for sym in candidates(isin):
+        try:
+            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={RANGE}&interval=1d"))
+        except Exception:
+            continue
+        time.sleep(0.3)
+        if len(t) >= 50:
+            found.append((sym, cur, t, v, last))
+            if cur == "EUR":
+                break
+    return found
 
 
 def parse_chart(payload):
@@ -73,13 +87,11 @@ def main():
         if only and isin not in only:
             continue
         try:
-            sym = find_symbol(isin)
-            if not sym:
-                print(f"{ticker} {isin}: simbolo non trovato"); continue
-            payload = get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={RANGE}&interval=1d")
-            cur, t, v, last = parse_chart(payload)
-            if len(t) < 50:
-                print(f"{ticker} {sym}: pochi dati ({len(t)})"); continue
+            found = best_listing(isin)
+            if not found:
+                print(f"{ticker} {isin}: nessuna quotazione con dati sufficienti"); continue
+            print(f"{ticker} candidati: " + ", ".join(f"{f[0]} {f[1]}" for f in found))
+            sym, cur, t, v, last = next((f for f in found if f[1] == "EUR"), found[0])
             out[isin] = {"symbol": sym, "currency": cur, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "adv": last.pop("adv", None), "last": last, "t": t, "v": v}
             print(f"{ticker} {sym} {cur}: {len(t)} giorni, ultimo {v[-1]}")
         except Exception as e:  # rete, formato, limiti: si prosegue con gli altri

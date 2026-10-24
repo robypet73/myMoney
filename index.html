@@ -1394,7 +1394,7 @@ function renderPf() {
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const nReal = P.es.filter(e => e.real).length;
   $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
-  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
+  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${window.PRICES && window.PRICES.generated ? dateTxt(Date.parse(window.PRICES.generated), { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " · " : ""}${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
   $("kpi").innerHTML = [
     ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)],
     ["Rend. annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
@@ -1485,7 +1485,20 @@ function applyLive() {
 function startLive() {
   ETFS.forEach(e => (e.live = e.s.v[e.s.v.length - 1])); applyLive();
   setInterval(() => { if (PF) PF.es.forEach(e => { if (!e.real) e.live *= Math.exp(e.sig * Math.sqrt(1 / (252 * 23400)) * gauss()); }); liveUpdate(); }, 1000);
+  if (window.PRICES) { yahooQuotes(); setInterval(yahooQuotes, 30000); }
   if (window.PRICES) setInterval(() => { const s = document.createElement("script"); s.src = "prices.js?t=" + Date.now(); s.onload = () => { applyLive(); s.remove(); }; s.onerror = () => s.remove(); document.head.appendChild(s); }, 5000);
+}
+// Quotazioni scaricate direttamente da Yahoo Finance dal browser, se il sito le consente; altrimenti restano quelle di prices.js (aggiornato dal workflow su GitHub).
+let yahooOk = null;
+async function yahooQuotes() {
+  const PR = window.PRICES; if (!PR || !PR.series || yahooOk === false || document.hidden) return;
+  for (const [isin, s] of Object.entries(PR.series)) {
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const r = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(s.symbol) + "?range=1d&interval=1m", { signal: ctl.signal }), m = (await r.json()).chart.result[0].meta, e = byIsin(isin);
+      if (e && m.regularMarketPrice > 0) { e.live = m.regularMarketPrice; yahooOk = true; }
+    } catch { if (yahooOk === null) { yahooOk = false; return; } } finally { clearTimeout(to); }
+  }
 }
 const DEF_KEY = "mm-default";
 const getDef = () => { try { return localStorage.getItem(DEF_KEY); } catch { return null; } };
