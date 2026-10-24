@@ -85,9 +85,10 @@ def candidates(isin, ticker=None):
 def best_listing(isin, ticker=None, rng=None):
     """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
     found, ref = [], None
+    qs = "period1=0&period2=" + str(int(time.time())) if rng == "max" else "range=" + (rng or RANGE)
     for sym in candidates(isin, ticker):
         try:
-            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={rng or RANGE}&interval=1d"))
+            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?{qs}&interval=1d"))
         except Exception:
             continue
         time.sleep(0.3)

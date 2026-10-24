@@ -46,7 +46,7 @@ def to_eur(cur, t, v):
     if base == "EUR":
         return t, [round(x * scale, 4) for x in v], None
     if base not in FX:
-        _, ft, fv, _ = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/EUR{base}=X?range=max&interval=1d"))
+        _, ft, fv, _ = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/EUR{base}=X?period1=0&period2={int(time.time())}&interval=1d"))
         FX[base] = (ft, fv); time.sleep(0.3)
     ft, fv = FX[base]
     out, j = [], 0
@@ -100,7 +100,7 @@ def main():
         try:
             known = syms.get(isin)
             if known and known.get("symbol"):
-                cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?range=max&interval=1d"))
+                cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?period1=0&period2={int(time.time())}&interval=1d"))
                 sym = known["symbol"]
                 if len(t) < 50:
                     raise ValueError("pochi dati")
