@@ -43,16 +43,17 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 
 ```json
 { "version": 1, "portfolios": [
-  { "id": "…", "name": "…", "currency": "EUR", "kind": "owned",
+  { "id": "…", "name": "…", "description": "…", "currency": "EUR", "kind": "owned",
     "lots": [{ "isin": "…", "date": "AAAA-MM-GG", "qty": 10, "price": 100.5 }] },
-  { "id": "…", "name": "…", "currency": "EUR", "kind": "draft",
+  { "id": "…", "name": "…", "description": "…", "currency": "EUR", "kind": "draft",
     "amount": 10000, "start": "AAAA-MM-GG", "items": [{ "isin": "…", "weight": 40 }] }
 ] }
 ```
 
 - `owned` (acquistato): lista di operazioni; una **quantità negativa è una vendita** e non può superare le quote possedute.
 - `draft`: pesi target su un importo, simulati dalla data `start`; si può dimensionare e convertire in acquistato.
-- I portafogli dell'utente stanno in `localStorage` (`mm-portfolios-v1`), il predefinito in `mm-default`. I portafogli di prova (`sample: true`) non si modificano: la modifica crea una copia "(mio)".
+- I portafogli dell'utente stanno in `localStorage` (`mm-portfolios-v1`), il predefinito in `mm-default`, i portafogli di prova nascosti in `mm-hidden`. I portafogli di prova (`sample: true`) non si modificano: la modifica crea una copia "(mio)"; eliminarli li nasconde (si ripristinano dalla scheda Portafogli). C'è sempre almeno un portafoglio.
+- Scheda **Portafogli**: elenco con Apri, Ribilancia, Esporta, Elimina; «+ Nuovo portafoglio» crea un draft vuoto con titolo e descrizione; JSON scaricabile (tutti o uno) e importabile. Dalla ricerca e dal dettaglio ETF si aggiunge a un portafoglio esistente o a uno nuovo (con titolo e descrizione).
 
 ## Struttura di `index.html`
 
