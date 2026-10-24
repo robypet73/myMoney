@@ -42,22 +42,25 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 ## Modello dei portafogli (JSON)
 
 ```json
-{ "version": 1, "portfolios": [
-  { "id": "…", "name": "…", "description": "…", "currency": "EUR", "kind": "owned",
-    "lots": [{ "isin": "…", "date": "AAAA-MM-GG", "qty": 10, "price": 100.5 }] },
-  { "id": "…", "name": "…", "description": "…", "currency": "EUR", "kind": "draft",
-    "amount": 10000, "start": "AAAA-MM-GG", "items": [{ "isin": "…", "weight": 40 }] }
-] }
+{ "version": 2, "portfolio": {
+  "id": "…", "name": "…", "description": "…", "currency": "EUR",
+  "amount": 10000, "start": "AAAA-MM-GG",
+  "positions": [
+    { "isin": "…", "weight": 40 },
+    { "isin": "…", "qty": 12 },
+    { "isin": "…", "transactions": [ { "date": "AAAA-MM-GG", "price": 100.5, "qty": 10 }, { "date": "AAAA-MM-GG", "price": 110, "qty": -4 } ] }
+  ] } }
 ```
 
-- `owned` (acquistato): lista di operazioni; una **quantità negativa è una vendita** e non può superare le quote possedute.
-- `draft`: pesi target su un importo, simulati dalla data `start`; si può dimensionare e convertire in acquistato.
+- Ogni portafoglio ha **posizioni**: ISIN + quantità **assoluta** (`qty`, quote) **oppure percentuale** (`weight`, % di `amount`), entrambe opzionali. In più, **operazioni opzionali e multiple** (`transactions`: data, prezzo, quantità; **quantità negativa = vendita**, non può superare le quote possedute).
+- La quantità iniziale (`qty`/`weight`) si considera aperta alla data `start` (non prima del lancio dell'ETF) al prezzo di quel giorno; le operazioni si sommano. Senza operazioni il portafoglio è un **draft** (simulazione), con operazioni è **acquistato**.
+- Un file JSON per portafoglio (`{version, portfolio}`); più portafogli insieme: `{version, portfolios: [...]}`. L'import accetta anche il formato precedente (`kind: owned` con `lots`, `kind: draft` con `items`).
 - I portafogli dell'utente stanno in `localStorage` (`mm-portfolios-v1`), il predefinito in `mm-default`, i portafogli di prova nascosti in `mm-hidden`. I portafogli di prova (`sample: true`) non si modificano: la modifica crea una copia "(mio)"; eliminarli li nasconde (si ripristinano dalla scheda Portafogli). C'è sempre almeno un portafoglio.
-- Scheda **Portafogli**: elenco con Apri, Ribilancia, Esporta, Elimina; «+ Nuovo portafoglio» crea un draft vuoto con titolo e descrizione; JSON scaricabile (tutti o uno) e importabile. Dalla ricerca e dal dettaglio ETF si aggiunge a un portafoglio esistente o a uno nuovo (con titolo e descrizione).
+- Scheda **Home**: portafoglio selezionato; sezione **Posizioni** (quantità + unità quote/%, operazioni per ETF, aggiunta ETF) e **Dimensionamento**; «Scarica JSON» del portafoglio. Scheda **Portafogli**: elenco con Apri, Ribilancia, Esporta, Elimina; «+ Nuovo portafoglio» crea un portafoglio vuoto con titolo e descrizione; JSON scaricabile (tutti o uno) e importabile. Dalla ricerca e dal dettaglio ETF si aggiunge a un portafoglio esistente o a uno nuovo (quantità o % e, facoltativi, data e prezzo).
 
 ## Struttura di `index.html`
 
-CSS in alto (token, poi sezioni), poi markup (`#v-port` portafoglio, `#v-search` ricerca, finestre `#detail` e `#addto`), poi lo script: dati `ETFS`, serie simulate, ricerca e filtri, dettaglio ETF, previsioni `FC`, motore del portafoglio (`pfBuild`, `pfStats`, `frontier`, `renderRb`), rendimenti live, draft, eventi.
+CSS in alto (token, poi sezioni), poi markup (`#v-port` Home/portafoglio, `#v-search` ricerca, finestre `#detail` e `#addto`), poi lo script: dati `ETFS`, serie simulate, ricerca e filtri, dettaglio ETF, previsioni `FC`, motore del portafoglio (`pfBuild`, `pfStats`, `frontier`, `renderRb`), rendimenti live, draft, eventi.
 
 ## App installabile (PWA)
 

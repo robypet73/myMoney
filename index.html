@@ -48,7 +48,8 @@ button, input, select { font: inherit; color: inherit; }
 .wrap { max-width: 880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
 header .wrap { padding-block: 28px 0; }
-.logo { font-weight: 600; font-size: var(--fs-m); letter-spacing: -.03em; }
+.logo { font-weight: 600; font-size: var(--fs-m); letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 8px; }
+.logo img { width: 28px; height: 28px; border-radius: 8px; display: block; }
 .logo i { font-style: normal; color: var(--soft); }
 
 /* Ricerca */
@@ -226,7 +227,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .rbctl button:disabled { opacity: .35; cursor: default; }
 .buy { color: var(--up); } .sell { color: var(--down); }
-.lotform #lot-cancel { background: none; color: var(--soft); border: 1px solid var(--hair); }
+.lotform #op-cancel { background: none; color: var(--soft); border: 1px solid var(--hair); }
 .rowwrap { display: flex; align-items: center; gap: 14px; border-top: 1px solid var(--hair); }
 .rowwrap:last-child { border-bottom: 1px solid var(--hair); }
 .rowwrap .row { flex: 1; min-width: 0; width: auto; border-top: 0; }
@@ -246,7 +247,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .ghost:hover { border-color: var(--fg); }
 .kind { font-size: var(--fs-s); border: 1px solid var(--hair); border-radius: 99px; padding: 3px 10px; color: var(--soft); white-space: nowrap; }
 .kind.draft { color: var(--c3); border-color: var(--c3); }
-#draft-sec .lotform button, #lots-sec .lotform button { white-space: nowrap; }
+#pos-sec .lotform button { white-space: nowrap; }
 .wi { width: 72px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); border-radius: 0; padding: 4px 0; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
 .rn input[type="number"], .rn input[type="date"] { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: var(--fs-m); }
 .i { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; padding: 0; border: 1px solid var(--soft); border-radius: 50%; background: none; color: var(--soft); font: 500 var(--fs-s)/1 var(--f); text-transform: none; letter-spacing: 0; cursor: pointer; vertical-align: -3px; }
@@ -299,18 +300,25 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .v small { line-height: 16px; margin-top: 3px; }
 .hrow .main, .row .main { gap: 3px; }
 .eft .wl.nmx { font-family: var(--f); }
-.lots th:nth-child(2), .lots td:nth-child(2) { text-align: left; padding-left: 0; }
 .del { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; vertical-align: middle; }
 .del svg { display: block; }
 .act { text-align: right; white-space: nowrap; }
 .lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-m); min-width: 0; }
-#lot-etf { flex: 1 1 220px; text-overflow: ellipsis; }
-#lot-date { flex: 0 0 150px; }
-#lot-qty, #lot-price { flex: 0 0 110px; }
+#op-op { flex: 0 0 110px; }
+#op-date { flex: 0 0 150px; }
+#op-qty, #op-price { flex: 0 0 110px; }
+.qcell { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.qi { width: 84px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); border-radius: 0; padding: 4px 0; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
+.qu { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 4px 10px; font-size: var(--fs-s); }
+.pos .oprow > td { padding: 12px 0 14px 0; white-space: normal; text-align: left; }
+.pos, .pos .ops { min-width: 0; }
+.pos .ops { margin-top: 0; }
+@media (max-width: 480px) { .pos .wl { display: none; } .pos .qi { width: 64px; } }
+.atrow input.at-d { flex: 1 1 130px; }
 .lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .fc-note.err { color: var(--down); }
-.rn { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+.rn { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
 #pf-name { border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font-size: var(--fs-m); padding: 4px 0; min-width: 0; flex: 1; max-width: 320px; }
 .del { border: 0; background: none; color: var(--soft); cursor: pointer; padding: 0 2px; font-size: var(--fs-m); line-height: 1; }
 .del:hover { color: var(--down); }
@@ -344,9 +352,9 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo">my<i>Money</i></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span>my<i>Money</i></span></span>
   <nav class="tabs" aria-label="Sezioni">
-    <button type="button" data-v="port" aria-pressed="true">Portafoglio</button>
+    <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
     <button type="button" data-v="search" aria-pressed="false">Cerca</button>
   </nav>
@@ -359,6 +367,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <button type="button" class="newpf" id="pf-def" aria-pressed="false">☆ Predefinito</button>
       <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
       <button type="button" class="newpf" id="pf-reb">Ribilancia</button>
+      <button type="button" class="newpf" id="pf-exp">Scarica JSON</button>
       <button type="button" class="newpf" id="pf-del">Elimina</button>
     </div>
     <span class="kind" id="kind"></span>
@@ -385,27 +394,17 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 
   <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div>
     <div class="io"><button type="button" id="to-draft">Duplica come draft</button></div></section>
-  <section class="sec pf-sec" id="draft-sec" hidden><h3>Composizione target<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft">i</button></h3>
-    <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Simula da</label><input id="dr-start" type="date" style="max-width:160px"></div>
-    <div class="scroll"><table class="eft" id="dr-tbl"></table></div>
+  <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
+    <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
+    <div class="scroll"><table class="eft pos" id="pos-tbl"></table></div>
     <div class="lotform" style="margin-top:12px"><select id="dr-add" aria-label="ETF da aggiungere"></select><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button></div>
     <p class="fc-note" id="dr-note"></p>
-    <h3 style="margin-top:28px">Dimensionamento ai prezzi correnti<button type="button" class="i" data-g="dim" aria-label="Informazioni: dimensionamento">i</button></h3>
-    <div class="scroll"><table class="eft" id="dr-size"></table></div>
-    <div class="io"><button type="button" id="dr-own">Converti in acquistato</button></div>
-  </section>
-  <section class="sec pf-sec" id="lots-sec"><h3>Acquisti<button type="button" class="i" data-g="inv" aria-label="Informazioni: investito">i</button></h3>
-    <form class="lotform" id="lot-form">
-      <select id="lot-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
-      <select id="lot-etf" aria-label="ETF"></select>
-      <input id="lot-date" type="date" aria-label="Data dell'operazione" required>
-      <input id="lot-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
-      <input id="lot-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
-      <button type="submit" id="lot-submit">Aggiungi</button>
-      <button type="button" id="lot-cancel" hidden>Annulla</button>
-    </form>
     <p class="fc-note" id="lot-msg" aria-live="polite"></p>
-    <div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
+  </section>
+  <section class="sec pf-sec" id="dim-sec" hidden><h3>Dimensionamento ai prezzi correnti<button type="button" class="i" data-g="dim" aria-label="Informazioni: dimensionamento">i</button></h3>
+    <div class="scroll"><table class="eft" id="dr-size"></table></div>
+    <div class="io"><button type="button" id="dr-own">Registra acquisti a oggi</button></div>
+  </section>
   <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
 
   <section class="sec pf-sec"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
@@ -435,7 +434,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </main>
 
 <main class="wrap" id="v-pfs" hidden>
-  <section class="pfs-head"><h2>Portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
+  <section class="pfs-head"><h2><button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
   <div id="pfs-list"></div>
   <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
   <section class="sec pf-sec"><h3>Salvataggio e JSON</h3>
@@ -1019,16 +1018,25 @@ const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return
 const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
 const ICO_ED = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 12l.6-2.7 6.9-6.9a1.2 1.2 0 011.7 0l.4.4a1.2 1.2 0 010 1.7L4.7 11.4 2 12z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
 const ICO_X = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-const isDraft = p => !!p && p.kind === "draft";
+const hasTx = p => p.positions.some(x => x.txs.length);
+const isDraft = p => !!p && !hasTx(p); // draft = simulazione: nessuna operazione registrata
 const ymd = ms => new Date(ms).toISOString().slice(0, 10);
 const defStart = isins => ymd(Math.max(back(0, 3), ...isins.map(i => dateMs(byIsin(i).inception))));
-// Draft: pesi target su un importo, simulati come acquisto unico alla data di partenza (non prima del lancio dell'ultimo ETF).
-const simStart = pf => Math.max(dateMs(pf.start), ...pf.items.map(i => dateMs(byIsin(i.isin).inception)));
-function simLots(pf) {
-  const act = pf.items.filter(i => i.weight > 0), tot = act.reduce((a, i) => a + i.weight, 0), st = simStart(pf);
-  return act.map(i => { const p = priceAt(byIsin(i.isin), st); return { isin: i.isin, date: ymd(st), qty: pf.amount * (i.weight / tot) / p, price: p }; });
+const mkPos = (isin, o = {}) => ({ isin, qty: o.qty != null ? o.qty : null, weight: o.weight != null ? o.weight : null, txs: o.txs || [] });
+const mkPf = o => ({ currency: "EUR", description: "", amount: 10000, start: ymd(back(0, 3)), positions: [], ...o });
+const clonePf = p => ({ ...p, positions: p.positions.map(x => ({ ...x, txs: x.txs.map(t => ({ ...t })) })) });
+// Posizione iniziale (quantità o peso %) aperta alla data di partenza, non prima del lancio degli ETF; le operazioni si aggiungono.
+const hasBase = x => x.qty > 0 || x.weight > 0;
+const simStart = pf => Math.max(dateMs(pf.start), ...pf.positions.filter(hasBase).map(x => dateMs(byIsin(x.isin).inception)));
+function pfLots(pf) {
+  const st = simStart(pf), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0), out = [];
+  pf.positions.forEach(x => {
+    const p = priceAt(byIsin(x.isin), st), q = x.weight > 0 ? pf.amount * x.weight / W / p : x.qty > 0 ? x.qty : 0;
+    if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p });
+    x.txs.forEach(t => out.push({ isin: x.isin, date: t.date, qty: t.qty, price: t.price }));
+  });
+  return out.sort(byDate);
 }
-const pfLots = pf => (isDraft(pf) ? simLots(pf) : pf.lots);
 const LS_KEY = "mm-portfolios-v1";
 
 // Portafogli di prova: acquisti con ETF reali; i prezzi d'acquisto vengono presi dalla serie di prezzi caricata.
@@ -1046,59 +1054,64 @@ const SAMPLE_SPECS = [
     ["IE00B4WXJJ64", "2022-01-17", 30000], ["IE00B4WXJJ64", "2023-06-12", 15000], ["IE00B4WXJJ64", "2025-02-10", 10000],
     ["IE00B579F325", "2022-01-17", 10000], ["IE00B579F325", "2024-09-16", 5000] ] },
 ];
-const buildSamplesOwned = () => SAMPLE_SPECS.map(sp => ({ id: sp.id, name: sp.name, description: sp.desc, currency: "EUR", kind: "owned", sample: true,
-  lots: sp.buys.map(([isin, date, amt]) => { const p = priceAt(byIsin(isin), dateMs(date)); return { isin, date, qty: Math.max(1, Math.round(amt / p)), price: +p.toFixed(2) }; }) }));
+const buildSamplesOwned = () => SAMPLE_SPECS.map(sp => { const by = {};
+  sp.buys.forEach(([isin, date, amt]) => { const p = priceAt(byIsin(isin), dateMs(date)); (by[isin] = by[isin] || []).push({ date, qty: Math.max(1, Math.round(amt / p)), price: +p.toFixed(2) }); });
+  return mkPf({ id: sp.id, name: sp.name, description: sp.desc, sample: true, positions: Object.entries(by).map(([isin, txs]) => mkPos(isin, { txs })) }); });
 
-const draftSample = () => ({ id: "prova-draft", name: "Prova · Draft 60/40", description: "Simulazione 60% azioni, 30% obbligazioni, 10% oro su 50.000 €", currency: "EUR", kind: "draft", sample: true, amount: 50000,
-  start: defStart(["IE00B5BMR087", "IE00B4K48X80", "IE00BKM4GZ66", "IE00B4WXJJ64", "IE00B579F325"]),
-  items: [{ isin: "IE00B5BMR087", weight: 36 }, { isin: "IE00B4K48X80", weight: 12 }, { isin: "IE00BKM4GZ66", weight: 12 }, { isin: "IE00B4WXJJ64", weight: 30 }, { isin: "IE00B579F325", weight: 10 }] });
+const draftSample = () => { const w = [["IE00B5BMR087", 36], ["IE00B4K48X80", 12], ["IE00BKM4GZ66", 12], ["IE00B4WXJJ64", 30], ["IE00B579F325", 10]];
+  return mkPf({ id: "prova-draft", name: "Prova · Draft 60/40", description: "Simulazione 60% azioni, 30% obbligazioni, 10% oro su 50.000 €", sample: true, amount: 50000, start: defStart(w.map(x => x[0])), positions: w.map(([isin, weight]) => mkPos(isin, { weight })) }); };
 const buildSamples = () => [...buildSamplesOwned(), draftSample()];
 const KI = { Valore: "val", Investito: "inv", Utile: "utile", "Rend. annuo": "ann", Volatilità: "vol", "Max drawdown": "dd", Sharpe: "sharpe" };
 const FI = { TER: "ter", Patrimonio: "aum", Replica: "repl", Dividendi: "dist", Valuta: "cur", Domicilio: "dom" };
 let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null;
 function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
-function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, portfolios: USER })); } catch {} }
-function allPf() { const hid = hiddenSamples(), s = buildSamples().filter(x => !hid.includes(x.id)); s.forEach(x => x.lots && x.lots.sort(byDate)); PFLIST = [...USER, ...s.filter(x => !USER.some(u => u.id === x.id))]; }
+function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 2, portfolios: USER.map(pfBody) })); } catch {} }
+function allPf() { const hid = hiddenSamples(), s = buildSamples().filter(x => !hid.includes(x.id)); PFLIST = [...USER, ...s.filter(x => !USER.some(u => u.id === x.id))]; }
 
 const byDate = (a, b) => a.date.localeCompare(b.date) || b.qty - a.qty;
 // Una vendita non può superare la quantità posseduta in quel momento (lotti ordinati per data).
 function sellErr(lots) { const q = {}; for (const l of lots) { q[l.isin] = (q[l.isin] || 0) + l.qty; if (q[l.isin] < -1e-9) return `vendita di ${byIsin(l.isin).ticker} del ${l.date} superiore alla quantità posseduta`; } return ""; }
 
-// Valida un portafoglio importato: restituisce { pf, err }.
+// Valida un portafoglio importato (anche nei formati precedenti: kind owned con lots, kind draft con items): restituisce { pf, err }.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 function cleanPf(p) {
   const err = [];
   if (!p || typeof p !== "object") return { err: ["portafoglio non valido"] };
   const name = String(p.name || "").trim() || "Senza nome", description = String(p.description || "").trim().slice(0, 500);
   const id = String(p.id || "").trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pf-" + Date.now();
-  if (p.kind === "draft") {
-    const items = [], amount = +p.amount, start = String(p.start || "");
-    (Array.isArray(p.items) ? p.items : []).forEach((it, k) => {
-      const isin = String((it && it.isin) || "").trim().toUpperCase(), w = +(it && it.weight);
-      if (!byIsin(isin)) return err.push(`ETF ${k + 1}: ISIN ${isin || "mancante"} non disponibile`);
-      if (!(w >= 0)) return err.push(`ETF ${k + 1}: peso non valido`);
-      if (items.some(x => x.isin === isin)) return err.push(`ETF ${k + 1}: ${isin} duplicato`);
-      items.push({ isin, weight: w });
-    });
-    if (!(amount > 0)) err.push("importo non valido");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || isNaN(dateMs(start)) || dateMs(start) > Date.now() + DAY) err.push("data di simulazione non valida (AAAA-MM-GG)");
-    return { pf: { id, name, description, currency: String(p.currency || "EUR"), kind: "draft", amount, start, items }, err };
-  }
-  const lots = [];
-  (Array.isArray(p.lots) ? p.lots : []).forEach((l, i) => {
-    const n = i + 1, isin = String((l && l.isin) || "").trim().toUpperCase(), qty = +(l && l.qty), price = +(l && l.price);
-    if (!byIsin(isin)) return err.push(`acquisto ${n}: ISIN ${isin || "mancante"} non disponibile`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(l.date || "") || isNaN(dateMs(l.date))) return err.push(`acquisto ${n}: data non valida (AAAA-MM-GG)`);
-    if (dateMs(l.date) > Date.now() + DAY) return err.push(`acquisto ${n}: data nel futuro`);
-    if (!isFinite(qty) || qty === 0 || !(price > 0)) return err.push(`acquisto ${n}: quantità (negativa = vendita) o prezzo non validi`);
-    lots.push({ isin, date: l.date, qty, price });
+  const pos = new Map(), get = (isin, k) => { if (!byIsin(isin)) { err.push(`${k}: ISIN ${isin || "mancante"} non disponibile`); return null; } if (!pos.has(isin)) pos.set(isin, mkPos(isin)); return pos.get(isin); };
+  const addTx = (isin, t, k) => {
+    const x = get(isin, k); if (!x) return; const qty = +(t && t.qty), price = +(t && t.price), date = String((t && t.date) || "");
+    if (!DATE_RE.test(date) || isNaN(dateMs(date))) return err.push(`${k}: data non valida (AAAA-MM-GG)`);
+    if (dateMs(date) > Date.now() + DAY) return err.push(`${k}: data nel futuro`);
+    if (!isFinite(qty) || qty === 0 || !(price > 0)) return err.push(`${k}: quantità (negativa = vendita) o prezzo non validi`);
+    x.txs.push({ date, price, qty });
+  };
+  let amount = +p.amount, start = String(p.start || "");
+  if (Array.isArray(p.positions)) p.positions.forEach((it, n) => {
+    const isin = String((it && it.isin) || "").trim().toUpperCase(), k = `posizione ${n + 1}`, x = get(isin, k); if (!x) return;
+    if (it.weight != null && it.weight !== "") { if (!(+it.weight >= 0)) err.push(`${k}: peso non valido`); else x.weight = +it.weight; }
+    else if (it.qty != null && it.qty !== "") { if (!(+it.qty >= 0)) err.push(`${k}: quantità non valida`); else x.qty = +it.qty; }
+    (Array.isArray(it.transactions) ? it.transactions : []).forEach((t, m) => addTx(isin, t, `${k}, operazione ${m + 1}`));
   });
-  lots.sort(byDate); if (!err.length) { const se = sellErr(lots); if (se) err.push(se); }
-  return { pf: { id, name, description, currency: String(p.currency || "EUR"), kind: "owned", lots }, err };
+  else if (p.kind === "draft") (Array.isArray(p.items) ? p.items : []).forEach((it, n) => {
+    const isin = String((it && it.isin) || "").trim().toUpperCase(), x = get(isin, `ETF ${n + 1}`); if (!x) return;
+    if (!(+it.weight >= 0)) err.push(`ETF ${n + 1}: peso non valido`); else x.weight = +it.weight;
+  });
+  else (Array.isArray(p.lots) ? p.lots : []).forEach((l, n) => addTx(String((l && l.isin) || "").trim().toUpperCase(), l, `acquisto ${n + 1}`));
+  const positions = [...pos.values()]; positions.forEach(x => x.txs.sort(byDate));
+  if (!(amount > 0)) amount = 10000;
+  if (!DATE_RE.test(start) || isNaN(dateMs(start)) || dateMs(start) > Date.now() + DAY) { if (start && positions.some(hasBase)) err.push("data di simulazione non valida (AAAA-MM-GG)"); start = ymd(back(0, 3)); }
+  const pf = mkPf({ id, name, description, currency: String(p.currency || "EUR"), amount, start, positions });
+  if (!err.length) { const se = sellErr(pfLots(pf)); if (se) err.push(se); }
+  return { pf, err };
 }
 
 function ioMsg(t, bad) { const m = $("io-msg"); m.textContent = t; m.className = bad ? "err" : ""; }
-const pfBody = p => ({ id: p.id, name: p.name, description: p.description || "", currency: p.currency, ...(isDraft(p) ? { kind: "draft", amount: p.amount, start: p.start, items: p.items } : { kind: "owned", lots: p.lots }) });
-const pfJson = (list = PFLIST) => JSON.stringify({ version: 1, exported: new Date().toISOString().slice(0, 10), portfolios: list.map(pfBody) }, null, 2);
+const pfBody = p => ({ id: p.id, name: p.name, description: p.description || "", currency: p.currency, amount: p.amount, start: p.start,
+  positions: p.positions.map(x => ({ isin: x.isin, ...(x.weight != null ? { weight: x.weight } : x.qty != null ? { qty: x.qty } : {}), ...(x.txs.length ? { transactions: x.txs.map(t => ({ date: t.date, price: t.price, qty: t.qty })) } : {}) })) });
+// un solo portafoglio: un file con { portfolio }; più portafogli: { portfolios }
+const pfJson = (list = PFLIST) => JSON.stringify({ version: 2, exported: ymd(Date.now()), ...(list.length === 1 ? { portfolio: pfBody(list[0]) } : { portfolios: list.map(pfBody) }) }, null, 2);
 async function exportJson(list = PFLIST, fname) {
   const text = pfJson(list); $("json-box").value = text; let done = "JSON pronto";
   try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = fname || `myMoney-portafogli-${ymd(Date.now())}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); } catch {}
@@ -1107,7 +1120,7 @@ async function exportJson(list = PFLIST, fname) {
 }
 function importJson(text) {
   let j; try { j = JSON.parse(text); } catch { return ioMsg("JSON non valido", true); }
-  const arr = Array.isArray(j) ? j : Array.isArray(j && j.portfolios) ? j.portfolios : [j];
+  const arr = Array.isArray(j) ? j : Array.isArray(j && j.portfolios) ? j.portfolios : j && j.portfolio ? [j.portfolio] : [j];
   const ok = [], errs = [];
   arr.forEach(p => { const r = cleanPf(p); if (r.pf && !r.err.length) ok.push(r.pf); else errs.push(((p && p.name) || "Portafoglio") + ": " + r.err.join("; ")); });
   ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
@@ -1342,18 +1355,18 @@ const justEtf = isin => `https://www.justetf.com/en/etf-profile.html?isin=${isin
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
 function renderEmpty() {
   PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
-  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "pf-lots", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
-  $("pf-chg").textContent = "Nessun acquisto"; $("ef-note").textContent = "";
-  $("pf-comp").innerHTML = '<p class="fc-note">' + (isDraft(pfCur) ? 'Aggiungi almeno un ETF con peso maggiore di zero' : 'Aggiungi il primo acquisto dal modulo qui sotto') + '</p>';
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
+  $("pf-comp").innerHTML = '<p class="fc-note">' + "Aggiungi un ETF con quantità o peso, oppure registra un'operazione nelle posizioni" + '</p>';
 }
 function renderPf() {
   const dr = isDraft(pfCur);
   const own = !pfCur.sample; $("pf-name").hidden = !own; $("pf-descr").hidden = !own; $("pf-name").value = pfCur.name; $("pf-descr").value = pfCur.description || "";
   $("pf-desc-ro").hidden = own; $("pf-desc-ro").textContent = pfCur.description || "";
   renderPfs();
-  $("lots-sec").hidden = dr; $("draft-sec").hidden = !dr; $("to-draft").hidden = dr;
+  $("to-draft").hidden = dr;
   $("kind").textContent = dr ? "Draft · simulazione" : "Acquistato"; $("kind").className = "kind" + (dr ? " draft" : "");
-  if (dr) renderDraft();
+  renderPos();
   if (!pfLots(pfCur).length) return renderEmpty();
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const nReal = P.es.filter(e => e.real).length;
@@ -1374,7 +1387,6 @@ function renderPf() {
     const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
       <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
-  $("pf-lots").innerHTML = dr ? "" : `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), g = l.qty > 0 ? P.lastPx[P.isins.indexOf(l.isin)] / l.price - 1 : null; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" data-i="${oi}" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" data-i="${oi}" aria-label="Elimina" title="Elimina">${ICO_X}</button></td></tr>`; }).join("")}</tbody>`;
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
     return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
 
@@ -1456,72 +1468,89 @@ const DEF_KEY = "mm-default";
 const getDef = () => { try { return localStorage.getItem(DEF_KEY); } catch { return null; } };
 function updDef() { const b = $("pf-def"), on = !!pfCur && getDef() === pfCur.id; b.textContent = on ? "★ Predefinito" : "☆ Predefinito"; b.setAttribute("aria-pressed", on); }
 /* ---------- Draft: composizione, dimensionamento, aggiunta da ricerca ---------- */
-let DRSIZE = [], AT = [];
-function addItems(pf, isins) { // nuovi ETF con peso uguale; gli esistenti si riproporzionano
-  const fresh = isins.filter(i => !pf.items.some(x => x.isin === i)); if (!fresh.length) return 0;
-  const m = pf.items.length, k = fresh.length, es = pf.items.reduce((a, i) => a + i.weight, 0), scale = es > 0 ? (100 * m / (m + k)) / es : 0;
-  pf.items.forEach(i => (i.weight = +(i.weight * scale).toFixed(1)));
-  fresh.forEach(isin => pf.items.push({ isin, weight: +(100 / (m + k)).toFixed(1) }));
-  if (!m || !es) pf.items.forEach(i => (i.weight = +(100 / pf.items.length).toFixed(1)));
+let DRSIZE = [], AT = [], openPos = null, editOp = null;
+// Nuovi ETF: in una simulazione prendono un peso uguale (gli altri pesi si riproporzionano); in un portafoglio con operazioni partono senza posizione iniziale.
+function addPos(pf, isins) {
+  const fresh = isins.filter(i => !pf.positions.some(x => x.isin === i)); if (!fresh.length) return 0;
+  if (hasTx(pf)) { fresh.forEach(i => pf.positions.push(mkPos(i))); return fresh.length; }
+  const wp = pf.positions.filter(x => x.weight != null), m = wp.length, k = fresh.length, es = wp.reduce((a, x) => a + x.weight, 0), scale = es > 0 ? (100 * m / (m + k)) / es : 0;
+  wp.forEach(x => (x.weight = +(x.weight * scale).toFixed(1)));
+  fresh.forEach(i => pf.positions.push(mkPos(i, { weight: +(100 / (m + k)).toFixed(1) })));
+  const all = pf.positions.filter(x => x.weight != null); if (!m || !es) all.forEach(x => (x.weight = +(100 / all.length).toFixed(1)));
   return k;
 }
-function renderDraft() {
-  const pf = pfCur, tot = pf.items.reduce((a, i) => a + i.weight, 0), have = new Set(pf.items.map(i => i.isin));
+const posVal = x => (x.weight != null ? x.weight : x.qty);
+function opRow(x, held) {
+  const e = byIsin(x.isin), ed = editOp != null ? x.txs[editOp] : null;
+  const list = x.txs.length ? `<table class="eft ops"><thead><tr><th>Data</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${x.txs.map((t, i) => { const g = t.qty > 0 ? e.live / t.price - 1 : null;
+    return `<tr data-i="${i}"><td class="n">${dateTxt(dateMs(t.date))}</td><td class="n ${t.qty < 0 ? "sell" : ""}">${t.qty < 0 ? "−" : ""}${fmt(Math.abs(t.qty), 0)}</td><td class="n">${fmt(t.price)}</td><td class="n">${t.qty < 0 ? "+ " : ""}${eur(Math.abs(t.qty * t.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button></td></tr>`; }).join("")}</tbody></table>` : "";
+  return `<tr class="oprow"><td colspan="4">${list}
+    <form class="lotform" id="op-form"><select id="op-op" aria-label="Operazione"><option value="1"${ed && ed.qty < 0 ? "" : " selected"}>Acquisto</option><option value="-1"${ed && ed.qty < 0 ? " selected" : ""}>Vendita</option></select>
+      <input id="op-date" type="date" max="${ymd(Date.now())}" value="${ed ? ed.date : ymd(Date.now())}" aria-label="Data" required>
+      <input id="op-qty" type="number" min="0" step="any" placeholder="Quantità" value="${ed ? Math.abs(ed.qty) : ""}" aria-label="Quantità" required>
+      <input id="op-price" type="number" min="0" step="any" placeholder="Prezzo" value="${ed ? ed.price : e.live.toFixed(2)}" ${ed ? 'data-touched="1" ' : ""}aria-label="Prezzo" required>
+      <button type="submit">${ed ? "Salva" : "Aggiungi"}</button>${ed ? '<button type="button" id="op-cancel">Annulla</button>' : ""}</form>
+    <p class="fc-note">Totale ${fmt(held, 0)} quote</p></td></tr>`;
+}
+function renderPos() {
+  const pf = pfCur, have = new Set(pf.positions.map(x => x.isin)), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0);
+  if (openPos && !have.has(openPos)) openPos = null;
+  const held = {}; pfLots(pf).forEach(l => (held[l.isin] = (held[l.isin] || 0) + l.qty));
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
   $("dr-add").innerHTML = ETFS.filter(e => !have.has(e.isin)).sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
-  $("dr-tbl").innerHTML = `<thead><tr><th>ETF</th><th>Peso %${ib("peso")}</th><th></th></tr></thead><tbody>${pf.items.map((it, i) => { const e = byIsin(it.isin); return `<tr><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><input class="wi" type="number" min="0" max="100" step="0.1" value="${it.weight}" data-i="${i}" aria-label="Peso ${e.ticker}"></td><td class="act"><button type="button" class="del" data-i="${i}" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>`;
-  const st = pf.items.length ? simStart(pf) : dateMs(pf.start), clamp = st > dateMs(pf.start);
-  $("dr-note").innerHTML = pf.items.length ? `Totale <span class="n">${fmt(tot, 1)}%</span>${Math.abs(tot - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}${clamp ? ` · simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : ""}` : "";
-  const rows = pf.items.filter(i => i.weight > 0).map(i => { const e = byIsin(i.isin), pr = e.live, amt = pf.amount * i.weight / tot, q = Math.floor(amt / pr); return { e, w: i.weight / tot, amt, pr, q, cost: q * pr }; });
-  const spent = rows.reduce((a, r) => a + r.cost, 0);
-  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Peso</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${fmt(r.w * 100, 1)}%</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody><tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : "";
+  $("dr-add-btn").disabled = !$("dr-add").value; $("dr-norm").hidden = !W;
+  $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th>Operazioni</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x), open = openPos === x.isin;
+    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}"><select class="qu" aria-label="Unità ${e.ticker}"><option value="q"${u === "q" ? " selected" : ""}>quote</option><option value="w"${u === "w" ? " selected" : ""}>%</option></select></span></td><td class="n"><button type="button" class="ghost opb" aria-expanded="${open}">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " operazione" : " operazioni") : "Aggiungi"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>${open ? opRow(x, held[x.isin] || 0) : ""}`; }).join("")}</tbody>` : "";
+  const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
+  $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : "");
+  const rows = pf.positions.filter(hasBase).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
+  const spent = rows.filter(r => r.w).reduce((a, r) => a + r.cost, 0), anyW = rows.some(r => r.w);
+  $("dim-sec").hidden = !rows.length;
+  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
   DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
   $("dr-own").disabled = !DRSIZE.length;
 }
-function editDraft(fn) { const pf = ownPf(); fn(pf); commit(pf.id); }
 function openAddTo(isins) {
   if (!isins.length) return;
   AT = isins.slice();
-  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join("") + '<option value="@draft">+ Nuovo portafoglio (draft)</option><option value="@owned">+ Nuovo portafoglio acquistato</option>';
+  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
   $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
-    <p class="id n" style="margin:0">${AT.map(i => byIsin(i).ticker).join(" · ")}</p>
     <select id="at-pf" aria-label="Portafoglio">${opts}</select><div id="at-body"></div>
     <div class="io"><button type="submit" class="primary">Aggiungi</button><button type="button" class="ghost" id="at-cancel">Annulla</button><span id="at-msg" class="fc-note"></span></div>`;
-  const body0 = () => {
-    const kind = atKind();
-    $("at-body").innerHTML = kind === "draft" ? '<p class="fc-note">Peso iniziale uguale per tutti, poi lo modifichi nel draft</p>'
-      : `<div class="lotform"><input id="at-date" type="date" value="${ymd(Date.now())}" max="${ymd(Date.now())}" aria-label="Data di acquisto"></div>${AT.map(i => { const e = byIsin(i); return `<div class="lotform"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" data-isin="${i}" placeholder="Quantità" aria-label="Quantità ${e.ticker}"><input type="number" min="0" step="any" class="at-p" data-isin="${i}" value="${e.live.toFixed(2)}" aria-label="Prezzo ${e.ticker}"></div>`; }).join("")}`;
+  const body = () => {
+    $("at-body").innerHTML = ($("at-pf").value === "@new" ? '<div class="newf"><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>' : "")
+      + '<p class="fc-note">Vuoto: pesi uguali. Con la data è un acquisto (prezzo facoltativo)</p>'
+      + AT.map(i => { const e = byIsin(i); return `<div class="lotform atrow" data-isin="${i}"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" placeholder="Quantità" aria-label="Quantità ${e.ticker}"><select class="at-u" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w">%</option></select><input type="date" class="at-d" max="${ymd(Date.now())}" aria-label="Data acquisto ${e.ticker} (facoltativa)"><input type="number" min="0" step="any" class="at-p" placeholder="Prezzo" aria-label="Prezzo ${e.ticker} (facoltativo)"></div>`; }).join("");
   };
-  const body = () => { body0(); if ($("at-pf").value.startsWith("@")) $("at-body").insertAdjacentHTML("afterbegin", '<div class="newf"><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>'); };
   $("at-pf").addEventListener("change", body); body();
   $("addto").showModal();
 }
-function atKind() { const v = $("at-pf").value; return v === "@draft" ? "draft" : v === "@owned" ? "owned" : isDraft(PFLIST.find(p => p.id === v)) ? "draft" : "owned"; }
 $("addto").addEventListener("click", ev => { if (ev.target.id === "at-cancel" || ev.target.closest("#at-x") || ev.target === $("addto")) $("addto").close(); });
 $("addto").addEventListener("submit", ev => {
   ev.preventDefault();
-  const v = $("at-pf").value, kind = atKind(), bad = t => { $("at-msg").textContent = t; $("at-msg").className = "fc-note err"; };
-  let target = v.startsWith("@") ? null : PFLIST.find(p => p.id === v), lots = [];
+  const v = $("at-pf").value, bad = t => { $("at-msg").textContent = t; $("at-msg").className = "fc-note err"; };
+  const rows = [...document.querySelectorAll(".atrow")].map(r => ({ isin: r.dataset.isin, q: r.querySelector(".at-q").value, u: r.querySelector(".at-u").value, d: r.querySelector(".at-d").value, p: r.querySelector(".at-p").value }));
   const nm = ($("at-name") && $("at-name").value.trim()) || "", ds = ($("at-descr") && $("at-descr").value.trim()) || "";
-  if (kind === "owned") {
-    const date = $("at-date").value;
-    if (!date || isNaN(dateMs(date)) || dateMs(date) > Date.now() + DAY) return bad("Data non valida");
-    for (const q of document.querySelectorAll(".at-q")) {
-      const qty = +q.value, price = +document.querySelector(`.at-p[data-isin="${q.dataset.isin}"]`).value;
-      if (!qty) continue;
-      if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
-      if (date < byIsin(q.dataset.isin).inception) return bad(`${byIsin(q.dataset.isin).ticker} non era ancora stato lanciato`);
-      lots.push({ isin: q.dataset.isin, date, qty, price });
+  const t0 = v === "@new" ? null : PFLIST.find(p => p.id === v), c = t0 ? clonePf(t0) : mkPf({ id: newId(), name: nm || `Portafoglio ${USER.length + 1}`, description: ds });
+  if (!rows.some(r => r.q !== "" || r.d)) addPos(c, AT);
+  else for (const r of rows) {
+    const e = byIsin(r.isin), q = +r.q; let x = c.positions.find(p => p.isin === r.isin);
+    if (!x) c.positions.push((x = mkPos(r.isin)));
+    if (r.d) {
+      if (!(q > 0)) return bad(`${e.ticker}: indica la quantità`);
+      if (r.u === "w") return bad(`${e.ticker}: con la data la quantità è in quote`);
+      if (isNaN(dateMs(r.d)) || dateMs(r.d) > Date.now() + DAY) return bad("Data non valida");
+      if (r.d < e.inception) return bad(`${e.ticker} non era ancora stato lanciato`);
+      const price = +r.p || +priceAt(e, dateMs(r.d)).toFixed(2);
+      if (!(price > 0)) return bad("Prezzo non valido");
+      x.txs.push({ date: r.d, price, qty: q }); x.txs.sort(byDate);
+    } else if (r.q !== "") {
+      if (!(q >= 0)) return bad("La quantità non può essere negativa");
+      if (r.u === "w") { x.weight = q; x.qty = null; } else { x.qty = q; x.weight = null; }
     }
-    if (!lots.length) return bad("Inserisci almeno una quantità");
   }
-  if (kind === "draft") {
-    target = target ? ownPf(target) : (USER.unshift({ id: newId(), name: nm || `Draft ${USER.filter(isDraft).length + 1}`, description: ds, currency: "EUR", kind: "draft", amount: 10000, start: defStart(AT), items: [] }), USER[0]);
-    addItems(target, AT);
-  } else {
-    target = target ? ownPf(target) : (USER.unshift({ id: newId(), name: nm || `Portafoglio ${USER.length + 1}`, description: ds, currency: "EUR", kind: "owned", lots: [] }), USER[0]);
-    target.lots = [...target.lots, ...lots].sort(byDate);
-  }
+  let target;
+  if (t0) { target = ownPf(t0); target.positions = c.positions; } else { USER.unshift(c); target = c; }
   $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showView("port");
 });
 function updSel() { const n = SEL.size; $("selbar").hidden = !n; $("sel-n").textContent = n + (n === 1 ? " selezionato" : " selezionati"); }
@@ -1538,7 +1567,8 @@ const GL_LINKS = {
 };
 const GL = {
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
-  inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra ogni operazione con data, quantità e prezzo reali. Una vendita riduce l'investito.", ref: [] },
+  inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra le operazioni con data, quantità e prezzo reali. Una vendita riduce l'investito. Una quantità senza data è simulata: si considera aperta alla data «Da» al prezzo di quel giorno.", ref: [] },
+  pos: { t: "Posizioni", what: "Per ogni ETF indichi la quantità: in quote (assoluta) o in percentuale dell'importo. In più puoi registrare operazioni di acquisto e di vendita, anche più di una, ciascuna con data, prezzo e quantità.", use: "Senza operazioni il portafoglio è una simulazione (draft). Con le operazioni è un portafoglio acquistato con storico reale.", how: "La quantità iniziale si considera aperta alla data «Da» al prezzo di quel giorno, poi si sommano le operazioni. Una vendita non può superare le quote possedute. Il JSON del portafoglio contiene ISIN, quantità o peso e le operazioni.", ref: [] },
   utile: { t: "Utile", what: "Valore attuale meno investito, in euro. Include anche quanto hai già incassato con le vendite.", use: "Mostra il guadagno o la perdita complessivi in euro.", how: "Non è un rendimento in percentuale: per quello guarda i rendimenti per periodo.", ref: [] },
   ann: { t: "Rendimento annuo", what: "Rendimento composto riportato su base annua, calcolato in modo da non risentire di quando versi o vendi (a pesi temporali).", use: "Permette di confrontare portafogli e indici con durate diverse.", how: "Compare dopo 6 mesi di storia: prima sarebbe poco significativo. Confrontalo con quello di un indice di riferimento.", ref: [["Azionario globale, lungo periodo (ordine di grandezza storico)", "6–8% annuo"], ["Obbligazionario, lungo periodo", "2–4% annuo"], ["Nota", "non sono previsioni"]] },
   twr: { t: "Rendimenti per periodo", what: "Oggi, settimana, mese, anno, anno precedente e dall'inizio. La percentuale ignora quando hai versato o venduto; l'importo in euro è il guadagno effettivo del periodo.", use: "Mostra come sta andando il portafoglio sui diversi orizzonti.", how: "Oggi parte dalla chiusura precedente, settimana dal lunedì, mese dal giorno 1, anno dal 1° gennaio. Se hai iniziato dopo, il periodo parte dal tuo primo acquisto.", ref: [["Periodi brevi", "molto variabili, poco indicativi"], ["Confronto utile", "con l'indice dello stesso periodo"]] },
@@ -1552,7 +1582,7 @@ const GL = {
   cap: { t: "Peso massimo per ETF", what: "Limite alla quota di ogni ETF nei portafogli calcolati per la frontiera e per il ribilanciamento.", use: "Evita risultati estremi, per esempio il 90% in un solo ETF.", how: "Con meno di 4 ETF il tetto basso non si può rispettare e viene tolto.", ref: [["Valori usuali", "30–40%"]] },
   rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
   prev: { t: "Previsioni sull'indice", what: "Obiettivi pubblicati da banche d'investimento per l'indice che l'ETF replica (non per l'ETF), con orizzonti diversi indicati su ogni riga.", use: "Danno un'idea delle aspettative degli analisti.", how: "Guarda l'intervallo tra le banche, non un singolo numero. La media sul portafoglio copre solo gli ETF con previsioni disponibili. Ogni riga rimanda alla fonte.", ref: [["Affidabilità", "le previsioni a 12 mesi sbagliano spesso di molti punti"]] },
-  draft: { t: "Draft e acquistato", what: "Un portafoglio acquistato elenca operazioni reali (data, quantità, prezzo). Un draft è una simulazione: scegli ETF, pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Converti in acquistato» registra gli acquisti di oggi ai prezzi correnti.", ref: [] },
+  draft: { t: "Draft e acquistato", what: "Un portafoglio con operazioni (data, quantità, prezzo) è acquistato. Senza operazioni è un draft: una simulazione con ETF, quantità o pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Registra acquisti a oggi» trasforma le quantità in operazioni ai prezzi correnti.", ref: [] },
   dim: { t: "Dimensionamento", what: "Dall'importo e dai pesi calcola quante quote intere comprare ai prezzi correnti.", use: "Ti dice quanto spendere per ETF e quanto resta non investito.", how: "Il residuo è dovuto alle quote intere. Non include commissioni del broker.", ref: [] },
   ter: { t: "TER (costo annuo)", what: "Costo annuo di gestione in percentuale del patrimonio. È già dentro il prezzo, non si paga a parte.", use: "Permette di confrontare ETF che replicano lo stesso indice.", how: "Confronta solo ETF simili. 0,10 punti in più su 10.000 € sono 10 € l'anno, e si sommano negli anni. Il TER non include spread, commissioni di negoziazione e differenze di replica.", ref: [["ETF S&P 500 (justETF)", "0,03–0,19%"], ["ETF MSCI World (justETF)", "0,05–0,50%"], ["Obbligazioni governative", "0,05–0,20%"], ["Tematici e settoriali", "0,35–0,70%"]], links: ["ter", "scelta"] },
   aum: { t: "Patrimonio", what: "Valore totale gestito dall'ETF (fund size).", use: "Indica dimensione e solidità. Fondi piccoli rischiano di essere chiusi.", how: "Il patrimonio non garantisce la liquidità di mercato: guarda anche volume e spread.", ref: [["Sotto 100 Mln €", "rischio di chiusura più alto (soglia citata da justETF)"], ["Sopra 1 Mld €", "solido"]], links: ["globale"] },
@@ -1607,89 +1637,92 @@ $("io-exp").addEventListener("click", () => exportJson());
 $("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(PFLIST); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
 $("io-imp").addEventListener("click", () => importJson($("json-box").value));
 $("io-file").addEventListener("change", ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("json-box").value = r.result; importJson(r.result); }; r.readAsText(f); ev.target.value = ""; });
-/* Modulo acquisti */
-$("lot-etf").innerHTML = ETFS.slice().sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
-$("lot-date").value = new Date().toISOString().slice(0, 10); $("lot-date").max = $("lot-date").value;
-function suggestPrice() {
-  const p = $("lot-price"), e = byIsin($("lot-etf").value), d = $("lot-date").value;
-  if (!p.dataset.touched && e && d && !isNaN(dateMs(d))) p.value = priceAt(e, dateMs(d)).toFixed(2);
-}
-suggestPrice();
-$("lot-etf").addEventListener("change", suggestPrice); $("lot-date").addEventListener("change", suggestPrice);
-$("lot-price").addEventListener("input", () => ($("lot-price").dataset.touched = "1"));
+/* Posizioni e operazioni */
 function commit(id) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
 function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copia personale
   if (!src.sample) return src;
   let id = src.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = src.id + "-mio" + n++;
-  const c = { id, name: src.name.replace("Prova · ", "") + " (mio)", description: src.description || "", currency: src.currency, kind: src.kind || "owned" };
-  if (isDraft(src)) { c.amount = src.amount; c.start = src.start; c.items = src.items.map(x => ({ ...x })); } else c.lots = src.lots.map(l => ({ ...l }));
+  const c = clonePf(src); delete c.sample; c.id = id; c.name = src.name.replace("Prova · ", "") + " (mio)";
   USER.unshift(c); return c;
 }
-let editIdx = null;
-function resetForm() { editIdx = null; $("lot-submit").textContent = "Aggiungi"; $("lot-cancel").hidden = true; $("lot-qty").value = ""; $("lot-op").value = "1"; delete $("lot-price").dataset.touched; suggestPrice(); }
-$("lot-cancel").addEventListener("click", () => { resetForm(); $("lot-msg").textContent = ""; });
-$("lot-form").addEventListener("submit", ev => {
-  ev.preventDefault();
-  const e = byIsin($("lot-etf").value), date = $("lot-date").value, sgn = +$("lot-op").value, qty = +$("lot-qty").value, price = +$("lot-price").value, m = $("lot-msg");
-  const bad = t => { m.textContent = t; m.className = "fc-note err"; };
-  if (!date || isNaN(dateMs(date))) return bad("Data non valida");
-  if (dateMs(date) > Date.now() + DAY) return bad("La data è nel futuro");
-  if (date < e.inception) return bad(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`);
-  if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
-  const lots = pfCur.lots.map(l => ({ ...l })), lot = { isin: e.isin, date, qty: sgn * qty, price };
-  if (editIdx != null) lots[editIdx] = lot; else lots.push(lot);
-  lots.sort(byDate); const se = sellErr(lots); if (se) return bad(se.charAt(0).toUpperCase() + se.slice(1));
-  const wasEdit = editIdx != null, pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm();
-  m.textContent = wasEdit ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta"; m.className = "fc-note";
+// Applica la modifica a una copia, controlla che le vendite non superino le quote possedute e solo allora salva.
+function editPf(fn) {
+  const c = clonePf(pfCur); fn(c); const se = sellErr(pfLots(c)); if (se) return se.charAt(0).toUpperCase() + se.slice(1);
+  const pf = ownPf(); pf.positions = c.positions; pf.amount = c.amount; pf.start = c.start; commit(pf.id); return "";
+}
+const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
+function resetForm() { editOp = null; openPos = null; }
+function opSuggest() { const p = $("op-price"), d = $("op-date"), e = openPos && byIsin(openPos); if (p && d && e && !p.dataset.touched && d.value && !isNaN(dateMs(d.value))) p.value = priceAt(e, dateMs(d.value)).toFixed(2); }
+const posOf = el => pfCur.positions.find(x => x.isin === el.closest("tr[data-isin]").dataset.isin);
+$("pos-tbl").addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.id === "op-date") return opSuggest();
+  const row = t.closest("tr[data-isin]"); if (!row || !(t.classList.contains("qi") || t.classList.contains("qu"))) return;
+  const isin = row.dataset.isin, unit = row.querySelector(".qu").value, v = row.querySelector(".qi").value;
+  const err = editPf(c => { const x = c.positions.find(p => p.isin === isin), st = simStart(c), pr = priceAt(byIsin(isin), st), W = c.positions.reduce((a, p) => a + (p.weight > 0 ? p.weight : 0), 0);
+    if (t.classList.contains("qu")) { // cambio unità: converte al prezzo della data di partenza
+      if (unit === "w") { x.weight = x.qty > 0 ? +(x.qty * pr / c.amount * 100).toFixed(1) : 0; x.qty = null; }
+      else { x.qty = x.weight > 0 ? Math.floor(c.amount * x.weight / W / pr) : 0; x.weight = null; }
+    } else { const n = Math.max(0, +v || 0); if (unit === "w") { x.weight = n; x.qty = null; } else { x.qty = n; x.weight = null; } } });
+  err ? msg(err, true) : msg("");
 });
-$("pf-lots").addEventListener("click", ev => {
-  const ed = ev.target.closest(".ed"), d = ev.target.closest(".del:not(.ed)"), m = $("lot-msg");
-  if (ed) {
-    const l = pfCur.lots[+ed.dataset.i]; if (!l) return;
-    $("lot-etf").value = l.isin; $("lot-date").value = l.date; $("lot-op").value = l.qty < 0 ? "-1" : "1"; $("lot-qty").value = Math.abs(l.qty); $("lot-price").value = l.price; $("lot-price").dataset.touched = "1";
-    editIdx = +ed.dataset.i; $("lot-submit").textContent = "Salva"; $("lot-cancel").hidden = false; m.textContent = ""; $("lot-form").scrollIntoView({ block: "center", behavior: "smooth" });
-  } else if (d) {
-    const lots = pfCur.lots.filter((_, i) => i !== +d.dataset.i), se = sellErr(lots);
-    if (se) { m.textContent = "Non puoi eliminarlo: " + se; m.className = "fc-note err"; return; }
-    const pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm(); m.textContent = "Operazione eliminata"; m.className = "fc-note";
+$("pos-tbl").addEventListener("input", ev => { if (ev.target.id === "op-price") ev.target.dataset.touched = "1"; });
+$("pos-tbl").addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.id === "op-cancel") { editOp = null; return renderPos(); }
+  if (b.classList.contains("opb")) { const isin = b.closest("tr").dataset.isin; openPos = openPos === isin ? null : isin; editOp = null; return renderPos(); }
+  const opTr = b.closest(".ops tr[data-i]"), isin = openPos;
+  if (opTr && b.classList.contains("ed")) { editOp = +opTr.dataset.i; renderPos(); return $("op-form").scrollIntoView({ block: "center", behavior: "smooth" }); }
+  if (opTr && b.classList.contains("del")) { const i = +opTr.dataset.i, err = editPf(c => c.positions.find(p => p.isin === isin).txs.splice(i, 1)); editOp = null; return err ? msg("Non puoi eliminarla: " + err, true) : msg("Operazione eliminata"); }
+  if (b.classList.contains("del") && b.closest("tr[data-isin]")) {
+    const x = posOf(b); if (x.txs.length && !confirm(`Rimuovere ${byIsin(x.isin).ticker} e le sue ${x.txs.length} operazioni?`)) return;
+    const err = editPf(c => { c.positions = c.positions.filter(p => p.isin !== x.isin); }); err ? msg(err, true) : msg("");
   }
+});
+$("pos-tbl").addEventListener("submit", ev => {
+  ev.preventDefault(); const isin = openPos, e = byIsin(isin);
+  const date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
+  if (!date || isNaN(dateMs(date))) return msg("Data non valida", true);
+  if (dateMs(date) > Date.now() + DAY) return msg("La data è nel futuro", true);
+  if (date < e.inception) return msg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
+  if (!(qty > 0) || !(price > 0)) return msg("Quantità e prezzo devono essere maggiori di zero", true);
+  const wasEdit = editOp != null, err = editPf(c => { const x = c.positions.find(p => p.isin === isin), t = { date, price, qty: sgn * qty }; if (wasEdit) x.txs[editOp] = t; else x.txs.push(t); x.txs.sort(byDate); });
+  if (err) return msg(err, true);
+  editOp = null; renderPos(); msg(wasEdit ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
 });
 $("ef-cap").addEventListener("change", () => PF && renderPf());
 $("rb-goal").addEventListener("change", () => PF && renderRb());
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
-  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const it = pf.items.find(x => x.isin === r.isin); if (it) it.weight = r.w; }); commit(pf.id); $("lot-msg").textContent = "Pesi del draft aggiornati"; return; }
-  const today = new Date().toISOString().slice(0, 10), lots = pfCur.lots.map(l => ({ ...l })).concat(RB.map(r => ({ isin: r.isin, date: today, qty: r.dq, price: +r.pr.toFixed(2) }))).sort(byDate), se = sellErr(lots);
-  if (se) { $("rb-note").textContent = se; return; }
-  const n = RB.length, pf = ownPf(); pf.lots = lots; commit(pf.id); $("lot-msg").textContent = `Ribilanciamento applicato: ${n} operazioni`; $("lot-msg").className = "fc-note";
+  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const x = pf.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }); commit(pf.id); return msg("Pesi aggiornati"); }
+  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(2), qty: r.dq }); x.txs.sort(byDate); } }));
+  if (err) { $("rb-note").textContent = err; return; }
+  msg(`Ribilanciamento applicato: ${n} operazioni`);
 });
 $("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
 $("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
 $("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
 $("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
 $("sel-add").addEventListener("click", () => openAddTo([...SEL]));
-$("dr-tbl").addEventListener("change", ev => { const inp = ev.target.closest(".wi"); if (inp) editDraft(pf => { pf.items[+inp.dataset.i].weight = Math.max(0, +inp.value || 0); }); });
-$("dr-tbl").addEventListener("click", ev => { const b = ev.target.closest(".del"); if (b) editDraft(pf => { pf.items.splice(+b.dataset.i, 1); }); });
-$("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editDraft(pf => { pf.amount = v; }); else renderPf(); });
-$("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editDraft(pf => { pf.start = v; }); else renderPf(); });
-$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (isin) editDraft(pf => addItems(pf, [isin])); });
-$("dr-norm").addEventListener("click", () => editDraft(pf => { const t = pf.items.reduce((a, i) => a + i.weight, 0); if (t > 0) pf.items.forEach(i => (i.weight = +(i.weight / t * 100).toFixed(1))); }));
+const editBase = fn => { const err = editPf(fn); err ? msg(err, true) : msg(""); };
+$("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editBase(c => { c.amount = v; }); else renderPf(); });
+$("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editBase(c => { c.start = v; }); else renderPf(); });
+$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (!isin) return; const hadTx = hasTx(pfCur); editBase(c => addPos(c, [isin])); if (hadTx) { openPos = isin; renderPos(); } });
+$("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
-  if (!DRSIZE.length) return;
-  const pf = ownPf(), today = ymd(Date.now());
-  pf.lots = DRSIZE.map(r => ({ isin: r.isin, date: today, qty: r.qty, price: +r.price.toFixed(2) })).sort(byDate); pf.kind = "owned"; delete pf.items; delete pf.amount; delete pf.start;
-  commit(pf.id); $("lot-msg").textContent = "Convertito in acquistato: acquisti registrati a oggi ai prezzi correnti"; $("lot-msg").className = "fc-note";
+  if (!DRSIZE.length) return; const today = ymd(Date.now());
+  editBase(c => c.positions.forEach(x => { const r = DRSIZE.find(d => d.isin === x.isin); if (!hasBase(x)) return; x.qty = x.weight = null; if (r) { x.txs.push({ date: today, price: +r.price.toFixed(2), qty: r.qty }); x.txs.sort(byDate); } }));
+  msg("Acquisti registrati a oggi ai prezzi correnti");
 });
 $("to-draft").addEventListener("click", () => {
-  if (!PF) return; const P = PF, items = P.act.map(i => ({ isin: P.es[i].isin, weight: +(P.cw[i] * 100).toFixed(1) }));
-  const amount = Math.max(100, Math.round(P.act.reduce((a, i) => a + P.qty[i] * P.es[i].live, 0) / 100) * 100);
-  const pf = { id: "pf-" + Date.now().toString(36), name: pfCur.name.replace("Prova · ", "") + " (draft)", currency: "EUR", kind: "draft", amount, start: defStart(items.map(i => i.isin)), items };
+  if (!PF) return; const P = PF, amount = Math.max(100, Math.round(P.act.reduce((a, i) => a + P.qty[i] * P.es[i].live, 0) / 100) * 100);
+  const pf = mkPf({ id: newId(), name: pfCur.name.replace("Prova · ", "") + " (draft)", amount, start: defStart(P.act.map(i => P.es[i].isin)), positions: P.act.map(i => mkPos(P.es[i].isin, { weight: +(P.cw[i] * 100).toFixed(1) })) });
   USER.unshift(pf); commit(pf.id);
 });
 /* ---------- Elenco portafogli: apri, ribilancia, esporta, elimina ---------- */
 function hiddenSamples() { try { return JSON.parse(localStorage.getItem("mm-hidden") || "[]"); } catch { return []; } }
 function newId() { return "pf-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
-function newDraft(name, description = "") { return { id: newId(), name, description, currency: "EUR", kind: "draft", amount: 10000, start: ymd(back(0, 3)), items: [] }; }
+const newPf = (name, description = "") => mkPf({ id: newId(), name, description });
 function twoStep(b, fn, label = "Elimina") {
   if (b.dataset.arm !== "1") { b.dataset.arm = "1"; b.textContent = "Conferma"; setTimeout(() => { b.dataset.arm = ""; b.textContent = label; }, 3000); return; }
   b.dataset.arm = ""; b.textContent = label; fn();
@@ -1698,12 +1731,12 @@ function deletePf(p) {
   if (p.sample) { const h = hiddenSamples(); if (!h.includes(p.id)) h.push(p.id); try { localStorage.setItem("mm-hidden", JSON.stringify(h)); } catch {} }
   else { USER = USER.filter(u => u.id !== p.id); saveUser(); }
   allPf();
-  if (!PFLIST.length) { USER.unshift(newDraft("Nuovo portafoglio")); saveUser(); allPf(); } // c'è sempre almeno un portafoglio
+  if (!PFLIST.length) { USER.unshift(newPf("Nuovo portafoglio")); saveUser(); allPf(); } // c'è sempre almeno un portafoglio
   if (pfCur.id === p.id) pfCur = PFLIST.find(x => x.id === getDef()) || PFLIST[0];
   fillSel(); renderPf();
 }
 function pfSummary(p) {
-  const out = { n: isDraft(p) ? p.items.filter(i => i.weight > 0).length : new Set(p.lots.map(l => l.isin)).size, val: null };
+  const out = { n: p.positions.length, val: null };
   try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); } } catch {}
   return out;
 }
@@ -1716,7 +1749,7 @@ function renderPfs() {
   $("pfs-restore").hidden = !hiddenSamples().length;
 }
 function openPf(id, then) {
-  pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); $("lot-msg").textContent = ""; fillSel(); renderPf(); showView("port");
+  pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showView("port");
   if (then === "reb") requestAnimationFrame(() => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 }
 $("pfs-list").addEventListener("click", ev => {
@@ -1727,13 +1760,14 @@ $("pfs-list").addEventListener("click", ev => {
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
 $("pfs-restore").addEventListener("click", () => { try { localStorage.removeItem("mm-hidden"); } catch {} allPf(); fillSel(); renderPf(); });
-function openNew() { $("np-name").value = `Draft ${USER.filter(isDraft).length + 1}`; $("np-descr").value = ""; $("newpf").showModal(); $("np-name").select(); }
+function openNew() { $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("newpf").showModal(); $("np-name").select(); }
 $("np-form").addEventListener("submit", ev => {
   ev.preventDefault(); const nm = $("np-name").value.trim(); if (!nm) return;
-  const pf = newDraft(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showView("port");
+  const pf = newPf(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showView("port");
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
 $("pf-new").addEventListener("click", openNew); $("pfs-new").addEventListener("click", openNew);
+$("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio") + ".json"));
 $("pf-reb").addEventListener("click", () => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("pf-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => deletePf(pfCur)));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; pfCur.description = ev.target.value.trim().slice(0, 500); commit(pfCur.id); });
