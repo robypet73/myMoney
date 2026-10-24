@@ -1,0 +1,1497 @@
+<title>myMoney</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: colonna unica centrata, ricerca come elemento dominante, elenco a righe senza bordi; dettaglio in pannello laterale */
+:root {
+  --bg: #FAFAF9;
+  --raised: #FFFFFF;
+  --fg: #111312;
+  --soft: #8A8F8C;
+  --hair: #ECEDEC;
+  --fill: #F1F2F1;
+  --up: #12865F;
+  --down: #D2462F;
+  --f: "Geist", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --m: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0C0D0C; --raised: #141615; --fg: #EDEEED; --soft: #7D837F; --hair: #1F2321; --fill: #191C1A; --up: #4FD09A; --down: #FF7A62; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0C0D0C; --raised: #141615; --fg: #EDEEED; --soft: #7D837F; --hair: #1F2321; --fill: #191C1A; --up: #4FD09A; --down: #FF7A62; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 1.5px solid var(--fg); outline-offset: 2px; }
+.n { font-family: var(--m); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.pos { color: var(--up); }
+.neg { color: var(--down); }
+.wrap { max-width: 880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header .wrap { padding-block: 28px 0; }
+.logo { font-weight: 600; font-size: 17px; letter-spacing: -.03em; }
+.logo i { font-style: normal; color: var(--soft); }
+
+/* Ricerca */
+.search { padding-block: 56px 0; }
+.q { display: flex; align-items: center; gap: 14px; border-bottom: 1.5px solid var(--fg); }
+.q input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: clamp(22px, 4.5vw, 34px); font-weight: 500; letter-spacing: -.035em; padding: 8px 0 12px; }
+.q input::placeholder { color: var(--soft); opacity: .6; }
+.q input::-webkit-search-cancel-button { display: none; }
+.icon { border: 0; background: none; padding: 6px; cursor: pointer; color: var(--soft); display: grid; place-items: center; border-radius: 8px; position: relative; }
+.icon:hover, .icon[aria-expanded="true"] { color: var(--fg); }
+.icon .dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 18px; }
+.filters select { appearance: none; -webkit-appearance: none; border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: 13px; color: var(--soft); cursor: pointer; max-width: 100%; }
+.filters select.on { background: var(--fg); color: var(--bg); }
+.clear { border: 0; background: none; font-size: 13px; color: var(--soft); cursor: pointer; padding: 7px 6px; }
+.clear:hover { color: var(--fg); }
+
+/* Risultati */
+.bar { display: flex; justify-content: space-between; align-items: center; padding-block: 40px 8px; font-size: 13px; color: var(--soft); }
+.bar select { appearance: none; -webkit-appearance: none; border: 0; background: none; color: var(--soft); font-size: 13px; cursor: pointer; text-align: right; padding: 4px 0; }
+.bar select:hover { color: var(--fg); }
+.list { padding-bottom: 72px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 64px 76px 96px; gap: 20px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 18px 0; cursor: pointer; }
+
+.row:hover .nm { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.main { min-width: 0; display: grid; gap: 3px; }
+.nm { font-weight: 500; font-size: 15px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.id { font-size: 12px; color: var(--soft); }
+.v { text-align: right; font-size: 14px; }
+.v small { display: block; font-family: var(--f); font-size: 11px; color: var(--soft); letter-spacing: 0; }
+.spark { display: block; width: 96px; height: 28px; }
+.empty { padding: 48px 0; color: var(--soft); text-align: center; border-top: 1px solid var(--hair); }
+@media (max-width: 560px) {
+  .row { grid-template-columns: minmax(0, 1fr) auto 72px; gap: 14px; }
+  .row .ter { display: none; }
+  .spark { width: 72px; }
+}
+.foot { font-size: 11px; color: var(--soft); padding-bottom: 32px; }
+
+/* Dettaglio */
+dialog { padding: 0; border: 0; margin: 0 0 0 auto; height: 100%; max-height: 100%; width: min(760px, 100%); max-width: 100%; background: var(--bg); color: var(--fg); }
+dialog::backdrop { background: rgba(0, 0, 0, .28); backdrop-filter: blur(2px); }
+dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
+@keyframes in { from { transform: translateX(24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { dialog[open] { animation: none; } }
+.d { padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(48px + env(safe-area-inset-bottom, 0px)); padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+.d-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.d-top h2 { font-size: clamp(20px, 3vw, 24px); font-weight: 500; letter-spacing: -.03em; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+.d-top .id button { border: 0; background: none; padding: 0; color: inherit; cursor: copy; font: inherit; }
+.d-top .id button:hover { color: var(--fg); }
+.close { flex: none; margin: -6px -6px 0 0; }
+
+.price { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.big { font-family: var(--m); font-size: clamp(34px, 6vw, 44px); font-weight: 400; letter-spacing: -.05em; line-height: 1; }
+.big small { font-size: 14px; color: var(--soft); letter-spacing: 0; margin-left: 6px; }
+.chg { font-size: 13px; margin-top: 8px; }
+.periods { display: flex; gap: 2px; }
+.periods button { border: 0; background: none; border-radius: 99px; padding: 5px 10px; font-size: 12.5px; color: var(--soft); cursor: pointer; font-family: var(--m); }
+.periods button:hover { color: var(--fg); }
+.periods button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.chart { position: relative; height: 260px; margin-top: 20px; touch-action: pan-y; }
+.chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.chart .ax { fill: var(--soft); font-family: var(--m); font-size: 10.5px; }
+.chart .gl { stroke: var(--hair); }
+.tip { position: absolute; top: 0; pointer-events: none; font-size: 11.5px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); text-align: center; }
+.tip b { display: block; font-family: var(--m); font-weight: 500; font-size: 13px; color: var(--fg); }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 16px; }
+.stats div { display: grid; gap: 4px; min-width: 0; }
+.k { font-size: 11.5px; color: var(--soft); }
+.stats .n { font-size: 15px; }
+.sec h3 { font-size: 11.5px; font-weight: 500; color: var(--soft); margin: 0 0 14px; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; margin: 0; }
+.facts div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; min-width: 0; }
+.facts dt { color: var(--soft); flex: none; }
+.facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
+.bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: 13px; }
+.bars span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bars .n { color: var(--soft); font-size: 12px; }
+.bars i { grid-column: 1 / -1; height: 2px; background: var(--hair); display: block; }
+.bars i b { display: block; height: 100%; background: var(--fg); }
+[hidden] { display: none !important; }
+:root { --c1: #0E7C66; --c2: #2F5FD0; --c3: #D08A12; --c4: #8A4FD6; --c5: #C8412F; --c6: #8A8F8C; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c1: #3FC6A5; --c2: #6C93F2; --c3: #E8AD3F; --c4: #B58AF0; --c5: #F07C69; --c6: #8F9692; } }
+:root[data-theme="dark"] { --c1: #3FC6A5; --c2: #6C93F2; --c3: #E8AD3F; --c4: #B58AF0; --c5: #F07C69; --c6: #8F9692; }
+
+.bar2 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tabs { display: flex; gap: 2px; }
+.tabs button { border: 0; background: none; border-radius: 99px; padding: 6px 14px; font-size: 13.5px; color: var(--soft); cursor: pointer; }
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+.pf-sel { padding-block: 48px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.selwrap { position: relative; max-width: 100%; }
+.selwrap::after { content: ""; position: absolute; right: 4px; bottom: 18px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
+.pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: clamp(22px, 4.5vw, 34px); font-weight: 500; letter-spacing: -.035em; padding: 4px 36px 8px 0; cursor: pointer; max-width: 100%; }
+.badge { font-size: 12px; color: var(--soft); padding-bottom: 12px; }
+.badge a { color: inherit; }
+.badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
+.badge.real i { background: var(--up); }
+
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 20px 16px; padding-top: 36px; }
+.kpi div { display: grid; gap: 4px; min-width: 0; }
+.kpi .n { font-size: 17px; }
+.pf-sec { padding-top: 56px; }
+.pf-sec .price { margin-bottom: 0; }
+.scroll { overflow-x: auto; }
+.chart.tall { height: 320px; }
+
+.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 104px 72px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.hrow:last-child { border-bottom: 1px solid var(--hair); }
+.hrow .main { display: grid; gap: 3px; min-width: 0; }
+.nm-btn { border: 0; background: none; padding: 0; text-align: left; font-weight: 500; font-size: 15px; letter-spacing: -.01em; cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm-btn:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.id a { color: inherit; }
+.id a:hover { color: var(--fg); }
+
+.donuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
+.dn { display: flex; gap: 20px; align-items: center; min-width: 0; }
+.dn h3 { margin: 0 0 12px; }
+.donut { width: 120px; height: 120px; flex: none; }
+.leg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; min-width: 0; flex: 1; }
+.leg li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.leg .lt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.eft { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 18px; min-width: 420px; }
+.eft th, .eft td { padding: 9px 0 9px 12px; border-bottom: 1px solid var(--hair); text-align: right; vertical-align: top; white-space: nowrap; }
+.eft th { font-size: 11.5px; font-weight: 500; color: var(--soft); }
+.eft th:first-child, .eft td:first-child { text-align: left; padding-left: 0; white-space: normal; }
+.eft .wl { display: block; font-size: 12px; color: var(--soft); margin-top: 2px; }
+.dotm { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+
+.fb { padding: 16px 0 6px; border-top: 1px solid var(--hair); }
+.fb h4 { margin: 0 0 4px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.fb h4 em { font-style: normal; color: var(--soft); font-weight: 400; margin-left: 6px; }
+#json-box { display: block; width: 100%; min-height: 200px; font-family: var(--m); font-size: 12px; line-height: 1.55; border: 1px solid var(--hair); background: var(--fill); color: var(--fg); border-radius: 10px; padding: 12px; resize: vertical; }
+.io { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.io button, .io .btn { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--fg); }
+.io button:hover, .io .btn:hover { border-color: var(--fg); }
+.newpf { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--fg); cursor: pointer; margin: 0; }
+.newpf:hover { border-color: var(--fg); }
+.newpf[aria-pressed="true"] { border-color: var(--fg); }
+.pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 10px 0; }
+.live { padding-top: 32px; }
+.live .big { font-size: clamp(38px, 7vw, 56px); }
+.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 18px 16px; padding-top: 28px; }
+.rets > div { display: grid; gap: 2px; min-width: 0; border-top: 1.5px solid var(--hair); padding-top: 10px; }
+.rets .n { font-size: 18px; letter-spacing: -.03em; }
+.rets .sub { font-family: var(--m); font-size: 12px; color: var(--soft); }
+.rets .sub.pos { color: var(--up); } .rets .sub.neg { color: var(--down); }
+.capr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.capr select, .rbctl select, .lotform #lot-op { appearance: none; -webkit-appearance: none; border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: 13px; color: var(--fg); cursor: pointer; }
+.rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: 13px; cursor: pointer; }
+.rbctl button:disabled { opacity: .35; cursor: default; }
+.buy { color: var(--up); } .sell { color: var(--down); }
+.lotform #lot-cancel { background: none; color: var(--soft); border: 1px solid var(--hair); }
+.rowwrap { display: flex; align-items: center; gap: 14px; border-top: 1px solid var(--hair); }
+.rowwrap:last-child { border-bottom: 1px solid var(--hair); }
+.rowwrap .row { flex: 1; min-width: 0; width: auto; border-top: 0; }
+.chk { position: relative; flex: none; width: 20px; height: 20px; cursor: pointer; }
+.chk input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.chk i { pointer-events: none; position: absolute; inset: 0; border: 1.5px solid var(--soft); border-radius: 6px; transition: background .12s; }
+.chk input:checked + i { background: var(--fg); border-color: var(--fg); }
+.chk input:checked + i::after { content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.chk input:focus-visible + i { outline: 1.5px solid var(--fg); outline-offset: 2px; }
+.liq { font-size: 9px; vertical-align: 1px; }
+.liq.alta { color: var(--up); } .liq.media { color: var(--c3); } .liq.bassa { color: var(--down); }
+.selbar { position: sticky; bottom: 0; z-index: 4; background: var(--bg); border-top: 1px solid var(--hair); padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.selbar .wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.grow { flex: 1; }
+.primary { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 8px 18px; font-size: 13.5px; cursor: pointer; }
+.ghost { border: 1px solid var(--hair); background: none; color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+.ghost:hover { border-color: var(--fg); }
+.kind { font-size: 12px; border: 1px solid var(--hair); border-radius: 99px; padding: 3px 10px; color: var(--soft); margin-bottom: 12px; white-space: nowrap; }
+.kind.draft { color: var(--c3); border-color: var(--c3); }
+#draft-sec .lotform button, #lots-sec .lotform button { white-space: nowrap; }
+.wi { width: 84px; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 8px; padding: 6px 8px; font-family: var(--m); font-size: 13px; text-align: right; }
+.rn input[type="number"], .rn input[type="date"] { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: 13.5px; }
+#addto { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
+.at { display: grid; gap: 14px; }
+.at h2 { font-size: 20px; font-weight: 500; letter-spacing: -.03em; margin: 0; }
+.at select { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 8px 14px; font-size: 14px; max-width: 100%; }
+.at .lotform { margin: 0; align-items: center; }
+.at .lotform input { flex: 1 1 110px; }
+.atk { flex: 0 0 56px; }
+.at .io { margin-top: 4px; }
+.act { white-space: nowrap; }
+.lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: 13.5px; min-width: 0; }
+#lot-etf { flex: 1 1 220px; text-overflow: ellipsis; }
+#lot-date { flex: 0 0 150px; }
+#lot-qty, #lot-price { flex: 0 0 110px; }
+.lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: 13.5px; cursor: pointer; }
+.fc-note.err { color: var(--down); }
+.rn { display: flex; gap: 10px; align-items: baseline; margin-bottom: 14px; }
+#pf-name { border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font-size: 14px; padding: 4px 0; min-width: 0; flex: 1; max-width: 320px; }
+.del { border: 0; background: none; color: var(--soft); cursor: pointer; padding: 0 2px; font-size: 16px; line-height: 1; }
+.del:hover { color: var(--down); }
+#io-msg { font-size: 12.5px; color: var(--soft); }
+#io-msg.err { color: var(--down); }
+.fb-sum { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 0; border-top: 1.5px solid var(--fg); font-size: 14px; font-weight: 500; }
+.srcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; color: var(--soft); }
+.srcs a { color: var(--fg); text-underline-offset: 3px; }
+@media (max-width: 600px) {
+  .hrow { grid-template-columns: minmax(0, 1fr) 52px 92px; gap: 12px; }
+  .hrow .y1 { display: none; }
+  .donuts { grid-template-columns: minmax(0, 1fr); }
+  .chart.tall { height: 260px; }
+}
+
+.src { color: var(--soft); text-decoration: none; }
+.src:hover { color: var(--fg); }
+.fc { list-style: none; margin: 0; padding: 0; }
+.fc a { display: grid; grid-template-columns: minmax(0, 1fr) auto 72px 96px; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--hair); color: inherit; text-decoration: none; font-size: 13.5px; }
+.fc a:hover .who { text-decoration: underline; text-underline-offset: 3px; }
+.fc .n { text-align: right; }
+.fc .k { text-align: right; }
+.fc-note { font-size: 11.5px; color: var(--soft); margin: 10px 0 0; }
+@media (max-width: 600px) {
+  .fc a { grid-template-columns: minmax(0, 1fr) auto 64px; }
+  .fc a .k { grid-column: 1 / -1; text-align: left; margin-top: -6px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts, .cols2 { grid-template-columns: minmax(0, 1fr); }
+  .chart { height: 220px; }
+}
+</style>
+
+<header><div class="wrap bar2">
+  <span class="logo">my<i>Money</i></span>
+  <nav class="tabs" aria-label="Sezioni">
+    <button type="button" data-v="port" aria-pressed="true">Portafoglio</button>
+    <button type="button" data-v="search" aria-pressed="false">Cerca</button>
+  </nav>
+</div></header>
+
+<main class="wrap" id="v-port">
+  <section class="pf-sel">
+    <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
+    <div class="pfbtns">
+      <button type="button" class="newpf" id="pf-def" aria-pressed="false">☆ Predefinito</button>
+      <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
+      <button type="button" class="newpf" id="pf-newd">+ Draft</button>
+    </div>
+    <span class="kind" id="kind"></span>
+    <span class="badge" id="badge"></span>
+  </section>
+  <section class="live" aria-label="Valore e rendimenti">
+    <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div>
+    <div class="rets" id="rets"></div>
+  </section>
+  <section class="kpi" id="kpi" aria-label="Sintesi"></section>
+
+  <section class="pf-sec" aria-label="NAV del portafoglio">
+    <div class="price">
+      <span></span>
+      <div class="periods" role="group" aria-label="Periodo" id="pf-periods"></div>
+    </div>
+    <div class="chart" id="pf-chart"></div>
+  </section>
+
+  <section class="sec pf-sec"><h3>Composizione</h3><div id="pf-comp"></div>
+    <div class="io"><button type="button" id="to-draft">Duplica come draft</button></div></section>
+  <section class="sec pf-sec" id="draft-sec" hidden><h3>Composizione target</h3>
+    <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Simula da</label><input id="dr-start" type="date" style="max-width:160px"></div>
+    <div class="scroll"><table class="eft" id="dr-tbl"></table></div>
+    <div class="lotform" style="margin-top:12px"><select id="dr-add" aria-label="ETF da aggiungere"></select><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button></div>
+    <p class="fc-note" id="dr-note"></p>
+    <h3 style="margin-top:28px">Dimensionamento ai prezzi correnti</h3>
+    <div class="scroll"><table class="eft" id="dr-size"></table></div>
+    <div class="io"><button type="button" id="dr-own">Converti in acquistato</button></div>
+  </section>
+  <section class="sec pf-sec" id="lots-sec"><h3>Acquisti</h3>
+    <div class="rn"><label class="k" for="pf-name">Nome</label><input id="pf-name" autocomplete="off"></div>
+    <form class="lotform" id="lot-form">
+      <select id="lot-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
+      <select id="lot-etf" aria-label="ETF"></select>
+      <input id="lot-date" type="date" aria-label="Data dell'operazione" required>
+      <input id="lot-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
+      <input id="lot-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
+      <button type="submit" id="lot-submit">Aggiungi</button>
+      <button type="button" id="lot-cancel" hidden>Annulla</button>
+    </form>
+    <p class="fc-note" id="lot-msg" aria-live="polite"></p>
+    <div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
+  <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
+
+  <section class="sec pf-sec"><h3>Frontiera efficiente</h3>
+    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label>
+      <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
+    <div class="chart tall" id="pf-ef"></div>
+    <div class="scroll"><table class="eft" id="pf-eft"></table></div>
+    <p class="fc-note" id="ef-note"></p>
+  </section>
+
+  <section class="sec pf-sec"><h3>Ribilanciamento</h3>
+    <div class="rbctl">
+      <select id="rb-goal" aria-label="Obiettivo">
+        <option value="vol">Stessa volatilità, più rendimento</option>
+        <option value="ret">Stesso rendimento, meno volatilità</option>
+        <option value="maxS">Massimo Sharpe</option>
+        <option value="minV">Minima varianza</option>
+      </select>
+      <button type="button" id="rb-apply" disabled>Applica operazioni</button>
+    </div>
+    <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
+    <p class="fc-note" id="rb-note"></p>
+  </section>
+
+  <section class="sec pf-sec"><h3>Previsioni sull'indice · 12 mesi</h3><div id="pf-fc"></div></section>
+  <section class="sec pf-sec"><h3>Dati JSON</h3>
+    <textarea id="json-box" spellcheck="false" aria-label="JSON del portafoglio" placeholder="Esporta per ottenere il JSON del portafoglio, oppure incolla qui un JSON e premi Importa"></textarea>
+    <div class="io">
+      <button type="button" id="io-exp">Esporta</button>
+      <button type="button" id="io-copy">Copia</button>
+      <label class="btn" for="io-file">Carica file</label><input id="io-file" type="file" accept=".json,application/json" hidden>
+      <button type="button" id="io-imp">Importa</button>
+      <button type="button" id="io-del" hidden>Elimina</button>
+      <span id="io-msg" aria-live="polite"></span>
+    </div>
+  </section>
+  <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
+</main>
+
+<main class="wrap" id="v-search" hidden>
+  <section class="search">
+    <div class="q">
+      <input id="q" type="search" placeholder="Cerca ETF, ticker, ISIN" autocomplete="off" aria-label="Cerca ETF">
+      <button class="icon" type="button" id="fbtn" aria-expanded="false" aria-controls="filters" aria-label="Filtri">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6h14M6 10h8M8.5 14h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="filters" id="filters" hidden>
+      <select id="f-asset" aria-label="Asset class"></select>
+      <select id="f-region" aria-label="Area geografica"></select>
+      <select id="f-focus" aria-label="Focus"></select>
+      <select id="f-provider" aria-label="Emittente"></select>
+      <select id="f-dist" aria-label="Dividendi"><option value="">Dividendi</option><option value="Accumulazione">Accumulazione</option><option value="Distribuzione">Distribuzione</option></select>
+      <select id="f-repl" aria-label="Replica"></select>
+      <select id="f-cur" aria-label="Valuta"></select>
+      <select id="f-dom" aria-label="Domicilio"></select>
+      <select id="f-ter" aria-label="TER massimo"><option value="">TER</option><option value="0.1">TER ≤ 0,10%</option><option value="0.2">TER ≤ 0,20%</option><option value="0.4">TER ≤ 0,40%</option></select>
+      <select id="f-aum" aria-label="Patrimonio minimo"><option value="">Patrimonio</option><option value="1000">&gt; € 1 Mld</option><option value="5000">&gt; € 5 Mld</option><option value="20000">&gt; € 20 Mld</option></select>
+      <select id="f-age" aria-label="Anni dal lancio"><option value="">Anzianità</option><option value="3">&gt; 3 anni</option><option value="5">&gt; 5 anni</option><option value="10">&gt; 10 anni</option></select>
+      <select id="f-liq" aria-label="Liquidità"><option value="">Liquidità</option><option value="Alta">Alta</option><option value="Media">Media</option><option value="Bassa">Bassa</option></select>
+      <select id="f-adv" aria-label="Volume medio giornaliero"><option value="">Volume</option><option value="1">&gt; € 1 Mln</option><option value="10">&gt; € 10 Mln</option><option value="50">&gt; € 50 Mln</option></select>
+      <select id="f-spr" aria-label="Spread massimo"><option value="">Spread</option><option value="0.05">≤ 0,05%</option><option value="0.1">≤ 0,10%</option><option value="0.2">≤ 0,20%</option></select>
+      <select id="f-r1" aria-label="Rendimento a 1 anno"><option value="">Rend. 1A</option><option value="0">&gt; 0%</option><option value="5">&gt; 5%</option><option value="10">&gt; 10%</option></select>
+      <select id="f-vol" aria-label="Volatilità massima"><option value="">Volatilità</option><option value="10">&lt; 10%</option><option value="15">&lt; 15%</option><option value="20">&lt; 20%</option></select>
+      <select id="f-sh" aria-label="Sharpe minimo"><option value="">Sharpe</option><option value="0.5">&gt; 0,5</option><option value="1">&gt; 1</option></select>
+      <select id="f-dd" aria-label="Calo massimo"><option value="">Max drawdown</option><option value="10">&lt; 10%</option><option value="15">&lt; 15%</option><option value="20">&lt; 20%</option></select>
+      <button class="clear" type="button" id="clear" hidden>Azzera</button>
+    </div>
+  </section>
+
+  <div class="bar">
+    <span id="count" aria-live="polite"></span>
+    <select id="sort" aria-label="Ordina">
+      <option value="aum">Patrimonio</option>
+      <option value="ter">TER</option>
+      <option value="r1">Rendimento 1A</option>
+      <option value="r3">Rendimento 3A</option>
+      <option value="adv">Volume</option>
+      <option value="spr">Spread</option>
+      <option value="vol">Volatilità</option>
+      <option value="sh">Sharpe</option>
+      <option value="name">Nome</option>
+    </select>
+  </div>
+  <div class="list" id="list"></div>
+  <p class="foot">Anagrafiche indicative · NAV simulato · Previsioni con fonte</p>
+</main>
+
+<div class="selbar" id="selbar" hidden><div class="wrap"><span id="sel-n"></span><span class="grow"></span><button type="button" id="sel-clear" class="ghost">Azzera</button><button type="button" id="sel-add" class="primary">Aggiungi a portafoglio</button></div></div>
+
+<dialog id="detail" aria-labelledby="d-name"><div class="d" id="d-body"></div></dialog>
+<dialog id="addto" aria-labelledby="at-title"><form id="at-form" class="at"></form></dialog>
+
+<script src="prices.js"></script>
+<script>
+const TODAY = new Date(2026, 9, 23, 12);
+const DAY = 864e5;
+
+// Dati dimostrativi: anagrafiche approssimative, NAV storico simulato.
+const ETFS = [
+  { name: "iShares Core MSCI World UCITS ETF USD (Acc)", ticker: "SWDA", isin: "IE00B4L5Y983", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "MSCI World", ter: 0.20, aum: 98400, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 108.42, mu: 0.095, sig: 0.15, n: 1395,
+    top: [["Apple",4.9],["NVIDIA",4.8],["Microsoft",4.4],["Amazon",2.7],["Meta Platforms",1.8],["Alphabet A",1.5],["Broadcom",1.3],["Alphabet C",1.3],["Tesla",1.1],["JPMorgan Chase",0.9]],
+    b1: ["Paesi", [["Stati Uniti",71.5],["Giappone",5.4],["Regno Unito",3.5],["Canada",3.1],["Francia",2.6],["Altri",13.9]]],
+    b2: ["Settori", [["Tecnologia",25.8],["Finanza",16.4],["Industria",10.9],["Beni voluttuari",10.3],["Sanità",10.1],["Altri",26.5]]] },
+  { name: "Vanguard FTSE All-World UCITS ETF (USD) Accumulating", ticker: "VWCE", isin: "IE00BK5BQT80", provider: "Vanguard", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "FTSE All-World", ter: 0.19, aum: 21800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2019-07-23", nav: 141.18, mu: 0.09, sig: 0.145, n: 3720,
+    top: [["Apple",4.3],["NVIDIA",4.2],["Microsoft",3.9],["Amazon",2.4],["Meta Platforms",1.6],["Alphabet A",1.3],["Broadcom",1.2],["Taiwan Semiconductor",1.1],["Alphabet C",1.1],["Tesla",1.0]],
+    b1: ["Paesi", [["Stati Uniti",62.5],["Giappone",5.8],["Regno Unito",3.3],["Cina",2.9],["Canada",2.8],["Altri",22.7]]],
+    b2: ["Settori", [["Tecnologia",26.4],["Finanza",15.9],["Beni voluttuari",13.1],["Industria",11.8],["Sanità",9.6],["Altri",23.2]]] },
+  { name: "iShares Core S&P 500 UCITS ETF USD (Acc)", ticker: "CSPX", isin: "IE00B5BMR087", provider: "iShares", asset: "Azionario", region: "Stati Uniti", focus: "Large cap", index: "S&P 500", ter: 0.07, aum: 104900, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2010-05-19", nav: 640.12, mu: 0.12, sig: 0.16, n: 503,
+    top: [["NVIDIA",7.3],["Apple",6.9],["Microsoft",6.4],["Amazon",3.9],["Meta Platforms",2.8],["Broadcom",2.5],["Alphabet A",2.1],["Tesla",1.9],["Alphabet C",1.7],["Berkshire Hathaway B",1.6]],
+    b1: ["Paesi", [["Stati Uniti",99.6],["Altri",0.4]]],
+    b2: ["Settori", [["Tecnologia",32.5],["Finanza",13.4],["Beni voluttuari",10.5],["Sanità",10.0],["Comunicazione",9.6],["Altri",24.0]]] },
+  { name: "Xtrackers MSCI Emerging Markets UCITS ETF 1C", ticker: "XMME", isin: "IE00BTJRMP35", provider: "Xtrackers", asset: "Azionario", region: "Mercati emergenti", focus: "Large & mid cap", index: "MSCI Emerging Markets", ter: 0.18, aum: 6200, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-06-21", nav: 58.31, mu: 0.055, sig: 0.17, n: 1250,
+    top: [["Taiwan Semiconductor",9.8],["Tencent",4.6],["Samsung Electronics",2.9],["Alibaba",2.7],["HDFC Bank",1.4],["Reliance Industries",1.2],["Xiaomi",1.2],["Meituan",1.0],["PDD Holdings",0.9],["ICICI Bank",0.9]],
+    b1: ["Paesi", [["Cina",26.5],["India",18.6],["Taiwan",18.4],["Corea del Sud",9.9],["Brasile",4.4],["Altri",22.2]]],
+    b2: ["Settori", [["Tecnologia",23.9],["Finanza",22.6],["Beni voluttuari",13.4],["Comunicazione",9.5],["Industria",6.8],["Altri",23.8]]] },
+  { name: "iShares Core MSCI EM IMI UCITS ETF USD (Acc)", ticker: "EIMI", isin: "IE00BKM4GZ66", provider: "iShares", asset: "Azionario", region: "Mercati emergenti", focus: "Small, mid & large cap", index: "MSCI Emerging Markets IMI", ter: 0.18, aum: 20800, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2014-05-30", nav: 35.84, mu: 0.05, sig: 0.165, n: 3240,
+    top: [["Taiwan Semiconductor",8.7],["Tencent",4.0],["Samsung Electronics",2.5],["Alibaba",2.4],["HDFC Bank",1.2],["Reliance Industries",1.1],["Xiaomi",1.0],["Meituan",0.9],["PDD Holdings",0.8],["Infosys",0.8]],
+    b1: ["Paesi", [["Cina",24.8],["India",20.1],["Taiwan",19.2],["Corea del Sud",10.4],["Brasile",4.3],["Altri",21.2]]],
+    b2: ["Settori", [["Tecnologia",23.1],["Finanza",21.0],["Beni voluttuari",12.6],["Comunicazione",8.6],["Industria",8.4],["Altri",26.3]]] },
+  { name: "iShares Core MSCI Europe UCITS ETF EUR (Acc)", ticker: "IMAE", isin: "IE00B4K48X80", provider: "iShares", asset: "Azionario", region: "Europa", focus: "Large & mid cap", index: "MSCI Europe", ter: 0.12, aum: 6100, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 88.63, mu: 0.075, sig: 0.155, n: 410,
+    top: [["ASML",2.8],["SAP",2.5],["Nestlé",2.2],["Novo Nordisk",2.0],["Roche",1.9],["AstraZeneca",1.9],["Novartis",1.8],["HSBC",1.7],["Shell",1.7],["Siemens",1.4]],
+    b1: ["Paesi", [["Regno Unito",22.4],["Francia",16.0],["Svizzera",14.9],["Germania",14.7],["Paesi Bassi",7.0],["Altri",25.0]]],
+    b2: ["Settori", [["Finanza",21.8],["Industria",17.6],["Sanità",14.2],["Beni di consumo",9.1],["Tecnologia",7.4],["Altri",29.9]]] },
+  { name: "Amundi FTSE MIB UCITS ETF Dist", ticker: "FMI", isin: "FR0010010827", provider: "Amundi", asset: "Azionario", region: "Italia", focus: "Large cap", index: "FTSE MIB", ter: 0.18, aum: 910, cur: "EUR", repl: "Fisica completa", dist: "Distribuzione", dom: "Francia", inception: "2003-11-14", nav: 36.21, mu: 0.07, sig: 0.21, n: 40,
+    top: [["UniCredit",13.2],["Intesa Sanpaolo",12.1],["Ferrari",9.0],["Enel",8.0],["Eni",6.0],["Generali",4.8],["Stellantis",4.1],["Leonardo",3.7],["Prysmian",3.6],["Moncler",2.4]],
+    b1: ["Paesi", [["Italia",88.4],["Paesi Bassi",11.6]]],
+    b2: ["Settori", [["Finanza",41.2],["Beni voluttuari",15.3],["Utility",12.6],["Industria",11.9],["Energia",7.2],["Altri",11.8]]] },
+  { name: "Xtrackers MSCI Japan UCITS ETF 1C", ticker: "XMJP", isin: "LU0274209740", provider: "Xtrackers", asset: "Azionario", region: "Giappone", focus: "Large & mid cap", index: "MSCI Japan", ter: 0.12, aum: 4500, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Lussemburgo", inception: "2007-01-09", nav: 82.05, mu: 0.065, sig: 0.16, n: 185,
+    top: [["Toyota Motor",5.0],["Mitsubishi UFJ",3.8],["Sony Group",3.6],["Hitachi",3.0],["Sumitomo Mitsui",2.4],["Recruit Holdings",2.0],["Tokyo Electron",1.9],["Keyence",1.8],["Mitsubishi Corp",1.7],["Nintendo",1.7]],
+    b1: ["Paesi", [["Giappone",100]]],
+    b2: ["Settori", [["Industria",23.4],["Beni voluttuari",17.0],["Finanza",15.6],["Tecnologia",13.5],["Comunicazione",8.2],["Altri",22.3]]] },
+  { name: "iShares Automation & Robotics UCITS ETF USD (Acc)", ticker: "RBOT", isin: "IE00BYZK4552", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Tematico", index: "iSTOXX FactSet Automation & Robotics", ter: 0.40, aum: 3050, cur: "USD", repl: "Fisica completa", dist: "Accumulazione", dom: "Irlanda", inception: "2016-09-08", nav: 14.62, mu: 0.095, sig: 0.22, n: 162,
+    top: [["NVIDIA",1.4],["Teradyne",1.2],["Rockwell Automation",1.1],["Keyence",1.0],["Intuitive Surgical",1.0],["ABB",0.9],["Fanuc",0.9],["Siemens",0.9],["Cognex",0.8],["Yaskawa Electric",0.8]],
+    b1: ["Paesi", [["Stati Uniti",52.1],["Giappone",17.4],["Taiwan",6.2],["Germania",4.8],["Svizzera",3.1],["Altri",16.4]]],
+    b2: ["Settori", [["Tecnologia",58.3],["Industria",27.1],["Sanità",8.2],["Beni voluttuari",4.0],["Altri",2.4]]] },
+  { name: "iShares Developed Markets Property Yield UCITS ETF", ticker: "IWDP", isin: "IE00B1FZS350", provider: "iShares", asset: "Immobiliare", region: "Globale", focus: "REIT", index: "FTSE EPRA Nareit Developed Dividend+", ter: 0.59, aum: 1120, cur: "USD", repl: "Fisica completa", dist: "Distribuzione", dom: "Irlanda", inception: "2006-11-03", nav: 22.41, mu: 0.035, sig: 0.19, n: 338,
+    top: [["Prologis",6.5],["Welltower",5.0],["Equinix",4.4],["Simon Property",3.1],["Realty Income",2.8],["Public Storage",2.6],["Digital Realty",2.6],["Goodman Group",2.0],["Vonovia",1.7],["Mitsui Fudosan",1.5]],
+    b1: ["Paesi", [["Stati Uniti",64.2],["Giappone",9.1],["Australia",6.0],["Regno Unito",4.4],["Singapore",3.2],["Altri",13.1]]],
+    b2: ["Settori", [["Logistica",17.5],["Sanità",14.1],["Commerciale",13.2],["Residenziale",12.8],["Uffici",8.9],["Altri",33.5]]] },
+  { name: "iShares Core Euro Government Bond UCITS ETF (Dist)", ticker: "IEGA", isin: "IE00B4WXJJ64", provider: "iShares", asset: "Obbligazionario", region: "Eurozona", focus: "Governativo", index: "Bloomberg Euro Treasury", ter: 0.07, aum: 7900, cur: "EUR", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2009-04-17", nav: 113.48, mu: 0.012, sig: 0.06, n: 382,
+    top: [["BTP 3,85% 2034",0.9],["OAT 3,00% 2033",0.8],["Bund 2,60% 2034",0.8],["BTP 4,00% 2035",0.7],["OAT 0,00% 2031",0.7],["Bonos 3,15% 2033",0.6],["Bund 0,00% 2031",0.6],["BTP 1,65% 2032",0.6],["OAT 2,75% 2029",0.6],["Bund 2,20% 2028",0.5]],
+    b1: ["Emittenti", [["Francia",23.5],["Italia",21.8],["Germania",19.4],["Spagna",13.3],["Belgio",4.6],["Altri",17.4]]],
+    b2: ["Scadenze", [["1-3 anni",21.6],["3-5 anni",18.2],["5-7 anni",14.1],["7-10 anni",17.3],["Oltre 10 anni",28.8]]] },
+  { name: "iShares $ Treasury Bond 7-10yr UCITS ETF (Dist)", ticker: "IBTM", isin: "IE00B1FZS798", provider: "iShares", asset: "Obbligazionario", region: "Stati Uniti", focus: "Governativo", index: "ICE US Treasury 7-10 Year", ter: 0.07, aum: 4600, cur: "USD", repl: "Fisica a campione", dist: "Distribuzione", dom: "Irlanda", inception: "2006-12-01", nav: 158.04, mu: 0.016, sig: 0.08, n: 28,
+    top: [["T-Note 4,25% 2034",8.4],["T-Note 4,00% 2034",8.1],["T-Note 4,375% 2034",7.9],["T-Note 3,875% 2033",7.6],["T-Note 4,50% 2033",7.2],["T-Note 3,50% 2033",6.8],["T-Note 4,125% 2035",6.5],["T-Note 2,875% 2032",5.4],["T-Note 4,625% 2035",5.2],["T-Note 2,75% 2032",4.9]],
+    b1: ["Emittenti", [["Tesoro USA",100]]],
+    b2: ["Scadenze", [["7-8 anni",34.6],["8-9 anni",30.2],["9-10 anni",35.2]]] },
+  { name: "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged (Acc)", ticker: "AGGH", isin: "IE00BDBRDM35", provider: "iShares", asset: "Obbligazionario", region: "Globale", focus: "Aggregato", index: "Bloomberg Global Aggregate (EUR hedged)", ter: 0.10, aum: 11300, cur: "EUR", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2017-11-21", nav: 4.96, mu: 0.012, sig: 0.05, n: 12940,
+    top: [["T-Note 4,25% 2034",0.3],["Cina 2,52% 2033",0.3],["T-Note 4,00% 2034",0.3],["JGB 0,80% 2034",0.2],["Gilt 4,25% 2034",0.2],["BTP 3,85% 2034",0.2],["OAT 3,00% 2033",0.2],["Bund 2,60% 2034",0.2],["Fannie Mae 30Y 5,0%",0.2],["Freddie Mac 30Y 5,5%",0.2]],
+    b1: ["Paesi", [["Stati Uniti",40.8],["Giappone",9.8],["Cina",9.4],["Francia",5.6],["Germania",4.9],["Altri",29.5]]],
+    b2: ["Tipologia", [["Governativi",54.1],["Societari",18.3],["Cartolarizzati",13.2],["Agenzie",10.1],["Altri",4.3]]] },
+  { name: "Invesco Physical Gold ETC", ticker: "SGLD", isin: "IE00B579F325", provider: "Invesco", asset: "Materie prime", region: "Globale", focus: "Oro", index: "LBMA Gold Price PM", ter: 0.12, aum: 20100, cur: "USD", repl: "Fisica (ETC)", dist: "Accumulazione", dom: "Irlanda", inception: "2009-07-02", nav: 331.60, mu: 0.08, sig: 0.15, n: 1,
+    top: [["Lingotti d'oro allocati",100]],
+    b1: ["Custodia", [["Londra",100]]],
+    b2: ["Sottostante", [["Oro fisico",100]]] },
+];
+
+// Previsioni a circa 12 mesi pubblicate da banche d'investimento, riferite all'indice o al sottostante (raccolte il 24 ott 2026).
+const FC = {
+  CSPX: { ref: "S&P 500", spot: 7623.68, items: [
+    { who: "Goldman Sachs", target: 8700, by: "Fine 2027", url: "https://www.thestreet.com/investing/goldman-sachs-doubles-down-on-bold-sp-500-forecast" },
+    { who: "Morgan Stanley", target: 8300, by: "Metà 2027", url: "https://www.morganstanley.com/insights/articles/investment-outlook-midyear-2026" } ] },
+  IMAE: { ref: "STOXX Europe 600", spot: 636.5, items: [
+    { who: "HSBC", target: 760, by: "Fine 2027", url: "https://www.investing.com/news/stock-market-news/hsbc-raises-stoxx-600-target-to-680-sees-20-upside-by-2027-4912926" },
+    { who: "Citi", target: 700, by: "Metà 2027", url: "https://www.investing.com/news/stock-market-news/citi-sets-new-mid2027-stoxx-600-target-sees-earnings-driving-gains-4739138" } ] },
+  SGLD: { ref: "Oro $/oz", spot: 3995.81, items: [
+    { who: "Goldman Sachs", target: 5400, by: "Fine 2027", url: "https://fxnx.com/en/blog/gold-price-forecasts-2027-every-published-bank-target-dated" },
+    { who: "UBS", target: 5400, by: "Set 2027", url: "https://fxnx.com/en/blog/gold-price-forecasts-2027-every-published-bank-target-dated" } ] },
+  XMJP: { ref: "TOPIX", spot: null, items: [
+    { who: "Goldman Sachs", target: 4500, up: 0.12, by: "12 mesi", url: "https://ng.investing.com/news/stock-market-news/goldman-sachs-raises-topix-12month-target-to-4500-on-weaker-yen-outlook-2617316" } ] },
+  IBTM: { ref: "Rendimento Treasury 10A", spot: 4.99, unit: "%", items: [
+    { who: "Morgan Stanley", target: 4.70, by: "Fine 2027", url: "https://finvaulta.com/research/morgan-stanley/new-us-treasury-yield-forecasts-after-new-fed-call-2026-09-24" } ] },
+};
+
+/* ---------- Utilità ---------- */
+const fmt = (v, d = 2) => v.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v, d = 2) => { if (v == null) return "—"; const r = +(v * 100).toFixed(d) || 0; return (r > 0 ? "+" : "") + fmt(r, d) + "%"; };
+const cls = v => v == null ? "" : v >= 0 ? "pos" : "neg";
+const aumTxt = m => m >= 1000 ? "€ " + fmt(m / 1000, 1) + " Mld" : "€ " + fmt(m, 0) + " Mln";
+const dateTxt = (t, o = { day: "2-digit", month: "short", year: "numeric" }) => new Date(t).toLocaleDateString("it-IT", o);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// NAV simulato: passeggiata log-normale su giorni lavorativi, riallineata al rendimento atteso e all'ultimo NAV.
+// Fattore di mercato comune: azioni correlate tra loro, obbligazioni e oro quasi indipendenti.
+const BETA = { Azionario: 0.85, Immobiliare: 0.8, Obbligazionario: 0.05, "Materie prime": 0.1 };
+const MK = new Map();
+function mkt(k) {
+  if (!MK.has(k)) { const r = rng(hash("m" + k)); let u = 0; while (!u) u = r(); MK.set(k, Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r())); }
+  return MK.get(k);
+}
+function buildSeries(e) {
+  const r = rng(hash(e.isin));
+  const g = () => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
+  const t = [], x = [];
+  const d = new Date(e.inception + "T12:00:00");
+  let acc = 0;
+  while (d <= TODAY) {
+    const wd = d.getDay();
+    if (wd > 0 && wd < 6) {
+      let z = g(); if (r() < 0.012) z *= 2.6;
+      const b = BETA[e.asset] ?? 0.3; z = b * mkt(Math.floor(d.getTime() / DAY)) + Math.sqrt(1 - b * b) * z;
+      acc += e.sig * Math.sqrt(1 / 252) * z;
+      t.push(d.getTime()); x.push(acc);
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  const n = x.length - 1, fix = Math.log(1 + e.mu) * (n / 252) - x[n];
+  const v = x.map((y, i) => Math.exp(y + fix * i / n));
+  const k = e.nav / v[n];
+  return { t, v: v.map(y => y * k) };
+}
+
+function idxFrom(s, ts) {
+  let lo = 0, hi = s.t.length - 1;
+  if (ts > s.t[hi]) return hi;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (s.t[m] < ts) lo = m + 1; else hi = m; }
+  return lo;
+}
+function back(months, years = 0) { const d = new Date(TODAY); d.setMonth(d.getMonth() - months); d.setFullYear(d.getFullYear() - years); return d.getTime(); }
+function retSince(s, ts, annualize) {
+  if (ts !== 0 && ts < s.t[0]) return null;
+  const i = idxFrom(s, ts), r = s.v[s.v.length - 1] / s.v[i] - 1;
+  if (!annualize) return r;
+  return Math.pow(1 + r, 1 / ((s.t[s.t.length - 1] - s.t[i]) / (365.25 * DAY))) - 1;
+}
+
+ETFS.forEach(e => {
+  e.s = buildSeries(e);
+  e.r1 = retSince(e.s, back(12));
+  e.r3 = retSince(e.s, back(0, 3), true);
+  e.age = (TODAY - new Date(e.inception)) / (365.25 * DAY);
+});
+
+// Liquidità: volume medio giornaliero (€ Mln) e spread denaro-lettera (%) sono stime indicative; con prezzi reali il volume arriva dai dati scaricati.
+const LIQ = { SWDA: [150, .03], VWCE: [60, .06], CSPX: [200, .02], XMME: [5, .15], EIMI: [40, .08], IMAE: [8, .07], FMI: [1.5, .12], XMJP: [2, .12], RBOT: [4, .12], IWDP: [2, .15], IEGA: [20, .05], IBTM: [15, .04], AGGH: [25, .05], SGLD: [60, .05] };
+const liqRating = e => (e.spr <= 0.08 && e.adv >= 10 ? "Alta" : e.spr <= 0.15 && e.adv >= 2 ? "Media" : "Bassa");
+function calcStats(e) { // volatilità, massimo calo e Sharpe a 12 mesi
+  const s = e.s, i0 = idxFrom(s, back(12)), r = [];
+  for (let i = i0 + 1; i < s.v.length; i++) r.push(Math.log(s.v[i] / s.v[i - 1]));
+  const m = r.reduce((a, b) => a + b, 0) / (r.length || 1), sd = Math.sqrt(r.reduce((a, b) => a + (b - m) ** 2, 0) / Math.max(r.length - 1, 1));
+  e.vol1 = sd * Math.sqrt(252); let pk = s.v[i0], dd = 0;
+  for (let i = i0; i < s.v.length; i++) { pk = Math.max(pk, s.v[i]); dd = Math.min(dd, s.v[i] / pk - 1); }
+  e.dd1 = dd; e.sh1 = e.vol1 ? (e.r1 ?? 0) / e.vol1 : null;
+}
+ETFS.forEach(e => { [e.adv, e.spr] = LIQ[e.ticker]; calcStats(e); });
+
+/* ---------- Filtri ---------- */
+const $ = id => document.getElementById(id);
+const SELECTS = { "f-asset": ["asset", "Asset class"], "f-region": ["region", "Area"], "f-focus": ["focus", "Focus"], "f-provider": ["provider", "Emittente"], "f-repl": ["repl", "Replica"], "f-cur": ["cur", "Valuta"], "f-dom": ["dom", "Domicilio"] };
+for (const [id, [key, label]] of Object.entries(SELECTS)) {
+  const vals = [...new Set(ETFS.map(e => e[key]))].sort((a, b) => a.localeCompare(b, "it"));
+  $(id).innerHTML = `<option value="">${label}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join("");
+}
+const ALL = [...document.querySelectorAll(".filters select")];
+
+function matches(e) {
+  const q = $("q").value.trim().toLowerCase();
+  if (q) {
+    const hay = [e.name, e.ticker, e.isin, e.index, e.provider, e.region, e.asset, e.focus].join(" ").toLowerCase();
+    if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
+  }
+  for (const [id, [key]] of Object.entries(SELECTS)) if ($(id).value && e[key] !== $(id).value) return false;
+  if ($("f-dist").value && e.dist !== $("f-dist").value) return false;
+  if ($("f-ter").value && e.ter > +$("f-ter").value + 1e-9) return false;
+  if ($("f-aum").value && e.aum < +$("f-aum").value) return false;
+  if ($("f-age").value && e.age < +$("f-age").value) return false;
+  if ($("f-liq").value && liqRating(e) !== $("f-liq").value) return false;
+  if ($("f-adv").value && e.adv < +$("f-adv").value) return false;
+  if ($("f-spr").value && e.spr > +$("f-spr").value + 1e-9) return false;
+  if ($("f-r1").value !== "" && !(e.r1 > +$("f-r1").value / 100)) return false;
+  if ($("f-vol").value && e.vol1 > +$("f-vol").value / 100) return false;
+  if ($("f-sh").value && !(e.sh1 > +$("f-sh").value)) return false;
+  if ($("f-dd").value && e.dd1 < -$("f-dd").value / 100) return false;
+  return true;
+}
+
+function sparkSvg(e) {
+  const s = e.s, i0 = idxFrom(s, back(12)), pts = [];
+  const step = Math.max(1, Math.floor((s.v.length - i0) / 60));
+  for (let i = i0; i < s.v.length; i += step) pts.push(s.v[i]);
+  pts.push(s.v[s.v.length - 1]);
+  const mn = Math.min(...pts), mx = Math.max(...pts), W = 96, H = 28, n = pts.length - 1 || 1;
+  const T = pts.map((_, i) => i), X = i => i / n * W, Y = v => H - 2 - (v - mn) / (mx - mn || 1) * (H - 4);
+  const art = splitArt(T, pts, pts.map(() => pts[0]), X, Y, "sp" + e.isin);
+  const line = pts.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join("");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs>${art.defs}</defs>${art.fills}<path d="${line}" fill="none" stroke="${art.stroke}" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+const SEL = new Set();
+function render() {
+  const active = ALL.filter(s => s.value);
+  ALL.forEach(s => s.classList.toggle("on", !!s.value));
+  $("clear").hidden = !active.length;
+  $("fbtn").querySelector(".dot")?.remove();
+  if (active.length) $("fbtn").insertAdjacentHTML("beforeend", '<span class="dot"></span>');
+
+  const sort = $("sort").value;
+  const res = ETFS.filter(matches).sort((a, b) =>
+    sort === "ter" ? a.ter - b.ter :
+    sort === "r1" ? (b.r1 ?? -9) - (a.r1 ?? -9) :
+    sort === "r3" ? (b.r3 ?? -9) - (a.r3 ?? -9) :
+    sort === "adv" ? b.adv - a.adv :
+    sort === "spr" ? a.spr - b.spr :
+    sort === "vol" ? a.vol1 - b.vol1 :
+    sort === "sh" ? (b.sh1 ?? -9) - (a.sh1 ?? -9) :
+    sort === "name" ? a.name.localeCompare(b.name, "it") : b.aum - a.aum);
+  $("count").textContent = res.length + " ETF";
+  $("list").innerHTML = res.length ? res.map(e => `
+    <div class="rowwrap"><label class="chk" aria-label="Seleziona ${e.ticker}"><input type="checkbox" data-isin="${e.isin}"${SEL.has(e.isin) ? " checked" : ""}><i></i></label>
+    <button class="row" type="button" data-isin="${e.isin}">
+      <span class="main"><span class="nm">${esc(e.name)}</span><span class="id n">${e.ticker} · ${e.isin} · <span class="liq ${liqRating(e).toLowerCase()}">●</span> liquidità ${liqRating(e).toLowerCase()}</span></span>
+      <span class="v n ter">${fmt(e.ter)}%<small>TER</small></span>
+      <span class="v n ${cls(e.r1)}">${pct(e.r1, 1)}<small>1A</small></span>
+      ${sparkSvg(e)}
+    </button></div>`).join("") : `<div class="empty">Nessun risultato</div>`;
+}
+
+/* ---------- Dettaglio ---------- */
+const PERIODS = [["1M", () => back(1)], ["6M", () => back(6)], ["YTD", () => new Date(TODAY.getFullYear(), 0, 1).getTime()], ["1A", () => back(12)], ["3A", () => back(0, 3)], ["5A", () => back(0, 5)], ["Max", () => 0]];
+let cur = null, curPeriod = "1A";
+
+const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/it/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
+
+function openDetail(isin) {
+  const e = ETFS.find(x => x.isin === isin); if (!e) return;
+  cur = e;
+  const s = e.s, last = s.v[s.v.length - 1], chg = last / s.v[s.v.length - 2] - 1;
+  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= s.t[0]);
+  if (!avail.some(([p]) => p === curPeriod)) curPeriod = "Max";
+  const ytdBase = idxFrom(s, new Date(TODAY.getFullYear(), 0, 1).getTime()) - 1;
+  const perf = [
+    ["1M", retSince(s, back(1))], ["3M", retSince(s, back(3))], ["YTD", ytdBase >= 0 ? last / s.v[ytdBase] - 1 : null], ["1A", retSince(s, back(12))],
+    ["3A ann.", retSince(s, back(0, 3), true)], ["5A ann.", retSince(s, back(0, 5), true)], ["10A ann.", retSince(s, back(0, 10), true)], ["Lancio ann.", retSince(s, 0, true)],
+  ];
+  const facts = [
+    ["Indice", e.index], ["TER", fmt(e.ter) + "%"], ["Patrimonio", aumTxt(e.aum)], ["Dividendi", e.dist],
+    ["Replica", e.repl], ["Valuta", e.cur], ["Domicilio", e.dom], ["Lancio", dateTxt(new Date(e.inception + "T12:00:00"))],
+    ["Emittente", e.provider], ["Titoli", e.n.toLocaleString("it-IT")],
+  ];
+  const bars = items => { const mx = Math.max(...items.map(i => i[1])); return `<ul class="bars">${items.map(([n, w]) => `<li><span>${esc(n)}</span><span class="n">${fmt(w, 1)}%</span><i><b style="width:${(w / mx * 100).toFixed(1)}%"></b></i></li>`).join("")}</ul>`; };
+
+  $("d-body").innerHTML = `
+    <div class="d-top">
+      <div>
+        <h2 id="d-name">${esc(e.name)}</h2>
+        <div class="id n">${e.ticker} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/it/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></div>
+        <button type="button" class="ghost" id="d-add" style="margin-top:12px">Aggiungi a portafoglio</button>
+      </div>
+      <button class="icon close" type="button" id="d-close" aria-label="Chiudi">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <section>
+      <div class="price">
+        <div>
+          <div class="big">${fmt(last)}<small>${e.cur}</small></div>
+          <div class="chg n"><span class="${cls(chg)}">${pct(chg)}</span> <span class="k">${dateTxt(s.t[s.t.length - 1], { day: "numeric", month: "short" })}</span></div>
+        </div>
+        <div class="periods" role="group" aria-label="Periodo">${avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === curPeriod}">${p}</button>`).join("")}</div>
+      </div>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <div class="stats" id="pstats"></div>
+
+    <section class="sec"><h3>Rendimenti</h3>
+      <div class="stats">${perf.map(([k, v]) => `<div><span class="k">${k}</span><span class="n ${cls(v)}">${pct(v, 1)}</span></div>`).join("")}</div>
+    </section>
+
+    ${liqHtml(e)}
+
+    ${fcHtml(e)}
+
+    <section class="sec"><h3>Dati</h3>
+      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+    </section>
+
+    <div class="cols2">
+      <section class="sec"><h3>Posizioni</h3>${bars(e.top)}</section>
+      <section class="sec"><h3>${esc(e.b1[0])}</h3>${bars(e.b1[1])}</section>
+      <section class="sec"><h3>${esc(e.b2[0])}</h3>${bars(e.b2[1])}</section>
+    </div>`;
+
+  const dlg = $("detail");
+  if (!dlg.open) dlg.showModal();
+  dlg.scrollTop = 0;
+  $("d-close").onclick = () => dlg.close();
+  $("d-add").onclick = () => { dlg.close(); openAddTo([e.isin]); };
+  $("d-isin").onclick = async ev => {
+    const b = ev.currentTarget;
+    try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; setTimeout(() => (b.textContent = e.isin), 1200); }
+    catch { const r = document.createRange(); r.selectNodeContents(b); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+  };
+  document.querySelectorAll(".periods button").forEach(b => b.onclick = () => {
+    curPeriod = b.dataset.p;
+    document.querySelectorAll(".periods button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    drawChart();
+  });
+  drawChart();
+}
+
+function fcHtmlOld(e) {
+  const fc = FC[e.ticker];
+  if (!fc) return `<section class="sec"><h3>Previsioni 12 mesi</h3><p class="fc-note">Nessuna previsione pubblica trovata</p></section>`;
+  const yld = fc.unit === "%";
+  const rows = fc.items.map(i => {
+    let d, dTxt, c;
+    if (yld) { d = Math.round((i.target - fc.spot) * 100); dTxt = (d > 0 ? "+" : "") + d + " pb"; c = cls(-d); }
+    else { d = fc.spot ? i.target / fc.spot - 1 : i.up; dTxt = pct(d, 1) + (fc.spot ? "" : "*"); c = cls(d); }
+    const tg = yld ? fmt(i.target) + "%" : i.target.toLocaleString("it-IT");
+    return `<li><a href="${i.url}" target="_blank" rel="noopener"><span class="who">${esc(i.who)}</span><span class="n">${tg}</span><span class="n ${c}">${dTxt}</span><span class="k">${i.by} ↗</span></a></li>`;
+  }).join("");
+  const spot = fc.spot ? `Attuale ${yld ? fmt(fc.spot) + "%" : fc.spot.toLocaleString("it-IT")} · 23 ott 2026` : "* Variazione alla data di pubblicazione";
+  return `<section class="sec"><h3>Previsioni 12 mesi · ${esc(fc.ref)}</h3><ul class="fc">${rows}</ul><p class="fc-note">${spot}</p></section>`;
+}
+
+function niceTicks(mn, mx, count) {
+  const raw = (mx - mn || 1) / count, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+  const out = []; for (let v = Math.ceil(mn / step) * step; v <= mx + 1e-9; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+
+function drawChart() {
+  const e = cur, s = e.s, box = $("chart"); if (!box) return;
+  const from = PERIODS.find(p => p[0] === curPeriod)[1]();
+  const i0 = from === 0 ? 0 : idxFrom(s, from), n = s.v.length;
+  const step = Math.max(1, Math.floor((n - i0) / 420));
+  const T = [], V = [];
+  for (let i = i0; i < n; i += step) { T.push(s.t[i]); V.push(s.v[i]); }
+  if (T[T.length - 1] !== s.t[n - 1]) { T.push(s.t[n - 1]); V.push(s.v[n - 1]); }
+
+  const W = box.clientWidth, H = box.clientHeight, pl = 0, pr = 48, pt = 8, pb = 24;
+  const mn0 = Math.min(...V), mx0 = Math.max(...V), pad = (mx0 - mn0) * 0.08 || mx0 * 0.02;
+  const ticks = niceTicks(mn0 - pad, mx0 + pad, 3);
+  const lo = Math.min(ticks[0], mn0 - pad), hi = Math.max(ticks[ticks.length - 1], mx0 + pad);
+  const X = t => pl + (t - T[0]) / (T[T.length - 1] - T[0]) * (W - pl - pr);
+  const Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const col = V[V.length - 1] >= V[0] ? "var(--up)" : "var(--down)";
+  const line = T.map((t, i) => (i ? "L" : "M") + X(t).toFixed(1) + " " + Y(V[i]).toFixed(1)).join("");
+  const dec = hi < 10 ? 2 : hi < 100 ? 1 : 0;
+  const spanDays = (T[T.length - 1] - T[0]) / DAY;
+  const xo = spanDays > 900 ? { year: "numeric" } : spanDays > 80 ? { month: "short" } : { day: "numeric", month: "short" };
+  const nx = W < 420 ? 3 : 4, xt = [];
+  for (let k = 0; k < nx; k++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (k + 0.5) / nx);
+
+  const art = splitArt(T, V, V.map(() => V[0]), X, Y, "gf");
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="NAV ${esc(e.ticker)} ${curPeriod}">
+    <defs>${art.defs}</defs>
+    ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, dec)}</text>`).join("")}
+    ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
+    ${art.fills}
+    <line x1="${pl}" x2="${W - pr}" y1="${Y(V[0])}" y2="${Y(V[0])}" stroke="var(--soft)" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="${line}" fill="none" stroke="${art.stroke}" stroke-width="1.7" stroke-linejoin="round"/>
+    <g id="hv" visibility="hidden"><line id="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-width="1" stroke-dasharray="2 3"/><circle id="hc" r="4" fill="${col}" stroke="var(--bg)" stroke-width="2"/></g>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" id="hit"/>
+  </svg><div class="tip" id="tip" hidden></div>`;
+
+  const hit = box.querySelector("#hit"), g = box.querySelector("#hv"), tip = box.querySelector("#tip"), hl = box.querySelector("#hl"), hc = box.querySelector("#hc");
+  const move = ev => {
+    const x = ev.clientX - box.getBoundingClientRect().left;
+    const tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
+    let j = 0, best = Infinity; for (let k = 0; k < T.length; k++) { const d = Math.abs(T[k] - tt); if (d < best) { best = d; j = k; } }
+    const cx = X(T[j]), cy = Y(V[j]);
+    g.setAttribute("visibility", "visible");
+    hl.setAttribute("x1", cx); hl.setAttribute("x2", cx); hc.setAttribute("cx", cx); hc.setAttribute("cy", cy);
+    tip.hidden = false;
+    tip.innerHTML = `<b>${fmt(V[j])}</b>${dateTxt(T[j])}`;
+    const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px";
+    tip.style.top = (cy > 56 ? cy - 46 : cy + 12) + "px";
+  };
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+
+  const lr = []; for (let i = Math.max(i0, 1); i < n; i++) lr.push(Math.log(s.v[i] / s.v[i - 1]));
+  const mean = lr.reduce((a, b) => a + b, 0) / lr.length;
+  const vol = Math.sqrt(lr.reduce((a, b) => a + (b - mean) ** 2, 0) / (lr.length - 1)) * Math.sqrt(252);
+  let peak = s.v[i0], mdd = 0; for (let i = i0; i < n; i++) { peak = Math.max(peak, s.v[i]); mdd = Math.min(mdd, s.v[i] / peak - 1); }
+  const r = s.v[n - 1] / s.v[i0] - 1;
+  $("pstats").innerHTML = [
+    ["Rendimento", `<span class="${cls(r)}">${pct(r)}</span>`],
+    ["Volatilità", fmt(vol * 100) + "%"],
+    ["Max drawdown", pct(mdd)],
+    ["Min – Max", `${fmt(Math.min(...V))} – ${fmt(Math.max(...V))}`],
+  ].map(([k, v]) => `<div><span class="k">${k}</span><span class="n">${v}</span></div>`).join("");
+}
+
+/* ---------- Previsioni per indice (fonti con link) ---------- */
+const U = {
+  cnbc: "https://www.cnbc.com/2026/10/22/stock-market-today-live-update.html",
+  kitco: "https://www.kitco.com/news/article/2026-10-23/gold-silver-extend-weekly-losses-hormuz-tensions-push-crude-above-116-kitco",
+  msEu: "https://www.investing.com/news/stock-market-news/morgan-stanley-lifts-msci-europe-target-here-are-the-new-numbers-4683734",
+  jpmEu: "https://ng.investing.com/news/stock-market-news/jpm-raises-2026-yearend-target-for-stoxx-600-msci-eurozone-ftse-2577027",
+  gsEm: "https://www.bitget.com/amp/news/detail/12560605443330",
+  bund: "https://tradingeconomics.com/germany/government-bond-yield/news/589838",
+  ecb: "https://uk.finance.yahoo.com/news/eurozone-bond-yields-rise-higher-084919594.html",
+};
+FC.CSPX.spotUrl = U.cnbc;
+FC.SGLD.spotUrl = U.kitco;
+Object.assign(FC, {
+  IMAE: { ref: "MSCI Europe", items: [
+    { who: "Morgan Stanley", target: 2840, up: 0.124, by: "Giu 2027", url: U.msEu },
+    { who: "J.P. Morgan", target: 2750, up: 0.08, by: "Dic 2026", url: U.jpmEu } ] },
+  EIMI: { ref: "MSCI Emerging Markets", note: "Stima di giugno 2026", items: [
+    { who: "Goldman Sachs", target: 2000, up: 0.119, by: "12 mesi", url: U.gsEm } ] },
+  IEGA: { ref: "Euro Treasury", items: [], info: [
+    { t: "Bund 10 anni al 3,34% (22 ott 2026)", url: U.bund },
+    { t: "Mercato: tasso BCE al 3,15% a fine 2027", url: U.ecb } ] },
+});
+FC.XMJP.ref = "TOPIX (proxy di MSCI Japan)";
+
+const upOf = (fc, i) => fc.unit === "%" ? null : fc.spot ? i.target / fc.spot - 1 : i.up;
+function fcList(fc) {
+  const yld = fc.unit === "%";
+  const rows = fc.items.map(i => {
+    let dTxt, c;
+    if (yld) { const pb = Math.round((i.target - fc.spot) * 100); dTxt = (pb > 0 ? "+" : "") + pb + " pb"; c = cls(-pb); }
+    else { const d = upOf(fc, i); dTxt = pct(d, 1); c = cls(d); }
+    const tg = yld ? fmt(i.target) + "%" : i.target.toLocaleString("it-IT");
+    return `<li><a href="${i.url}" target="_blank" rel="noopener"><span class="who">${esc(i.who)}</span><span class="n">${tg}</span><span class="n ${c}">${dTxt}</span><span class="k">${i.by} ↗</span></a></li>`;
+  }).join("");
+  const info = (fc.info || []).map(x => `<li><a href="${x.url}" target="_blank" rel="noopener"><span class="who">${esc(x.t)}</span><span></span><span></span><span class="k">↗</span></a></li>`).join("");
+  const spot = fc.spot
+    ? `Attuale ${yld ? fmt(fc.spot) + "%" : fc.spot.toLocaleString("it-IT")}${fc.spotUrl ? ` <a class="src" href="${fc.spotUrl}" target="_blank" rel="noopener">↗</a>` : ""} · 23 ott 2026`
+    : (fc.items.length ? "Variazione alla data della previsione" : "Nessuna previsione di banca trovata") + (fc.note ? " · " + fc.note : "");
+  return `<ul class="fc">${rows}${info}</ul><p class="fc-note">${spot}</p>`;
+}
+function fcHtml(e) {
+  const fc = FC[e.ticker];
+  return `<section class="sec"><h3>Previsioni 12 mesi${fc ? " · " + esc(fc.ref) : ""}</h3>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione pubblica trovata</p>'}</section>`;
+}
+
+/* ---------- Portafoglio: dati, JSON, motore ---------- */
+const byIsin = i => ETFS.find(e => e.isin === i);
+const dateMs = s => new Date(s + "T12:00:00").getTime();
+const eur = v => "€ " + fmt(v, 0);
+const eurS = v => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 0);
+const eurS2 = v => (Math.round(v * 100) > 0 ? "+" : Math.round(v * 100) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 2);
+const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return hi; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo; };
+const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
+const isDraft = p => !!p && p.kind === "draft";
+const ymd = ms => new Date(ms).toISOString().slice(0, 10);
+const defStart = isins => ymd(Math.max(back(0, 3), ...isins.map(i => dateMs(byIsin(i).inception))));
+// Draft: pesi target su un importo, simulati come acquisto unico alla data di partenza (non prima del lancio dell'ultimo ETF).
+const simStart = pf => Math.max(dateMs(pf.start), ...pf.items.map(i => dateMs(byIsin(i.isin).inception)));
+function simLots(pf) {
+  const act = pf.items.filter(i => i.weight > 0), tot = act.reduce((a, i) => a + i.weight, 0), st = simStart(pf);
+  return act.map(i => { const p = priceAt(byIsin(i.isin), st); return { isin: i.isin, date: ymd(st), qty: pf.amount * (i.weight / tot) / p, price: p }; });
+}
+const pfLots = pf => (isDraft(pf) ? simLots(pf) : pf.lots);
+const LS_KEY = "mm-portfolios-v1";
+
+// Portafogli di prova: acquisti con ETF reali; i prezzi d'acquisto vengono presi dalla serie di prezzi caricata.
+const SAMPLE_SPECS = [
+  { id: "prova-bilanciato", name: "Prova · Bilanciato", buys: [
+    ["IE00B5BMR087", "2022-01-17", 20000], ["IE00B5BMR087", "2023-06-12", 10000], ["IE00B5BMR087", "2025-02-10", 10000],
+    ["IE00B4K48X80", "2022-01-17", 10000], ["IE00B4K48X80", "2024-03-11", 5000],
+    ["IE00BKM4GZ66", "2022-01-17", 5000], ["IE00BKM4GZ66", "2024-09-16", 5000],
+    ["LU0274209740", "2023-06-12", 5000],
+    ["IE00B4WXJJ64", "2022-01-17", 10000], ["IE00B4WXJJ64", "2023-06-12", 5000], ["IE00B4WXJJ64", "2025-02-10", 5000],
+    ["IE00B579F325", "2022-01-17", 5000], ["IE00B579F325", "2024-03-11", 5000] ] },
+  { id: "prova-prudente", name: "Prova · Prudente", buys: [
+    ["IE00B5BMR087", "2022-01-17", 10000], ["IE00B5BMR087", "2024-03-11", 5000],
+    ["IE00B4K48X80", "2022-01-17", 5000],
+    ["IE00B4WXJJ64", "2022-01-17", 30000], ["IE00B4WXJJ64", "2023-06-12", 15000], ["IE00B4WXJJ64", "2025-02-10", 10000],
+    ["IE00B579F325", "2022-01-17", 10000], ["IE00B579F325", "2024-09-16", 5000] ] },
+];
+const buildSamplesOwned = () => SAMPLE_SPECS.map(sp => ({ id: sp.id, name: sp.name, currency: "EUR", kind: "owned", sample: true,
+  lots: sp.buys.map(([isin, date, amt]) => { const p = priceAt(byIsin(isin), dateMs(date)); return { isin, date, qty: Math.max(1, Math.round(amt / p)), price: +p.toFixed(2) }; }) }));
+
+const draftSample = () => ({ id: "prova-draft", name: "Prova · Draft 60/40", currency: "EUR", kind: "draft", sample: true, amount: 50000,
+  start: defStart(["IE00B5BMR087", "IE00B4K48X80", "IE00BKM4GZ66", "IE00B4WXJJ64", "IE00B579F325"]),
+  items: [{ isin: "IE00B5BMR087", weight: 36 }, { isin: "IE00B4K48X80", weight: 12 }, { isin: "IE00BKM4GZ66", weight: 12 }, { isin: "IE00B4WXJJ64", weight: 30 }, { isin: "IE00B579F325", weight: 10 }] });
+const buildSamples = () => [...buildSamplesOwned(), draftSample()];
+let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null;
+function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
+function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, portfolios: USER })); } catch {} }
+function allPf() { const s = buildSamples(); s.forEach(x => x.lots && x.lots.sort(byDate)); PFLIST = [...USER, ...s.filter(x => !USER.some(u => u.id === x.id))]; }
+
+const byDate = (a, b) => a.date.localeCompare(b.date) || b.qty - a.qty;
+// Una vendita non può superare la quantità posseduta in quel momento (lotti ordinati per data).
+function sellErr(lots) { const q = {}; for (const l of lots) { q[l.isin] = (q[l.isin] || 0) + l.qty; if (q[l.isin] < -1e-9) return `vendita di ${byIsin(l.isin).ticker} del ${l.date} superiore alla quantità posseduta`; } return ""; }
+
+// Valida un portafoglio importato: restituisce { pf, err }.
+function cleanPf(p) {
+  const err = [];
+  if (!p || typeof p !== "object") return { err: ["portafoglio non valido"] };
+  const name = String(p.name || "").trim() || "Senza nome";
+  const id = String(p.id || "").trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pf-" + Date.now();
+  if (p.kind === "draft") {
+    const items = [], amount = +p.amount, start = String(p.start || "");
+    (Array.isArray(p.items) ? p.items : []).forEach((it, k) => {
+      const isin = String((it && it.isin) || "").trim().toUpperCase(), w = +(it && it.weight);
+      if (!byIsin(isin)) return err.push(`ETF ${k + 1}: ISIN ${isin || "mancante"} non disponibile`);
+      if (!(w >= 0)) return err.push(`ETF ${k + 1}: peso non valido`);
+      if (items.some(x => x.isin === isin)) return err.push(`ETF ${k + 1}: ${isin} duplicato`);
+      items.push({ isin, weight: w });
+    });
+    if (!(amount > 0)) err.push("importo non valido");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || isNaN(dateMs(start)) || dateMs(start) > Date.now() + DAY) err.push("data di simulazione non valida (AAAA-MM-GG)");
+    return { pf: { id, name, currency: String(p.currency || "EUR"), kind: "draft", amount, start, items }, err };
+  }
+  const lots = [];
+  (Array.isArray(p.lots) ? p.lots : []).forEach((l, i) => {
+    const n = i + 1, isin = String((l && l.isin) || "").trim().toUpperCase(), qty = +(l && l.qty), price = +(l && l.price);
+    if (!byIsin(isin)) return err.push(`acquisto ${n}: ISIN ${isin || "mancante"} non disponibile`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(l.date || "") || isNaN(dateMs(l.date))) return err.push(`acquisto ${n}: data non valida (AAAA-MM-GG)`);
+    if (dateMs(l.date) > Date.now() + DAY) return err.push(`acquisto ${n}: data nel futuro`);
+    if (!isFinite(qty) || qty === 0 || !(price > 0)) return err.push(`acquisto ${n}: quantità (negativa = vendita) o prezzo non validi`);
+    lots.push({ isin, date: l.date, qty, price });
+  });
+  lots.sort(byDate); if (!err.length) { const se = sellErr(lots); if (se) err.push(se); }
+  return { pf: { id, name, currency: String(p.currency || "EUR"), kind: "owned", lots }, err };
+}
+
+function ioMsg(t, bad) { const m = $("io-msg"); m.textContent = t; m.className = bad ? "err" : ""; }
+function pfJson() {
+  const { id, name, currency } = pfCur;
+  const body = isDraft(pfCur) ? { id, name, currency, kind: "draft", amount: pfCur.amount, start: pfCur.start, items: pfCur.items } : { id, name, currency, kind: "owned", lots: pfCur.lots };
+  return JSON.stringify({ version: 1, exported: new Date().toISOString().slice(0, 10), portfolios: [body] }, null, 2);
+}
+async function exportJson() {
+  const text = pfJson(); $("json-box").value = text; let done = "JSON pronto";
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = pfCur.id + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); } catch {}
+  try { await navigator.clipboard.writeText(text); done += " · copiato"; } catch {}
+  ioMsg(done);
+}
+function importJson(text) {
+  let j; try { j = JSON.parse(text); } catch { return ioMsg("JSON non valido", true); }
+  const arr = Array.isArray(j) ? j : Array.isArray(j && j.portfolios) ? j.portfolios : [j];
+  const ok = [], errs = [];
+  arr.forEach(p => { const r = cleanPf(p); if (r.pf && !r.err.length) ok.push(r.pf); else errs.push(((p && p.name) || "Portafoglio") + ": " + r.err.join("; ")); });
+  ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
+  if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); fillSel(); renderPf(); }
+  ioMsg((ok.length ? `Importati ${ok.length}` : "Nessun portafoglio importato") + (errs.length ? " · " + errs.join(" | ") : ""), !ok.length || errs.length);
+}
+
+// Serie allineate su una griglia di date comune (ultimo prezzo noto).
+function alignPx(es, start) {
+  let base = [];
+  es.forEach(e => { const a = e.s.t.filter(t => t >= start); if (a.length > base.length) base = a; });
+  const px = es.map(e => { const s = e.s; let j = 0; return base.map(t => { while (j + 1 < s.t.length && s.t[j + 1] <= t) j++; return s.v[j]; }); });
+  return { t: base, px };
+}
+function pfBuild(pf) {
+  const lots = [...pfLots(pf)].sort(byDate);
+  const isins = [...new Set(lots.map(l => l.isin))], es = isins.map(byIsin);
+  const lastT = Math.max(...es.map(e => e.s.t[e.s.t.length - 1])); // un acquisto di oggi può cadere dopo l'ultimo dato
+  const { t, px } = alignPx(es, Math.min(dateMs(lots[0].date), lastT)), n = t.length;
+  const units = es.map(() => new Float64Array(n)), flow = new Float64Array(n), cost = new Float64Array(n);
+  const qty = es.map(() => 0), costH = es.map(() => 0);
+  lots.forEach(l => {
+    const i = isins.indexOf(l.isin), k = idxOf(t, dateMs(l.date));
+    for (let m = k; m < n; m++) units[i][m] += l.qty;
+    flow[k] += l.qty * px[i][k]; cost[k] += l.qty * l.price;
+    if (l.qty > 0) { qty[i] += l.qty; costH[i] += l.qty * l.price; } else { costH[i] += l.qty * (qty[i] ? costH[i] / qty[i] : 0); qty[i] += l.qty; }
+  });
+  const V = new Float64Array(n), idx = new Float64Array(n);
+  for (let m = 0; m < n; m++) { let s = 0; for (let i = 0; i < es.length; i++) s += units[i][m] * px[i][m]; V[m] = s; if (m) cost[m] += cost[m - 1]; }
+  idx[0] = 100;
+  for (let m = 1; m < n; m++) idx[m] = idx[m - 1] * (V[m - 1] > 0 ? (V[m] - flow[m]) / V[m - 1] : 1);
+  const last = n - 1, vh = es.map((_, i) => units[i][last] * px[i][last]);
+  return { pf, es, isins, t, V, cost, idx, qty, costH, vh, flow, cw: vh.map(v => v / V[last]), last, lastPx: px.map(p => p[last]), act: es.map((_, i) => i).filter(i => qty[i] > 1e-9) };
+}
+function pfStats(P) {
+  const r = []; for (let m = 1; m <= P.last; m++) r.push(P.idx[m] / P.idx[m - 1] - 1);
+  if (r.length < 2) return { tot: P.idx[P.last] / 100 - 1, ann: null, vol: 0, dd: 0, sh: null, yrs: 0 };
+  const mean = r.reduce((a, b) => a + b, 0) / r.length, sd = Math.sqrt(r.reduce((a, b) => a + (b - mean) ** 2, 0) / (r.length - 1));
+  const yrs = (P.t[P.last] - P.t[0]) / (365.25 * DAY), tot = P.idx[P.last] / 100 - 1;
+  let pk = 100, dd = 0; for (let m = 0; m <= P.last; m++) { pk = Math.max(pk, P.idx[m]); dd = Math.min(dd, P.idx[m] / pk - 1); }
+  const ann = yrs >= 0.5 ? Math.pow(1 + tot, 1 / yrs) - 1 : null, vol = sd * Math.sqrt(252);
+  return { tot, ann, vol, dd, sh: ann == null ? null : ann / vol, yrs };
+}
+
+// Frontiera efficiente long-only da portafogli casuali, rendimenti e covarianze storici (rf = 0).
+function frontierOld(P) {
+  const start = Math.max(back(0, 5), ...P.es.map(e => e.s.t[0]));
+  const { t, px } = alignPx(P.es, start), k = px.length;
+  if (k < 2 || t.length < 60) return null;
+  const R = px.map(p => p.slice(1).map((x, j) => x / p[j] - 1)), nn = R[0].length;
+  const mu = R.map(r => r.reduce((a, b) => a + b, 0) / nn);
+  const C = R.map((a, i) => R.map((b, j) => { let s = 0; for (let m = 0; m < nn; m++) s += (a[m] - mu[i]) * (b[m] - mu[j]); return s / (nn - 1) * 252; }));
+  const M = mu.map(x => x * 252);
+  const ev = w => { let r = 0, v = 0; for (let i = 0; i < k; i++) { r += w[i] * M[i]; for (let j = 0; j < k; j++) v += w[i] * w[j] * C[i][j]; } return { r, v: Math.sqrt(Math.max(v, 0)), w }; };
+  const rnd = rng(12345), pts = [];
+  for (let i = 0; i < k; i++) pts.push(ev(Array.from({ length: k }, (_, j) => +(i === j))));
+  for (let n = 0; n < 40000; n++) {
+    const p = [1, 1.5, 3][n % 3]; let w = Array.from({ length: k }, () => Math.pow(-Math.log(rnd() || 1e-9), p));
+    const s = w.reduce((a, b) => a + b, 0); pts.push(ev(w.map(x => x / s)));
+  }
+  const refine = (best, score) => {
+    let b = best, sb = score(b); const rr = rng(99);
+    for (let it = 0; it < 4000; it++) { const w = b.w.map(x => Math.max(0, x + (rr() - 0.5) * 0.05)), s = w.reduce((a, c) => a + c, 0); if (!s) continue; const c = ev(w.map(x => x / s)), sc = score(c); if (sc > sb) { b = c; sb = sc; } }
+    return b;
+  };
+  const minV = refine(pts.reduce((a, p) => (p.v < a.v ? p : a)), p => -p.v);
+  const maxS = refine(pts.reduce((a, p) => (p.r / p.v > a.r / a.v ? p : a)), p => p.r / p.v);
+  pts.push(minV, maxS);
+  const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let best = minV.r;
+  for (const p of srt) if (p.v > minV.v && p.r > best) { best = p.r; line.push(p); }
+  const cur = ev(P.cw);
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, cur, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+}
+
+// Frontiera efficiente long-only sugli ETF ancora in portafoglio, con tetto opzionale al peso; rendimenti e covarianze storici, rf = 0.
+function frontier(P, cap = 1) {
+  const act = P.act, es = act.map(i => P.es[i]), k = es.length;
+  if (k < 2) return null;
+  if (cap < 1 && k * cap < 1.2) cap = 1; // con pochi ETF un tetto basso non si può rispettare
+  const start = Math.max(back(0, 5), ...es.map(e => e.s.t[0]));
+  const { t, px } = alignPx(es, start);
+  if (t.length < 60) return null;
+  const R = px.map(p => p.slice(1).map((x, j) => x / p[j] - 1)), nn = R[0].length;
+  const mu = R.map(r => r.reduce((a, b) => a + b, 0) / nn);
+  const C = R.map((a, i) => R.map((b, j) => { let s = 0; for (let m = 0; m < nn; m++) s += (a[m] - mu[i]) * (b[m] - mu[j]); return s / (nn - 1) * 252; }));
+  const M = mu.map(x => x * 252);
+  const ev = w => { let r = 0, v = 0; for (let i = 0; i < k; i++) { r += w[i] * M[i]; for (let j = 0; j < k; j++) v += w[i] * w[j] * C[i][j]; } return { r, v: Math.sqrt(Math.max(v, 0)), w }; };
+  const tot = act.reduce((a, i) => a + P.vh[i], 0), cw = act.map(i => P.vh[i] / tot);
+  const ok = w => w.every(x => x <= cap + 1e-9);
+  const rnd = rng(12345), pts = [];
+  if (cap >= 1) for (let i = 0; i < k; i++) pts.push(ev(Array.from({ length: k }, (_, j) => +(i === j))));
+  for (let n = 0, got = 0; n < 150000 && got < 40000; n++) {
+    const p = [1, 1.5, 3][n % 3], w = Array.from({ length: k }, () => Math.pow(-Math.log(rnd() || 1e-9), p)), s = w.reduce((a, b) => a + b, 0), x = w.map(v => v / s);
+    if (ok(x)) { pts.push(ev(x)); got++; }
+  }
+  if (pts.length < 200) return null;
+  const refine = (best, score) => {
+    let b = best, sb = score(b); const rr = rng(99);
+    for (let it = 0; it < 6000; it++) {
+      const step = it < 3000 ? 0.08 : 0.02, w = b.w.map(x => Math.max(0, x + (rr() - 0.5) * step)), s = w.reduce((a, c) => a + c, 0); if (!s) continue;
+      const x = w.map(v => v / s); if (!ok(x)) continue;
+      const c = ev(x), sc = score(c); if (sc > sb) { b = c; sb = sc; }
+    }
+    return b;
+  };
+  const best = (score) => pts.reduce((a, p) => (score(p) > score(a) ? p : a));
+  const cur = ev(cw), pen = 50;
+  const sMin = p => -p.v, sSh = p => p.r / p.v, sVol = p => p.r - pen * Math.max(0, p.v - cur.v), sRet = p => -p.v - pen * Math.max(0, cur.r - p.r);
+  const minV = refine(best(sMin), sMin), maxS = refine(best(sSh), sSh), vol = refine(best(sVol), sVol), ret = refine(best(sRet), sRet);
+  pts.push(minV, maxS, vol, ret);
+  const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let top = minV.r;
+  for (const p of srt) if (p.v > minV.v && p.r > top) { top = p.r; line.push(p); }
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, ev, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+}
+
+// Ribilanciamento: operazioni (a quantità intere, ai prezzi correnti) per portare il portafoglio sull'obiettivo scelto.
+let RB = null;
+function renderRb() {
+  const P = PF, F = EF, tb = $("rb-tbl"), note = $("rb-note"), btn = $("rb-apply"); btn.textContent = isDraft(pfCur) ? "Applica pesi" : "Applica operazioni";
+  if (!F) { tb.innerHTML = ""; RB = null; btn.disabled = true; note.textContent = P.act.length < 2 ? "Servono almeno 2 ETF in portafoglio" : "Tetto di peso non realizzabile"; return; }
+  if (isDraft(pfCur)) {
+    const T0 = F[$("rb-goal").value], tw = T0.w.map(x => +(x * 100).toFixed(1)), tot = F.act.reduce((a, ai) => a + P.vh[ai], 0), cw0 = F.act.map(ai => P.vh[ai] / tot);
+    const a0 = F.ev(cw0), b0 = F.ev(tw.map(x => x / 100)), mm = x => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)}`;
+    RB = F.act.map((ai, j) => ({ isin: P.es[ai].isin, w: tw[j] }));
+    tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.act.map((ai, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${P.es[ai].ticker}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody>`;
+    note.innerHTML = `Ora ${mm(a0)}<br>Dopo ${mm(b0)}`; btn.disabled = false; return;
+  }
+  const T = F[$("rb-goal").value], Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
+  const rows = F.act.map((ai, j) => { const e = P.es[ai], pr = e.live, tq = Math.round(Vn * T.w[j] / pr); return { e, j, pr, tq, dq: tq - P.qty[ai], cur: P.qty[ai] * pr / Vn }; });
+  const val2 = rows.map(r => r.tq * r.pr), s2 = val2.reduce((a, b) => a + b, 0), w2 = val2.map(v => v / s2);
+  const a = F.ev(rows.map(r => r.cur)), b = F.ev(w2), cash = -rows.reduce((x, r) => x + r.dq * r.pr, 0);
+  RB = rows.filter(r => r.dq !== 0).map(r => ({ isin: r.e.isin, dq: r.dq, pr: r.pr }));
+  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${r.e.ticker}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody>`;
+  const m = (x) => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)}`;
+  note.innerHTML = `Ora ${m(a)}<br>Dopo ${m(b)} · residuo ${eurS2(cash)}`;
+  btn.disabled = !RB.length;
+}
+
+/* ---------- Portafoglio: grafici ---------- */
+// Colora verde dove la serie sta sopra la linea di riferimento e rosso dove sta sotto: tratto sfumato e aree tra le due linee.
+function splitArt(T, V, B, X, Y, gid) {
+  const n = T.length, col = d => (d >= 0 ? "var(--up)" : "var(--down)");
+  let cur = { c: col(V[0] - B[0]), top: [[T[0], V[0]]], bot: [[T[0], B[0]]] };
+  const runs = [], xs = X(T[0]), xe = X(T[n - 1]), span = xe - xs || 1, stops = [[0, cur.c]];
+  for (let i = 1; i < n; i++) {
+    const d0 = V[i - 1] - B[i - 1], d1 = V[i] - B[i];
+    if ((d0 >= 0) !== (d1 >= 0)) {
+      const f = d0 / (d0 - d1), tx = T[i - 1] + f * (T[i] - T[i - 1]), vy = V[i - 1] + f * (V[i] - V[i - 1]), by = B[i - 1] + f * (B[i] - B[i - 1]), c = col(d1), o = (X(tx) - xs) / span;
+      cur.top.push([tx, vy]); cur.bot.push([tx, by]); runs.push(cur); stops.push([o, cur.c], [o, c]);
+      cur = { c, top: [[tx, vy]], bot: [[tx, by]] };
+    }
+    cur.top.push([T[i], V[i]]); cur.bot.push([T[i], B[i]]);
+  }
+  runs.push(cur); stops.push([1, cur.c]);
+  const pth = r => [...r.top, ...r.bot.slice().reverse()].map((q, k) => (k ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join("") + "Z";
+  return {
+    defs: `<linearGradient id="${gid}s" gradientUnits="userSpaceOnUse" x1="${xs}" x2="${xe}" y1="0" y2="0">${stops.map(([o, c]) => `<stop offset="${Math.min(Math.max(o, 0), 1).toFixed(4)}" stop-color="${c}"/>`).join("")}</linearGradient>`
+      + runs.map((r, k) => { const up = r.c === "var(--up)"; return `<linearGradient id="${gid}f${k}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${r.c}" stop-opacity="${up ? ".28" : ".02"}"/><stop offset="1" stop-color="${r.c}" stop-opacity="${up ? ".02" : ".28"}"/></linearGradient>`; }).join(""),
+    fills: runs.map((r, k) => `<path d="${pth(r)}" fill="url(#${gid}f${k})"/>`).join(""),
+    stroke: `url(#${gid}s)`,
+  };
+}
+function drawLine(box, T, S, label, gid) {
+  const W = box.clientWidth, H = box.clientHeight; if (!W || !T.length) return;
+  const pl = 0, pr = 62, pt = 8, pb = 24;
+  let mn = Infinity, mx = -Infinity; S.forEach(a => a.forEach(v => { if (v < mn) mn = v; if (v > mx) mx = v; }));
+  const pad = (mx - mn) * 0.08 || mx * 0.02, ticks = niceTicks(mn - pad, mx + pad, 3);
+  const lo = Math.min(ticks[0], mn - pad), hi = Math.max(ticks[ticks.length - 1], mx + pad);
+  const X = t => pl + (t - T[0]) / ((T[T.length - 1] - T[0]) || 1) * (W - pl - pr), Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
+  const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
+  const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
+  const m = S[0], ref = S[1], art = splitArt(T, m, ref || m.map(() => m[0]), X, Y, gid);
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+    <defs>${art.defs}</defs>
+    ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 0)}</text>`).join("")}
+    ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
+    ${art.fills}
+    ${ref ? `<path d="${path(ref)}" fill="none" stroke="var(--soft)" stroke-width="1.2" stroke-dasharray="3 3"/>` : ""}
+    <path d="${path(m)}" fill="none" stroke="${art.stroke}" stroke-width="1.8" stroke-linejoin="round"/>
+    <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/><circle class="hc" r="4" fill="var(--fg)" stroke="var(--bg)" stroke-width="2"/></g>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip" hidden></div>`;
+  const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hc = box.querySelector(".hc"), hit = box.querySelector(".hit");
+  const move = ev => {
+    const x = ev.clientX - box.getBoundingClientRect().left, tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
+    let j = 0, bd = Infinity; for (let q = 0; q < T.length; q++) { const d = Math.abs(T[q] - tt); if (d < bd) { bd = d; j = q; } }
+    const cx = X(T[j]), cy = Y(m[j]);
+    g.setAttribute("visibility", "visible"); hl.setAttribute("x1", cx); hl.setAttribute("x2", cx); hc.setAttribute("cx", cx); hc.setAttribute("cy", cy);
+    tip.hidden = false; tip.innerHTML = `<b>${eur(m[j])}</b>${dateTxt(T[j])}${ref ? " · investito " + eur(ref[j]) : ""}`;
+    const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px"; tip.style.top = (cy > 56 ? cy - 46 : cy + 12) + "px";
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+}
+function drawPfNav() {
+  const box = $("pf-chart"); if (!PF || !box) return;
+  const P = PF, from = PERIODS.find(p => p[0] === pfPeriod)[1](), i0 = from === 0 ? 0 : idxOf(P.t, from), step = Math.max(1, Math.floor((P.last - i0) / 420));
+  const T = [], V = [], C = [];
+  for (let m = i0; m <= P.last; m += step) { T.push(P.t[m]); V.push(P.V[m]); C.push(P.cost[m]); }
+  if (T[T.length - 1] !== P.t[P.last]) { T.push(P.t[P.last]); V.push(P.V[P.last]); C.push(P.cost[P.last]); }
+  drawLine(box, T, [V, C], "Valore del portafoglio " + pfPeriod, "gpf");
+}
+function drawEF() {
+  const box = $("pf-ef"), F = EF; if (!box || !PF) return;
+  if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
+  const W = box.clientWidth, H = box.clientHeight; if (!W) return;
+  const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line];
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  keep.forEach(p => { x0 = Math.min(x0, p.v); x1 = Math.max(x1, p.v); y0 = Math.min(y0, p.r); y1 = Math.max(y1, p.r); });
+  const px = (x1 - x0) * 0.06 || 0.01, py = (y1 - y0) * 0.08 || 0.01; x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
+  const X = v => pl + (v - x0) / (x1 - x0) * (W - pl - pr), Y = r => pt + (y1 - r) / (y1 - y0) * (H - pt - pb);
+  const xt = niceTicks(x0, x1, W < 420 ? 4 : 6), yt = niceTicks(y0, y1, 4);
+  const dx = xt.length > 1 && xt[1] - xt[0] < 0.01 ? 1 : 0, dy = yt.length > 1 && yt[1] - yt[0] < 0.01 ? 1 : 0;
+  const lab = (p, name, col, hollow) => { const x = X(p.v), y = Y(p.r), end = x > W - 100;
+    return `<circle cx="${x}" cy="${y}" r="5" fill="${hollow ? "var(--bg)" : col}" stroke="${col}" stroke-width="2"/><text class="ax" style="fill:var(--fg);font-size:11px" x="${x + (end ? -9 : 9)}" y="${y - 8}" text-anchor="${end ? "end" : "start"}">${name}</text>`; };
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente">
+    ${yt.map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(v * 100, dy)}%</text>`).join("")}
+    ${xt.map(v => `<text class="ax" x="${X(v)}" y="${H - 8}" text-anchor="middle">${fmt(v * 100, dx)}%</text>`).join("")}
+    ${F.bg.map(p => `<circle cx="${X(p.v).toFixed(1)}" cy="${Y(p.r).toFixed(1)}" r="1.7" fill="var(--soft)" fill-opacity=".28"/>`).join("")}
+    <path d="${F.line.map((p, i) => (i ? "L" : "M") + X(p.v).toFixed(1) + " " + Y(p.r).toFixed(1)).join("")}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
+    ${lab(F.minV, "Min varianza", "var(--c2)", false)}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}
+    <text class="ax" x="${W - pr}" y="${pt + 8}" text-anchor="end">Rendimento ↑ · Volatilità →</text></svg>`;
+}
+const donut = items => {
+  const R = 42, C = 2 * Math.PI * R; let off = 0;
+  return `<svg class="donut" viewBox="0 0 120 120" aria-hidden="true">${items.map(([, p], i) => { const len = C * p / 100, seg = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--c${(i % 6) + 1})" stroke-width="14" stroke-dasharray="${Math.max(len - 1.5, 0.1)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`; off += len; return seg; }).join("")}</svg>`;
+};
+const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => { if (P.cw[i] > 1e-9) m.set(e[key], (m.get(e[key]) || 0) + P.cw[i] * 100); }); return [...m].sort((a, b) => b[1] - a[1]); };
+
+/* ---------- Portafoglio: pagina ---------- */
+const justEtf = isin => `https://www.justetf.com/it/etf-profile.html?isin=${isin}`;
+const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+function renderEmpty() {
+  PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "pf-lots", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  $("pf-chg").textContent = "Nessun acquisto"; $("ef-note").textContent = "";
+  $("pf-comp").innerHTML = '<p class="fc-note">' + (isDraft(pfCur) ? 'Aggiungi almeno un ETF con peso maggiore di zero' : 'Aggiungi il primo acquisto dal modulo qui sotto') + '</p>';
+}
+function renderPf() {
+  const dr = isDraft(pfCur);
+  $("io-del").hidden = !!pfCur.sample; $("pf-name").parentElement.hidden = !!pfCur.sample; $("pf-name").value = pfCur.name;
+  $("lots-sec").hidden = dr; $("draft-sec").hidden = !dr; $("to-draft").hidden = dr;
+  $("kind").textContent = dr ? "Draft · simulazione" : "Acquistato"; $("kind").className = "kind" + (dr ? " draft" : "");
+  if (dr) renderDraft();
+  if (!pfLots(pfCur).length) return renderEmpty();
+  PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
+  const nReal = P.es.filter(e => e.real).length;
+  $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
+  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
+  $("kpi").innerHTML = [
+    ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", `${eurS(pl)} <span style="font-size:13px">${pct(pl / inv, 1)}</span>`, cls(pl)],
+    ["Rendimento annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
+    ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
+  ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
+  liveUpdate(true);
+  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0]);
+  if (!avail.some(([p]) => p === pfPeriod)) pfPeriod = "Max";
+  $("pf-periods").innerHTML = avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === pfPeriod}">${p}</button>`).join("");
+
+  const order = P.act.slice().sort((a, b) => P.vh[b] - P.vh[a]);
+  $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1;
+    const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
+    return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
+      <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
+  $("pf-lots").innerHTML = dr ? "" : `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), g = l.qty > 0 ? P.lastPx[P.isins.indexOf(l.isin)] / l.price - 1 : null; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" data-i="${oi}" aria-label="Modifica" title="Modifica">✎</button><button type="button" class="del" data-i="${oi}" aria-label="Elimina" title="Elimina">×</button></td></tr>`; }).join("")}</tbody>`;
+  $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
+    return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
+
+  EF = frontier(P, +$("ef-cap").value);
+  const wl = w => (EF ? EF.act : []).map((ai, j) => [P.es[ai].ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
+  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento</th><th>Volatilità</th><th>Sharpe</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
+  $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
+
+  let cov = 0, acc = 0;
+  const blocks = order.map(i => { const e = P.es[i], fc = FC[e.ticker], ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
+    if (m != null) { cov += P.cw[i]; acc += P.cw[i] * m; }
+    return `<div class="fb"><h4><span>${e.ticker}<em>${fc ? esc(fc.ref) : esc(e.index)}</em></span><span class="n ${cls(m)}">${m == null ? "—" : pct(m, 1)}</span></h4>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione pubblica trovata</p>'}</div>`; });
+  const tot = cov ? acc / cov : null;
+  $("pf-fc").innerHTML = blocks.join("") + `<div class="fb-sum"><span>Atteso sul portafoglio <span class="k">(copre ${fmt(cov * 100, 0)}%)</span></span><span class="n ${cls(tot)}">${tot == null ? "—" : pct(tot, 1)}</span></div>`;
+
+  $("pf-src").innerHTML = [
+    `Prezzi · ${nReal ? link("https://finance.yahoo.com", "Yahoo Finance ↗") + " (link per ETF nella composizione)" : "simulati; per quelli reali esegui scripts/fetch_prices.py"}`,
+    `Anagrafiche · ${P.es.map(e => link(justEtf(e.isin), e.ticker + " ↗")).join(" ")}`,
+    "Previsioni · link in ogni riga; media semplice delle banche per indice",
+    "Prezzi nella valuta di quotazione, senza conversione",
+  ].map(x => `<li>${x}</li>`).join("");
+
+  renderRb(); updDef();
+  $("io-del").hidden = !!pfCur.sample;
+  drawPfNav(); drawEF();
+}
+function fillSel() { $("pf-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join(""); $("pf-sel").value = pfCur.id; }
+function showView(v) {
+  $("v-port").hidden = v !== "port"; $("v-search").hidden = v !== "search";
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  try { history.replaceState(null, "", v === "port" ? "#portafoglio" : "#cerca"); } catch {}
+  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); });
+}
+function applyPrices() {
+  const PR = window.PRICES; if (!PR || !PR.series) return;
+  for (const [isin, s] of Object.entries(PR.series)) {
+    const e = byIsin(isin); if (!e || !s.t || s.t.length < 50) continue;
+    e.s = { t: s.t, v: s.v }; e.real = true; e.src = s.source; e.sym = s.symbol; e.r1 = retSince(e.s, back(12)); e.r3 = retSince(e.s, back(0, 3), true); calcStats(e); if (s.adv > 0) e.adv = s.adv;
+  }
+}
+
+/* ---------- Rendimenti in tempo reale ---------- */
+const gauss = () => { let u = 0; while (!u) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); };
+const lastBefore = (t, ms) => { let lo = 0, hi = t.length; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo - 1; };
+// Rendimento a pesi temporali (neutro rispetto ad acquisti e vendite) e utile in euro per ogni periodo, al prezzo corrente.
+function livePerf(P) {
+  const n = P.last, Vl = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0);
+  const li = n >= 1 && P.V[n - 1] > 0 ? P.idx[n - 1] * (Vl - P.flow[n]) / P.V[n - 1] : P.idx[n];
+  const flows = b => { let s = 0; for (let m = b + 1; m <= n; m++) s += P.flow[m]; return s; };
+  const since = start => { const b = Math.max(lastBefore(P.t, start), 0); return { r: li / P.idx[b] - 1, e: Vl - P.V[b] - flows(b) }; };
+  const d = new Date(P.t[n]), y = d.getFullYear(), at = (yy, mm, dd) => new Date(yy, mm, dd).getTime();
+  const day = n >= 1 && P.V[n - 1] > 0 ? { r: li / P.idx[n - 1] - 1, e: Vl - P.V[n - 1] - P.flow[n] } : null;
+  const bE = lastBefore(P.t, at(y, 0, 1)), bS = Math.max(lastBefore(P.t, at(y - 1, 0, 1)), 0);
+  const prev = bE > bS ? { r: P.idx[bE] / P.idx[bS] - 1, e: P.V[bE] - P.V[bS] - (flows(bS) - flows(bE)) } : null;
+  return { Vl, items: [
+    ["Oggi", day], ["Settimana", since(at(y, d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)))], ["Mese", since(at(y, d.getMonth(), 1))],
+    ["Anno", since(at(y, 0, 1))], [String(y - 1), prev], ["Dall'inizio", { r: li / 100 - 1, e: Vl - P.cost[n] }],
+  ] };
+}
+function liveUpdate(force) {
+  const P = PF; if (!P || (!force && (document.hidden || $("v-port").hidden))) return;
+  const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.es.some(e => !e.real);
+  $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
+  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">${sim ? "simulato" : "live"} · ${new Date().toLocaleTimeString("it-IT")}</span>`;
+  $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
+  const kv = k => $("kpi").querySelector(`[data-k="${k}"] .n`);
+  if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").innerHTML = `${eurS(pl)} <span style="font-size:13px">${pct(pl / inv, 1)}</span>`; }
+}
+// Con prezzi reali la quotazione corrente arriva da prices.js (aggiornato da fetch_prices.py --watch); altrimenti oscilla in modo simulato.
+function applyLive() {
+  const PR = window.PRICES; if (!PR || !PR.series) return;
+  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) e.live = s.last.price; }
+}
+function startLive() {
+  ETFS.forEach(e => (e.live = e.s.v[e.s.v.length - 1])); applyLive();
+  setInterval(() => { if (PF) PF.es.forEach(e => { if (!e.real) e.live *= Math.exp(e.sig * Math.sqrt(1 / (252 * 23400)) * gauss()); }); liveUpdate(); }, 1000);
+  if (window.PRICES) setInterval(() => { const s = document.createElement("script"); s.src = "prices.js?t=" + Date.now(); s.onload = () => { applyLive(); s.remove(); }; s.onerror = () => s.remove(); document.head.appendChild(s); }, 5000);
+}
+const DEF_KEY = "mm-default";
+const getDef = () => { try { return localStorage.getItem(DEF_KEY); } catch { return null; } };
+function updDef() { const b = $("pf-def"), on = !!pfCur && getDef() === pfCur.id; b.textContent = on ? "★ Predefinito" : "☆ Predefinito"; b.setAttribute("aria-pressed", on); }
+/* ---------- Draft: composizione, dimensionamento, aggiunta da ricerca ---------- */
+let DRSIZE = [], AT = [];
+function addItems(pf, isins) { // nuovi ETF con peso uguale; gli esistenti si riproporzionano
+  const fresh = isins.filter(i => !pf.items.some(x => x.isin === i)); if (!fresh.length) return 0;
+  const m = pf.items.length, k = fresh.length, es = pf.items.reduce((a, i) => a + i.weight, 0), scale = es > 0 ? (100 * m / (m + k)) / es : 0;
+  pf.items.forEach(i => (i.weight = +(i.weight * scale).toFixed(1)));
+  fresh.forEach(isin => pf.items.push({ isin, weight: +(100 / (m + k)).toFixed(1) }));
+  if (!m || !es) pf.items.forEach(i => (i.weight = +(100 / pf.items.length).toFixed(1)));
+  return k;
+}
+function renderDraft() {
+  const pf = pfCur, tot = pf.items.reduce((a, i) => a + i.weight, 0), have = new Set(pf.items.map(i => i.isin));
+  $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
+  $("dr-add").innerHTML = ETFS.filter(e => !have.has(e.isin)).sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
+  $("dr-tbl").innerHTML = `<thead><tr><th>ETF</th><th>Peso %</th><th></th></tr></thead><tbody>${pf.items.map((it, i) => { const e = byIsin(it.isin); return `<tr><td class="n">${e.ticker}<span class="wl">${esc(e.name)}</span></td><td><input class="wi" type="number" min="0" max="100" step="0.1" value="${it.weight}" data-i="${i}" aria-label="Peso ${e.ticker}"></td><td class="act"><button type="button" class="del" data-i="${i}" aria-label="Rimuovi ${e.ticker}">×</button></td></tr>`; }).join("")}</tbody>`;
+  const st = pf.items.length ? simStart(pf) : dateMs(pf.start), clamp = st > dateMs(pf.start);
+  $("dr-note").innerHTML = pf.items.length ? `Totale <span class="n">${fmt(tot, 1)}%</span>${Math.abs(tot - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}${clamp ? ` · simulazione dal ${dateTxt(st)}, lancio dell'ultimo ETF` : ""}` : "";
+  const rows = pf.items.filter(i => i.weight > 0).map(i => { const e = byIsin(i.isin), pr = e.live, amt = pf.amount * i.weight / tot, q = Math.floor(amt / pr); return { e, w: i.weight / tot, amt, pr, q, cost: q * pr }; });
+  const spent = rows.reduce((a, r) => a + r.cost, 0);
+  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Peso</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${fmt(r.w * 100, 1)}%</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody><tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : "";
+  DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
+  $("dr-own").disabled = !DRSIZE.length;
+}
+function editDraft(fn) { const pf = ownPf(); fn(pf); commit(pf.id); }
+function openAddTo(isins) {
+  if (!isins.length) return;
+  AT = isins.slice();
+  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join("") + '<option value="@draft">+ Nuovo draft</option><option value="@owned">+ Nuovo acquistato</option>';
+  $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
+    <p class="id n" style="margin:0">${AT.map(i => byIsin(i).ticker).join(" · ")}</p>
+    <select id="at-pf" aria-label="Portafoglio">${opts}</select><div id="at-body"></div>
+    <div class="io"><button type="submit" class="primary">Aggiungi</button><button type="button" class="ghost" id="at-cancel">Annulla</button><span id="at-msg" class="fc-note"></span></div>`;
+  const body = () => {
+    const kind = atKind();
+    $("at-body").innerHTML = kind === "draft" ? '<p class="fc-note">Peso iniziale uguale per tutti, poi lo modifichi nel draft</p>'
+      : `<div class="lotform"><input id="at-date" type="date" value="${ymd(Date.now())}" max="${ymd(Date.now())}" aria-label="Data di acquisto"></div>${AT.map(i => { const e = byIsin(i); return `<div class="lotform"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" data-isin="${i}" placeholder="Quantità" aria-label="Quantità ${e.ticker}"><input type="number" min="0" step="any" class="at-p" data-isin="${i}" value="${e.live.toFixed(2)}" aria-label="Prezzo ${e.ticker}"></div>`; }).join("")}`;
+  };
+  $("at-pf").addEventListener("change", body); body();
+  $("addto").showModal();
+}
+function atKind() { const v = $("at-pf").value; return v === "@draft" ? "draft" : v === "@owned" ? "owned" : isDraft(PFLIST.find(p => p.id === v)) ? "draft" : "owned"; }
+$("addto").addEventListener("click", ev => { if (ev.target.id === "at-cancel" || ev.target.closest("#at-x") || ev.target === $("addto")) $("addto").close(); });
+$("addto").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const v = $("at-pf").value, kind = atKind(), bad = t => { $("at-msg").textContent = t; $("at-msg").className = "fc-note err"; };
+  let target = v.startsWith("@") ? null : PFLIST.find(p => p.id === v), lots = [];
+  if (kind === "owned") {
+    const date = $("at-date").value;
+    if (!date || isNaN(dateMs(date)) || dateMs(date) > Date.now() + DAY) return bad("Data non valida");
+    for (const q of document.querySelectorAll(".at-q")) {
+      const qty = +q.value, price = +document.querySelector(`.at-p[data-isin="${q.dataset.isin}"]`).value;
+      if (!qty) continue;
+      if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
+      if (date < byIsin(q.dataset.isin).inception) return bad(`${byIsin(q.dataset.isin).ticker} non era ancora stato lanciato`);
+      lots.push({ isin: q.dataset.isin, date, qty, price });
+    }
+    if (!lots.length) return bad("Inserisci almeno una quantità");
+  }
+  if (kind === "draft") {
+    target = target ? ownPf(target) : (USER.unshift({ id: "pf-" + Date.now().toString(36), name: `Draft ${USER.filter(isDraft).length + 1}`, currency: "EUR", kind: "draft", amount: 10000, start: defStart(AT), items: [] }), USER[0]);
+    addItems(target, AT);
+  } else {
+    target = target ? ownPf(target) : (USER.unshift({ id: "pf-" + Date.now().toString(36), name: `Portafoglio ${USER.length + 1}`, currency: "EUR", kind: "owned", lots: [] }), USER[0]);
+    target.lots = [...target.lots, ...lots].sort(byDate);
+  }
+  $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showView("port");
+});
+function updSel() { const n = SEL.size; $("selbar").hidden = !n; $("sel-n").textContent = n + (n === 1 ? " selezionato" : " selezionati"); }
+
+/* ---------- Eventi ---------- */
+/* ---------- Eventi ---------- */
+$("list").addEventListener("click", ev => { const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
+$("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => $("detail").open && drawChart(), 120); });
+$("q").addEventListener("input", render);
+ALL.concat($("sort")).forEach(el => el.addEventListener("input", render));
+$("clear").addEventListener("click", () => { ALL.forEach(s => (s.value = "")); render(); });
+$("fbtn").addEventListener("click", ev => {
+  const b = ev.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
+  b.setAttribute("aria-expanded", open); $("filters").hidden = !open;
+});
+document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELECT/.test(document.activeElement.tagName)) { ev.preventDefault(); $("q").focus(); } });
+
+/* ---------- Avvio ---------- */
+applyPrices(); startLive(); loadUser(); allPf(); pfCur = PFLIST.find(p => p.id === getDef()) || PFLIST.find(p => p.id === "prova-bilanciato") || PFLIST[0]; fillSel();
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showView(b.dataset.v)));
+$("pf-sel").addEventListener("change", ev => { pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
+$("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
+$("pf-comp").addEventListener("click", ev => { const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin); });
+$("io-exp").addEventListener("click", exportJson);
+$("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
+$("io-imp").addEventListener("click", () => importJson($("json-box").value));
+$("io-file").addEventListener("change", ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("json-box").value = r.result; importJson(r.result); }; r.readAsText(f); ev.target.value = ""; });
+$("io-del").addEventListener("click", ev => {
+  const b = ev.currentTarget;
+  if (b.dataset.arm !== "1") { b.dataset.arm = "1"; b.textContent = "Conferma"; setTimeout(() => { b.dataset.arm = ""; b.textContent = "Elimina"; }, 3000); return; }
+  b.dataset.arm = ""; b.textContent = "Elimina";
+  USER = USER.filter(u => u.id !== pfCur.id); saveUser(); allPf(); pfCur = PFLIST[0]; fillSel(); renderPf(); ioMsg("Portafoglio eliminato");
+});
+/* Modulo acquisti */
+$("lot-etf").innerHTML = ETFS.slice().sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
+$("lot-date").value = new Date().toISOString().slice(0, 10); $("lot-date").max = $("lot-date").value;
+function suggestPrice() {
+  const p = $("lot-price"), e = byIsin($("lot-etf").value), d = $("lot-date").value;
+  if (!p.dataset.touched && e && d && !isNaN(dateMs(d))) p.value = priceAt(e, dateMs(d)).toFixed(2);
+}
+suggestPrice();
+$("lot-etf").addEventListener("change", suggestPrice); $("lot-date").addEventListener("change", suggestPrice);
+$("lot-price").addEventListener("input", () => ($("lot-price").dataset.touched = "1"));
+function commit(id) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
+function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copia personale
+  if (!src.sample) return src;
+  let id = src.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = src.id + "-mio" + n++;
+  const c = { id, name: src.name.replace("Prova · ", "") + " (mio)", currency: src.currency, kind: src.kind || "owned" };
+  if (isDraft(src)) { c.amount = src.amount; c.start = src.start; c.items = src.items.map(x => ({ ...x })); } else c.lots = src.lots.map(l => ({ ...l }));
+  USER.unshift(c); return c;
+}
+let editIdx = null;
+function resetForm() { editIdx = null; $("lot-submit").textContent = "Aggiungi"; $("lot-cancel").hidden = true; $("lot-qty").value = ""; $("lot-op").value = "1"; delete $("lot-price").dataset.touched; suggestPrice(); }
+$("lot-cancel").addEventListener("click", () => { resetForm(); $("lot-msg").textContent = ""; });
+$("lot-form").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const e = byIsin($("lot-etf").value), date = $("lot-date").value, sgn = +$("lot-op").value, qty = +$("lot-qty").value, price = +$("lot-price").value, m = $("lot-msg");
+  const bad = t => { m.textContent = t; m.className = "fc-note err"; };
+  if (!date || isNaN(dateMs(date))) return bad("Data non valida");
+  if (dateMs(date) > Date.now() + DAY) return bad("La data è nel futuro");
+  if (date < e.inception) return bad(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`);
+  if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
+  const lots = pfCur.lots.map(l => ({ ...l })), lot = { isin: e.isin, date, qty: sgn * qty, price };
+  if (editIdx != null) lots[editIdx] = lot; else lots.push(lot);
+  lots.sort(byDate); const se = sellErr(lots); if (se) return bad(se.charAt(0).toUpperCase() + se.slice(1));
+  const wasEdit = editIdx != null, pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm();
+  m.textContent = wasEdit ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta"; m.className = "fc-note";
+});
+$("pf-lots").addEventListener("click", ev => {
+  const ed = ev.target.closest(".ed"), d = ev.target.closest(".del:not(.ed)"), m = $("lot-msg");
+  if (ed) {
+    const l = pfCur.lots[+ed.dataset.i]; if (!l) return;
+    $("lot-etf").value = l.isin; $("lot-date").value = l.date; $("lot-op").value = l.qty < 0 ? "-1" : "1"; $("lot-qty").value = Math.abs(l.qty); $("lot-price").value = l.price; $("lot-price").dataset.touched = "1";
+    editIdx = +ed.dataset.i; $("lot-submit").textContent = "Salva"; $("lot-cancel").hidden = false; m.textContent = ""; $("lot-form").scrollIntoView({ block: "center", behavior: "smooth" });
+  } else if (d) {
+    const lots = pfCur.lots.filter((_, i) => i !== +d.dataset.i), se = sellErr(lots);
+    if (se) { m.textContent = "Non puoi eliminarlo: " + se; m.className = "fc-note err"; return; }
+    const pf = ownPf(); pf.lots = lots; commit(pf.id); resetForm(); m.textContent = "Operazione eliminata"; m.className = "fc-note";
+  }
+});
+$("ef-cap").addEventListener("change", () => PF && renderPf());
+$("rb-goal").addEventListener("change", () => PF && renderRb());
+$("rb-apply").addEventListener("click", () => {
+  if (!RB || !RB.length) return;
+  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const it = pf.items.find(x => x.isin === r.isin); if (it) it.weight = r.w; }); commit(pf.id); $("lot-msg").textContent = "Pesi del draft aggiornati"; return; }
+  const today = new Date().toISOString().slice(0, 10), lots = pfCur.lots.map(l => ({ ...l })).concat(RB.map(r => ({ isin: r.isin, date: today, qty: r.dq, price: +r.pr.toFixed(2) }))).sort(byDate), se = sellErr(lots);
+  if (se) { $("rb-note").textContent = se; return; }
+  const n = RB.length, pf = ownPf(); pf.lots = lots; commit(pf.id); $("lot-msg").textContent = `Ribilanciamento applicato: ${n} operazioni`; $("lot-msg").className = "fc-note";
+});
+$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
+$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
+$("pf-new").addEventListener("click", () => {
+  const pf = { id: "pf-" + Date.now().toString(36), name: `Portafoglio ${USER.length + 1}`, currency: "EUR", lots: [] };
+  USER.unshift(pf); commit(pf.id); $("lot-msg").textContent = ""; $("pf-name").focus(); $("pf-name").select();
+});
+$("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
+$("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
+$("sel-add").addEventListener("click", () => openAddTo([...SEL]));
+$("dr-tbl").addEventListener("change", ev => { const inp = ev.target.closest(".wi"); if (inp) editDraft(pf => { pf.items[+inp.dataset.i].weight = Math.max(0, +inp.value || 0); }); });
+$("dr-tbl").addEventListener("click", ev => { const b = ev.target.closest(".del"); if (b) editDraft(pf => { pf.items.splice(+b.dataset.i, 1); }); });
+$("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editDraft(pf => { pf.amount = v; }); else renderPf(); });
+$("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editDraft(pf => { pf.start = v; }); else renderPf(); });
+$("dr-add-btn").addEventListener("click", () => { const isin = $("dr-add").value; if (isin) editDraft(pf => addItems(pf, [isin])); });
+$("dr-norm").addEventListener("click", () => editDraft(pf => { const t = pf.items.reduce((a, i) => a + i.weight, 0); if (t > 0) pf.items.forEach(i => (i.weight = +(i.weight / t * 100).toFixed(1))); }));
+$("dr-own").addEventListener("click", () => {
+  if (!DRSIZE.length) return;
+  const pf = ownPf(), today = ymd(Date.now());
+  pf.lots = DRSIZE.map(r => ({ isin: r.isin, date: today, qty: r.qty, price: +r.price.toFixed(2) })).sort(byDate); pf.kind = "owned"; delete pf.items; delete pf.amount; delete pf.start;
+  commit(pf.id); $("lot-msg").textContent = "Convertito in acquistato: acquisti registrati a oggi ai prezzi correnti"; $("lot-msg").className = "fc-note";
+});
+$("to-draft").addEventListener("click", () => {
+  if (!PF) return; const P = PF, items = P.act.map(i => ({ isin: P.es[i].isin, weight: +(P.cw[i] * 100).toFixed(1) }));
+  const amount = Math.max(100, Math.round(P.act.reduce((a, i) => a + P.qty[i] * P.es[i].live, 0) / 100) * 100);
+  const pf = { id: "pf-" + Date.now().toString(36), name: pfCur.name.replace("Prova · ", "") + " (draft)", currency: "EUR", kind: "draft", amount, start: defStart(items.map(i => i.isin)), items };
+  USER.unshift(pf); commit(pf.id);
+});
+$("pf-newd").addEventListener("click", () => {
+  const pf = { id: "pf-" + Date.now().toString(36), name: `Draft ${USER.filter(isDraft).length + 1}`, currency: "EUR", kind: "draft", amount: 10000, start: ymd(back(0, 3)), items: [] };
+  USER.unshift(pf); commit(pf.id); $("pf-name").focus(); $("pf-name").select();
+});
+let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); } }, 120); });
+
+render(); renderPf();
+showView(location.hash === "#cerca" ? "search" : "port");
+</script>
