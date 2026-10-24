@@ -531,9 +531,11 @@ function sparkSvg(e) {
   const step = Math.max(1, Math.floor((s.v.length - i0) / 60));
   for (let i = i0; i < s.v.length; i += step) pts.push(s.v[i]);
   pts.push(s.v[s.v.length - 1]);
-  const mn = Math.min(...pts), mx = Math.max(...pts), W = 96, H = 28;
-  const line = pts.map((p, i) => (i ? "L" : "M") + (i / (pts.length - 1) * W).toFixed(1) + " " + (H - 2 - (p - mn) / (mx - mn || 1) * (H - 4)).toFixed(1)).join("");
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${line}" fill="none" stroke="${(e.r1 ?? 0) >= 0 ? "var(--up)" : "var(--down)"}" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg>`;
+  const mn = Math.min(...pts), mx = Math.max(...pts), W = 96, H = 28, n = pts.length - 1 || 1;
+  const T = pts.map((_, i) => i), X = i => i / n * W, Y = v => H - 2 - (v - mn) / (mx - mn || 1) * (H - 4);
+  const art = splitArt(T, pts, pts.map(() => pts[0]), X, Y, "sp" + e.isin);
+  const line = pts.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join("");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs>${art.defs}</defs>${art.fills}<path d="${line}" fill="none" stroke="${art.stroke}" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
 function render() {
@@ -986,8 +988,9 @@ function splitArt(T, V, B, X, Y, gid) {
   runs.push(cur); stops.push([1, cur.c]);
   const pth = r => [...r.top, ...r.bot.slice().reverse()].map((q, k) => (k ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join("") + "Z";
   return {
-    defs: `<linearGradient id="${gid}s" gradientUnits="userSpaceOnUse" x1="${xs}" x2="${xe}" y1="0" y2="0">${stops.map(([o, c]) => `<stop offset="${Math.min(Math.max(o, 0), 1).toFixed(4)}" stop-color="${c}"/>`).join("")}</linearGradient>`,
-    fills: runs.map(r => `<path d="${pth(r)}" fill="${r.c}" fill-opacity=".17"/>`).join(""),
+    defs: `<linearGradient id="${gid}s" gradientUnits="userSpaceOnUse" x1="${xs}" x2="${xe}" y1="0" y2="0">${stops.map(([o, c]) => `<stop offset="${Math.min(Math.max(o, 0), 1).toFixed(4)}" stop-color="${c}"/>`).join("")}</linearGradient>`
+      + runs.map((r, k) => { const up = r.c === "var(--up)"; return `<linearGradient id="${gid}f${k}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${r.c}" stop-opacity="${up ? ".28" : ".02"}"/><stop offset="1" stop-color="${r.c}" stop-opacity="${up ? ".02" : ".28"}"/></linearGradient>`; }).join(""),
+    fills: runs.map((r, k) => `<path d="${pth(r)}" fill="url(#${gid}f${k})"/>`).join(""),
     stroke: `url(#${gid}s)`,
   };
 }
