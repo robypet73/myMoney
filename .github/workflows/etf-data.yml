@@ -1,0 +1,18 @@
+name: Aggiorna dati ETF
+
+# Scarica anagrafica e composizione degli ETF e aggiorna etfdata.js su main.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dati:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Sonda
+        run: python3 scripts/probe_etf.py
