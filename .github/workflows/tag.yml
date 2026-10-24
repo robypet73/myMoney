@@ -1,0 +1,29 @@
+name: Tag di versione
+
+# Quando index.html porta una nuova versione (MM.mm.ppp) crea il tag git vMM.mm.ppp sul commit.
+on:
+  push:
+    branches: [main]
+    paths: [index.html]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Crea il tag
+        run: |
+          v=$(grep -o 'id="ver">v[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9][0-9]' index.html | head -1 | sed 's/.*>//')
+          [ -n "$v" ] || { echo "Versione non trovata"; exit 1; }
+          if git rev-parse -q --verify "refs/tags/$v" >/dev/null; then echo "Tag $v già presente"; exit 0; fi
+          git config user.name "myMoney versione"
+          git config user.email "actions@users.noreply.github.com"
+          git tag -a "$v" -m "Versione ${v#v}" "$(git log -1 --format=%H -- index.html)"
+          git push origin "$v"
