@@ -59,6 +59,14 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 
 CSS in alto (token, poi sezioni), poi markup (`#v-port` portafoglio, `#v-search` ricerca, finestre `#detail` e `#addto`), poi lo script: dati `ETFS`, serie simulate, ricerca e filtri, dettaglio ETF, previsioni `FC`, motore del portafoglio (`pfBuild`, `pfStats`, `frontier`, `renderRb`), rendimenti live, draft, eventi.
 
+## App installabile (PWA)
+
+- File: `manifest.webmanifest`, `sw.js` (service worker, funziona offline), `icons/` (192, 512, maskable, SVG, apple-touch). Il tag `<link rel="manifest">`, le `meta` per tema e viewport e la registrazione del service worker sono in `index.html`.
+- Se aggiungi file da tenere offline, mettili in `CORE` in `sw.js` e aumenta `VERSION`. Pagina e `prices.js` si scaricano sempre dalla rete se disponibile (dati freschi), la copia salvata serve solo senza rete.
+- `prices.js` nel repo è un segnaposto (`window.PRICES = null`) che evita l'errore 404: `scripts/fetch_prices.py` lo sovrascrive.
+- Verifica dell'installabilità: servire la cartella con `python3 -m http.server`, aprire con Playwright e chiamare `Page.getInstallabilityErrors` via CDP (l'unico errore ammesso è `in-incognito`).
+- `index.html` inizia con `<!doctype html>`, `charset` e `viewport`: servono su Android/Pages. Non rimuoverli.
+
 ## GitHub Pages
 
 Il sito si pubblica da `main`, cartella `/ (root)`: `https://robypet73.github.io/myMoney/`. Non servono passaggi di build.

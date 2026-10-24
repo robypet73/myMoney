@@ -1,5 +1,16 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>myMoney</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#FAFAF9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C0D0C" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="myMoney">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
@@ -27,7 +38,8 @@
 :root[data-theme="dark"] { --bg: #0C0D0C; --raised: #141615; --fg: #EDEEED; --soft: #7D837F; --hair: #1F2321; --fill: #191C1A; --up: #4FD09A; --down: #FF7A62; color-scheme: dark; }
 
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--f); font-size: var(--fs-m); line-height: 1.45; -webkit-font-smoothing: antialiased; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--f); font-size: var(--fs-m); line-height: 1.45; -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 1.5px solid var(--fg); outline-offset: 2px; }
 .n { font-family: var(--m); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
@@ -425,7 +437,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 <main class="wrap" id="v-pfs" hidden>
   <section class="pfs-head"><h2>Portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
   <div id="pfs-list"></div>
-  <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button></div>
+  <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
   <section class="sec pf-sec"><h3>Salvataggio e JSON</h3>
     <p class="fc-note" style="margin:0 0 12px">I portafogli sono salvati in questo browser. Scarica il JSON per tenerne una copia o spostarli, importalo per ripristinarli.</p>
     <textarea id="json-box" spellcheck="false" aria-label="JSON dei portafogli" placeholder="Scarica o copia il JSON dei portafogli, oppure incolla qui un JSON e premi Importa"></textarea>
@@ -1726,6 +1738,13 @@ $("pf-reb").addEventListener("click", () => $("rb-sec").scrollIntoView({ behavio
 $("pf-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => deletePf(pfCur)));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; pfCur.description = ev.target.value.trim().slice(0, 500); commit(pfCur.id); });
 let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); } }, 120); });
+
+/* App installabile: service worker (solo su http/https) e pulsante «Installa app» quando il browser lo permette */
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", ev => { ev.preventDefault(); deferredInstall = ev; $("install").hidden = false; });
+window.addEventListener("appinstalled", () => { deferredInstall = null; $("install").hidden = true; });
+$("install").addEventListener("click", async () => { if (!deferredInstall) return; deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch {} deferredInstall = null; $("install").hidden = true; });
+try { if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch {}
 
 render(); renderPf();
 showView(location.hash === "#cerca" ? "search" : location.hash === "#portafogli" ? "pfs" : "port");
