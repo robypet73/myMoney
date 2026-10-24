@@ -188,6 +188,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .hrow:last-child { border-bottom: 1px solid var(--hair); }
 .hrow .main { display: grid; gap: 3px; min-width: 0; }
 .hrow .v { white-space: nowrap; }
+.hrow.idle .idle-why { grid-column: 2 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; white-space: normal; text-align: right; color: var(--soft); font-size: var(--fs-s); }
 .nm-btn { border: 0; background: none; padding: 0; text-align: left; font-weight: 500; font-size: var(--fs-m); letter-spacing: -.01em; cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nm-btn:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .id a { color: inherit; }
@@ -377,7 +378,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.008</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.009</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -1542,11 +1543,20 @@ const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => { if (
 /* ---------- Portafoglio: pagina ---------- */
 const justEtf = isin => `https://www.justetf.com/en/etf-profile.html?isin=${isin}`;
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+// Posizioni che non entrano nel calcolo (senza quote o senza prezzi): si elencano in Composizione con il motivo e l'azione per sistemarle
+function idleRows(P) {
+  const rows = pfCur.positions.map(x => ({ x, e: byIsin(x.isin) })).filter(({ x, e }) => { const i = P ? P.isins.indexOf(x.isin) : -1; return e && (i < 0 || !(P.qty[i] > 1e-9)); });
+  return rows.map(({ x, e }) => {
+    const act = !e.s ? (e.cat ? `<button type="button" class="ghost" data-act="refresh" data-isin="${e.isin}">${e.tried ? "Aggiorna dati" : "Carico i prezzi…"}</button>` : "") : `<button type="button" class="ghost" data-act="mov" data-isin="${e.isin}">+ Movimento</button>`;
+    const why = !e.s ? (e.tried ? "Senza prezzi: non entra nella composizione" : "Carico i prezzi…") : "Senza quote: non entra nella composizione";
+    return `<div class="hrow idle"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${esc(e.ticker === e.isin ? "" : e.ticker + " · ")}${e.isin} · ${link(justEtf(e.isin), "justETF ↗")}</span></span><span class="v n idle-why">${why}${act}</span></div>`;
+  }).join("");
+}
 function renderEmpty() {
   PF = null; EF = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
   ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
   $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
-  $("pf-comp").innerHTML = '<p class="fc-note">' + "Aggiungi un ETF con quantità o peso, oppure registra un'operazione nelle posizioni" + '</p>';
+  $("pf-comp").innerHTML = (pfCur.positions.length ? "" : '<p class="fc-note">Aggiungi un ETF e registra un movimento (acquisto o vendita) o la quantità iniziale</p>') + idleRows(null);
 }
 function renderPf() {
   const need = pfCur.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s && !e.tried);
@@ -1574,7 +1584,7 @@ function renderPf() {
   $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1;
     const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
-      <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
+      <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i], 3)}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc, 3)}</small></span></div>`; }).join("") + idleRows(P);
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
     return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
 
@@ -1925,7 +1935,10 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 $("pf-sel").addEventListener("change", ev => { if (!keepDirty()) { $("pf-sel").value = pfCur.id; return; } ORIG = null; updSave(); pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
 $("pf-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfView = b.dataset.m; renderPfPeriods(); drawPfNav(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
-$("pf-comp").addEventListener("click", ev => { const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin); });
+$("pf-comp").addEventListener("click", ev => {
+  const a = ev.target.closest("[data-act]"); if (a) return a.dataset.act === "mov" ? openMovs(a.dataset.isin) : refreshEtf([a.dataset.isin], msg);
+  const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin);
+});
 $("io-exp").addEventListener("click", () => exportJson());
 $("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(PFLIST); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
 $("io-imp").addEventListener("click", () => importJson($("json-box").value));
