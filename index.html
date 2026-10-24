@@ -117,6 +117,77 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .bars .n { color: var(--soft); font-size: 12px; }
 .bars i { grid-column: 1 / -1; height: 2px; background: var(--hair); display: block; }
 .bars i b { display: block; height: 100%; background: var(--fg); }
+[hidden] { display: none !important; }
+:root { --c1: #0E7C66; --c2: #2F5FD0; --c3: #D08A12; --c4: #8A4FD6; --c5: #C8412F; --c6: #8A8F8C; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c1: #3FC6A5; --c2: #6C93F2; --c3: #E8AD3F; --c4: #B58AF0; --c5: #F07C69; --c6: #8F9692; } }
+:root[data-theme="dark"] { --c1: #3FC6A5; --c2: #6C93F2; --c3: #E8AD3F; --c4: #B58AF0; --c5: #F07C69; --c6: #8F9692; }
+
+.bar2 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tabs { display: flex; gap: 2px; }
+.tabs button { border: 0; background: none; border-radius: 99px; padding: 6px 14px; font-size: 13.5px; color: var(--soft); cursor: pointer; }
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+
+.pf-sel { padding-block: 48px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.selwrap { position: relative; max-width: 100%; }
+.selwrap::after { content: ""; position: absolute; right: 4px; bottom: 18px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
+.pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: clamp(22px, 4.5vw, 34px); font-weight: 500; letter-spacing: -.035em; padding: 4px 36px 8px 0; cursor: pointer; max-width: 100%; }
+.badge { font-size: 12px; color: var(--soft); padding-bottom: 12px; }
+.badge a { color: inherit; }
+.badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
+.badge.real i { background: var(--up); }
+
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 20px 16px; padding-top: 36px; }
+.kpi div { display: grid; gap: 4px; min-width: 0; }
+.kpi .n { font-size: 17px; }
+.pf-sec { padding-top: 56px; }
+.pf-sec .price { margin-bottom: 0; }
+.scroll { overflow-x: auto; }
+.chart.tall { height: 320px; }
+
+.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 104px 72px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.hrow:last-child { border-bottom: 1px solid var(--hair); }
+.hrow .main { display: grid; gap: 3px; min-width: 0; }
+.nm-btn { border: 0; background: none; padding: 0; text-align: left; font-weight: 500; font-size: 15px; letter-spacing: -.01em; cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm-btn:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.id a { color: inherit; }
+.id a:hover { color: var(--fg); }
+
+.donuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
+.dn { display: flex; gap: 20px; align-items: center; min-width: 0; }
+.dn h3 { margin: 0 0 12px; }
+.donut { width: 120px; height: 120px; flex: none; }
+.leg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; min-width: 0; flex: 1; }
+.leg li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.leg .lt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.eft { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 18px; min-width: 420px; }
+.eft th, .eft td { padding: 9px 0 9px 12px; border-bottom: 1px solid var(--hair); text-align: right; vertical-align: top; white-space: nowrap; }
+.eft th { font-size: 11.5px; font-weight: 500; color: var(--soft); }
+.eft th:first-child, .eft td:first-child { text-align: left; padding-left: 0; white-space: normal; }
+.eft .wl { display: block; font-size: 12px; color: var(--soft); margin-top: 2px; }
+.dotm { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+
+.fb { padding: 16px 0 6px; border-top: 1px solid var(--hair); }
+.fb h4 { margin: 0 0 4px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.fb h4 em { font-style: normal; color: var(--soft); font-weight: 400; margin-left: 6px; }
+#json-box { display: block; width: 100%; min-height: 200px; font-family: var(--m); font-size: 12px; line-height: 1.55; border: 1px solid var(--hair); background: var(--fill); color: var(--fg); border-radius: 10px; padding: 12px; resize: vertical; }
+.io { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.io button, .io .btn { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--fg); }
+.io button:hover, .io .btn:hover { border-color: var(--fg); }
+#io-msg { font-size: 12.5px; color: var(--soft); }
+#io-msg.err { color: var(--down); }
+.fb-sum { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 0; border-top: 1.5px solid var(--fg); font-size: 14px; font-weight: 500; }
+.srcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13px; color: var(--soft); }
+.srcs a { color: var(--fg); text-underline-offset: 3px; }
+@media (max-width: 600px) {
+  .hrow { grid-template-columns: minmax(0, 1fr) 52px 92px; gap: 12px; }
+  .hrow .y1 { display: none; }
+  .donuts { grid-template-columns: minmax(0, 1fr); }
+  .chart.tall { height: 260px; }
+}
+
 .src { color: var(--soft); text-decoration: none; }
 .src:hover { color: var(--fg); }
 .fc { list-style: none; margin: 0; padding: 0; }
@@ -134,9 +205,55 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 }
 </style>
 
-<header><div class="wrap"><span class="logo">my<i>Money</i></span></div></header>
+<header><div class="wrap bar2">
+  <span class="logo">my<i>Money</i></span>
+  <nav class="tabs" aria-label="Sezioni">
+    <button type="button" data-v="port" aria-pressed="true">Portafoglio</button>
+    <button type="button" data-v="search" aria-pressed="false">Cerca</button>
+  </nav>
+</div></header>
 
-<main class="wrap">
+<main class="wrap" id="v-port">
+  <section class="pf-sel">
+    <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
+    <span class="badge" id="badge"></span>
+  </section>
+  <section class="kpi" id="kpi" aria-label="Sintesi"></section>
+
+  <section class="pf-sec" aria-label="NAV del portafoglio">
+    <div class="price">
+      <div><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div></div>
+      <div class="periods" role="group" aria-label="Periodo" id="pf-periods"></div>
+    </div>
+    <div class="chart" id="pf-chart"></div>
+  </section>
+
+  <section class="sec pf-sec"><h3>Composizione</h3><div id="pf-comp"></div></section>
+  <section class="sec pf-sec"><h3>Acquisti</h3><div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
+  <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
+
+  <section class="sec pf-sec"><h3>Frontiera efficiente</h3>
+    <div class="chart tall" id="pf-ef"></div>
+    <div class="scroll"><table class="eft" id="pf-eft"></table></div>
+    <p class="fc-note" id="ef-note"></p>
+  </section>
+
+  <section class="sec pf-sec"><h3>Previsioni sull'indice · 12 mesi</h3><div id="pf-fc"></div></section>
+  <section class="sec pf-sec"><h3>Dati JSON</h3>
+    <textarea id="json-box" spellcheck="false" aria-label="JSON del portafoglio" placeholder="Esporta per ottenere il JSON del portafoglio, oppure incolla qui un JSON e premi Importa"></textarea>
+    <div class="io">
+      <button type="button" id="io-exp">Esporta</button>
+      <button type="button" id="io-copy">Copia</button>
+      <label class="btn" for="io-file">Carica file</label><input id="io-file" type="file" accept=".json,application/json" hidden>
+      <button type="button" id="io-imp">Importa</button>
+      <button type="button" id="io-del" hidden>Elimina</button>
+      <span id="io-msg" aria-live="polite"></span>
+    </div>
+  </section>
+  <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
+</main>
+
+<main class="wrap" id="v-search" hidden>
   <section class="search">
     <div class="q">
       <input id="q" type="search" placeholder="Cerca ETF, ticker, ISIN" autocomplete="off" aria-label="Cerca ETF">
@@ -176,6 +293,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 
 <dialog id="detail" aria-labelledby="d-name"><div class="d" id="d-body"></div></dialog>
 
+<script src="prices.js"></script>
 <script>
 const TODAY = new Date(2026, 9, 23, 12);
 const DAY = 864e5;
@@ -269,6 +387,13 @@ function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0)
 function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 // NAV simulato: passeggiata log-normale su giorni lavorativi, riallineata al rendimento atteso e all'ultimo NAV.
+// Fattore di mercato comune: azioni correlate tra loro, obbligazioni e oro quasi indipendenti.
+const BETA = { Azionario: 0.85, Immobiliare: 0.8, Obbligazionario: 0.05, "Materie prime": 0.1 };
+const MK = new Map();
+function mkt(k) {
+  if (!MK.has(k)) { const r = rng(hash("m" + k)); let u = 0; while (!u) u = r(); MK.set(k, Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r())); }
+  return MK.get(k);
+}
 function buildSeries(e) {
   const r = rng(hash(e.isin));
   const g = () => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
@@ -279,6 +404,7 @@ function buildSeries(e) {
     const wd = d.getDay();
     if (wd > 0 && wd < 6) {
       let z = g(); if (r() < 0.012) z *= 2.6;
+      const b = BETA[e.asset] ?? 0.3; z = b * mkt(Math.floor(d.getTime() / DAY)) + Math.sqrt(1 - b * b) * z;
       acc += e.sig * Math.sqrt(1 / 252) * z;
       t.push(d.getTime()); x.push(acc);
     }
@@ -298,7 +424,7 @@ function idxFrom(s, ts) {
 }
 function back(months, years = 0) { const d = new Date(TODAY); d.setMonth(d.getMonth() - months); d.setFullYear(d.getFullYear() - years); return d.getTime(); }
 function retSince(s, ts, annualize) {
-  if (ts < s.t[0]) return null;
+  if (ts !== 0 && ts < s.t[0]) return null;
   const i = idxFrom(s, ts), r = s.v[s.v.length - 1] / s.v[i] - 1;
   if (!annualize) return r;
   return Math.pow(1 + r, 1 / ((s.t[s.t.length - 1] - s.t[i]) / (365.25 * DAY))) - 1;
@@ -446,7 +572,7 @@ function openDetail(isin) {
   drawChart();
 }
 
-function fcHtml(e) {
+function fcHtmlOld(e) {
   const fc = FC[e.ticker];
   if (!fc) return `<section class="sec"><h3>Previsioni 12 mesi</h3><p class="fc-note">Nessuna previsione pubblica trovata</p></section>`;
   const yld = fc.unit === "%";
@@ -531,6 +657,320 @@ function drawChart() {
   ].map(([k, v]) => `<div><span class="k">${k}</span><span class="n">${v}</span></div>`).join("");
 }
 
+/* ---------- Previsioni per indice (fonti con link) ---------- */
+const U = {
+  cnbc: "https://www.cnbc.com/2026/10/22/stock-market-today-live-update.html",
+  kitco: "https://www.kitco.com/news/article/2026-10-23/gold-silver-extend-weekly-losses-hormuz-tensions-push-crude-above-116-kitco",
+  msEu: "https://www.investing.com/news/stock-market-news/morgan-stanley-lifts-msci-europe-target-here-are-the-new-numbers-4683734",
+  jpmEu: "https://ng.investing.com/news/stock-market-news/jpm-raises-2026-yearend-target-for-stoxx-600-msci-eurozone-ftse-2577027",
+  gsEm: "https://www.bitget.com/amp/news/detail/12560605443330",
+  bund: "https://tradingeconomics.com/germany/government-bond-yield/news/589838",
+  ecb: "https://uk.finance.yahoo.com/news/eurozone-bond-yields-rise-higher-084919594.html",
+};
+FC.CSPX.spotUrl = U.cnbc;
+FC.SGLD.spotUrl = U.kitco;
+Object.assign(FC, {
+  IMAE: { ref: "MSCI Europe", items: [
+    { who: "Morgan Stanley", target: 2840, up: 0.124, by: "Giu 2027", url: U.msEu },
+    { who: "J.P. Morgan", target: 2750, up: 0.08, by: "Dic 2026", url: U.jpmEu } ] },
+  EIMI: { ref: "MSCI Emerging Markets", note: "Stima di giugno 2026", items: [
+    { who: "Goldman Sachs", target: 2000, up: 0.119, by: "12 mesi", url: U.gsEm } ] },
+  IEGA: { ref: "Euro Treasury", items: [], info: [
+    { t: "Bund 10 anni al 3,34% (22 ott 2026)", url: U.bund },
+    { t: "Mercato: tasso BCE al 3,15% a fine 2027", url: U.ecb } ] },
+});
+FC.XMJP.ref = "TOPIX (proxy di MSCI Japan)";
+
+const upOf = (fc, i) => fc.unit === "%" ? null : fc.spot ? i.target / fc.spot - 1 : i.up;
+function fcList(fc) {
+  const yld = fc.unit === "%";
+  const rows = fc.items.map(i => {
+    let dTxt, c;
+    if (yld) { const pb = Math.round((i.target - fc.spot) * 100); dTxt = (pb > 0 ? "+" : "") + pb + " pb"; c = cls(-pb); }
+    else { const d = upOf(fc, i); dTxt = pct(d, 1); c = cls(d); }
+    const tg = yld ? fmt(i.target) + "%" : i.target.toLocaleString("it-IT");
+    return `<li><a href="${i.url}" target="_blank" rel="noopener"><span class="who">${esc(i.who)}</span><span class="n">${tg}</span><span class="n ${c}">${dTxt}</span><span class="k">${i.by} ↗</span></a></li>`;
+  }).join("");
+  const info = (fc.info || []).map(x => `<li><a href="${x.url}" target="_blank" rel="noopener"><span class="who">${esc(x.t)}</span><span></span><span></span><span class="k">↗</span></a></li>`).join("");
+  const spot = fc.spot
+    ? `Attuale ${yld ? fmt(fc.spot) + "%" : fc.spot.toLocaleString("it-IT")}${fc.spotUrl ? ` <a class="src" href="${fc.spotUrl}" target="_blank" rel="noopener">↗</a>` : ""} · 23 ott 2026`
+    : (fc.items.length ? "Variazione alla data della previsione" : "Nessuna previsione di banca trovata") + (fc.note ? " · " + fc.note : "");
+  return `<ul class="fc">${rows}${info}</ul><p class="fc-note">${spot}</p>`;
+}
+function fcHtml(e) {
+  const fc = FC[e.ticker];
+  return `<section class="sec"><h3>Previsioni 12 mesi${fc ? " · " + esc(fc.ref) : ""}</h3>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione pubblica trovata</p>'}</section>`;
+}
+
+/* ---------- Portafoglio: dati, JSON, motore ---------- */
+const byIsin = i => ETFS.find(e => e.isin === i);
+const dateMs = s => new Date(s + "T12:00:00").getTime();
+const eur = v => "€ " + fmt(v, 0);
+const eurS = v => (v > 0 ? "+" : v < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 0);
+const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return hi; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo; };
+const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
+const LS_KEY = "mm-portfolios-v1";
+
+// Portafogli di prova: acquisti con ETF reali; i prezzi d'acquisto vengono presi dalla serie di prezzi caricata.
+const SAMPLE_SPECS = [
+  { id: "prova-bilanciato", name: "Prova · Bilanciato", buys: [
+    ["IE00B5BMR087", "2022-01-17", 20000], ["IE00B5BMR087", "2023-06-12", 10000], ["IE00B5BMR087", "2025-02-10", 10000],
+    ["IE00B4K48X80", "2022-01-17", 10000], ["IE00B4K48X80", "2024-03-11", 5000],
+    ["IE00BKM4GZ66", "2022-01-17", 5000], ["IE00BKM4GZ66", "2024-09-16", 5000],
+    ["LU0274209740", "2023-06-12", 5000],
+    ["IE00B4WXJJ64", "2022-01-17", 10000], ["IE00B4WXJJ64", "2023-06-12", 5000], ["IE00B4WXJJ64", "2025-02-10", 5000],
+    ["IE00B579F325", "2022-01-17", 5000], ["IE00B579F325", "2024-03-11", 5000] ] },
+  { id: "prova-prudente", name: "Prova · Prudente", buys: [
+    ["IE00B5BMR087", "2022-01-17", 10000], ["IE00B5BMR087", "2024-03-11", 5000],
+    ["IE00B4K48X80", "2022-01-17", 5000],
+    ["IE00B4WXJJ64", "2022-01-17", 30000], ["IE00B4WXJJ64", "2023-06-12", 15000], ["IE00B4WXJJ64", "2025-02-10", 10000],
+    ["IE00B579F325", "2022-01-17", 10000], ["IE00B579F325", "2024-09-16", 5000] ] },
+];
+const buildSamples = () => SAMPLE_SPECS.map(sp => ({ id: sp.id, name: sp.name, currency: "EUR", sample: true,
+  lots: sp.buys.map(([isin, date, amt]) => { const p = priceAt(byIsin(isin), dateMs(date)); return { isin, date, qty: Math.max(1, Math.round(amt / p)), price: +p.toFixed(2) }; }) }));
+
+let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null;
+function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
+function saveUser() { try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, portfolios: USER })); } catch {} }
+function allPf() { PFLIST = [...USER, ...buildSamples().filter(s => !USER.some(u => u.id === s.id))]; }
+
+// Valida un portafoglio importato: restituisce { pf, err }.
+function cleanPf(p) {
+  const err = [];
+  if (!p || typeof p !== "object") return { err: ["portafoglio non valido"] };
+  const name = String(p.name || "").trim() || "Senza nome";
+  const id = String(p.id || "").trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pf-" + Date.now();
+  const lots = [];
+  (Array.isArray(p.lots) ? p.lots : []).forEach((l, i) => {
+    const n = i + 1, isin = String((l && l.isin) || "").trim().toUpperCase(), qty = +(l && l.qty), price = +(l && l.price);
+    if (!byIsin(isin)) return err.push(`acquisto ${n}: ISIN ${isin || "mancante"} non disponibile`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(l.date || "") || isNaN(dateMs(l.date))) return err.push(`acquisto ${n}: data non valida (AAAA-MM-GG)`);
+    if (dateMs(l.date) > Date.now() + DAY) return err.push(`acquisto ${n}: data nel futuro`);
+    if (!(qty > 0) || !(price > 0)) return err.push(`acquisto ${n}: quantità o prezzo non validi`);
+    lots.push({ isin, date: l.date, qty, price });
+  });
+  if (!lots.length && !err.length) err.push("nessun acquisto");
+  lots.sort((a, b) => a.date.localeCompare(b.date));
+  return { pf: { id, name, currency: String(p.currency || "EUR"), lots }, err };
+}
+
+function ioMsg(t, bad) { const m = $("io-msg"); m.textContent = t; m.className = bad ? "err" : ""; }
+function pfJson() {
+  const { id, name, currency, lots } = pfCur;
+  return JSON.stringify({ version: 1, exported: new Date().toISOString().slice(0, 10), portfolios: [{ id, name, currency, lots }] }, null, 2);
+}
+async function exportJson() {
+  const text = pfJson(); $("json-box").value = text; let done = "JSON pronto";
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = pfCur.id + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); } catch {}
+  try { await navigator.clipboard.writeText(text); done += " · copiato"; } catch {}
+  ioMsg(done);
+}
+function importJson(text) {
+  let j; try { j = JSON.parse(text); } catch { return ioMsg("JSON non valido", true); }
+  const arr = Array.isArray(j) ? j : Array.isArray(j && j.portfolios) ? j.portfolios : [j];
+  const ok = [], errs = [];
+  arr.forEach(p => { const r = cleanPf(p); if (r.pf && !r.err.length) ok.push(r.pf); else errs.push(((p && p.name) || "Portafoglio") + ": " + r.err.join("; ")); });
+  ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
+  if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); fillSel(); renderPf(); }
+  ioMsg((ok.length ? `Importati ${ok.length}` : "Nessun portafoglio importato") + (errs.length ? " · " + errs.join(" | ") : ""), !ok.length || errs.length);
+}
+
+// Serie allineate su una griglia di date comune (ultimo prezzo noto).
+function alignPx(es, start) {
+  let base = [];
+  es.forEach(e => { const a = e.s.t.filter(t => t >= start); if (a.length > base.length) base = a; });
+  const px = es.map(e => { const s = e.s; let j = 0; return base.map(t => { while (j + 1 < s.t.length && s.t[j + 1] <= t) j++; return s.v[j]; }); });
+  return { t: base, px };
+}
+function pfBuild(pf) {
+  const isins = [...new Set(pf.lots.map(l => l.isin))], es = isins.map(byIsin);
+  const { t, px } = alignPx(es, dateMs(pf.lots[0].date)), n = t.length;
+  const units = es.map(() => new Float64Array(n)), flow = new Float64Array(n), cost = new Float64Array(n);
+  const qty = es.map(() => 0), costH = es.map(() => 0);
+  pf.lots.forEach(l => {
+    const i = isins.indexOf(l.isin), k = idxOf(t, dateMs(l.date));
+    for (let m = k; m < n; m++) units[i][m] += l.qty;
+    flow[k] += l.qty * px[i][k]; cost[k] += l.qty * l.price; qty[i] += l.qty; costH[i] += l.qty * l.price;
+  });
+  const V = new Float64Array(n), idx = new Float64Array(n);
+  for (let m = 0; m < n; m++) { let s = 0; for (let i = 0; i < es.length; i++) s += units[i][m] * px[i][m]; V[m] = s; if (m) cost[m] += cost[m - 1]; }
+  idx[0] = 100;
+  for (let m = 1; m < n; m++) idx[m] = idx[m - 1] * (V[m - 1] > 0 ? (V[m] - flow[m]) / V[m - 1] : 1);
+  const last = n - 1, vh = es.map((_, i) => units[i][last] * px[i][last]);
+  return { pf, es, isins, t, V, cost, idx, qty, costH, vh, cw: vh.map(v => v / V[last]), last };
+}
+function pfStats(P) {
+  const r = []; for (let m = 1; m <= P.last; m++) r.push(P.idx[m] / P.idx[m - 1] - 1);
+  const mean = r.reduce((a, b) => a + b, 0) / r.length, sd = Math.sqrt(r.reduce((a, b) => a + (b - mean) ** 2, 0) / (r.length - 1));
+  const yrs = (P.t[P.last] - P.t[0]) / (365.25 * DAY), tot = P.idx[P.last] / 100 - 1;
+  let pk = 100, dd = 0; for (let m = 0; m <= P.last; m++) { pk = Math.max(pk, P.idx[m]); dd = Math.min(dd, P.idx[m] / pk - 1); }
+  const ann = yrs >= 0.5 ? Math.pow(1 + tot, 1 / yrs) - 1 : null, vol = sd * Math.sqrt(252);
+  return { tot, ann, vol, dd, sh: ann == null ? null : ann / vol, yrs };
+}
+
+// Frontiera efficiente long-only da portafogli casuali, rendimenti e covarianze storici (rf = 0).
+function frontier(P) {
+  const start = Math.max(back(0, 5), ...P.es.map(e => e.s.t[0]));
+  const { t, px } = alignPx(P.es, start), k = px.length;
+  if (k < 2 || t.length < 60) return null;
+  const R = px.map(p => p.slice(1).map((x, j) => x / p[j] - 1)), nn = R[0].length;
+  const mu = R.map(r => r.reduce((a, b) => a + b, 0) / nn);
+  const C = R.map((a, i) => R.map((b, j) => { let s = 0; for (let m = 0; m < nn; m++) s += (a[m] - mu[i]) * (b[m] - mu[j]); return s / (nn - 1) * 252; }));
+  const M = mu.map(x => x * 252);
+  const ev = w => { let r = 0, v = 0; for (let i = 0; i < k; i++) { r += w[i] * M[i]; for (let j = 0; j < k; j++) v += w[i] * w[j] * C[i][j]; } return { r, v: Math.sqrt(Math.max(v, 0)), w }; };
+  const rnd = rng(12345), pts = [];
+  for (let i = 0; i < k; i++) pts.push(ev(Array.from({ length: k }, (_, j) => +(i === j))));
+  for (let n = 0; n < 40000; n++) {
+    const p = [1, 1.5, 3][n % 3]; let w = Array.from({ length: k }, () => Math.pow(-Math.log(rnd() || 1e-9), p));
+    const s = w.reduce((a, b) => a + b, 0); pts.push(ev(w.map(x => x / s)));
+  }
+  const refine = (best, score) => {
+    let b = best, sb = score(b); const rr = rng(99);
+    for (let it = 0; it < 4000; it++) { const w = b.w.map(x => Math.max(0, x + (rr() - 0.5) * 0.05)), s = w.reduce((a, c) => a + c, 0); if (!s) continue; const c = ev(w.map(x => x / s)), sc = score(c); if (sc > sb) { b = c; sb = sc; } }
+    return b;
+  };
+  const minV = refine(pts.reduce((a, p) => (p.v < a.v ? p : a)), p => -p.v);
+  const maxS = refine(pts.reduce((a, p) => (p.r / p.v > a.r / a.v ? p : a)), p => p.r / p.v);
+  pts.push(minV, maxS);
+  const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let best = minV.r;
+  for (const p of srt) if (p.v > minV.v && p.r > best) { best = p.r; line.push(p); }
+  const cur = ev(P.cw);
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, cur, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+}
+
+/* ---------- Portafoglio: grafici ---------- */
+function drawLine(box, T, S, label, gid) {
+  const W = box.clientWidth, H = box.clientHeight; if (!W || !T.length) return;
+  const pl = 0, pr = 62, pt = 8, pb = 24;
+  let mn = Infinity, mx = -Infinity; S.forEach(a => a.forEach(v => { if (v < mn) mn = v; if (v > mx) mx = v; }));
+  const pad = (mx - mn) * 0.08 || mx * 0.02, ticks = niceTicks(mn - pad, mx + pad, 3);
+  const lo = Math.min(ticks[0], mn - pad), hi = Math.max(ticks[ticks.length - 1], mx + pad);
+  const X = t => pl + (t - T[0]) / ((T[T.length - 1] - T[0]) || 1) * (W - pl - pr), Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
+  const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
+  const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
+  const m = S[0], ref = S[1];
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+    <defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--fg)" stop-opacity=".08"/><stop offset="1" stop-color="var(--fg)" stop-opacity="0"/></linearGradient></defs>
+    ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 0)}</text>`).join("")}
+    ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
+    <path d="${path(m)}L${X(T[T.length - 1])} ${H - pb}L${X(T[0])} ${H - pb}Z" fill="url(#${gid})"/>
+    ${ref ? `<path d="${path(ref)}" fill="none" stroke="var(--soft)" stroke-width="1.2" stroke-dasharray="3 3"/>` : ""}
+    <path d="${path(m)}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
+    <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/><circle class="hc" r="4" fill="var(--fg)" stroke="var(--bg)" stroke-width="2"/></g>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip" hidden></div>`;
+  const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hc = box.querySelector(".hc"), hit = box.querySelector(".hit");
+  const move = ev => {
+    const x = ev.clientX - box.getBoundingClientRect().left, tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
+    let j = 0, bd = Infinity; for (let q = 0; q < T.length; q++) { const d = Math.abs(T[q] - tt); if (d < bd) { bd = d; j = q; } }
+    const cx = X(T[j]), cy = Y(m[j]);
+    g.setAttribute("visibility", "visible"); hl.setAttribute("x1", cx); hl.setAttribute("x2", cx); hc.setAttribute("cx", cx); hc.setAttribute("cy", cy);
+    tip.hidden = false; tip.innerHTML = `<b>${eur(m[j])}</b>${dateTxt(T[j])}${ref ? " · investito " + eur(ref[j]) : ""}`;
+    const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px"; tip.style.top = (cy > 56 ? cy - 46 : cy + 12) + "px";
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+}
+function drawPfNav() {
+  const box = $("pf-chart"); if (!PF || !box) return;
+  const P = PF, from = PERIODS.find(p => p[0] === pfPeriod)[1](), i0 = from === 0 ? 0 : idxOf(P.t, from), step = Math.max(1, Math.floor((P.last - i0) / 420));
+  const T = [], V = [], C = [];
+  for (let m = i0; m <= P.last; m += step) { T.push(P.t[m]); V.push(P.V[m]); C.push(P.cost[m]); }
+  if (T[T.length - 1] !== P.t[P.last]) { T.push(P.t[P.last]); V.push(P.V[P.last]); C.push(P.cost[P.last]); }
+  drawLine(box, T, [V, C], "Valore del portafoglio " + pfPeriod, "gpf");
+}
+function drawEF() {
+  const box = $("pf-ef"), F = EF; if (!box) return;
+  if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
+  const W = box.clientWidth, H = box.clientHeight; if (!W) return;
+  const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line];
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  keep.forEach(p => { x0 = Math.min(x0, p.v); x1 = Math.max(x1, p.v); y0 = Math.min(y0, p.r); y1 = Math.max(y1, p.r); });
+  const px = (x1 - x0) * 0.06 || 0.01, py = (y1 - y0) * 0.08 || 0.01; x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
+  const X = v => pl + (v - x0) / (x1 - x0) * (W - pl - pr), Y = r => pt + (y1 - r) / (y1 - y0) * (H - pt - pb);
+  const xt = niceTicks(x0, x1, W < 420 ? 4 : 6), yt = niceTicks(y0, y1, 4);
+  const dx = xt.length > 1 && xt[1] - xt[0] < 0.01 ? 1 : 0, dy = yt.length > 1 && yt[1] - yt[0] < 0.01 ? 1 : 0;
+  const lab = (p, name, col, hollow) => { const x = X(p.v), y = Y(p.r), end = x > W - 100;
+    return `<circle cx="${x}" cy="${y}" r="5" fill="${hollow ? "var(--bg)" : col}" stroke="${col}" stroke-width="2"/><text class="ax" style="fill:var(--fg);font-size:11px" x="${x + (end ? -9 : 9)}" y="${y - 8}" text-anchor="${end ? "end" : "start"}">${name}</text>`; };
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente">
+    ${yt.map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(v * 100, dy)}%</text>`).join("")}
+    ${xt.map(v => `<text class="ax" x="${X(v)}" y="${H - 8}" text-anchor="middle">${fmt(v * 100, dx)}%</text>`).join("")}
+    ${F.bg.map(p => `<circle cx="${X(p.v).toFixed(1)}" cy="${Y(p.r).toFixed(1)}" r="1.7" fill="var(--soft)" fill-opacity=".28"/>`).join("")}
+    <path d="${F.line.map((p, i) => (i ? "L" : "M") + X(p.v).toFixed(1) + " " + Y(p.r).toFixed(1)).join("")}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
+    ${lab(F.minV, "Min varianza", "var(--c2)", false)}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}
+    <text class="ax" x="${W - pr}" y="${pt + 8}" text-anchor="end">Rendimento ↑ · Volatilità →</text></svg>`;
+}
+const donut = items => {
+  const R = 42, C = 2 * Math.PI * R; let off = 0;
+  return `<svg class="donut" viewBox="0 0 120 120" aria-hidden="true">${items.map(([, p], i) => { const len = C * p / 100, seg = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--c${(i % 6) + 1})" stroke-width="14" stroke-dasharray="${Math.max(len - 1.5, 0.1)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`; off += len; return seg; }).join("")}</svg>`;
+};
+const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => m.set(e[key], (m.get(e[key]) || 0) + P.cw[i] * 100)); return [...m].sort((a, b) => b[1] - a[1]); };
+
+/* ---------- Portafoglio: pagina ---------- */
+const justEtf = isin => `https://www.justetf.com/it/etf-profile.html?isin=${isin}`;
+const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+function renderPf() {
+  PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
+  const nReal = P.es.filter(e => e.real).length;
+  $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
+  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
+  $("kpi").innerHTML = [
+    ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", `${eurS(pl)} <span style="font-size:13px">${pct(pl / inv, 1)}</span>`, cls(pl)],
+    ["Rendimento annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
+    ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
+  ].map(([k, v, c]) => `<div><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
+  $("pf-big").innerHTML = `${fmt(val, 0)}<small>€</small>`;
+  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">dal ${dateTxt(P.t[0], { day: "numeric", month: "short", year: "numeric" })}</span>`;
+  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0]);
+  if (!avail.some(([p]) => p === pfPeriod)) pfPeriod = "Max";
+  $("pf-periods").innerHTML = avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === pfPeriod}">${p}</button>`).join("");
+
+  const order = P.es.map((_, i) => i).sort((a, b) => P.vh[b] - P.vh[a]);
+  $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1;
+    const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
+    return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
+      <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
+  $("pf-lots").innerHTML = `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th></tr></thead><tbody>${[...P.pf.lots].reverse().map(l => { const e = byIsin(l.isin), last = P.vh[P.isins.indexOf(l.isin)] / P.qty[P.isins.indexOf(l.isin)]; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n">${fmt(l.qty, 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${eur(l.qty * l.price)}</td><td class="n ${cls(last / l.price - 1)}">${pct(last / l.price - 1, 1)}</td></tr>`; }).join("")}</tbody>`;
+  $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
+    return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
+
+  EF = frontier(P);
+  const wl = w => P.es.map((e, i) => [e.ticker, w[i]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
+  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento</th><th>Volatilità</th><th>Sharpe</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
+  $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
+
+  let cov = 0, acc = 0;
+  const blocks = order.map(i => { const e = P.es[i], fc = FC[e.ticker], ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
+    if (m != null) { cov += P.cw[i]; acc += P.cw[i] * m; }
+    return `<div class="fb"><h4><span>${e.ticker}<em>${fc ? esc(fc.ref) : esc(e.index)}</em></span><span class="n ${cls(m)}">${m == null ? "—" : pct(m, 1)}</span></h4>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione pubblica trovata</p>'}</div>`; });
+  const tot = cov ? acc / cov : null;
+  $("pf-fc").innerHTML = blocks.join("") + `<div class="fb-sum"><span>Atteso sul portafoglio <span class="k">(copre ${fmt(cov * 100, 0)}%)</span></span><span class="n ${cls(tot)}">${tot == null ? "—" : pct(tot, 1)}</span></div>`;
+
+  $("pf-src").innerHTML = [
+    `Prezzi · ${nReal ? link("https://finance.yahoo.com", "Yahoo Finance ↗") + " (link per ETF nella composizione)" : "simulati; per quelli reali esegui scripts/fetch_prices.py"}`,
+    `Anagrafiche · ${P.es.map(e => link(justEtf(e.isin), e.ticker + " ↗")).join(" ")}`,
+    "Previsioni · link in ogni riga; media semplice delle banche per indice",
+    "Prezzi nella valuta di quotazione, senza conversione",
+  ].map(x => `<li>${x}</li>`).join("");
+
+  $("io-del").hidden = !!pfCur.sample;
+  drawPfNav(); drawEF();
+}
+function fillSel() { $("pf-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").value = pfCur.id; }
+function showView(v) {
+  $("v-port").hidden = v !== "port"; $("v-search").hidden = v !== "search";
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  try { history.replaceState(null, "", v === "port" ? "#portafoglio" : "#cerca"); } catch {}
+  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); });
+}
+function applyPrices() {
+  const PR = window.PRICES; if (!PR || !PR.series) return;
+  for (const [isin, s] of Object.entries(PR.series)) {
+    const e = byIsin(isin); if (!e || !s.t || s.t.length < 50) continue;
+    e.s = { t: s.t, v: s.v }; e.real = true; e.src = s.source; e.sym = s.symbol; e.r1 = retSince(e.s, back(12)); e.r3 = retSince(e.s, back(0, 3), true);
+  }
+}
+
 /* ---------- Eventi ---------- */
 $("list").addEventListener("click", ev => { const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
 $("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
@@ -544,5 +984,24 @@ $("fbtn").addEventListener("click", ev => {
 });
 document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELECT/.test(document.activeElement.tagName)) { ev.preventDefault(); $("q").focus(); } });
 
-render();
+/* ---------- Avvio ---------- */
+applyPrices(); loadUser(); allPf(); pfCur = PFLIST[0]; fillSel();
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showView(b.dataset.v)));
+$("pf-sel").addEventListener("change", ev => { pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); renderPf(); });
+$("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
+$("pf-comp").addEventListener("click", ev => { const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin); });
+$("io-exp").addEventListener("click", exportJson);
+$("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
+$("io-imp").addEventListener("click", () => importJson($("json-box").value));
+$("io-file").addEventListener("change", ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("json-box").value = r.result; importJson(r.result); }; r.readAsText(f); ev.target.value = ""; });
+$("io-del").addEventListener("click", ev => {
+  const b = ev.currentTarget;
+  if (b.dataset.arm !== "1") { b.dataset.arm = "1"; b.textContent = "Conferma"; setTimeout(() => { b.dataset.arm = ""; b.textContent = "Elimina"; }, 3000); return; }
+  b.dataset.arm = ""; b.textContent = "Elimina";
+  USER = USER.filter(u => u.id !== pfCur.id); saveUser(); allPf(); pfCur = PFLIST[0]; fillSel(); renderPf(); ioMsg("Portafoglio eliminato");
+});
+let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); } }, 120); });
+
+render(); renderPf();
+showView(location.hash === "#cerca" ? "search" : "port");
 </script>
