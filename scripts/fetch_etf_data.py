@@ -124,8 +124,46 @@ def parse(isin):
     return out
 
 
+def extra_targets():
+    """ISIN monitorati oltre ai 14 di prices.js: watchlist.txt più i primi per patrimonio del catalogo (la stessa scelta di fetch_series.py)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import fetch_series as fs
+    cat = fs.catalog()
+    top = [i for i, _ in sorted(cat.items(), key=lambda kv: -kv[1]["aum"]) if i not in ISINS][:150]
+    return [i for i in dict.fromkeys(fs.watchlist() + top) if i not in ISINS]
+
+
+def run_extra(missing_only):
+    """Scrive data/d/ISIN.js (indice, titoli principali, paesi, settori) per gli ETF monitorati."""
+    out = Path(__file__).resolve().parent.parent / "data" / "d"
+    out.mkdir(parents=True, exist_ok=True)
+    todo = [i for i in extra_targets() if not (missing_only and (out / f"{i}.js").exists())]
+    print(f"Dettagli da scaricare: {len(todo)}")
+    deadline = time.time() + 5 * 3600
+    ok = 0
+    for n, isin in enumerate(todo, 1):
+        if time.time() > deadline:
+            print("Tempo esaurito: riprendo alla prossima esecuzione"); break
+        try:
+            d = parse(isin)
+            body = {k: d[k] for k in ("index", "n", "top", "countries", "sectors", "holdingsDate", "source") if k in d}
+            if not any(k in body for k in ("index", "top", "countries", "sectors")):
+                print(f"[{n}/{len(todo)}] {isin}: nessun dato"); continue
+            tmp = out / f"{isin}.tmp"
+            tmp.write_text(f'window.DX=window.DX||{{}};window.DX["{isin}"]=' + json.dumps(body, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
+            tmp.replace(out / f"{isin}.js")
+            ok += 1
+            print(f"[{n}/{len(todo)}] {isin}: indice {body.get('index')}, titoli {len(body.get('top', []))}, paesi {len(body.get('countries', []))}, settori {len(body.get('sectors', []))}")
+        except Exception as e:
+            print(f"[{n}/{len(todo)}] {isin}: errore {e}")
+        time.sleep(1.5)
+    print(f"Scritti {ok} file in {out}")
+
+
 def main():
     args = sys.argv[1:]
+    if "--extra" in args:
+        return run_extra("--missing" in args)
     only = set(args[args.index("--isins") + 1].split(",")) if "--isins" in args else None
     path = Path(__file__).resolve().parent.parent / "etfdata.js"
     data = {}

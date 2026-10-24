@@ -22,12 +22,14 @@ jobs:
           ref: main
       - name: Scarica i prezzi
         run: python3 scripts/fetch_prices.py
+      - name: Bid e ask
+        run: python3 scripts/fetch_quotes.py || echo "bid/ask non aggiornati"
       - name: Salva su main
         run: |
-          if git diff --quiet -- prices.js; then echo "Nessuna novità"; exit 0; fi
+          if git diff --quiet -- prices.js quotes.js; then echo "Nessuna novità"; exit 0; fi
           git config user.name "myMoney prezzi"
           git config user.email "actions@users.noreply.github.com"
-          git add prices.js
+          git add prices.js quotes.js
           git commit -m "Prezzi aggiornati"
           git pull --rebase origin main
           git push origin HEAD:main

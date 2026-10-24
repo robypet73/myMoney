@@ -26,6 +26,8 @@ jobs:
           ref: main
       - name: Scarica le serie
         run: python3 scripts/fetch_series.py
+      - name: Scarica i dettagli degli ETF nuovi
+        run: python3 scripts/fetch_etf_data.py --extra --missing
       - name: Salva su main
         run: |
           git add data

@@ -22,12 +22,14 @@ jobs:
           ref: main
       - name: Scarica i dati
         run: python3 scripts/fetch_etf_data.py
+      - name: Scarica i dettagli degli ETF monitorati
+        run: python3 scripts/fetch_etf_data.py --extra
       - name: Salva su main
         run: |
-          if git diff --quiet -- etfdata.js; then echo "Nessuna novità"; exit 0; fi
+          git add -A data etfdata.js
+          if git diff --cached --quiet; then echo "Nessuna novità"; exit 0; fi
           git config user.name "myMoney dati"
           git config user.email "actions@users.noreply.github.com"
-          git add etfdata.js
           git commit -m "Dati ETF aggiornati"
           git pull --rebase origin main
           git push origin HEAD:main
