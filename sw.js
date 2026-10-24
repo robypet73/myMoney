@@ -1,6 +1,6 @@
 // Service worker di myMoney: rende l'app installabile e utilizzabile anche senza rete.
 // Aumenta VERSION quando cambi l'elenco dei file in CORE.
-const VERSION = "mymoney-v1";
+const VERSION = "mymoney-v2";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
