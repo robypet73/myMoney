@@ -1,0 +1,33 @@
+name: Aggiorna prezzi
+
+# Scarica i prezzi degli ETF da Yahoo Finance e aggiorna prices.js su main (la pagina su GitHub Pages lo legge).
+on:
+  schedule:
+    - cron: "*/30 6-21 * * 1-5"   # ogni 30 minuti nei giorni di borsa (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prezzi
+  cancel-in-progress: false
+
+jobs:
+  prezzi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Scarica i prezzi
+        run: python3 scripts/fetch_prices.py
+      - name: Salva su main
+        run: |
+          if git diff --quiet -- prices.js; then echo "Nessuna novità"; exit 0; fi
+          git config user.name "myMoney prezzi"
+          git config user.email "actions@users.noreply.github.com"
+          git add prices.js
+          git commit -m "Prezzi aggiornati"
+          git pull --rebase origin main
+          git push origin HEAD:main
