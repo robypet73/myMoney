@@ -289,6 +289,18 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .at .lotform input { flex: 1 1 110px; }
 .atk { flex: 0 0 56px; }
 .at .io { margin-top: 4px; }
+.atetf { display: grid; gap: 8px; }
+.atetf h4 { margin: 0; font-size: var(--fs-m); font-weight: 500; }
+.atetf h4 .wl { display: block; font-family: var(--f); font-weight: 400; font-size: var(--fs-s); color: var(--soft); margin-top: 2px; }
+.atetf .movs { display: grid; gap: 8px; }
+.movrow { margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--hair); align-items: center; }
+.at .lotform .mv-x { background: none; color: var(--soft); border: 0; padding: 0 4px; margin-left: auto; }
+.at .movrow .mv-op { flex: 0 0 122px; }
+.at .movrow .mv-q { flex: 0 0 84px; }
+.at .movrow .mv-d { flex: 0 0 142px; }
+.at .movrow .mv-m { flex: 0 0 150px; }
+.at .movrow .mv-p { flex: 0 0 96px; }
+#movs { margin: auto; height: fit-content; width: min(560px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
 /* Allineamento: stessa altezza per tutti i controlli, righe a due linee allineate sulla linea di base */
 .newpf, .io button, .io .btn, .ghost, .primary, .rbctl button, .lotform button, .capr select, .rbctl select, .lotform select, .lotform input, .rn input[type="number"], .rn input[type="date"], .at select, .filters select, .clear, .tabs button { box-sizing: border-box; height: var(--ctl-h); padding-block: 0; display: inline-flex; align-items: center; }
 .newpf, .io button, .io .btn, .ghost, .primary, .rbctl button, .lotform button { padding-inline: 16px; }
@@ -363,7 +375,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.002</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.003</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -450,8 +462,8 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <input id="op-etf" list="etf-dl" placeholder="ETF (nome o ISIN)" autocomplete="off" aria-label="ETF">
       <input id="op-date" type="date" aria-label="Data" required>
       <input id="op-qty" type="number" min="0" step="any" placeholder="Quote" aria-label="Numero di quote" required>
-      <select id="op-mode" aria-label="Tipo di prezzo"><option value="u">Prezzo per quota</option><option value="t">Prezzo totale</option></select>
-      <input id="op-price" type="number" min="0" step="0.001" placeholder="€ per quota" aria-label="Prezzo" required>
+      <select id="op-mode" aria-label="Tipo di prezzo"><option value="u">Prezzo medio</option><option value="t">Prezzo totale</option></select>
+      <input id="op-price" type="number" min="0" step="0.001" placeholder="€ medio per quota" aria-label="Prezzo" required>
       <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel" hidden>Annulla</button>
     </form>
     <p class="fc-note" id="op-name"></p>
@@ -515,6 +527,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </form></dialog>
 <dialog id="info" aria-labelledby="info-title"><div class="d" id="info-body"></div></dialog>
 <dialog id="addto" aria-labelledby="at-title"><form id="at-form" class="at"></form></dialog>
+<dialog id="movs" aria-labelledby="mv-title"><form id="mv-form" class="at"></form></dialog>
 
 <script src="prices.js"></script>
 <script src="etfdata.js"></script>
@@ -1627,6 +1640,55 @@ function addPos(pf, isins) {
   fresh.forEach(i => pf.positions.push(mkPos(i)));
   return fresh.length;
 }
+/* ---------- Movimenti: acquisti e vendite di un ETF (data, quote, prezzo medio o totale) ---------- */
+const movRow = (t = {}) => {
+  const buy = !(t.qty < 0);
+  return `<div class="lotform movrow"><select class="mv-op" aria-label="Operazione"><option value="1"${buy ? " selected" : ""}>Acquisto</option><option value="-1"${buy ? "" : " selected"}>Vendita</option></select>
+    <input class="mv-q" type="number" min="0" step="any" placeholder="Quote" value="${t.qty ? Math.abs(t.qty) : ""}" aria-label="Numero di quote">
+    <input class="mv-d" type="date" max="${ymd(Date.now())}" value="${t.date || ymd(Date.now())}" aria-label="Data">
+    <select class="mv-m" aria-label="Tipo di prezzo"><option value="u">Prezzo medio</option><option value="t">Prezzo totale</option></select>
+    <input class="mv-p" type="number" min="0" step="0.001" placeholder="€" value="${t.price ? (+t.price).toFixed(3) : ""}" aria-label="Prezzo">
+    <button type="button" class="del mv-x" aria-label="Rimuovi movimento" title="Rimuovi">${ICO_X}</button></div>`;
+};
+const movBlock = (e, txs = []) => `<div class="atetf" data-isin="${e.isin}"><h4 class="n">${esc(e.ticker === e.isin ? e.isin : e.ticker)}<span class="wl nmx">${esc(e.name)}</span></h4><div class="movs">${(txs.length ? txs : [{}]).map(movRow).join("")}</div><button type="button" class="ghost mv-add">+ Movimento</button></div>`;
+// legge i movimenti di un blocco: restituisce { txs } oppure { err }; le righe senza quote né prezzo si ignorano
+function readMovs(block) {
+  const e = byIsin(block.dataset.isin), txs = [];
+  for (const r of block.querySelectorAll(".movrow")) {
+    const sgn = +r.querySelector(".mv-op").value, q = +r.querySelector(".mv-q").value, d = r.querySelector(".mv-d").value, tot = r.querySelector(".mv-m").value === "t", raw = r.querySelector(".mv-p").value;
+    if (!q && raw === "") continue;
+    if (!(q > 0)) return { err: `${e.ticker}: indica il numero di quote` };
+    if (!d || isNaN(dateMs(d))) return { err: `${e.ticker}: data non valida` };
+    if (dateMs(d) > Date.now() + DAY) return { err: `${e.ticker}: la data è nel futuro` };
+    if (e.inception && d < e.inception) return { err: `${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}` };
+    const price = raw === "" ? (e.s ? +priceAt(e, dateMs(d)).toFixed(3) : 0) : tot ? +raw / q : +raw;
+    if (!(price > 0)) return { err: `${e.ticker}: indica il prezzo (medio per quota o totale)` };
+    txs.push({ date: d, price: +price.toFixed(6), qty: sgn * q });
+  }
+  return { txs: txs.sort(byDate) };
+}
+document.addEventListener("click", ev => {
+  const add = ev.target.closest(".mv-add"), x = ev.target.closest(".mv-x");
+  if (add) add.closest(".atetf").querySelector(".movs").insertAdjacentHTML("beforeend", movRow());
+  else if (x) x.closest(".movrow").remove();
+});
+// Modifica dei movimenti di un ETF già in portafoglio: si salva con «Salva»
+function openMovs(isin) {
+  const e = byIsin(isin), x = pfCur.positions.find(p => p.isin === isin); if (!e || !x) return;
+  $("mv-form").innerHTML = `<div class="d-top"><h2 id="mv-title">Movimenti</h2><button type="button" class="icon close" id="mv-x" aria-label="Chiudi">×</button></div>
+    ${movBlock(e, x.txs)}
+    <p class="fc-note">Prezzo medio per quota oppure prezzo totale; il prezzo vuoto usa quello di mercato del giorno.${e.s ? "" : " Senza prezzi scaricati l'ETF resta fuori dal calcolo."}</p>
+    <div class="io"><button type="submit" class="primary">Salva</button><button type="button" class="ghost" id="mv-cancel">Annulla</button><span id="mv-msg" class="fc-note"></span></div>`;
+  $("mv-form").dataset.isin = isin; $("movs").showModal();
+}
+$("movs").addEventListener("click", ev => { if (ev.target.id === "mv-cancel" || ev.target.closest("#mv-x") || ev.target === $("movs")) $("movs").close(); });
+$("movs").addEventListener("submit", ev => {
+  ev.preventDefault(); const isin = $("mv-form").dataset.isin, res = readMovs($("mv-form").querySelector(".atetf")), bad = t => { $("mv-msg").textContent = t; $("mv-msg").className = "fc-note err"; };
+  if (res.err) return bad(res.err);
+  const err = editPf(c => { c.positions.find(p => p.isin === isin).txs = res.txs; }, true);
+  if (err) return bad(err);
+  $("movs").close(); msg("Movimenti salvati");
+});
 // Scelta dell'ETF tra tutto il catalogo: l'elenco dei suggerimenti segue ciò che si scrive.
 function etfFind(q, n = 40) {
   const w = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -1641,8 +1703,8 @@ function renderPos() {
   const pf = pfCur, have = new Set(pf.positions.map(x => x.isin)), W = pf.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0);
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
   fillDl(""); $("dr-norm").hidden = !W;
-  $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x);
-    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
+  $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità iniziale${ib("pos")}</th><th>Movimenti</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x);
+    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="n"><button type="button" class="ghost mvb">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " movimento" : " movimenti") : "+ Movimento"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
   const noPx = pf.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s);
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
   $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, primo prezzo disponibile` : "") + (noPx.length ? `${W || clamp ? "<br>" : ""}Senza prezzi, esclusi dal calcolo: ${noPx.map(e => esc(e.ticker)).join(", ")}${noPx.every(e => e.tried) ? ` · aggiungili a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : " · carico…"}` : "");
@@ -1707,13 +1769,14 @@ function openAddTo(isins) {
   AT = isins.slice();
   const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
   $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
-    <select id="at-pf" aria-label="Portafoglio">${opts}</select><div id="at-body"></div>
+    <select id="at-pf" aria-label="Portafoglio">${opts}</select>
+    <div class="newf" id="at-new" hidden><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>
+    <div id="at-body">${AT.map(i => movBlock(byIsin(i))).join("")}</div>
+    <p class="fc-note">Aggiungi acquisti e vendite: data, quote e prezzo medio o totale. Senza movimenti l'ETF entra senza quote</p>
     <p class="fc-note" id="at-px"></p>
     <div class="io"><button type="submit" class="primary">Aggiungi</button><button type="button" class="ghost" id="at-cancel">Annulla</button><span id="at-msg" class="fc-note"></span></div>`;
   const body = () => {
-    $("at-body").innerHTML = ($("at-pf").value === "@new" ? '<div class="newf"><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>' : "")
-      + '<p class="fc-note">Numero di quote. Con la data è un acquisto; senza data è la quantità iniziale</p>'
-      + AT.map(i => { const e = byIsin(i); return `<div class="lotform atrow" data-isin="${i}"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" placeholder="Quote" aria-label="Numero di quote ${e.ticker}"><input type="date" class="at-d" max="${ymd(Date.now())}" aria-label="Data acquisto ${e.ticker} (facoltativa)"><select class="at-m" aria-label="Tipo di prezzo ${e.ticker}"><option value="u">Prezzo per quota</option><option value="t">Prezzo totale</option></select><input type="number" min="0" step="0.001" class="at-p" placeholder="€ (facoltativo)" aria-label="Prezzo ${e.ticker} (facoltativo)"></div>`; }).join("");
+    $("at-new").hidden = $("at-pf").value !== "@new";
   };
   $("at-pf").addEventListener("change", body); body();
   $("addto").showModal();
@@ -1724,25 +1787,14 @@ $("addto").addEventListener("click", ev => { if (ev.target.id === "at-cancel" ||
 $("addto").addEventListener("submit", ev => {
   ev.preventDefault();
   const v = $("at-pf").value, bad = t => { $("at-msg").textContent = t; $("at-msg").className = "fc-note err"; };
-  const rows = [...document.querySelectorAll(".atrow")].map(r => ({ isin: r.dataset.isin, q: r.querySelector(".at-q").value, m: r.querySelector(".at-m").value, d: r.querySelector(".at-d").value, p: r.querySelector(".at-p").value }));
   const nm = ($("at-name") && $("at-name").value.trim()) || "", ds = ($("at-descr") && $("at-descr").value.trim()) || "";
   const t0 = v === "@new" ? null : PFLIST.find(p => p.id === v), c = t0 ? clonePf(t0) : mkPf({ id: newId(), name: nm || `Portafoglio ${USER.length + 1}`, description: ds });
-  if (!rows.some(r => r.q !== "" || r.d)) addPos(c, AT);
-  else for (const r of rows) {
-    const e = byIsin(r.isin), q = +r.q; let x = c.positions.find(p => p.isin === r.isin);
-    if (!x) c.positions.push((x = mkPos(r.isin)));
-    if (r.d) {
-      if (!(q > 0)) return bad(`${e.ticker}: indica la quantità`);
-      if (isNaN(dateMs(r.d)) || dateMs(r.d) > Date.now() + DAY) return bad("Data non valida");
-      if (r.d < e.inception) return bad(`${e.ticker} non era ancora stato lanciato`);
-      const price = r.p ? +(r.m === "t" ? +r.p / q : +r.p).toFixed(6) : +priceAt(e, dateMs(r.d)).toFixed(3);
-      if (!(price > 0)) return bad("Prezzo non valido");
-      x.txs.push({ date: r.d, price, qty: q }); x.txs.sort(byDate);
-    } else if (r.q !== "") {
-      if (!(q >= 0)) return bad("La quantità non può essere negativa");
-      x.qty = q; x.weight = null;
-    }
+  for (const blk of document.querySelectorAll("#at-body .atetf")) {
+    const res = readMovs(blk); if (res.err) return bad(res.err);
+    let x = c.positions.find(p => p.isin === blk.dataset.isin); if (!x) c.positions.push((x = mkPos(blk.dataset.isin)));
+    x.txs = [...x.txs, ...res.txs].sort(byDate);
   }
+  { const se = sellErr(pfLots(c)); if (se) return bad(se.charAt(0).toUpperCase() + se.slice(1)); }
   let target;
   if (t0) { target = ownPf(t0); target.positions = c.positions; } else { USER.unshift(c); target = c; }
   $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showView("port");
@@ -1763,7 +1815,7 @@ const GL_LINKS = {
 const GL = {
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
   inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra le operazioni con data, quantità e prezzo reali. Una vendita riduce l'investito. Una quantità senza data è simulata: si considera aperta alla data «Da» al prezzo di quel giorno.", ref: [] },
-  pos: { t: "Posizioni", what: "Per ogni ETF indichi la quantità: in quote (assoluta) o in percentuale dell'importo. In più puoi registrare operazioni di acquisto e di vendita, anche più di una, ciascuna con data, prezzo e quantità.", use: "Senza operazioni il portafoglio è una simulazione (draft). Con le operazioni è un portafoglio acquistato con storico reale.", how: "La quantità iniziale si considera aperta alla data «Da» al prezzo di quel giorno, poi si sommano le operazioni. Una vendita non può superare le quote possedute. Il JSON del portafoglio contiene ISIN, quantità o peso e le operazioni.", ref: [] },
+  pos: { t: "Posizioni", what: "Per ogni ETF indichi la quantità: in quote (assoluta) o in percentuale dell'importo. In più, con «Movimenti», registri acquisti e vendite, anche più di uno: per ciascuno data, quote e prezzo medio per quota oppure prezzo totale.", use: "Senza operazioni il portafoglio è una simulazione (draft). Con le operazioni è un portafoglio acquistato con storico reale.", how: "La quantità iniziale si considera aperta alla data «Da» al prezzo di quel giorno, poi si sommano le operazioni. Una vendita non può superare le quote possedute. Il JSON del portafoglio contiene ISIN, quantità o peso e le operazioni.", ref: [] },
   utile: { t: "Utile", what: "Valore attuale meno investito, in euro. Include anche quanto hai già incassato con le vendite.", use: "Mostra il guadagno o la perdita complessivi in euro.", how: "Non è un rendimento in percentuale: per quello guarda i rendimenti per periodo.", ref: [] },
   ann: { t: "Rendimento annuo", what: "Rendimento composto riportato su base annua, calcolato in modo da non risentire di quando versi o vendi (a pesi temporali).", use: "Permette di confrontare portafogli e indici con durate diverse.", how: "Compare dopo 6 mesi di storia: prima sarebbe poco significativo. Confrontalo con quello di un indice di riferimento.", ref: [["Azionario globale, lungo periodo (ordine di grandezza storico)", "6–8% annuo"], ["Obbligazionario, lungo periodo", "2–4% annuo"], ["Nota", "non sono previsioni"]] },
   twr: { t: "Rendimenti per periodo", what: "Oggi, settimana, mese, anno, anno precedente e dall'inizio. La percentuale ignora quando hai versato o venduto; l'importo in euro è il guadagno effettivo del periodo.", use: "Mostra come sta andando il portafoglio sui diversi orizzonti.", how: "Oggi parte dalla chiusura precedente, settimana dal lunedì, mese dal giorno 1, anno dal 1° gennaio. Se hai iniziato dopo, il periodo parte dal tuo primo acquisto.", ref: [["Periodi brevi", "molto variabili, poco indicativi"], ["Confronto utile", "con l'indice dello stesso periodo"]] },
@@ -1894,7 +1946,7 @@ const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className
 function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
 function opSuggest() {
   const e = byIsin(resolveEtf($("op-etf").value)), d = $("op-date").value, p = $("op-price"), tot = $("op-mode").value === "t";
-  p.placeholder = tot ? "€ totale" : "€ per quota"; p.step = "0.001";
+  p.placeholder = tot ? "€ totale" : "€ medio per quota"; p.step = "0.001";
   if (!e || !e.s || !d || isNaN(dateMs(d)) || p.dataset.touched) return;
   const u = priceAt(e, dateMs(d)), q = +$("op-qty").value;
   p.value = tot ? (q > 0 ? (u * q).toFixed(3) : "") : u.toFixed(3);
@@ -1915,6 +1967,7 @@ $("pos-tbl").addEventListener("change", ev => {
   err ? msg(err, true) : msg("");
 });
 $("pos-tbl").addEventListener("click", ev => {
+  const mb = ev.target.closest(".mvb"); if (mb) return openMovs(mb.closest("tr").dataset.isin);
   const b = ev.target.closest(".del"); if (!b) return;
   const x = posOf(b); if (x.txs.length && !confirm(`Rimuovere ${byIsin(x.isin).ticker} e le sue ${x.txs.length} operazioni?`)) return;
   const err = editPf(c => { c.positions = c.positions.filter(p => p.isin !== x.isin); }); err ? msg(err, true) : msg("");
