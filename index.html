@@ -507,13 +507,14 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 <dialog id="addto" aria-labelledby="at-title"><form id="at-form" class="at"></form></dialog>
 
 <script src="prices.js"></script>
+<script src="etfdata.js"></script>
 <script>
 const TODAY = new Date(2026, 9, 23, 12);
 const DAY = 864e5;
 
 // Dati dimostrativi: anagrafiche approssimative, NAV storico simulato.
 // TER, patrimonio (€ Mln), replica, data di lancio e domicilio verificati su justETF il 24 ott 2026 (link nel dettaglio); posizioni, ripartizioni e numero di titoli sono indicativi.
-const VERIFIED = "24 ott 2026";
+const VERIFIED = window.ETFDATA && window.ETFDATA.generated ? new Date(window.ETFDATA.generated).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" }) : "24 ott 2026";
 const ETFS = [
   { name: "iShares Core MSCI World UCITS ETF USD (Acc)", ticker: "SWDA", isin: "IE00B4L5Y983", provider: "iShares", asset: "Azionario", region: "Globale", focus: "Large & mid cap", index: "MSCI World", ter: 0.20, aum: 132896, cur: "USD", repl: "Fisica a campione", dist: "Accumulazione", dom: "Irlanda", inception: "2009-09-25", nav: 108.42, mu: 0.095, sig: 0.15, n: 1395,
     top: [["Apple",4.9],["NVIDIA",4.8],["Microsoft",4.4],["Amazon",2.7],["Meta Platforms",1.8],["Alphabet A",1.5],["Broadcom",1.3],["Alphabet C",1.3],["Tesla",1.1],["JPMorgan Chase",0.9]],
@@ -672,6 +673,19 @@ const EXCH = {
 };
 // Settori: quelli con peso pari o superiore al 10% (dati indicativi); solo per gli ETF azionari e immobiliari
 const sectorsOf = e => (e.b2 && e.b2[0] === "Settori" ? e.b2[1].filter(([n, w]) => w >= 10 && n !== "Altri").map(([n]) => n) : []);
+// Anagrafica e composizione scaricate da justETF (etfdata.js, aggiornato dal workflow): quando ci sono sostituiscono i valori scritti sopra.
+(function applyEtfData() {
+  const D = window.ETFDATA; if (!D || !D.etfs) return;
+  for (const [isin, d] of Object.entries(D.etfs)) {
+    const e = ETFS.find(x => x.isin === isin); if (!e) continue;
+    ["ter", "aum", "dist", "dom", "inception", "cur", "index", "n"].forEach(k => { if (d[k] != null) e[k] = d[k]; });
+    if (d.repl && d.repl !== "Fisica" && !/ETC/.test(e.repl)) e.repl = d.repl;
+    if (d.top && d.top.length) e.top = d.top;
+    if (d.countries && e.b1 && e.b1[0] === "Paesi") e.b1 = ["Paesi", d.countries];
+    if (d.sectors && e.b2 && e.b2[0] === "Settori") e.b2 = ["Settori", d.sectors];
+    e.fromJe = true;
+  }
+})();
 ETFS.forEach(e => { e.exch = EXCH[e.ticker] || []; e.sector = sectorsOf(e); });
 
 /* ---------- Filtri a selezione multipla e a intervallo ---------- */
@@ -879,7 +893,7 @@ function openDetail(isin) {
 
     <section class="sec"><h3>Dati</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
-      <p class="fc-note">Verificato su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio. Posizioni e ripartizioni sono indicative.</p>
+      <p class="fc-note">${window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${VERIFIED}: TER, patrimonio, replica, lancio. Posizioni e ripartizioni sono indicative.</p>
     </section>
 
     <div class="cols2">
