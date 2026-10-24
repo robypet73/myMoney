@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scarica da Yahoo Finance le serie di prezzi (5 anni, giornaliere) degli ETF del catalogo che non sono tra i 14 di prices.js.
+"""Scarica da Yahoo Finance le serie di prezzi (storia completa, giornaliere) degli ETF del catalogo che non sono tra i 14 di prices.js.
 
 Quali ETF: quelli elencati in watchlist.txt (un ISIN per riga) più i primi N per patrimonio del catalogo (catalog.js).
 Scrive un file per ISIN in data/p/ISIN.js (letto dalla pagina solo quando serve) e ricorda il simbolo Yahoo scelto in data/symbols.json.
@@ -46,7 +46,7 @@ def to_eur(cur, t, v):
     if base == "EUR":
         return t, [round(x * scale, 4) for x in v], None
     if base not in FX:
-        _, ft, fv, _ = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/EUR{base}=X?range=5y&interval=1d"))
+        _, ft, fv, _ = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/EUR{base}=X?range=max&interval=1d"))
         FX[base] = (ft, fv); time.sleep(0.3)
     ft, fv = FX[base]
     out, j = [], 0
@@ -100,7 +100,7 @@ def main():
         try:
             known = syms.get(isin)
             if known and known.get("symbol"):
-                cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?range=5y&interval=1d"))
+                cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?range=max&interval=1d"))
                 sym = known["symbol"]
                 if len(t) < 50:
                     raise ValueError("pochi dati")
@@ -108,7 +108,7 @@ def main():
                 if not force and known and known.get("failed") and time.time() - known["failed"] < 30 * 86400:
                     continue  # già provato di recente senza successo
                 tk = info.get("ticker")
-                found = fp.best_listing(isin, None if tk in (None, "-", isin) else tk, rng="5y")
+                found = fp.best_listing(isin, None if tk in (None, "-", isin) else tk, rng="max")
                 if not found:
                     syms[isin] = {"symbol": None, "failed": int(time.time())}
                     print(f"[{n}/{len(chosen)}] {isin} {info.get('name', '')[:40]}: nessuna quotazione")

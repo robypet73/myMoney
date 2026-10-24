@@ -9,6 +9,10 @@ on:
     branches: [main]
     paths: [watchlist.txt]
   workflow_dispatch:
+    inputs:
+      top:
+        description: "Quanti tra i più grandi aggiornare oltre alla watchlist"
+        default: "150"
 
 permissions:
   contents: write
@@ -26,7 +30,9 @@ jobs:
         with:
           ref: main
       - name: Scarica le serie
-        run: python3 scripts/fetch_series.py --top ${{ github.event.schedule == '11 21 * * 0' && '150' || '0' }}
+        env:
+          TOP: ${{ github.event_name == 'workflow_dispatch' && inputs.top || (github.event.schedule == '11 21 * * 0' && '150' || '0') }}
+        run: python3 scripts/fetch_series.py --top "$TOP"
       - name: Scarica i dettagli degli ETF nuovi
         run: python3 scripts/fetch_etf_data.py --extra --missing
       - name: Salva su main
