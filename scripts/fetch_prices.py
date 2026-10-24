@@ -27,7 +27,7 @@ ISINS = {
 SYMBOLS = {}  # ISIN -> simbolo Yahoo (o elenco di simboli), per forzare la borsa
 # Quotazioni in EUR da provare dopo il risultato della ricerca: il ticker con i suffissi Yahoo di Borsa Italiana, Amsterdam, Parigi e Xetra, più alcuni ticker propri di Xetra.
 SUFFIXES = (".MI", ".AS", ".PA", ".DE")
-EXTRA = {"IE00B4L5Y983": ["EUNL.DE"], "IE00BKM4GZ66": ["IS3N.DE"], "IE00B5BMR087": ["SXR8.DE"], "IE00BYZK4552": ["2B76.DE"], "IE00B1FZS350": ["IQQP.DE"],
+EXTRA = {"IE00B4L5Y983": ["EUNL.DE"], "IE00BKM4GZ66": ["IS3N.DE"], "IE00B5BMR087": ["SXR8.DE"], "IE00BYZK4552": ["2B76.DE"], "IE00B1FZS350": ["IQQ6.DE"],
          "IE00B4WXJJ64": ["EUNH.DE"], "IE00B579F325": ["8PSG.DE"], "IE00BK5BQT80": ["VWCE.DE"]}
 RANGE = "10y"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; myMoney/1.0)"}
@@ -52,14 +52,18 @@ def candidates(isin):
 
 def best_listing(isin):
     """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
-    found = []
+    found, ref = [], None
     for sym in candidates(isin):
         try:
             cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={RANGE}&interval=1d"))
         except Exception:
             continue
         time.sleep(0.3)
+        key = (last.get("name") or "").lower().split("ucits")[0].strip()  # stesso fondo = stesso nome fino a «UCITS»
+        if ref is not None and key != ref:
+            print(f"  {sym}: fondo diverso ({last.get('name')}), scartato"); continue
         if len(t) >= 50:
+            ref = ref if ref is not None else key
             found.append((sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]}")
             if cur == "EUR":
                 break
