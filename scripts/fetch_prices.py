@@ -40,6 +40,36 @@ def get_json(url):
         return json.load(r)
 
 
+_SESSION = {}
+
+
+def quotes(symbols):
+    """Bid, ask e orario di quotazione da Yahoo (servono cookie e crumb). Restituisce {simbolo: {bid, ask, qt}}; in caso di errore, {}."""
+    out = {}
+    try:
+        if "op" not in _SESSION:
+            import http.cookiejar
+            op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+            try:
+                op.open(urllib.request.Request("https://fc.yahoo.com", headers=HEADERS), timeout=20).read()
+            except Exception:
+                pass  # la risposta è 404 ma imposta il cookie
+            crumb = op.open(urllib.request.Request("https://query1.finance.yahoo.com/v1/test/getcrumb", headers=HEADERS), timeout=20).read().decode()
+            _SESSION["op"], _SESSION["crumb"] = op, crumb
+        op, crumb = _SESSION["op"], _SESSION["crumb"]
+        syms = list(symbols)
+        for i in range(0, len(syms), 40):
+            url = "https://query1.finance.yahoo.com/v7/finance/quote?" + urllib.parse.urlencode({"symbols": ",".join(syms[i:i + 40]), "crumb": crumb, "fields": "bid,ask,bidSize,askSize,regularMarketTime,marketState"})
+            res = json.load(op.open(urllib.request.Request(url, headers=HEADERS), timeout=30))["quoteResponse"]["result"]
+            for r in res:
+                b, a = r.get("bid"), r.get("ask")
+                out[r["symbol"]] = {"bid": b if b and b > 0 else None, "ask": a if a and a > 0 else None, "qt": r.get("regularMarketTime")}
+            time.sleep(0.5)
+    except Exception as e:
+        print("quote bid/ask non disponibili:", e)
+    return out
+
+
 def candidates(isin, ticker=None):
     """Simboli Yahoo per l'ISIN: quello forzato in SYMBOLS, altrimenti i risultati della ricerca."""
     if isin in SYMBOLS:
@@ -112,6 +142,10 @@ def main():
         time.sleep(0.5)
     if not out:
         sys.exit("Nessun prezzo scaricato: prices.js non aggiornato")
+    q = quotes(s["symbol"] for s in out.values())
+    for s in out.values():
+        s["last"].update(q.get(s["symbol"], {}))
+    print(f"Bid/ask: {sum(1 for s in out.values() if s['last'].get('bid') and s['last'].get('ask'))} ETF su {len(out)}")
     path = Path(__file__).resolve().parent.parent / "prices.js"
     write(path, out)
     print(f"Scritto {path} ({len(out)} ETF su {len(ISINS)})")
@@ -125,6 +159,9 @@ def main():
                     s["last"] = parse_chart(payload)[3]; s["last"].pop("adv", None); s["last"].pop("name", None)
                 except Exception as e:
                     print(f"{isin}: errore {e}")
+            q = quotes(s["symbol"] for s in out.values())
+            for s in out.values():
+                s["last"].update(q.get(s["symbol"], {}))
             write(path, out)
             print(datetime.now().strftime("%H:%M:%S"), "aggiornato")
 

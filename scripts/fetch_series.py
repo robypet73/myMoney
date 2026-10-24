@@ -57,9 +57,9 @@ def to_eur(cur, t, v):
     return t, out, base
 
 
-def write(isin, sym, cur, name, t, v, last, orig=None):
+def write(isin, sym, cur, name, t, v, last, orig=None, quote=None):
     days = [int(x // 86400000) for x in t]
-    body = {"symbol": sym, "currency": cur, "fx": orig, "name": name, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "adv": last.get("adv"), "d": days, "v": v}
+    body = {"symbol": sym, "currency": cur, "fx": orig, "name": name, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "adv": last.get("adv"), **(quote or {}), "d": days, "v": v}
     OUT.mkdir(parents=True, exist_ok=True)
     tmp = OUT / f"{isin}.tmp"
     tmp.write_text(f'window.PX=window.PX||{{}};window.PX["{isin}"]=' + json.dumps(body, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
@@ -76,6 +76,22 @@ def main():
     syms = json.loads(SYMS.read_text(encoding="utf-8")) if SYMS.exists() else {}
     print(f"ETF da scaricare: {len(chosen)} (watchlist {len(watchlist())}, primi {top} per patrimonio)")
     ok = 0
+    batch = {}
+
+    def flush():
+        q = fp.quotes(b[0] for b in batch.values()) if batch else {}
+        for i, (sym, c, nm, t, v, last, orig, cur0) in batch.items():
+            qq = dict(q.get(sym) or {})
+            if orig and qq:  # bid e ask nella valuta di quotazione: stessa conversione dei prezzi
+                div = FX[orig][1][-1] / (0.01 if cur0 == "GBp" else 1.0)
+                for k in ("bid", "ask"):
+                    qq[k] = round(qq[k] / div, 4) if qq.get(k) else None
+            elif cur0 == "GBp" and qq:
+                for k in ("bid", "ask"):
+                    qq[k] = round(qq[k] * 0.01, 4) if qq.get(k) else None
+            write(i, sym, c, nm, t, v, last, orig, qq or None)
+        batch.clear()
+
     for n, isin in enumerate(chosen, 1):
         if time.time() > DEADLINE:
             print("Tempo esaurito: riprendo alla prossima esecuzione"); break
@@ -99,14 +115,16 @@ def main():
                 sym, cur, t, v, last = next((f for f in found if f[1] == "EUR"), found[0])
                 syms[isin] = {"symbol": sym}
             t, v, orig = to_eur(cur, t, v)
-            write(isin, sym, "EUR", last.pop("name", None), t, v, last, orig)
+            batch[isin] = (sym, "EUR", last.pop("name", None), t, v, last, orig, cur)
             ok += 1
             print(f"[{n}/{len(chosen)}] {isin} {sym} {cur}{" → EUR" if orig else ""}: {len(t)} giorni, ultimo {v[-1]}")
         except Exception as e:
             print(f"[{n}/{len(chosen)}] {isin}: errore {e}")
         time.sleep(0.4)
         if n % 25 == 0:
+            flush()
             SYMS.parent.mkdir(parents=True, exist_ok=True); SYMS.write_text(json.dumps(syms, indent=0, sort_keys=True), encoding="utf-8")
+    flush()
     SYMS.parent.mkdir(parents=True, exist_ok=True)
     SYMS.write_text(json.dumps(syms, indent=0, sort_keys=True), encoding="utf-8")
     print(f"Scritti {ok} file in {OUT}")

@@ -45,9 +45,9 @@ button, input, select { font: inherit; color: inherit; }
 .n { font-family: var(--m); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .pos { color: var(--up); }
 .neg { color: var(--down); }
-.wrap { max-width: 880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 960px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
-header .wrap { padding-block: 28px 0; }
+header .wrap { padding-block: 16px 0; }
 .logo { font-weight: 600; font-size: var(--fs-m); letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 8px; }
 .logo img { width: 28px; height: 28px; border-radius: 8px; display: block; }
 .logo i { font-style: normal; color: var(--soft); }
@@ -55,7 +55,7 @@ header .wrap { padding-block: 28px 0; }
 .logo .ver { font-family: var(--m); font-size: var(--fs-s); font-weight: 400; letter-spacing: 0; color: var(--soft); }
 
 /* Ricerca */
-.search { padding-block: 56px 0; }
+.search { padding-block: 24px 0; }
 .q { display: flex; align-items: center; gap: 14px; border-bottom: 1.5px solid var(--fg); }
 .q input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; padding: 10px 0; }
 .q input::placeholder { color: var(--soft); opacity: .6; }
@@ -163,7 +163,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
-.pf-sel { padding-block: 48px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.pf-sel { padding-block: 20px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
 .selwrap { position: relative; max-width: 100%; }
 .selwrap::after { content: ""; position: absolute; right: 4px; top: 50%; margin-top: -7px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
 .pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; height: 40px; padding: 0 36px 0 0; cursor: pointer; max-width: 100%; }
@@ -172,18 +172,20 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
 .badge.real i { background: var(--up); }
 
-.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 20px 16px; padding-top: 36px; }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 16px 16px; padding-top: 20px; }
 .kpi div { display: grid; gap: 4px; min-width: 0; }
 .kpi .n { font-size: var(--fs-m); }
+@media (max-width: 480px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kpi .k { white-space: nowrap; }
-.pf-sec { padding-top: 56px; }
+.pf-sec { padding-top: 32px; }
 .pf-sec .price { margin-bottom: 0; }
 .scroll { overflow-x: auto; }
 .chart.tall { height: 320px; }
 
-.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 104px 72px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 128px 72px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
 .hrow:last-child { border-bottom: 1px solid var(--hair); }
 .hrow .main { display: grid; gap: 3px; min-width: 0; }
+.hrow .v { white-space: nowrap; }
 .nm-btn { border: 0; background: none; padding: 0; text-align: left; font-weight: 500; font-size: var(--fs-m); letter-spacing: -.01em; cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nm-btn:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .id a { color: inherit; }
@@ -216,9 +218,9 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .newpf:hover { border-color: var(--fg); }
 .newpf[aria-pressed="true"] { border-color: var(--fg); }
 .pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 0 0; }
-.live { padding-top: 32px; }
+.live { padding-top: 16px; }
 .live .big { font-size: var(--fs-l); }
-.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 18px 16px; padding-top: 28px; }
+.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 14px 16px; padding-top: 16px; }
 .rets > div { display: grid; gap: 2px; min-width: 0; border-top: 1.5px solid var(--hair); padding-top: 10px; }
 .rets .n { font-size: var(--fs-m); letter-spacing: -.03em; }
 .rets .sub { font-family: var(--m); font-size: var(--fs-s); color: var(--soft); }
@@ -247,9 +249,8 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .primary { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 8px 18px; font-size: var(--fs-s); cursor: pointer; }
 .ghost { border: 1px solid var(--hair); background: none; color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-s); cursor: pointer; }
 .ghost:hover { border-color: var(--fg); }
-.kind { font-size: var(--fs-s); border: 1px solid var(--hair); border-radius: 99px; padding: 3px 10px; color: var(--soft); white-space: nowrap; }
-.kind.draft { color: var(--c3); border-color: var(--c3); }
 #pos-sec .lotform button { white-space: nowrap; }
+#pos-sec .scroll, #dim-sec .scroll { max-width: 720px; }
 .wi { width: 72px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); border-radius: 0; padding: 4px 0; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
 .rn input[type="number"], .rn input[type="date"] { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: var(--fs-m); }
 .i { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; padding: 0; border: 1px solid var(--soft); border-radius: 50%; background: none; color: var(--soft); font: 500 var(--fs-s)/1 var(--f); text-transform: none; letter-spacing: 0; cursor: pointer; vertical-align: -3px; }
@@ -270,13 +271,12 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
-.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 48px 16px; }
+.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; }
 .pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; display: flex; align-items: center; }
-.pfrow { display: grid; grid-template-columns: minmax(0, 1fr) auto 110px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
+.pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
 .pfrow:last-child { border-bottom: 1px solid var(--hair); }
 .pfrow .main { display: grid; gap: 3px; min-width: 0; }
 .pfrow .desc { color: var(--soft); font-size: var(--fs-s); line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pfrow .kind { margin: 0; }
 .pfact { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 700px) { .pfrow { grid-template-columns: minmax(0, 1fr) auto; } .pfrow .v { grid-column: 2; grid-row: 1; } .pfact { grid-column: 1 / -1; justify-content: flex-start; } }
 .pf-meta { display: grid; gap: 4px; padding-top: 12px; }
@@ -339,7 +339,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .srcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: var(--fs-s); color: var(--soft); }
 .srcs a { color: var(--fg); text-underline-offset: 3px; }
 @media (max-width: 600px) {
-  .hrow { grid-template-columns: minmax(0, 1fr) 52px 92px; gap: 12px; }
+  .hrow { grid-template-columns: minmax(0, 1fr) 52px 112px; gap: 10px; }
   .hrow .y1 { display: none; }
   .donuts { grid-template-columns: minmax(0, 1fr); }
   .chart.tall { height: 260px; }
@@ -363,7 +363,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.000</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.001</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -381,7 +381,6 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <button type="button" class="newpf" id="pf-exp">Scarica JSON</button>
       <button type="button" class="newpf" id="pf-del">Elimina</button>
     </div>
-    <span class="kind" id="kind"></span>
     <span class="badge" id="badge"></span>
   </section>
   <section class="pf-meta" id="pf-meta">
@@ -404,7 +403,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   </section>
 
   <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div>
-    <div class="io"><button type="button" id="to-draft">Duplica come draft</button></div></section>
+    <div class="io"><button type="button" id="to-draft">Duplica</button></div></section>
   <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
     <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
     <div class="scroll"><table class="eft pos" id="pos-tbl"></table></div>
@@ -450,8 +449,9 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <select id="op-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
       <input id="op-etf" list="etf-dl" placeholder="ETF (nome o ISIN)" autocomplete="off" aria-label="ETF">
       <input id="op-date" type="date" aria-label="Data" required>
-      <input id="op-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
-      <input id="op-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo" required>
+      <input id="op-qty" type="number" min="0" step="any" placeholder="Quote" aria-label="Numero di quote" required>
+      <select id="op-mode" aria-label="Tipo di prezzo"><option value="u">Prezzo per quota</option><option value="t">Prezzo totale</option></select>
+      <input id="op-price" type="number" min="0" step="0.001" placeholder="€ per quota" aria-label="Prezzo" required>
       <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel" hidden>Annulla</button>
     </form>
     <p class="fc-note" id="op-name"></p>
@@ -502,6 +502,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   <p class="foot">Anagrafiche da justETF · NAV simulato · Previsioni con fonte</p>
 </main>
 
+<div class="selbar" id="savebar" hidden><div class="wrap"><span>Modifiche non salvate</span><span class="grow"></span><button type="button" id="sv-cancel" class="ghost">Annulla</button><button type="button" id="sv-save" class="primary">Salva</button></div></div>
 <div class="selbar" id="selbar" hidden><div class="wrap"><span id="sel-n"></span><span class="grow"></span><button type="button" id="sel-clear" class="ghost">Azzera</button><button type="button" id="sel-add" class="primary">Aggiungi a portafoglio</button></div></div>
 
 <dialog id="detail" aria-labelledby="d-name"><div class="d" id="d-body"></div></dialog>
@@ -589,7 +590,7 @@ const ETFS = [
 const fmt = (v, d = 2) => v.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
 const pct = (v, d = 2) => { if (v == null) return "—"; const r = +(v * 100).toFixed(d) || 0; return (r > 0 ? "+" : "") + fmt(r, d) + "%"; };
 const cls = v => v == null ? "" : v >= 0 ? "pos" : "neg";
-const aumTxt = m => m >= 1000 ? "€ " + fmt(m / 1000, 1) + " Mld" : "€ " + fmt(m, 0) + " Mln";
+const aumTxt = m => m >= 1000 ? "€ " + fmt(m / 1000, 2) + " Mld" : "€ " + fmt(m, 2) + " Mln";
 const dateTxt = (t, o = { day: "2-digit", month: "short", year: "numeric" }) => new Date(t).toLocaleDateString("it-IT", o);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -873,7 +874,14 @@ function render(more) {
 const PERIODS = [["1M", () => back(1)], ["6M", () => back(6)], ["YTD", () => new Date(TODAY.getFullYear(), 0, 1).getTime()], ["1A", () => back(12)], ["3A", () => back(0, 3)], ["5A", () => back(0, 5)], ["Max", () => 0]];
 let cur = null, curPeriod = "1A";
 
-const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione${ib("liq")}</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio${ib("adv")}</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread${ib("spr")}</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
+// Bid, ask e spread: dall'ultimo aggiornamento di Yahoo Finance (ogni 30 minuti per i 14 ETF di prices.js, ogni sera per gli altri); lo spread si calcola qui su quei due valori.
+const quoteHtml = e => {
+  const b = e.bid, a = e.ask, ok = b > 0 && a > 0 && a >= b, sp = ok ? (a - b) / ((a + b) / 2) * 100 : null;
+  const when = e.qt ? new Date(e.qt * 1000).toLocaleString("it-IT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+  const link = e.qsym ? ` · <a class="src" href="https://finance.yahoo.com/quote/${encodeURIComponent(e.qsym)}" target="_blank" rel="noopener">Yahoo ↗</a>` : "";
+  return `<section class="sec"><h3>Bid, ask e spread${ib("spr")}</h3><div class="stats"><div><span class="k">Bid</span><span class="n">${ok ? fmt(b, 3) : "—"}</span></div><div><span class="k">Ask</span><span class="n">${ok ? fmt(a, 3) : "—"}</span></div><div><span class="k">Spread</span><span class="n">${ok ? fmt(sp) + "%" : "—"}</span></div><div><span class="k">Spread in €</span><span class="n">${ok ? fmt(a - b, 3) : "—"}</span></div></div><p class="fc-note">${ok ? `Calcolato su bid e ask delle ${when}` : "Bid e ask non disponibili: mercato chiuso o dato assente nell'ultimo aggiornamento"}${link}</p></section>`;
+};
+const liqHtml = e => `<section class="sec"><h3>Liquidità · stime indicative</h3><div class="stats"><div><span class="k">Valutazione${ib("liq")}</span><span class="n"><span class="liq ${liqRating(e).toLowerCase()}">●</span> ${liqRating(e)}</span></div><div><span class="k">Volume medio${ib("adv")}</span><span class="n">€ ${fmt(e.adv, e.adv < 10 ? 1 : 0)} Mln/g</span></div><div><span class="k">Spread stimato${ib("spr")}</span><span class="n">${fmt(e.spr)}%</span></div><div><span class="k">Patrimonio</span><span class="n">${aumTxt(e.aum)}</span></div></div><p class="fc-note">Verifica su <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></p></section>`;
 
 // Dettaglio di un ETF del catalogo senza serie di prezzi: rendimenti, rischio e anagrafica dello screener di justETF.
 const pxMissing = e => `Prezzi storici non disponibili: per il grafico e le simulazioni aggiungi <b>${e.isin}</b> a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a> (una riga per ISIN); i prezzi arrivano entro pochi minuti.`;
@@ -896,6 +904,7 @@ function openDetailCat(e) {
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       </button>
     </div>
+    ${quoteHtml(e)}
     <section class="sec"><h3>Rendimenti${ib("rend")}</h3>
       <div class="stats">${perf.map(([k, v]) => `<div><span class="k">${k}</span><span class="n ${cls(v)}">${v == null ? "—" : pct(v, 1)}</span></div>`).join("")}</div>
       <p class="fc-note">In EUR, totali; 3A e 5A cumulati</p></section>
@@ -914,7 +923,7 @@ function openDetail(isin) {
   if (e.cat && !e.s) { openDetailCat(e); if (!e.tried) loadSeries(isin).then(ok => { if (ok && cur === e && $("detail").open) openDetail(isin); else if (cur === e && $("d-px")) $("d-px").innerHTML = pxMissing(e); }); else if ($("d-px")) $("d-px").innerHTML = pxMissing(e); return; }
   cur = e;
   const s = e.s, last = s.v[s.v.length - 1], chg = last / s.v[s.v.length - 2] - 1;
-  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= s.t[0]);
+  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= s.t[0] - 10 * DAY); // 1A, 3A e 5A ci sono sempre se la storia basta; Max chiude l'elenco
   if (!avail.some(([p]) => p === curPeriod)) curPeriod = "Max";
   const ytdBase = idxFrom(s, new Date(TODAY.getFullYear(), 0, 1).getTime()) - 1;
   const perf = [
@@ -952,6 +961,8 @@ function openDetail(isin) {
     </section>
 
     <div class="stats" id="pstats"></div>
+
+    ${quoteHtml(e)}
 
     <section class="sec"><h3>Rendimenti</h3>
       <div class="stats">${perf.map(([k, v]) => `<div><span class="k">${k}</span><span class="n ${cls(v)}">${pct(v, 1)}</span></div>`).join("")}</div>
@@ -1117,7 +1128,7 @@ function fcHtml(e) {
 
 /* ---------- Serie di prezzi on demand (data/p/ISIN.js) per gli ETF del catalogo ---------- */
 function attachSeries(e, d) {
-  e.s = { t: d.d.map(x => x * 86400000 + 43200000), v: d.v }; e.real = true; e.src = d.source; e.sym = d.symbol; e.pcur = d.currency; e.fx = d.fx; e.live = d.v[d.v.length - 1];
+  e.s = { t: d.d.map(x => x * 86400000 + 43200000), v: d.v }; e.real = true; e.src = d.source; e.sym = d.symbol; e.pcur = d.currency; e.fx = d.fx; e.live = d.v[d.v.length - 1]; e.bid = d.bid; e.ask = d.ask; e.qt = d.qt; e.qsym = d.symbol;
   if (d.adv > 0) e.adv = d.adv;
 }
 function loadSeries(isin) {
@@ -1137,8 +1148,8 @@ const incMs = e => (e.inception ? dateMs(e.inception) : e.s ? e.s.t[0] : 0);
 /* ---------- Portafoglio: dati, JSON, motore ---------- */
 const byIsin = i => BYISIN.get(i);
 const dateMs = s => new Date(s + "T12:00:00").getTime();
-const eur = v => "€ " + fmt(v, 0);
-const eurS = v => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 0);
+const eur = v => "€ " + fmt(v, 2);
+const eurS = v => (Math.round(v * 100) > 0 ? "+" : Math.round(v * 100) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 2);
 const eurS2 = v => (Math.round(v * 100) > 0 ? "+" : Math.round(v * 100) < 0 ? "−" : "") + "€ " + fmt(Math.abs(v), 2);
 const idxOf = (t, ms) => { let lo = 0, hi = t.length - 1; if (ms > t[hi]) return hi; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo; };
 const priceAt = (e, ms) => e.s.v[idxOf(e.s.t, ms)];
@@ -1494,7 +1505,6 @@ function renderPf() {
   $("pf-desc-ro").hidden = own; $("pf-desc-ro").textContent = pfCur.description || "";
   renderPfs();
   $("to-draft").hidden = dr;
-  $("kind").textContent = dr ? "Draft · simulazione" : "Acquistato"; $("kind").className = "kind" + (dr ? " draft" : "");
   renderPos(); renderHist();
   if (!pfLots(pfCur).length) return renderEmpty();
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
@@ -1507,7 +1517,7 @@ function renderPf() {
     ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
   ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}${KI[k] ? ib(KI[k]) : ""}</span><span class="n ${c}">${v}</span></div>`).join("");
   liveUpdate(true);
-  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0]);
+  const avail = PERIODS.filter(([, f]) => f() === 0 || f() >= P.t[0] - 10 * DAY);
   if (!avail.some(([p]) => p === pfPeriod)) pfPeriod = "Max";
   $("pf-periods").innerHTML = avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === pfPeriod}">${p}</button>`).join("");
 
@@ -1541,10 +1551,10 @@ function renderPf() {
   renderRb(); updDef();
   drawPfNav(); drawEF(); drawHist();
 }
-function fillSel() { $("pf-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join(""); $("pf-sel").value = pfCur.id; }
+function fillSel() { $("pf-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").value = pfCur.id; }
 function showView(v) {
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
-  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); updSave();
   try { history.replaceState(null, "", { port: "#portafoglio", pfs: "#portafogli", search: "#cerca" }[v]); } catch {}
   if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); drawHist(); });
 }
@@ -1586,7 +1596,7 @@ function liveUpdate(force) {
 // Con prezzi reali la quotazione corrente arriva da prices.js (aggiornato da fetch_prices.py --watch); altrimenti oscilla in modo simulato.
 function applyLive() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
-  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) e.live = s.last.price; }
+  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) { e.live = s.last.price; e.bid = s.last.bid; e.ask = s.last.ask; e.qt = s.last.qt; e.qsym = s.symbol; } }
 }
 function startLive() {
   ETFS.forEach(e => (e.live = e.s.v[e.s.v.length - 1])); applyLive();
@@ -1614,12 +1624,8 @@ let DRSIZE = [], AT = [], editOp = null, opEtf = null, histMode = "val";
 // Nuovi ETF: in una simulazione prendono un peso uguale (gli altri pesi si riproporzionano); in un portafoglio con operazioni partono senza posizione iniziale.
 function addPos(pf, isins) {
   const fresh = isins.filter(i => !pf.positions.some(x => x.isin === i)); if (!fresh.length) return 0;
-  if (hasTx(pf)) { fresh.forEach(i => pf.positions.push(mkPos(i))); return fresh.length; }
-  const wp = pf.positions.filter(x => x.weight != null), m = wp.length, k = fresh.length, es = wp.reduce((a, x) => a + x.weight, 0), scale = es > 0 ? (100 * m / (m + k)) / es : 0;
-  wp.forEach(x => (x.weight = +(x.weight * scale).toFixed(1)));
-  fresh.forEach(i => pf.positions.push(mkPos(i, { weight: +(100 / (m + k)).toFixed(1) })));
-  const all = pf.positions.filter(x => x.weight != null); if (!m || !es) all.forEach(x => (x.weight = +(100 / all.length).toFixed(1)));
-  return k;
+  fresh.forEach(i => pf.positions.push(mkPos(i)));
+  return fresh.length;
 }
 // Scelta dell'ETF tra tutto il catalogo: l'elenco dei suggerimenti segue ciò che si scrive.
 function etfFind(q, n = 40) {
@@ -1636,7 +1642,7 @@ function renderPos() {
   $("dr-amt").value = pf.amount; $("dr-start").value = pf.start; $("dr-start").max = ymd(Date.now());
   fillDl(""); $("dr-norm").hidden = !W;
   $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quantità${ib("pos")}</th><th></th></tr></thead><tbody>${pf.positions.map(x => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x);
-    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}"><select class="qu" aria-label="Unità ${e.ticker}"><option value="q"${u === "q" ? " selected" : ""}>quote</option><option value="w"${u === "w" ? " selected" : ""}>%</option></select></span></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
   const noPx = pf.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s);
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
   $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, primo prezzo disponibile` : "") + (noPx.length ? `${W || clamp ? "<br>" : ""}Senza prezzi, esclusi dal calcolo: ${noPx.map(e => esc(e.ticker)).join(", ")}${noPx.every(e => e.tried) ? ` · aggiungili a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : " · carico…"}` : "");
@@ -1654,8 +1660,8 @@ function renderHist() {
   $("op-date").max = ymd(Date.now()); if (!$("op-date").value) $("op-date").value = ymd(Date.now());
   if (!$("op-price").value) opSuggest();
   const lots = pfLots(pf).reverse();
-  $("hist-tbl").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
-    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
+  $("hist-tbl").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th><th></th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
+    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
 }
 // Composizione nel tempo: aree impilate per ETF (in € o in %), con i punti di acquisto e vendita sull'asse.
 function histOrder(P) {
@@ -1699,15 +1705,15 @@ function drawHist() {
 function openAddTo(isins) {
   if (!isins.length) return;
   AT = isins.slice();
-  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}${isDraft(p) ? " · draft" : ""}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
+  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
   $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
     <select id="at-pf" aria-label="Portafoglio">${opts}</select><div id="at-body"></div>
     <p class="fc-note" id="at-px"></p>
     <div class="io"><button type="submit" class="primary">Aggiungi</button><button type="button" class="ghost" id="at-cancel">Annulla</button><span id="at-msg" class="fc-note"></span></div>`;
   const body = () => {
     $("at-body").innerHTML = ($("at-pf").value === "@new" ? '<div class="newf"><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>' : "")
-      + '<p class="fc-note">Vuoto: pesi uguali. Con la data è un acquisto (prezzo facoltativo)</p>'
-      + AT.map(i => { const e = byIsin(i); return `<div class="lotform atrow" data-isin="${i}"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" placeholder="Quantità" aria-label="Quantità ${e.ticker}"><select class="at-u" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w">%</option></select><input type="date" class="at-d" max="${ymd(Date.now())}" aria-label="Data acquisto ${e.ticker} (facoltativa)"><input type="number" min="0" step="any" class="at-p" placeholder="Prezzo" aria-label="Prezzo ${e.ticker} (facoltativo)"></div>`; }).join("");
+      + '<p class="fc-note">Numero di quote. Con la data è un acquisto; senza data è la quantità iniziale</p>'
+      + AT.map(i => { const e = byIsin(i); return `<div class="lotform atrow" data-isin="${i}"><span class="n atk">${e.ticker}</span><input type="number" min="0" step="any" class="at-q" placeholder="Quote" aria-label="Numero di quote ${e.ticker}"><input type="date" class="at-d" max="${ymd(Date.now())}" aria-label="Data acquisto ${e.ticker} (facoltativa)"><select class="at-m" aria-label="Tipo di prezzo ${e.ticker}"><option value="u">Prezzo per quota</option><option value="t">Prezzo totale</option></select><input type="number" min="0" step="0.001" class="at-p" placeholder="€ (facoltativo)" aria-label="Prezzo ${e.ticker} (facoltativo)"></div>`; }).join("");
   };
   $("at-pf").addEventListener("change", body); body();
   $("addto").showModal();
@@ -1718,7 +1724,7 @@ $("addto").addEventListener("click", ev => { if (ev.target.id === "at-cancel" ||
 $("addto").addEventListener("submit", ev => {
   ev.preventDefault();
   const v = $("at-pf").value, bad = t => { $("at-msg").textContent = t; $("at-msg").className = "fc-note err"; };
-  const rows = [...document.querySelectorAll(".atrow")].map(r => ({ isin: r.dataset.isin, q: r.querySelector(".at-q").value, u: r.querySelector(".at-u").value, d: r.querySelector(".at-d").value, p: r.querySelector(".at-p").value }));
+  const rows = [...document.querySelectorAll(".atrow")].map(r => ({ isin: r.dataset.isin, q: r.querySelector(".at-q").value, m: r.querySelector(".at-m").value, d: r.querySelector(".at-d").value, p: r.querySelector(".at-p").value }));
   const nm = ($("at-name") && $("at-name").value.trim()) || "", ds = ($("at-descr") && $("at-descr").value.trim()) || "";
   const t0 = v === "@new" ? null : PFLIST.find(p => p.id === v), c = t0 ? clonePf(t0) : mkPf({ id: newId(), name: nm || `Portafoglio ${USER.length + 1}`, description: ds });
   if (!rows.some(r => r.q !== "" || r.d)) addPos(c, AT);
@@ -1727,15 +1733,14 @@ $("addto").addEventListener("submit", ev => {
     if (!x) c.positions.push((x = mkPos(r.isin)));
     if (r.d) {
       if (!(q > 0)) return bad(`${e.ticker}: indica la quantità`);
-      if (r.u === "w") return bad(`${e.ticker}: con la data la quantità è in quote`);
       if (isNaN(dateMs(r.d)) || dateMs(r.d) > Date.now() + DAY) return bad("Data non valida");
       if (r.d < e.inception) return bad(`${e.ticker} non era ancora stato lanciato`);
-      const price = +r.p || +priceAt(e, dateMs(r.d)).toFixed(2);
+      const price = r.p ? +(r.m === "t" ? +r.p / q : +r.p).toFixed(6) : +priceAt(e, dateMs(r.d)).toFixed(3);
       if (!(price > 0)) return bad("Prezzo non valido");
       x.txs.push({ date: r.d, price, qty: q }); x.txs.sort(byDate);
     } else if (r.q !== "") {
       if (!(q >= 0)) return bad("La quantità non può essere negativa");
-      if (r.u === "w") { x.weight = q; x.qty = null; } else { x.qty = q; x.weight = null; }
+      x.qty = q; x.weight = null;
     }
   }
   let target;
@@ -1784,7 +1789,7 @@ const GL = {
   cur: { t: "Valuta", what: "Valuta in cui è denominato il fondo. Può differire da quella di quotazione e da quella dei titoli.", use: "Il rischio di cambio dipende dalle valute dei titoli rispetto al tuo euro.", how: "Le versioni «hedged» coprono il cambio con un piccolo costo. Qui i prezzi sono nella valuta di quotazione, senza conversione.", ref: [] },
   liq: { t: "Liquidità", what: "Quanto è facile comprare o vendere l'ETF senza spostare il prezzo. Dipende da volume, spread, numero di market maker e liquidità dei titoli sottostanti.", use: "Una liquidità bassa fa costare di più ogni operazione.", how: "Usa ordini con limite di prezzo ed evita apertura e chiusura del mercato. Guarda lo spread per qualche giorno prima di operare.", ref: [["Alta (soglie di questa pagina)", "spread fino a 0,08% e volume da 10 Mln €/giorno"], ["Media", "spread fino a 0,15% e volume da 2 Mln €/giorno"], ["Bassa", "oltre queste soglie"]], links: ["liq", "trading"] },
   adv: { t: "Volume medio giornaliero", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di eseguire ordini.", how: "Il volume sulla borsa può sottostimare la liquidità reale, perché i market maker creano e rimborsano quote.", ref: [["Oltre 10 Mln €", "ottimo"], ["1–10 Mln €", "adeguato per importi piccoli"], ["Sotto 1 Mln €", "prudenza"]], links: ["trading"] },
-  spr: { t: "Spread denaro-lettera", what: "Differenza tra il miglior prezzo di vendita e di acquisto, in percentuale. È un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
+  spr: { t: "Spread denaro-lettera", what: "Bid è il miglior prezzo a cui trovi un compratore, ask il miglior prezzo a cui trovi un venditore. Lo spread è la differenza, in percentuale del prezzo medio: un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Qui si calcola sui valori bid e ask dell'ultimo aggiornamento di Yahoo Finance (l'orario è indicato): non è un prezzo in tempo reale. Fuori orario di borsa bid e ask possono mancare. Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
   rend: { t: "Rendimenti 1A, 3A, da inizio", what: "Variazione di prezzo dell'ETF su un anno, su tre e su cinque anni (annualizzata) e dal lancio (annualizzata).", use: "Confronta la redditività di ETF diversi.", how: "Confronta ETF simili sullo stesso periodo. Per gli ETF a distribuzione il rendimento di prezzo non include i dividendi pagati. Il passato non garantisce il futuro.", ref: [["1 anno", "molto variabile, poco indicativo"], ["3–5 anni", "più significativo"], ["Da inizio", "dipende dall'epoca di lancio"]] },
   settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (da justETF quando scaricati, altrimenti indicativi). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
   borsa: { t: "Borsa di quotazione", what: "Le borse su cui l'ETF è quotato, dalla tabella delle quotazioni di justETF. Stesso ETF e stesso ISIN, ma ticker e valuta di negoziazione cambiano da borsa a borsa.", use: "Ti dice dove puoi comprarlo con il tuo broker.", how: "Scegli di solito la borsa in euro con più volume e spread più stretto, per esempio Borsa Italiana, Xetra o Euronext Amsterdam. Controlla ticker e valuta nel tuo broker prima di operare.", ref: [] },
@@ -1822,7 +1827,7 @@ document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELEC
 /* ---------- Avvio ---------- */
 applyPrices(); startLive(); loadUser(); allPf(); pfCur = PFLIST.find(p => p.id === getDef()) || PFLIST.find(p => p.id === "prova-bilanciato") || PFLIST[0]; fillSel();
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showView(b.dataset.v)));
-$("pf-sel").addEventListener("change", ev => { pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
+$("pf-sel").addEventListener("change", ev => { if (!keepDirty()) { $("pf-sel").value = pfCur.id; return; } ORIG = null; updSave(); pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
 $("pf-comp").addEventListener("click", ev => { const b = ev.target.closest(".nm-btn"); if (b) openDetail(b.dataset.isin); });
 $("io-exp").addEventListener("click", () => exportJson());
@@ -1858,7 +1863,7 @@ $("gh-clear").addEventListener("click", () => { lsSet(GH.tok, null); lsSet(GH.sy
 if (lsGet(GH.tok)) watchMsg("Token salvato: gli ETF aggiunti ai portafogli si monitorano da soli");
 
 /* Posizioni e operazioni */
-function commit(id) { saveUser(); watchSync(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
+function commit(id) { ORIG = null; saveUser(); watchSync(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); updSave(); }
 function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copia personale
   if (!src.sample) return src;
   let id = src.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = src.id + "-mio" + n++;
@@ -1866,19 +1871,42 @@ function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copi
   USER.unshift(c); return c;
 }
 // Applica la modifica a una copia, controlla che le vendite non superino le quote possedute e solo allora salva.
-function editPf(fn) {
-  const c = clonePf(pfCur); fn(c); const se = sellErr(pfLots(c)); if (se) return se.charAt(0).toUpperCase() + se.slice(1);
-  const pf = ownPf(); pf.positions = c.positions; pf.amount = c.amount; pf.start = c.start; commit(pf.id); return "";
+// Le modifiche restano in una copia (ORIG è la versione salvata) finché non si preme «Salva»; save = true salva subito (azioni con un proprio pulsante).
+let ORIG = null;
+const updSave = () => { $("savebar").hidden = !ORIG || $("v-port").hidden; };
+function savePf(c) {
+  const src = ORIG || pfCur; ORIG = null;
+  const t = ownPf(src); t.positions = c.positions; t.amount = c.amount; t.start = c.start; t.description = c.description || "";
+  if (c.name !== src.name) t.name = c.name;
+  commit(t.id); return "";
 }
+function editPf(fn, save) {
+  const c = clonePf(pfCur); fn(c); const se = sellErr(pfLots(c)); if (se) return se.charAt(0).toUpperCase() + se.slice(1);
+  if (c.sample) { c.sample = false; c.name = c.name.replace("Prova · ", "") + " (mio)"; } // un portafoglio di prova si modifica su una copia
+  if (!ORIG) ORIG = pfCur;
+  if (save) return savePf(c);
+  pfCur = c; renderPf(); updSave(); return "";
+}
+const keepDirty = () => !ORIG || confirm("Ci sono modifiche non salvate. Scartarle?");
+$("sv-save").addEventListener("click", () => savePf(clonePf(pfCur)));
+$("sv-cancel").addEventListener("click", () => { pfCur = ORIG || pfCur; ORIG = null; resetForm(); fillSel(); renderPf(); updSave(); msg(""); });
 const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
 function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
-function opSuggest() { const e = byIsin(resolveEtf($("op-etf").value)), d = $("op-date").value, p = $("op-price"); if (e && e.s && d && !isNaN(dateMs(d)) && !p.dataset.touched) p.value = priceAt(e, dateMs(d)).toFixed(2); }
+function opSuggest() {
+  const e = byIsin(resolveEtf($("op-etf").value)), d = $("op-date").value, p = $("op-price"), tot = $("op-mode").value === "t";
+  p.placeholder = tot ? "€ totale" : "€ per quota"; p.step = "0.001";
+  if (!e || !e.s || !d || isNaN(dateMs(d)) || p.dataset.touched) return;
+  const u = priceAt(e, dateMs(d)), q = +$("op-qty").value;
+  p.value = tot ? (q > 0 ? (u * q).toFixed(3) : "") : u.toFixed(3);
+}
+$("op-mode").addEventListener("change", () => { delete $("op-price").dataset.touched; $("op-price").value = ""; opSuggest(); });
+$("op-qty").addEventListener("input", () => { if ($("op-mode").value === "t") opSuggest(); });
 $("op-etf").addEventListener("change", () => { const i = resolveEtf($("op-etf").value); if (i) { opEtf = i; $("op-etf").value = i; const e = byIsin(i); $("op-name").textContent = e.name + (e.s ? "" : " · carico i prezzi…"); loadSeries(i).then(ok => { $("op-name").textContent = e.name + (ok ? "" : " · prezzi non disponibili"); opSuggest(); }); } opSuggest(); }); $("op-date").addEventListener("change", opSuggest);
 $("op-price").addEventListener("input", () => ($("op-price").dataset.touched = "1"));
 const posOf = el => pfCur.positions.find(x => x.isin === el.closest("tr[data-isin]").dataset.isin);
 $("pos-tbl").addEventListener("change", ev => {
   const t = ev.target, row = t.closest("tr[data-isin]"); if (!row || !(t.classList.contains("qi") || t.classList.contains("qu"))) return;
-  const isin = row.dataset.isin, unit = row.querySelector(".qu").value, v = row.querySelector(".qi").value;
+  const isin = row.dataset.isin, unit = row.querySelector(".qu") ? row.querySelector(".qu").value : "q", v = row.querySelector(".qi").value;
   const err = editPf(c => { const x = c.positions.find(p => p.isin === isin), st = simStart(c), pr = priceAt(byIsin(isin), st), W = c.positions.reduce((a, p) => a + (p.weight > 0 ? p.weight : 0), 0);
     if (t.classList.contains("qu")) { // cambio unità: converte al prezzo della data di partenza
       if (unit === "w") { x.weight = x.qty > 0 ? +(x.qty * pr / c.amount * 100).toFixed(1) : 0; x.qty = null; }
@@ -1893,17 +1921,17 @@ $("pos-tbl").addEventListener("click", ev => {
 });
 /* Storico: modulo e tabella delle operazioni */
 const hmsg = (t, bad) => { const m = $("hist-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
-function resetOp() { editOp = null; $("op-submit").textContent = "Aggiungi"; $("op-cancel").hidden = true; $("op-qty").value = ""; $("op-op").value = "1"; $("op-date").value = ymd(Date.now()); delete $("op-price").dataset.touched; opSuggest(); }
+function resetOp() { editOp = null; $("op-mode").value = "u"; $("op-submit").textContent = "Aggiungi"; $("op-cancel").hidden = true; $("op-qty").value = ""; $("op-op").value = "1"; $("op-date").value = ymd(Date.now()); delete $("op-price").dataset.touched; opSuggest(); }
 $("op-cancel").addEventListener("click", () => { resetOp(); hmsg(""); });
 $("op-form").addEventListener("submit", ev => {
   ev.preventDefault();
-  const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, price = +$("op-price").value;
+  const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, raw = +$("op-price").value, price = qty > 0 ? +($("op-mode").value === "t" ? raw / qty : raw).toFixed(6) : 0;
   if (!e) return hmsg("Scegli un ETF dall'elenco", true);
   if (!date || isNaN(dateMs(date))) return hmsg("Data non valida", true);
   if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
   if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
   if (!(qty > 0) || !(price > 0)) return hmsg("Quantità e prezzo devono essere maggiori di zero", true);
-  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
+  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); }, true);
   if (err) return hmsg(err, true);
   resetOp(); hmsg(ed ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
 });
@@ -1911,9 +1939,9 @@ $("hist-tbl").addEventListener("click", ev => {
   const b = ev.target.closest(".del"), tr = b && b.closest("tr[data-pi]"); if (!tr) return;
   const pi = +tr.dataset.pi, ti = +tr.dataset.ti, x = pfCur.positions[pi], t = x && x.txs[ti]; if (!t) return;
   if (b.classList.contains("ed")) {
-    $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-price").value = t.price; $("op-price").dataset.touched = "1";
+    $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-mode").value = "u"; $("op-price").value = t.price.toFixed(3); $("op-price").dataset.touched = "1";
     editOp = { pi, ti }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
-  } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1)); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
+  } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1), true); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
 });
 $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
 /* Rimessi: ribilanciamento, predefinito, nome, selezione dalla ricerca */
@@ -1921,24 +1949,24 @@ $("ef-cap").addEventListener("change", () => PF && renderPf());
 $("rb-goal").addEventListener("change", () => PF && renderRb());
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
-  if (isDraft(pfCur)) { const pf = ownPf(); RB.forEach(r => { const x = pf.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }); commit(pf.id); return msg("Pesi aggiornati"); }
-  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(2), qty: r.dq }); x.txs.sort(byDate); } }));
+  if (isDraft(pfCur)) { editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }), true); return msg("Pesi aggiornati"); }
+  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(3), qty: r.dq }); x.txs.sort(byDate); } }), true);
   if (err) { $("rb-note").textContent = err; return; }
   msg(`Ribilanciamento applicato: ${n} operazioni`);
 });
 $("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
-$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
+$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; editPf(c => { c.name = v; }); });
 $("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
 $("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
 $("sel-add").addEventListener("click", () => openAddTo([...SEL]));
-const editBase = fn => { const err = editPf(fn); err ? msg(err, true) : msg(""); };
+const editBase = (fn, save) => { const err = editPf(fn, save); err ? msg(err, true) : msg(""); };
 $("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editBase(c => { c.amount = v; }); else renderPf(); });
 $("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editBase(c => { c.start = v; }); else renderPf(); });
 $("dr-add-btn").addEventListener("click", () => { const isin = resolveEtf($("dr-add").value); if (!isin) return msg("Scegli un ETF dall'elenco", true); opEtf = isin; $("dr-add").value = ""; editBase(c => addPos(c, [isin])); });
 $("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
   if (!DRSIZE.length) return; const today = ymd(Date.now());
-  editBase(c => c.positions.forEach(x => { const r = DRSIZE.find(d => d.isin === x.isin); if (!hasBase(x)) return; x.qty = x.weight = null; if (r) { x.txs.push({ date: today, price: +r.price.toFixed(2), qty: r.qty }); x.txs.sort(byDate); } }));
+  editBase(c => c.positions.forEach(x => { const r = DRSIZE.find(d => d.isin === x.isin); if (!hasBase(x)) return; x.qty = x.weight = null; if (r) { x.txs.push({ date: today, price: +r.price.toFixed(3), qty: r.qty }); x.txs.sort(byDate); } }), true);
   msg("Acquisti registrati a oggi ai prezzi correnti");
 });
 $("to-draft").addEventListener("click", () => {
@@ -1955,6 +1983,7 @@ function twoStep(b, fn, label = "Elimina") {
   b.dataset.arm = ""; b.textContent = label; fn();
 }
 function deletePf(p) {
+  ORIG = null; updSave();
   if (p.sample) { const h = hiddenSamples(); if (!h.includes(p.id)) h.push(p.id); try { localStorage.setItem("mm-hidden", JSON.stringify(h)); } catch {} }
   else { USER = USER.filter(u => u.id !== p.id); saveUser(); }
   allPf();
@@ -1970,12 +1999,12 @@ function pfSummary(p) {
 function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
     return `<div class="pfrow" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="open">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
-      <span class="kind${d ? " draft" : ""}">${d ? "Draft" : "Acquistato"}</span>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
       <div class="pfact"><button type="button" class="ghost" data-a="open">Apri</button><button type="button" class="ghost" data-a="reb">Ribilancia</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
   $("pfs-restore").hidden = !hiddenSamples().length;
 }
 function openPf(id, then) {
+  if (!keepDirty()) return; ORIG = null; updSave();
   pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showView("port");
   if (then === "reb") requestAnimationFrame(() => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 }
@@ -1987,7 +2016,7 @@ $("pfs-list").addEventListener("click", ev => {
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
 $("pfs-restore").addEventListener("click", () => { try { localStorage.removeItem("mm-hidden"); } catch {} allPf(); fillSel(); renderPf(); });
-function openNew() { $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("newpf").showModal(); $("np-name").select(); }
+function openNew() { if (!keepDirty()) return; $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("newpf").showModal(); $("np-name").select(); }
 $("np-form").addEventListener("submit", ev => {
   ev.preventDefault(); const nm = $("np-name").value.trim(); if (!nm) return;
   const pf = newPf(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showView("port");
@@ -1997,7 +2026,7 @@ $("pf-new").addEventListener("click", openNew); $("pfs-new").addEventListener("c
 $("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio") + ".json"));
 $("pf-reb").addEventListener("click", () => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("pf-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => deletePf(pfCur)));
-$("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; pfCur.description = ev.target.value.trim().slice(0, 500); commit(pfCur.id); });
+$("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; const v = ev.target.value.trim().slice(0, 500); editPf(c => { c.description = v; }); });
 let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); } }, 120); });
 
 /* App installabile: service worker (solo su http/https) e pulsante «Installa app» quando il browser lo permette */

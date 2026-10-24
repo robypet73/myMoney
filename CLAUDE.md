@@ -28,6 +28,10 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 - Lingua dell'interfaccia: italiano. Numeri in formato italiano (`fmt`, `pct`, `eur`).
 - Colori solo da token CSS, con tema chiaro e scuro. Verde (`--up`) sopra il riferimento, rosso (`--down`) sotto, con leggera sfumatura sull'area.
 - Layout adatto al telefono (390 px) senza scroll orizzontale della pagina.
+- **Numeri**: valori in euro con 2 decimali (`eur`, `eurS`, `aumTxt`); prezzi per quota, bid e ask con 3 decimali; le operazioni si inseriscono con il numero di quote e il prezzo per quota **oppure** il prezzo totale. Nessuno «stato» del portafoglio (draft/acquistato) in vista.
+- **Modifiche ai portafogli**: quantità, importo, data, ETF aggiunti/rimossi, titolo e descrizione restano in una copia fino a «Salva» (barra in basso, con «Annulla»); le azioni con un proprio pulsante (aggiungi/modifica/elimina operazione, applica ribilanciamento, registra acquisti) salvano subito. Cambiare portafoglio con modifiche in sospeso chiede conferma.
+- **Grafici nel tempo**: sempre 1A, 3A e 5A (e Max); si nascondono solo i periodi più lunghi della storia disponibile (tolleranza 10 giorni).
+- **Bid, ask e spread** nel dettaglio di ogni ETF: bid/ask dall'ultimo aggiornamento di Yahoo (`fetch_prices.py` ogni 30 minuti per i 14 di `prices.js`, `fetch_series.py` ogni sera per gli altri), spread calcolato in pagina; senza dato si mostra «—».
 
 ## Dati e fonti
 
