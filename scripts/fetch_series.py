@@ -69,7 +69,8 @@ def write(isin, sym, cur, name, t, v, last, orig=None, quote=None):
 def main():
     args = sys.argv[1:]
     top = int(args[args.index("--top") + 1]) if "--top" in args else 150
-    only = args[args.index("--isins") + 1].split(",") if "--isins" in args else None
+    only = [i for i in args[args.index("--isins") + 1].replace(" ", "").upper().split(",") if re.fullmatch(r"[A-Z]{2}[A-Z0-9]{9}\d", i)] if "--isins" in args else None
+    force = "--force" in args
     cat = catalog()
     chosen = only or list(dict.fromkeys(watchlist() + [i for i, _ in sorted(cat.items(), key=lambda kv: -kv[1]["aum"]) if i not in fp.ISINS][:top]))
     chosen = [i for i in chosen if i not in fp.ISINS]
@@ -104,7 +105,7 @@ def main():
                 if len(t) < 50:
                     raise ValueError("pochi dati")
             else:
-                if known and known.get("failed") and time.time() - known["failed"] < 30 * 86400:
+                if not force and known and known.get("failed") and time.time() - known["failed"] < 30 * 86400:
                     continue  # già provato di recente senza successo
                 tk = info.get("ticker")
                 found = fp.best_listing(isin, None if tk in (None, "-", isin) else tk, rng="5y")

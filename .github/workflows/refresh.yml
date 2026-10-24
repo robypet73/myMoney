@@ -1,0 +1,38 @@
+name: Aggiorna ETF scelti
+
+# Aggiorna prezzi, bid/ask, indice e composizione solo degli ISIN richiesti (dalla pagina, con il token GitHub, oppure a mano da qui).
+on:
+  workflow_dispatch:
+    inputs:
+      isins:
+        description: "ISIN separati da virgola"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ISINS: ${{ inputs.isins }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Serie di prezzi
+        run: python3 scripts/fetch_series.py --isins "$ISINS" --force
+      - name: Dettagli (indice, titoli, paesi, settori)
+        run: python3 scripts/fetch_etf_data.py --extra --isins "$ISINS"
+      - name: Bid e ask
+        run: python3 scripts/fetch_quotes.py || echo "bid/ask non aggiornati"
+      - name: Salva su main
+        run: |
+          git add data quotes.js
+          if git diff --cached --quiet; then echo "Nessuna novità"; exit 0; fi
+          git config user.name "myMoney aggiornamento"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "ETF aggiornati: $ISINS"
+          git pull --rebase origin main
+          git push origin HEAD:main

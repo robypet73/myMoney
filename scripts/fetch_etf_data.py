@@ -133,11 +133,12 @@ def extra_targets():
     return [i for i in dict.fromkeys(fs.watchlist() + top) if i not in ISINS]
 
 
-def run_extra(missing_only):
+def run_extra(missing_only, only=None):
     """Scrive data/d/ISIN.js (indice, titoli principali, paesi, settori) per gli ETF monitorati."""
     out = Path(__file__).resolve().parent.parent / "data" / "d"
     out.mkdir(parents=True, exist_ok=True)
-    todo = [i for i in extra_targets() if not (missing_only and (out / f"{i}.js").exists())]
+    targets = [i for i in only if i not in ISINS] if only else extra_targets()
+    todo = [i for i in targets if not (missing_only and (out / f"{i}.js").exists())]
     print(f"Dettagli da scaricare: {len(todo)}")
     deadline = time.time() + 5 * 3600
     ok = 0
@@ -163,7 +164,8 @@ def run_extra(missing_only):
 def main():
     args = sys.argv[1:]
     if "--extra" in args:
-        return run_extra("--missing" in args)
+        only = [i for i in args[args.index("--isins") + 1].replace(" ", "").upper().split(",") if re.fullmatch(r"[A-Z]{2}[A-Z0-9]{9}\d", i)] if "--isins" in args else None
+        return run_extra("--missing" in args, only)
     only = set(args[args.index("--isins") + 1].split(",")) if "--isins" in args else None
     path = Path(__file__).resolve().parent.parent / "etfdata.js"
     data = {}
