@@ -24,7 +24,11 @@ ISINS = {
     "IE00BYZK4552": "RBOT", "IE00B1FZS350": "IWDP", "IE00B4WXJJ64": "IEGA", "IE00B1FZS798": "IBTM",
     "IE00BDBRDM35": "AGGH", "IE00B579F325": "SGLD",
 }
-SYMBOLS = {}  # ISIN -> simbolo Yahoo, per forzare la borsa
+SYMBOLS = {}  # ISIN -> simbolo Yahoo (o elenco di simboli), per forzare la borsa
+# Quotazioni in EUR da provare dopo il risultato della ricerca: il ticker con i suffissi Yahoo di Borsa Italiana, Amsterdam, Parigi e Xetra, più alcuni ticker propri di Xetra.
+SUFFIXES = (".MI", ".AS", ".PA", ".DE")
+EXTRA = {"IE00B4L5Y983": ["EUNL.DE"], "IE00BKM4GZ66": ["IS3N.DE"], "IE00B5BMR087": ["SXR8.DE"], "IE00BYZK4552": ["2B76.DE"], "IE00B1FZS350": ["IQQP.DE"],
+         "IE00B4WXJJ64": ["EUNH.DE"], "IE00B579F325": ["8PSG.DE"], "IE00BK5BQT80": ["VWCE.DE"]}
 RANGE = "10y"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; myMoney/1.0)"}
 
@@ -38,9 +42,12 @@ def get_json(url):
 def candidates(isin):
     """Simboli Yahoo per l'ISIN: quello forzato in SYMBOLS, altrimenti i risultati della ricerca."""
     if isin in SYMBOLS:
-        return [SYMBOLS[isin]]
+        s = SYMBOLS[isin]
+        return [s] if isinstance(s, str) else list(s)
     data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 10, "newsCount": 0}))
-    return [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
+    out = [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
+    out += EXTRA.get(isin, []) + [ISINS[isin] + s for s in SUFFIXES]
+    return list(dict.fromkeys(out))
 
 
 def best_listing(isin):
@@ -53,7 +60,7 @@ def best_listing(isin):
             continue
         time.sleep(0.3)
         if len(t) >= 50:
-            found.append((sym, cur, t, v, last))
+            found.append((sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]}")
             if cur == "EUR":
                 break
     return found
@@ -74,7 +81,7 @@ def parse_chart(payload):
         v.append(round(float(c), 4))
     meta = res["meta"]
     last = {"price": meta.get("regularMarketPrice") or (v[-1] if v else None), "time": meta.get("regularMarketTime"),
-            "adv": round(sum(tv[-60:]) / len(tv[-60:]), 2) if tv else None}  # volume medio giornaliero 3 mesi, in milioni di valuta
+            "adv": round(sum(tv[-60:]) / len(tv[-60:]), 2) if tv else None, "name": meta.get("longName") or meta.get("shortName")}  # volume medio giornaliero 3 mesi, in milioni di valuta
     return meta.get("currency", ""), t, v, last
 
 
@@ -90,9 +97,9 @@ def main():
             found = best_listing(isin)
             if not found:
                 print(f"{ticker} {isin}: nessuna quotazione con dati sufficienti"); continue
-            print(f"{ticker} candidati: " + ", ".join(f"{f[0]} {f[1]}" for f in found))
+            print(f"{ticker} scelto tra: " + ", ".join(f"{f[0]} {f[1]}" for f in found))
             sym, cur, t, v, last = next((f for f in found if f[1] == "EUR"), found[0])
-            out[isin] = {"symbol": sym, "currency": cur, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "adv": last.pop("adv", None), "last": last, "t": t, "v": v}
+            out[isin] = {"symbol": sym, "currency": cur, "source": f"https://finance.yahoo.com/quote/{urllib.parse.quote(sym)}/history", "name": last.pop("name", None), "adv": last.pop("adv", None), "last": last, "t": t, "v": v}
             print(f"{ticker} {sym} {cur}: {len(t)} giorni, ultimo {v[-1]}")
         except Exception as e:  # rete, formato, limiti: si prosegue con gli altri
             print(f"{ticker} {isin}: errore {e}")
@@ -109,7 +116,7 @@ def main():
             for isin, s in out.items():
                 try:
                     payload = get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(s['symbol'])}?range=1d&interval=1m")
-                    s["last"] = parse_chart(payload)[3]; s["last"].pop("adv", None)
+                    s["last"] = parse_chart(payload)[3]; s["last"].pop("adv", None); s["last"].pop("name", None)
                 except Exception as e:
                     print(f"{isin}: errore {e}")
             write(path, out)
