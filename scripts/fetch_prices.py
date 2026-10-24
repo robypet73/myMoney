@@ -63,7 +63,7 @@ def quotes(symbols):
             res = json.load(op.open(urllib.request.Request(url, headers=HEADERS), timeout=30))["quoteResponse"]["result"]
             for r in res:
                 b, a = r.get("bid"), r.get("ask")
-                out[r["symbol"]] = {"bid": b if b and b > 0 else None, "ask": a if a and a > 0 else None, "qt": r.get("regularMarketTime")}
+                out[r["symbol"]] = {"bid": b if b and b > 0 else None, "ask": a if a and a > 0 else None, "qt": int(time.time())}  # orario dell'aggiornamento
             time.sleep(0.5)
     except Exception as e:
         print("quote bid/ask non disponibili:", e)
