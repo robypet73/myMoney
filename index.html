@@ -176,6 +176,19 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .io { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
 .io button, .io .btn { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--fg); }
 .io button:hover, .io .btn:hover { border-color: var(--fg); }
+.newpf { border: 1px solid var(--hair); background: none; border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--fg); cursor: pointer; margin: 0 auto 10px 0; }
+.newpf:hover { border-color: var(--fg); }
+.lotform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: 13.5px; min-width: 0; }
+#lot-etf { flex: 1 1 220px; text-overflow: ellipsis; }
+#lot-date { flex: 0 0 150px; }
+#lot-qty, #lot-price { flex: 0 0 110px; }
+.lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: 13.5px; cursor: pointer; }
+.fc-note.err { color: var(--down); }
+.rn { display: flex; gap: 10px; align-items: baseline; margin-bottom: 14px; }
+#pf-name { border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font-size: 14px; padding: 4px 0; min-width: 0; flex: 1; max-width: 320px; }
+.del { border: 0; background: none; color: var(--soft); cursor: pointer; padding: 0 2px; font-size: 16px; line-height: 1; }
+.del:hover { color: var(--down); }
 #io-msg { font-size: 12.5px; color: var(--soft); }
 #io-msg.err { color: var(--down); }
 .fb-sum { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 0; border-top: 1.5px solid var(--fg); font-size: 14px; font-weight: 500; }
@@ -216,6 +229,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 <main class="wrap" id="v-port">
   <section class="pf-sel">
     <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
+    <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
     <span class="badge" id="badge"></span>
   </section>
   <section class="kpi" id="kpi" aria-label="Sintesi"></section>
@@ -229,7 +243,17 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
   </section>
 
   <section class="sec pf-sec"><h3>Composizione</h3><div id="pf-comp"></div></section>
-  <section class="sec pf-sec"><h3>Acquisti</h3><div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
+  <section class="sec pf-sec"><h3>Acquisti</h3>
+    <div class="rn"><label class="k" for="pf-name">Nome</label><input id="pf-name" autocomplete="off"></div>
+    <form class="lotform" id="lot-form">
+      <select id="lot-etf" aria-label="ETF"></select>
+      <input id="lot-date" type="date" aria-label="Data di acquisto" required>
+      <input id="lot-qty" type="number" min="0" step="any" placeholder="Quantità" aria-label="Quantità" required>
+      <input id="lot-price" type="number" min="0" step="any" placeholder="Prezzo" aria-label="Prezzo di acquisto" required>
+      <button type="submit">Aggiungi</button>
+    </form>
+    <p class="fc-note" id="lot-msg" aria-live="polite"></p>
+    <div class="scroll"><table class="eft lots" id="pf-lots"></table></div></section>
   <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
 
   <section class="sec pf-sec"><h3>Frontiera efficiente</h3>
@@ -749,7 +773,6 @@ function cleanPf(p) {
     if (!(qty > 0) || !(price > 0)) return err.push(`acquisto ${n}: quantità o prezzo non validi`);
     lots.push({ isin, date: l.date, qty, price });
   });
-  if (!lots.length && !err.length) err.push("nessun acquisto");
   lots.sort((a, b) => a.date.localeCompare(b.date));
   return { pf: { id, name, currency: String(p.currency || "EUR"), lots }, err };
 }
@@ -880,7 +903,7 @@ function drawPfNav() {
   drawLine(box, T, [V, C], "Valore del portafoglio " + pfPeriod, "gpf");
 }
 function drawEF() {
-  const box = $("pf-ef"), F = EF; if (!box) return;
+  const box = $("pf-ef"), F = EF; if (!box || !PF) return;
   if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
   const W = box.clientWidth, H = box.clientHeight; if (!W) return;
   const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line];
@@ -909,7 +932,15 @@ const groupBy = (P, key) => { const m = new Map(); P.es.forEach((e, i) => m.set(
 /* ---------- Portafoglio: pagina ---------- */
 const justEtf = isin => `https://www.justetf.com/it/etf-profile.html?isin=${isin}`;
 const link = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+function renderEmpty() {
+  PF = null; EF = null; $("badge").textContent = "";
+  ["kpi", "pf-big", "pf-periods", "pf-chart", "pf-lots", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  $("pf-chg").textContent = "Nessun acquisto"; $("ef-note").textContent = "";
+  $("pf-comp").innerHTML = '<p class="fc-note">Aggiungi il primo acquisto dal modulo qui sotto</p>';
+}
 function renderPf() {
+  $("io-del").hidden = !!pfCur.sample; $("pf-name").parentElement.hidden = !!pfCur.sample; $("pf-name").value = pfCur.name;
+  if (!pfCur.lots.length) return renderEmpty();
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const nReal = P.es.filter(e => e.real).length;
   $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
@@ -930,7 +961,7 @@ function renderPf() {
     const px = e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato";
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker} · ${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
       <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i])}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc)}</small></span></div>`; }).join("");
-  $("pf-lots").innerHTML = `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th></tr></thead><tbody>${[...P.pf.lots].reverse().map(l => { const e = byIsin(l.isin), last = P.vh[P.isins.indexOf(l.isin)] / P.qty[P.isins.indexOf(l.isin)]; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n">${fmt(l.qty, 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${eur(l.qty * l.price)}</td><td class="n ${cls(last / l.price - 1)}">${pct(last / l.price - 1, 1)}</td></tr>`; }).join("")}</tbody>`;
+  $("pf-lots").innerHTML = `<thead><tr><th>Data</th><th>ETF</th><th>Quantità</th><th>Prezzo</th><th>Importo</th><th>Oggi</th><th></th></tr></thead><tbody>${P.pf.lots.map((l, oi) => [l, oi]).reverse().map(([l, oi]) => { const e = byIsin(l.isin), last = P.vh[P.isins.indexOf(l.isin)] / P.qty[P.isins.indexOf(l.isin)]; return `<tr><td class="n">${dateTxt(dateMs(l.date), { day: "2-digit", month: "short", year: "numeric" })}</td><td class="n">${e.ticker}</td><td class="n">${fmt(l.qty, 0)}</td><td class="n">${fmt(l.price)}</td><td class="n">${eur(l.qty * l.price)}</td><td class="n ${cls(last / l.price - 1)}">${pct(last / l.price - 1, 1)}</td><td>${P.pf.sample ? "" : `<button type="button" class="del" data-i="${oi}" aria-label="Elimina acquisto">×</button>`}</td></tr>`; }).join("")}</tbody>`;
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
     return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
 
@@ -999,6 +1030,42 @@ $("io-del").addEventListener("click", ev => {
   if (b.dataset.arm !== "1") { b.dataset.arm = "1"; b.textContent = "Conferma"; setTimeout(() => { b.dataset.arm = ""; b.textContent = "Elimina"; }, 3000); return; }
   b.dataset.arm = ""; b.textContent = "Elimina";
   USER = USER.filter(u => u.id !== pfCur.id); saveUser(); allPf(); pfCur = PFLIST[0]; fillSel(); renderPf(); ioMsg("Portafoglio eliminato");
+});
+/* Modulo acquisti */
+$("lot-etf").innerHTML = ETFS.slice().sort((a, b) => a.ticker.localeCompare(b.ticker)).map(e => `<option value="${e.isin}">${e.ticker} · ${esc(e.name)}</option>`).join("");
+$("lot-date").value = new Date().toISOString().slice(0, 10); $("lot-date").max = $("lot-date").value;
+function suggestPrice() {
+  const p = $("lot-price"), e = byIsin($("lot-etf").value), d = $("lot-date").value;
+  if (!p.dataset.touched && e && d && !isNaN(dateMs(d))) p.value = priceAt(e, dateMs(d)).toFixed(2);
+}
+suggestPrice();
+$("lot-etf").addEventListener("change", suggestPrice); $("lot-date").addEventListener("change", suggestPrice);
+$("lot-price").addEventListener("input", () => ($("lot-price").dataset.touched = "1"));
+function commit(id) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
+function ownPf() { // un portafoglio di prova si modifica su una copia personale
+  if (!pfCur.sample) return pfCur;
+  let id = pfCur.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = pfCur.id + "-mio" + n++;
+  const c = { id, name: pfCur.name.replace("Prova · ", "") + " (mio)", currency: pfCur.currency, lots: pfCur.lots.map(l => ({ ...l })) };
+  USER.unshift(c); return c;
+}
+$("lot-form").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const e = byIsin($("lot-etf").value), date = $("lot-date").value, qty = +$("lot-qty").value, price = +$("lot-price").value, m = $("lot-msg");
+  const bad = t => { m.textContent = t; m.className = "fc-note err"; };
+  if (!date || isNaN(dateMs(date))) return bad("Data non valida");
+  if (dateMs(date) > Date.now() + DAY) return bad("La data è nel futuro");
+  if (date < e.inception) return bad(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`);
+  if (!(qty > 0) || !(price > 0)) return bad("Quantità e prezzo devono essere maggiori di zero");
+  const pf = ownPf(); pf.lots.push({ isin: e.isin, date, qty, price }); pf.lots.sort((a, b) => a.date.localeCompare(b.date));
+  commit(pf.id);
+  $("lot-qty").value = ""; delete $("lot-price").dataset.touched; suggestPrice();
+  m.textContent = "Acquisto aggiunto"; m.className = "fc-note";
+});
+$("pf-lots").addEventListener("click", ev => { const b = ev.target.closest(".del"); if (!b || pfCur.sample) return; pfCur.lots.splice(+b.dataset.i, 1); commit(pfCur.id); });
+$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; pfCur.name = v; commit(pfCur.id); });
+$("pf-new").addEventListener("click", () => {
+  const pf = { id: "pf-" + Date.now().toString(36), name: `Portafoglio ${USER.length + 1}`, currency: "EUR", lots: [] };
+  USER.unshift(pf); commit(pf.id); $("lot-msg").textContent = ""; $("pf-name").focus(); $("pf-name").select();
 });
 let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); } }, 120); });
 
