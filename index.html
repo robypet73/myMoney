@@ -474,6 +474,10 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <span id="io-msg" aria-live="polite"></span>
     </div>
   </section>
+  <section class="sec pf-sec"><h3>Monitoraggio automatico<button type="button" class="i" data-g="watch" aria-label="Informazioni: monitoraggio">i</button></h3>
+    <div class="lotform"><input id="gh-token" type="password" placeholder="Token GitHub" autocomplete="off" aria-label="Token GitHub"><button type="button" id="gh-save">Salva</button><button type="button" id="gh-clear" class="ghost">Rimuovi</button></div>
+    <p class="fc-note" id="watch-msg" aria-live="polite"></p>
+  </section>
 </main>
 
 <main class="wrap" id="v-search" hidden>
@@ -836,6 +840,10 @@ function render(more) {
   $("fbtn").querySelector(".dot")?.remove();
   if (nAct) $("fbtn").insertAdjacentHTML("beforeend", '<span class="dot"></span>');
 
+  if (!$("q").value.trim() && !nAct) { // si cerca per criteri: senza testo né filtri non si elenca nulla
+    $("count").textContent = ""; $("lh").innerHTML = ""; $("sort").value = sortKey; $("sort-dir").textContent = sortDir === "desc" ? "↓" : "↑";
+    $("list").innerHTML = '<div class="empty">Scrivi un nome, un ticker o un ISIN, oppure scegli i filtri</div>'; return;
+  }
   const get = SORTS[sortKey][1], dir = sortDir === "desc" ? -1 : 1;
   const res = ALL.filter(matches).sort((a, b) => {
     const x = get(a), y = get(b);
@@ -1743,6 +1751,7 @@ const GL_LINKS = {
   liq: ["justETF · Liquidità degli ETF", JE + "news/etf/etf-liquidity-what-you-need-to-know.html"],
   trading: ["justETF · Come funziona la negoziazione", JE + "academy/how-does-etf-trading-work.html"],
   guida: ["justETF · Guida completa agli ETF", JE + "academy/ultimate-guide.html"],
+  token: ["GitHub · Token di accesso personale", "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"],
 };
 const GL = {
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
@@ -1760,6 +1769,7 @@ const GL = {
   maxsharpe: { t: "Massimo Sharpe", what: "Il portafoglio con il miglior rendimento per unità di rischio sulla frontiera.", use: "È considerato il punto più efficiente.", how: "Tende a concentrarsi sugli ETF che sono andati meglio: usa il tetto di peso per evitare portafogli troppo concentrati.", ref: [] },
   cap: { t: "Peso massimo per ETF", what: "Limite alla quota di ogni ETF nei portafogli calcolati per la frontiera e per il ribilanciamento.", use: "Evita risultati estremi, per esempio il 90% in un solo ETF.", how: "Con meno di 4 ETF il tetto basso non si può rispettare e viene tolto.", ref: [["Valori usuali", "30–40%"]] },
   rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
+  watch: { t: "Monitoraggio automatico", what: "Quando aggiungi a un portafoglio un ETF che non ha ancora i prezzi, la pagina lo scrive in watchlist.txt nel tuo repository GitHub. Ogni sera GitHub scarica i prezzi (Yahoo Finance) e la pagina li legge: da quel momento l'ETF è monitorato.", use: "Permette di cercare qualsiasi ETF del catalogo e di seguirlo in un portafoglio senza modificare file a mano.", how: "Crea su GitHub un token «fine-grained» solo per questo repository, con permesso Contents: lettura e scrittura, e incollalo qui. Resta salvato solo in questo browser; «Rimuovi» lo cancella. Senza token aggiungi gli ISIN a mano in watchlist.txt.", ref: [["Prezzi aggiornati", "ogni sera nei giorni di borsa"], ["Serie scaricata", "ultimi 5 anni, in EUR"]], links: ["token"] },
   storico: { t: "Storico del portafoglio", what: "Come sono cambiati nel tempo il valore e la composizione del portafoglio, ETF per ETF, in base alle quantità possedute e ai prezzi di ogni giorno. I punti sull'asse sono gli acquisti (verdi) e le vendite (rossi).", use: "Mostra l'effetto delle tue operazioni: quando hai aumentato o ridotto un ETF e come è cambiato il peso di ciascuno.", how: "«Valore» mostra l'importo per ETF in euro con la linea tratteggiata dell'investito; «Composizione» mostra la quota percentuale. Le righe «Iniziale · simulato» sono quantità senza data: si considerano aperte alla data «Da». Con prezzi simulati anche il grafico lo è.", ref: [] },
   prev: { t: "Previsioni sull'indice", what: "Obiettivi pubblicati da banche d'investimento per l'indice che l'ETF replica (non per l'ETF), con orizzonti diversi indicati su ogni riga.", use: "Danno un'idea delle aspettative degli analisti.", how: "Guarda l'intervallo tra le banche, non un singolo numero. La media sul portafoglio copre solo gli ETF con previsioni disponibili. Ogni riga rimanda alla fonte.", ref: [["Affidabilità", "le previsioni a 12 mesi sbagliano spesso di molti punti"]] },
   draft: { t: "Draft e acquistato", what: "Un portafoglio con operazioni (data, quantità, prezzo) è acquistato. Senza operazioni è un draft: una simulazione con ETF, quantità o pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Registra acquisti a oggi» trasforma le quantità in operazioni ai prezzi correnti.", ref: [] },
@@ -1800,7 +1810,7 @@ $("info").addEventListener("click", ev => { if (ev.target === $("info") || ev.ta
 $("list").addEventListener("click", ev => { if (ev.target.closest("#more")) { shown += 200; return render(true); } const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
 $("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
 let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => $("detail").open && drawChart(), 120); });
-$("q").addEventListener("input", render);
+$("q").addEventListener("input", () => render());
 $("fbtn").addEventListener("click", ev => {
   const b = ev.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
   b.setAttribute("aria-expanded", open); $("filters").hidden = !open;
@@ -1817,8 +1827,36 @@ $("io-exp").addEventListener("click", () => exportJson());
 $("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(PFLIST); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
 $("io-imp").addEventListener("click", () => importJson($("json-box").value));
 $("io-file").addEventListener("change", ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("json-box").value = r.result; importJson(r.result); }; r.readAsText(f); ev.target.value = ""; });
+/* Monitoraggio: gli ETF dei portafogli che non hanno ancora i prezzi si scrivono in watchlist.txt (serve un token GitHub salvato qui) e GitHub ne scarica i prezzi ogni sera */
+const GH = { repo: "robypet73/myMoney", tok: "mm-gh-token", sync: "mm-watch-synced" };
+const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch { return ""; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+const watchMsg = (t, bad) => { const m = $("watch-msg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } };
+async function watchSync(force) {
+  const tok = lsGet(GH.tok); if (!tok) return;
+  const want = new Set(); USER.forEach(p => p.positions.forEach(x => { const e = byIsin(x.isin); if (e && e.cat) want.add(x.isin); }));
+  let done; try { done = new Set(JSON.parse(lsGet(GH.sync) || "[]")); } catch { done = new Set(); }
+  const todo = [...want].filter(i => force || !done.has(i)); if (!todo.length) return force ? watchMsg("Nessun ETF da monitorare oltre a quelli già scaricati") : undefined;
+  try {
+    const api = `https://api.github.com/repos/${GH.repo}/contents/watchlist.txt`, hd = { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json" };
+    const r = await fetch(api, { headers: hd });
+    if (!r.ok) throw new Error(r.status === 401 ? "token non valido" : r.status === 404 ? "watchlist.txt non trovato" : "errore " + r.status);
+    const j = await r.json(), cur = decodeURIComponent(escape(atob(j.content.replace(/\n/g, "")))), have = new Set(cur.split("\n").map(l => l.trim().toUpperCase())), add = todo.filter(i => !have.has(i));
+    if (add.length) {
+      const body = (cur.endsWith("\n") ? cur : cur + "\n") + add.join("\n") + "\n";
+      const w = await fetch(api, { method: "PUT", headers: hd, body: JSON.stringify({ message: "Watchlist: " + add.join(", "), content: btoa(unescape(encodeURIComponent(body))), sha: j.sha, branch: "main" }) });
+      if (!w.ok) throw new Error(w.status === 403 || w.status === 404 ? "il token non può scrivere nel repository" : "errore " + w.status);
+    }
+    lsSet(GH.sync, JSON.stringify([...done, ...todo]));
+    watchMsg(add.length ? `In monitoraggio: ${add.length} nuovi ETF. I prezzi arrivano entro pochi minuti` : "Tutti gli ETF dei portafogli sono già in monitoraggio");
+  } catch (e) { watchMsg("Monitoraggio non aggiornato: " + e.message, true); }
+}
+$("gh-save").addEventListener("click", () => { const v = $("gh-token").value.trim(); if (!v) return watchMsg("Incolla il token", true); lsSet(GH.tok, v); $("gh-token").value = ""; lsSet(GH.sync, null); watchMsg("Token salvato in questo browser"); watchSync(true); });
+$("gh-clear").addEventListener("click", () => { lsSet(GH.tok, null); lsSet(GH.sync, null); watchMsg("Token rimosso"); });
+if (lsGet(GH.tok)) watchMsg("Token salvato: gli ETF aggiunti ai portafogli si monitorano da soli");
+
 /* Posizioni e operazioni */
-function commit(id) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
+function commit(id) { saveUser(); watchSync(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); }
 function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copia personale
   if (!src.sample) return src;
   let id = src.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = src.id + "-mio" + n++;

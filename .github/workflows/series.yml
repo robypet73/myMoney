@@ -3,7 +3,7 @@ name: Aggiorna serie ETF
 # Scarica da Yahoo Finance i prezzi degli ETF in watchlist.txt e dei più grandi del catalogo (data/p/ISIN.js).
 on:
   schedule:
-    - cron: "11 20 * * 0"   # ogni domenica sera (UTC)
+    - cron: "41 20 * * 1-5"   # ogni sera nei giorni di borsa, dopo la chiusura europea (UTC)
   push:
     branches: [main]
     paths: [watchlist.txt]
