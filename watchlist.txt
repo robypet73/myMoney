@@ -1,2 +1,10 @@
 # ETF di cui scaricare i prezzi per grafico e portafogli: un ISIN per riga.
 # I primi 150 ETF per patrimonio sono già inclusi. Dopo aver salvato il file i prezzi arrivano entro pochi minuti.
+IE0006GNB732
+IE00B5SSQT16
+LU0446734104
+DE000A2T0VU5
+LU1781541252
+LU1931975152
+IE0006WW1TQ4
+IE00B0M62X26
