@@ -240,6 +240,9 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
 .rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .rbctl button:disabled { opacity: .35; cursor: default; }
+.rbvol { display: flex; align-items: center; gap: 12px; margin: 10px 0 6px; font-size: var(--fs-s); }
+.rbvol input { flex: 1; min-width: 0; accent-color: var(--fg); }
+.rbvol .n { min-width: 52px; text-align: right; }
 .buy { color: var(--up); } .sell { color: var(--down); }
 .lotform #op-cancel { background: none; color: var(--soft); border: 1px solid var(--hair); }
 .rowwrap { display: flex; align-items: center; gap: 14px; border-top: 1px solid var(--hair); }
@@ -385,7 +388,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.017</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.018</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -456,9 +459,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
         <option value="ret">Stesso rendimento, meno volatilità</option>
         <option value="maxS">Massimo Sharpe</option>
         <option value="minV">Minima varianza</option>
+        <option value="custom">Volatilità scelta</option>
       </select>
       <button type="button" id="rb-apply" disabled>Applica operazioni</button>
     </div>
+    <div class="rbvol"><label class="k" for="rb-vol">Volatilità</label><input type="range" id="rb-vol" min="0" max="1" step="0.001" value="0" disabled><span class="n" id="rb-volv">—</span></div>
     <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
     <p class="fc-note" id="rb-note"></p>
   </section>
@@ -939,6 +944,7 @@ function openDetailCat(e) {
       <p class="fc-note">In EUR, totali; 3A e 5A cumulati</p></section>
     <section class="sec"><h3>Rischio</h3>
       <div class="stats">${risk.map(([k, v]) => `<div><span class="k">${k}${k.startsWith("Vol") ? ib("vol") : ib("dd")}</span><span class="n">${v == null ? "—" : k.startsWith("Vol") ? fmt(v * 100, 1) + "%" : pct(v, 1)}</span></div>`).join("")}</div></section>
+    <div id="d-fc">${fcHtml(e)}</div>
     <section class="sec"><h3>Dati</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
       <p class="fc-note">Da <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a>${gen ? ", aggiornati il " + gen : ""}. </p><p class="fc-note" id="d-px">${e.tried ? "" : "Carico i prezzi…"}</p></section>`;
@@ -947,6 +953,7 @@ function openDetailCat(e) {
   $("d-add").onclick = () => { dlg.close(); openAddTo([e.isin]); };
   if ($("d-refresh")) $("d-refresh").onclick = () => refreshAll((t, bad) => { const m = $("d-rmsg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } }, [e.isin]);
   $("d-isin").onclick = async ev => { const b = ev.currentTarget; try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; setTimeout(() => (b.textContent = e.isin), 1200); } catch {} };
+  if (!e.index) loadInfo(e.isin).then(ok => { if (ok && cur === e && $("d-fc")) $("d-fc").innerHTML = fcHtml(e); }); // l'indice di justETF, se scaricato, precisa l'abbinamento
 }
 function openDetail(isin) {
   const e = byIsin(isin); if (!e) return;
@@ -1140,7 +1147,15 @@ const FC = {
 
 // Le previsioni riguardano l'indice: un ETF del catalogo usa quelle dell'indice con lo stesso nome (come da justETF); senza corrispondenza esatta nessuna previsione.
 const FC_IDX = { "msci emerging markets": EM_FC, "msci europe": FC.IMAE, "msci japan": FC.XMJP, "gold": FC.SGLD, "s&p 500": FC.CSPX };
-const fcFor = e => (e.cat ? FC_IDX[String(e.index || "").toLowerCase()] || null : FC[e.ticker]);
+// Senza il nome dell'indice (dati di justETF non ancora scaricati) si usa il nome dell'ETF, solo per gli indici principali e senza varianti (ESG, hedged, ex, pesi uguali, settori…).
+const FC_TAIL = "(?=\\s*(?:Swap\\s+)?(?:UCITS|ETF|Acc|Dist|\\(|EUR|USD|JPY|1C|1D|$))";
+const FC_NAME = [[new RegExp("\\bS&P 500" + FC_TAIL), FC.CSPX], [new RegExp("\\bMSCI Europe" + FC_TAIL), FC.IMAE], [new RegExp("\\bMSCI Japan" + FC_TAIL), FC.XMJP], [new RegExp("\\bMSCI (?:Emerging Markets|EM)" + FC_TAIL), EM_FC], [/Physical Gold\b|\bGold ETC\b|Xetra-Gold/, FC.SGLD]];
+const FC_NOT = /ESG|SRI|Screened|Climate|Paris|PAB|CTB|Leverag|Short|Inverse|Daily|\b[23]x|Equal|Weight|Value|Growth|Quality|Momentum|Small|Mid\b|Dividend|\bex\b|Minimum|Low Vol|Hedged|Hdg|Sector|Technolog|Financ|Health|Energy|Consumer|Select|Enhanced|Factor|Covered|\\bh(?:CHF|EUR|USD|GBP)\\b|Miner|Mining|Silver|Platinum|Copper|Oil|Basket|Bond|Equity Income/i;
+const fcFor = e => {
+  if (!e.cat) return FC[e.ticker];
+  if (e.index) return FC_IDX[String(e.index).toLowerCase()] || null;
+  const hit = FC_NAME.find(([re]) => re.test(e.name || "")); return hit && !FC_NOT.test(e.name) ? { ...hit[1], byName: true } : null;
+};
 const upOf = (fc, i) => fc.unit === "%" ? null : fc.spot ? i.target / fc.spot - 1 : i.up;
 function fcList(fc) {
   const yld = fc.unit === "%";
@@ -1159,7 +1174,7 @@ function fcList(fc) {
 }
 function fcHtml(e) {
   const fc = fcFor(e);
-  return `<section class="sec"><h3>Previsioni sull'indice · fonti ufficiali${fc ? " · " + esc(fc.ref) : ""}</h3>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</section>`;
+  return `<section class="sec"><h3>Previsioni sull'indice · fonti ufficiali${fc ? " · " + esc(fc.ref) : ""}</h3>${fc ? fcList(fc) + (fc.byName ? '<p class="fc-note">Indice dedotto dal nome dell\'ETF</p>' : "") : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</section>`;
 }
 
 /* ---------- Serie di prezzi on demand (data/p/ISIN.js) per gli ETF del catalogo ---------- */
@@ -1428,22 +1443,38 @@ function frontier(P, cap = 1) {
   pts.push(minV, maxS, vol, ret);
   const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let top = minV.r;
   for (const p of srt) if (p.v > minV.v && p.r > top) { top = p.r; line.push(p); }
-  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+  const at = vt => { const sc = p => p.r - pen * Math.max(0, p.v - vt); return refine(best(sc), sc); }; // massimo rendimento con volatilità non oltre vt
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, at, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
 }
 
 // Ribilanciamento: operazioni (a quantità intere, ai prezzi correnti) per portare il portafoglio sull'obiettivo scelto.
 let RB = null;
+// Portafoglio obiettivo: uno dei punti della frontiera o, con lo slider, il migliore alla volatilità scelta
+function rbTarget(F) {
+  const g = $("rb-goal").value; if (g !== "custom") return F[g];
+  const v = +$("rb-vol").value; if (!F._c || F._cv !== v) { F._cv = v; F._c = F.at(v); }
+  return F._c;
+}
+function syncVol(F) {
+  const s = $("rb-vol"), lo = F ? F.minV.v : 0, hi = F ? Math.max(...F.line.map(p => p.v)) : 1;
+  s.disabled = !F; if (!F) { $("rb-volv").textContent = "—"; return; }
+  s.min = lo.toFixed(4); s.max = hi.toFixed(4); s.step = 0.001;
+  if ($("rb-goal").value !== "custom") s.value = Math.min(Math.max(F[$("rb-goal").value].v, lo), hi);
+  else s.value = Math.min(Math.max(+s.value, lo), hi);
+  $("rb-volv").textContent = fmt(rbTarget(F).v * 100, 1) + "%";
+}
 function renderRb() {
   const P = PF, F = EF, tb = $("rb-tbl"), note = $("rb-note"), btn = $("rb-apply"); btn.textContent = isDraft(pfCur) ? "Applica pesi" : "Applica operazioni";
+  syncVol(F);
   if (!F) { tb.innerHTML = ""; RB = null; btn.disabled = true; note.textContent = P.act.length < 2 ? "Servono almeno 2 ETF in portafoglio" : "Tetto di peso non realizzabile"; return; }
   if (isDraft(pfCur)) {
-    const T0 = F[$("rb-goal").value], tw = T0.w.map(x => +(x * 100).toFixed(1)), tot = F.act.reduce((a, ai) => a + P.vh[ai], 0), cw0 = F.items.map((_, j) => (j < F.na ? P.vh[F.act[j]] / tot : 0));
+    const T0 = rbTarget(F), tw = T0.w.map(x => +(x * 100).toFixed(1)), tot = F.act.reduce((a, ai) => a + P.vh[ai], 0), cw0 = F.items.map((_, j) => (j < F.na ? P.vh[F.act[j]] / tot : 0));
     const a0 = F.ev(cw0), b0 = F.ev(tw.map(x => x / 100)), mm = x => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)}`;
     RB = F.items.map((e, j) => ({ isin: e.isin, w: tw[j] }));
     tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.items.map((e, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${e.ticker}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody>`;
     note.innerHTML = `Ora ${mm(a0)}<br>Dopo ${mm(b0)}`; btn.disabled = false; return;
   }
-  const T = F[$("rb-goal").value], Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
+  const T = rbTarget(F), Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
   const rows = F.items.map((e, j) => { const pr = e.live, q0 = j < F.na ? P.qty[F.act[j]] : 0, tq = Math.round(Vn * T.w[j] / pr); return { e, j, pr, tq, dq: tq - q0, cur: q0 * pr / Vn }; });
   const val2 = rows.map(r => r.tq * r.pr), s2 = val2.reduce((a, b) => a + b, 0), w2 = val2.map(v => v / s2);
   const a = F.ev(rows.map(r => r.cur)), b = F.ev(w2), cash = -rows.reduce((x, r) => x + r.dq * r.pr, 0);
@@ -1537,7 +1568,7 @@ function drawEF() {
   const box = $("pf-ef"), F = EF; if (!box || !PF) return;
   if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
   const W = box.clientWidth, H = box.clientHeight; if (!W) return;
-  const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line];
+  const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line, rbTarget(F)];
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   keep.forEach(p => { x0 = Math.min(x0, p.v); x1 = Math.max(x1, p.v); y0 = Math.min(y0, p.r); y1 = Math.max(y1, p.r); });
   const px = (x1 - x0) * 0.06 || 0.01, py = (y1 - y0) * 0.08 || 0.01; x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
@@ -1551,7 +1582,7 @@ function drawEF() {
     ${xt.map(v => `<text class="ax" x="${X(v)}" y="${H - 8}" text-anchor="middle">${fmt(v * 100, dx)}%</text>`).join("")}
     ${F.bg.map(p => `<circle cx="${X(p.v).toFixed(1)}" cy="${Y(p.r).toFixed(1)}" r="1.7" fill="var(--soft)" fill-opacity=".28"/>`).join("")}
     <path d="${F.line.map((p, i) => (i ? "L" : "M") + X(p.v).toFixed(1) + " " + Y(p.r).toFixed(1)).join("")}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
-    ${lab(F.minV, "Min varianza", "var(--c2)", false)}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}
+    ${lab(F.minV, "Min varianza", "var(--c2)", false)}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}${lab(rbTarget(F), "Obiettivo", "var(--c3)", false)}
     <text class="ax" x="${W - pr}" y="${pt + 8}" text-anchor="end">Rendimento ↑ · Volatilità →</text></svg>`;
 }
 const donut = items => {
@@ -1905,7 +1936,7 @@ const GL = {
   minvar: { t: "Minima varianza", what: "Il portafoglio con la volatilità più bassa ottenibile con gli ETF scelti.", use: "È il punto di partenza a sinistra della frontiera: meno rischio possibile.", how: "Utile se vuoi ridurre le oscillazioni. Spesso pesa molto sulle obbligazioni.", ref: [] },
   maxsharpe: { t: "Massimo Sharpe", what: "Il portafoglio con il miglior rendimento per unità di rischio sulla frontiera.", use: "È considerato il punto più efficiente.", how: "Tende a concentrarsi sugli ETF che sono andati meglio: usa il tetto di peso per evitare portafogli troppo concentrati.", ref: [] },
   cap: { t: "Peso massimo per ETF", what: "Limite alla quota di ogni ETF nei portafogli calcolati per la frontiera e per il ribilanciamento.", use: "Evita risultati estremi, per esempio il 90% in un solo ETF.", how: "Con meno di 4 ETF il tetto basso non si può rispettare e viene tolto.", ref: [["Valori usuali", "30–40%"]] },
-  rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
+  rib: { t: "Ribilanciamento", what: "Riportare i pesi verso un obiettivo vendendo ciò che è salito troppo e comprando ciò che è sceso.", use: "Mantiene il rischio sotto controllo. Qui puoi puntare a più rendimento a pari rischio, meno rischio a pari rendimento, massimo Sharpe o minima varianza, oppure scegliere tu la volatilità con lo slider: il pallino «Obiettivo» si sposta sulla frontiera e i pesi si ricalcolano.", how: "La pagina propone operazioni a quote intere ai prezzi correnti. «Applica» le registra come acquisti e vendite di oggi; per un draft cambia solo i pesi. Considera costi e tasse prima di operare davvero.", ref: [["Frequenza usuale", "una volta l'anno"], ["Oppure quando un peso si sposta di", "circa 5 punti percentuali"]] },
   watch: { t: "Monitoraggio automatico", what: "Quando aggiungi a un portafoglio un ETF che non ha ancora i prezzi, la pagina lo scrive in watchlist.txt nel tuo repository GitHub. Ogni sera GitHub scarica i prezzi (Yahoo Finance) e la pagina li legge: da quel momento l'ETF è monitorato.", use: "Permette di cercare qualsiasi ETF del catalogo e di seguirlo in un portafoglio senza modificare file a mano.", how: "Crea su GitHub un token «fine-grained» solo per questo repository, con permessi Contents e Actions: lettura e scrittura, e incollalo qui. Resta salvato solo in questo browser; «Rimuovi» lo cancella. Con il token, «Aggiorna dati» (nel dettaglio di un ETF o nelle posizioni) rinnova subito prezzi, bid/ask, indice e composizione solo di quegli ETF. Senza token aggiungi gli ISIN a mano in watchlist.txt.", ref: [["Prezzi aggiornati", "ogni sera nei giorni di borsa, solo per gli ETF dei portafogli"], ["Aggiorna dati", "subito, solo gli ETF scelti"], ["Serie scaricata", "ultimi 5 anni, in EUR"]], links: ["token"] },
   retro: { t: "Storico dei titoli", what: "«Dall'acquisto» è il valore reale del tuo portafoglio da quando hai registrato i movimenti. «Storico titoli» mostra come sarebbe andato nel tempo il valore delle quote che possiedi oggi, se le avessi avute per tutta la storia disponibile dei loro prezzi (fino al lancio dell'ETF).", use: "Serve a guardare l'andamento di lungo periodo di ciò che hai in portafoglio anche se l'hai comprato da poco: 1A, 3A, 5A e Max seguono la storia dei prezzi.", how: "È una simulazione con le quote di oggi, senza acquisti e vendite passati: non è il tuo rendimento effettivo. Se un ETF ha pochi prezzi, la storia parte dal suo primo prezzo.", ref: [["Rendimento reale", "scheda «Dall\'acquisto» e indicatori in alto"]] },
   storico: { t: "Storico del portafoglio", what: "Come sono cambiati nel tempo il valore e la composizione del portafoglio, ETF per ETF, in base alle quantità possedute e ai prezzi di ogni giorno. I punti sull'asse sono gli acquisti (verdi) e le vendite (rossi).", use: "Mostra l'effetto delle tue operazioni: quando hai aumentato o ridotto un ETF e come è cambiato il peso di ciascuno.", how: "«Valore» mostra l'importo per ETF in euro con la linea tratteggiata dell'investito; «Composizione» mostra la quota percentuale. Le righe «Iniziale · simulato» sono quantità senza data: si considerano aperte alla data «Da». Con prezzi simulati anche il grafico lo è.", ref: [] },
@@ -2137,7 +2168,8 @@ $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("bu
 /* Rimessi: ribilanciamento, predefinito, nome, selezione dalla ricerca */
 $("ef-cap").addEventListener("change", () => PF && renderPf());
 $("pf-upd").addEventListener("click", () => refreshAll((t, bad) => { const m = $("upd-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); }));
-$("rb-goal").addEventListener("change", () => PF && renderRb());
+$("rb-goal").addEventListener("change", () => { if (!PF) return; renderRb(); drawEF(); });
+$("rb-vol").addEventListener("input", () => { if (!PF || !EF) return; $("rb-goal").value = "custom"; renderRb(); drawEF(); });
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
   if (isDraft(pfCur)) { editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }), true); return msg("Pesi aggiornati"); }
