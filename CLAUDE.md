@@ -32,6 +32,7 @@ Web app statica per cercare ETF e gestire portafogli (acquistati e draft). Un so
 - **Modifiche ai portafogli**: quantità, importo, data, ETF aggiunti/rimossi, titolo e descrizione restano in una copia fino a «Salva» (barra in basso, con «Annulla»); le azioni con un proprio pulsante (aggiungi/modifica/elimina operazione, applica ribilanciamento, registra acquisti) salvano subito. Cambiare portafoglio con modifiche in sospeso chiede conferma.
 - **Movimenti**: aggiungendo un ETF (dalla ricerca) o premendo «Movimenti» sulla riga di una posizione si apre l'editor dei movimenti (acquisto/vendita, quote, data, prezzo medio o totale; più righe); l'editor delle posizioni esistenti ha «Salva». Il prezzo vuoto usa il prezzo di mercato del giorno, se i prezzi dell'ETF sono scaricati.
 - **Grafici nel tempo**: sempre 1A, 3A e 5A (e Max); si nascondono solo i periodi più lunghi della storia disponibile (tolleranza 10 giorni).
+- **Aggiorna e ora dei dati**: il pulsante «↻ Aggiorna» (Home e dettaglio ETF, `refreshAll`) rilegge subito `prices.js`, `quotes.js` e le serie dal sito; con il token GitHub lancia anche `prices.yml` e `refresh.yml` e rilegge dopo ~2 minuti. Ogni valore live mostra data e ora dell'ultimo dato (`e.lt`, `ltTxt`; con più ETF il più vecchio), mai l'ora dell'orologio.
 - **Bid, ask e spread** nel dettaglio di ogni ETF: bid/ask dall'ultimo aggiornamento di Yahoo (`fetch_prices.py` ogni 30 minuti per i 14 di `prices.js`, `fetch_series.py` ogni sera per gli altri), spread calcolato in pagina; senza dato si mostra «—».
 
 ## Dati e fonti

@@ -169,7 +169,10 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .selwrap { position: relative; max-width: 100%; }
 .selwrap::after { content: ""; position: absolute; right: 4px; top: 50%; margin-top: -7px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
 .pf-sel select { appearance: none; -webkit-appearance: none; border: 0; border-bottom: 1.5px solid var(--fg); border-radius: 0; background: transparent; font-size: var(--fs-m); font-weight: 500; letter-spacing: -.035em; height: 40px; padding: 0 36px 0 0; cursor: pointer; max-width: 100%; }
+.updrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .badge { font-size: var(--fs-s); color: var(--soft); }
+#upd-msg:empty { display: none; }
+#upd-msg.err { color: var(--down); }
 .badge a { color: inherit; }
 .badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
 .badge.real i { background: var(--up); }
@@ -378,7 +381,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.012</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.013</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -396,7 +399,8 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
       <button type="button" class="newpf" id="pf-exp">Scarica JSON</button>
       <button type="button" class="newpf" id="pf-del">Elimina</button>
     </div>
-    <span class="badge" id="badge"></span>
+    <div class="updrow"><span class="badge" id="badge"></span><button type="button" class="newpf" id="pf-upd">↻ Aggiorna</button></div>
+    <p class="fc-note" id="upd-msg" aria-live="polite"></p>
   </section>
   <section class="pf-meta" id="pf-meta">
     <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
@@ -609,6 +613,8 @@ const fmt = (v, d = 2) => v.toLocaleString("it-IT", { minimumFractionDigits: d, 
 const pct = (v, d = 2) => { if (v == null) return "—"; const r = +(v * 100).toFixed(d) || 0; return (r > 0 ? "+" : "") + fmt(r, d) + "%"; };
 const cls = v => v == null ? "" : v >= 0 ? "pos" : "neg";
 const aumTxt = m => m >= 1000 ? "€ " + fmt(m / 1000, 2) + " Mld" : "€ " + fmt(m, 2) + " Mln";
+const ltTxt = ms => ms ? new Date(ms).toLocaleString("it-IT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+const liveMs = e => e.lt || (e.s ? e.s.t[e.s.t.length - 1] : 0); // data e ora dell'ultimo prezzo mostrato come live
 const dateTxt = (t, o = { day: "2-digit", month: "short", year: "numeric" }) => new Date(t).toLocaleDateString("it-IT", o);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -916,7 +922,7 @@ function openDetailCat(e) {
       <div>
         <h2 id="d-name">${esc(e.name)}</h2>
         <div class="id n">${esc(e.ticker)} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> · <a class="src" href="https://finance.yahoo.com/lookup/?s=${e.isin}" target="_blank" rel="noopener">Yahoo ↗</a></div>
-        <div class="io" style="margin-top:12px"><button type="button" class="ghost" id="d-add">Aggiungi a portafoglio</button>${e.cat ? '<button type="button" class="ghost" id="d-refresh">Aggiorna dati</button>' : ""}</div>
+        <div class="io" style="margin-top:12px"><button type="button" class="ghost" id="d-add">Aggiungi a portafoglio</button><button type="button" class="ghost" id="d-refresh">↻ Aggiorna</button></div>
         <p class="fc-note" id="d-rmsg" aria-live="polite"></p>
       </div>
       <button class="icon close" type="button" id="d-close" aria-label="Chiudi">
@@ -935,7 +941,7 @@ function openDetailCat(e) {
   const dlg = $("detail"); if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0;
   $("d-close").onclick = () => dlg.close();
   $("d-add").onclick = () => { dlg.close(); openAddTo([e.isin]); };
-  if ($("d-refresh")) $("d-refresh").onclick = () => refreshEtf([e.isin], (t, bad) => { const m = $("d-rmsg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } });
+  if ($("d-refresh")) $("d-refresh").onclick = () => refreshAll((t, bad) => { const m = $("d-rmsg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } }, [e.isin]);
   $("d-isin").onclick = async ev => { const b = ev.currentTarget; try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; setTimeout(() => (b.textContent = e.isin), 1200); } catch {} };
 }
 function openDetail(isin) {
@@ -963,7 +969,7 @@ function openDetail(isin) {
       <div>
         <h2 id="d-name">${esc(e.name)}</h2>
         <div class="id n">${e.ticker} · <button type="button" id="d-isin" title="Copia ISIN">${e.isin}</button> · <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a></div>
-        <div class="io" style="margin-top:12px"><button type="button" class="ghost" id="d-add">Aggiungi a portafoglio</button>${e.cat ? '<button type="button" class="ghost" id="d-refresh">Aggiorna dati</button>' : ""}</div>
+        <div class="io" style="margin-top:12px"><button type="button" class="ghost" id="d-add">Aggiungi a portafoglio</button><button type="button" class="ghost" id="d-refresh">↻ Aggiorna</button></div>
         <p class="fc-note" id="d-rmsg" aria-live="polite"></p>
       </div>
       <button class="icon close" type="button" id="d-close" aria-label="Chiudi">
@@ -975,7 +981,7 @@ function openDetail(isin) {
       <div class="price">
         <div>
           <div class="big">${fmt(last)}<small>${e.pcur || e.cur}${e.fx ? " · da " + e.fx : ""}</small></div>
-          <div class="chg n"><span class="${cls(chg)}">${pct(chg)}</span> <span class="k">${dateTxt(s.t[s.t.length - 1], { day: "numeric", month: "short" })}</span></div>
+          <div class="chg n"><span class="${cls(chg)}">${pct(chg)}</span> <span class="k">${e.real ? ltTxt(liveMs(e)) : dateTxt(s.t[s.t.length - 1], { day: "numeric", month: "short" })}</span></div>
         </div>
         <div class="periods" role="group" aria-label="Periodo">${avail.map(([p]) => `<button type="button" data-p="${p}" aria-pressed="${p === curPeriod}">${p}</button>`).join("")}</div>
       </div>
@@ -1010,7 +1016,7 @@ function openDetail(isin) {
   dlg.scrollTop = 0;
   $("d-close").onclick = () => dlg.close();
   $("d-add").onclick = () => { dlg.close(); openAddTo([e.isin]); };
-  if ($("d-refresh")) $("d-refresh").onclick = () => refreshEtf([e.isin], (t, bad) => { const m = $("d-rmsg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } });
+  if ($("d-refresh")) $("d-refresh").onclick = () => refreshAll((t, bad) => { const m = $("d-rmsg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } }, [e.isin]);
   $("d-isin").onclick = async ev => {
     const b = ev.currentTarget;
     try { await navigator.clipboard.writeText(e.isin); b.textContent = "Copiato"; setTimeout(() => (b.textContent = e.isin), 1200); }
@@ -1151,7 +1157,7 @@ function fcHtml(e) {
 
 /* ---------- Serie di prezzi on demand (data/p/ISIN.js) per gli ETF del catalogo ---------- */
 function attachSeries(e, d) {
-  e.s = { t: d.d.map(x => x * 86400000 + 43200000), v: d.v }; e.real = true; e.src = d.source; e.sym = d.symbol; e.pcur = d.currency; e.fx = d.fx; e.live = d.v[d.v.length - 1]; if (e.bid == null) { e.bid = d.bid; e.ask = d.ask; e.qt = d.qt; e.qsym = d.symbol; }
+  e.s = { t: d.d.map(x => x * 86400000 + 43200000), v: d.v }; e.real = true; e.src = d.source; e.sym = d.symbol; e.pcur = d.currency; e.fx = d.fx; e.live = d.v[d.v.length - 1]; e.lt = d.qt ? d.qt * 1000 : null; if (e.bid == null) { e.bid = d.bid; e.ask = d.ask; e.qt = d.qt; e.qsym = d.symbol; }
   if (d.adv > 0) e.adv = d.adv;
 }
 function loadSeries(isin, fresh) {
@@ -1577,7 +1583,7 @@ function renderPf() {
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const nReal = P.es.filter(e => e.real).length;
   $("badge").className = "badge" + (nReal === P.es.length ? " real" : "");
-  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${window.PRICES && window.PRICES.generated ? dateTxt(Date.parse(window.PRICES.generated), { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) + " · " : ""}${link("https://finance.yahoo.com", "Yahoo Finance ↗")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
+  $("badge").innerHTML = nReal === P.es.length ? `<i></i>Prezzi reali · ${link("https://finance.yahoo.com", "Yahoo Finance ↗")}${ib("agg")}` : nReal ? `<i></i>Prezzi reali per ${nReal} di ${P.es.length} ETF` : "<i></i>Prezzi simulati";
   $("kpi").innerHTML = [
     ["Valore", eur(val), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)],
     ["Rend. annuo", S.ann == null ? pct(S.tot, 1) : pct(S.ann, 1), cls(S.ann ?? S.tot)], ["Volatilità", fmt(S.vol * 100, 1) + "%", ""],
@@ -1652,8 +1658,9 @@ function livePerf(P) {
 function liveUpdate(force) {
   const P = PF; if (!P || (!force && (document.hidden || $("v-port").hidden))) return;
   const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.es.some(e => !e.real);
+  const act = P.act.map(i => P.es[i]).filter(e => e.real), oldE = act.reduce((a, e) => (!a || liveMs(e) < liveMs(a) ? e : a), null), oldMs = oldE ? liveMs(oldE) : 0, oldTxt = oldE ? `Dato più vecchio: ${oldE.ticker} · ${ltTxt(oldMs)}` : "";
   $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
-  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k">${sim ? "simulato" : "live"} · ${new Date().toLocaleTimeString("it-IT")}</span>`;
+  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)}</span> <span class="k" title="${esc(oldTxt)}">${sim ? "simulato" : "live · " + ltTxt(oldMs)}</span>`;
   $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}${ib("twr")}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
   const kv = k => $("kpi").querySelector(`[data-k="${k}"] .n`);
   if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").textContent = eurS(pl); }
@@ -1661,7 +1668,7 @@ function liveUpdate(force) {
 // Con prezzi reali la quotazione corrente arriva da prices.js (aggiornato da fetch_prices.py --watch); altrimenti oscilla in modo simulato.
 function applyLive() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
-  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) { e.live = s.last.price; e.bid = s.last.bid; e.ask = s.last.ask; e.qt = s.last.qt; e.qsym = s.symbol; } }
+  for (const [isin, s] of Object.entries(PR.series)) { const e = byIsin(isin); if (e && s.last && s.last.price > 0) { e.live = s.last.price; e.lt = s.last.time ? s.last.time * 1000 : PR.generated ? Date.parse(PR.generated) : e.lt; e.bid = s.last.bid; e.ask = s.last.ask; e.qt = s.last.qt; e.qsym = s.symbol; } }
 }
 // Bid e ask in EUR di tutti gli ETF monitorati (quotes.js, aggiornato ogni 30 minuti): valgono più di quelli dei singoli file di prezzi.
 function applyQuotes() {
@@ -1683,7 +1690,7 @@ async function yahooQuotes() {
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
     try {
       const r = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(s.symbol) + "?range=1d&interval=1m", { signal: ctl.signal }), m = (await r.json()).chart.result[0].meta, e = byIsin(isin);
-      if (e && m.regularMarketPrice > 0) { e.live = m.regularMarketPrice; yahooOk = true; }
+      if (e && m.regularMarketPrice > 0) { e.live = m.regularMarketPrice; e.lt = m.regularMarketTime ? m.regularMarketTime * 1000 : Date.now(); yahooOk = true; }
     } catch { if (yahooOk === null) { yahooOk = false; return; } } finally { clearTimeout(to); }
   }
 }
@@ -1902,6 +1909,7 @@ const GL = {
   cur: { t: "Valuta", what: "Valuta in cui è denominato il fondo. Può differire da quella di quotazione e da quella dei titoli.", use: "Il rischio di cambio dipende dalle valute dei titoli rispetto al tuo euro.", how: "Le versioni «hedged» coprono il cambio con un piccolo costo. Qui i prezzi sono nella valuta di quotazione, senza conversione.", ref: [] },
   liq: { t: "Liquidità", what: "Quanto è facile comprare o vendere l'ETF senza spostare il prezzo. Dipende da volume, spread, numero di market maker e liquidità dei titoli sottostanti.", use: "Una liquidità bassa fa costare di più ogni operazione.", how: "Usa ordini con limite di prezzo ed evita apertura e chiusura del mercato. Guarda lo spread per qualche giorno prima di operare.", ref: [["Alta (soglie di questa pagina)", "spread fino a 0,08% e volume da 10 Mln €/giorno"], ["Media", "spread fino a 0,15% e volume da 2 Mln €/giorno"], ["Bassa", "oltre queste soglie"]], links: ["liq", "trading"] },
   adv: { t: "Volume medio giornaliero", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di eseguire ordini.", how: "Il volume sulla borsa può sottostimare la liquidità reale, perché i market maker creano e rimborsano quote.", ref: [["Oltre 10 Mln €", "ottimo"], ["1–10 Mln €", "adeguato per importi piccoli"], ["Sotto 1 Mln €", "prudenza"]], links: ["trading"] },
+  agg: { t: "Aggiorna e ora dei dati", what: "Il pulsante «Aggiorna» rilegge subito prezzi, bid/ask e serie dal sito. Accanto al valore e al prezzo compaiono data e ora dell'ultimo dato live; con più ETF vale il più vecchio.", use: "Ti dice quanto sono freschi i numeri che vedi.", how: "I prezzi dei 14 ETF principali si aggiornano ogni 30 minuti nei giorni di borsa, gli altri ogni sera (domenica per i primi 150). Con il token GitHub («Monitoraggio automatico») il pulsante chiede anche a Yahoo Finance dati nuovi, che arrivano entro un paio di minuti. Fuori orario di borsa il dato resta quello dell'ultima chiusura.", ref: [] },
   spr: { t: "Spread denaro-lettera", what: "Bid è il miglior prezzo a cui trovi un compratore, ask il miglior prezzo a cui trovi un venditore. Lo spread è la differenza, in percentuale del prezzo medio: un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Qui si calcola sui valori bid e ask dell'ultimo aggiornamento di Yahoo Finance (l'orario è indicato): non è un prezzo in tempo reale. Fuori orario di borsa bid e ask possono mancare. Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
   rend: { t: "Rendimenti 1A, 3A, da inizio", what: "Variazione di prezzo dell'ETF su un anno, su tre e su cinque anni (annualizzata) e dal lancio (annualizzata).", use: "Confronta la redditività di ETF diversi.", how: "Confronta ETF simili sullo stesso periodo. Per gli ETF a distribuzione il rendimento di prezzo non include i dividendi pagati. Il passato non garantisce il futuro.", ref: [["1 anno", "molto variabile, poco indicativo"], ["3–5 anni", "più significativo"], ["Da inizio", "dipende dall'epoca di lancio"]] },
   settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (da justETF quando scaricati, altrimenti indicativi). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
@@ -1980,6 +1988,37 @@ $("gh-clear").addEventListener("click", () => { lsSet(GH.tok, null); lsSet(GH.sy
 if (lsGet(GH.tok)) watchMsg("Token salvato: gli ETF aggiunti ai portafogli si monitorano da soli");
 
 /* Aggiornamento su richiesta: solo gli ETF scelti (quelli del portafoglio o quello aperto), senza ricaricare tutto il catalogo */
+// Aggiorna: rilegge subito prezzi, bid/ask e serie dal sito; con il token GitHub chiede anche a Yahoo dati nuovi (workflow) e li rilegge dopo circa 2 minuti.
+const loadJs = src => new Promise(res => { const s = document.createElement("script"); s.src = src + "?t=" + Date.now(); s.onload = () => { s.remove(); res(true); }; s.onerror = () => { s.remove(); res(false); }; document.head.appendChild(s); });
+async function dispatchWf(file, inputs) {
+  const r = await fetch(`https://api.github.com/repos/${GH.repo}/actions/workflows/${file}/dispatches`, { method: "POST", headers: { Authorization: "Bearer " + lsGet(GH.tok), Accept: "application/vnd.github+json" }, body: JSON.stringify(inputs ? { ref: "main", inputs } : { ref: "main" }) });
+  if (!r.ok) throw new Error(r.status === 401 ? "token non valido" : r.status === 403 || r.status === 404 ? "il token deve avere anche il permesso Actions: lettura e scrittura" : "errore " + r.status);
+}
+let updBusy = false;
+async function reloadData(isins) {
+  const cat = isins.filter(i => byIsin(i) && byIsin(i).cat);
+  await Promise.all([
+    window.PRICES ? loadJs("prices.js").then(ok => { if (ok) { applyPrices(); applyLive(); } }) : null,
+    loadJs("quotes.js").then(ok => ok && applyQuotes()),
+    ...cat.map(i => { byIsin(i).tried = false; return loadSeries(i, true); }),
+    yahooQuotes(),
+  ]);
+  if (pfCur && PF) renderPf(); if ($("detail").open && cur && isins.includes(cur.isin)) openDetail(cur.isin);
+}
+async function refreshAll(say, isins) {
+  if (updBusy) return; updBusy = true;
+  const own = !isins; isins = (isins || (pfCur ? pfCur.positions.map(x => x.isin) : [])).filter(i => byIsin(i));
+  const stamp = () => { const ms = Math.min(...isins.map(i => liveMs(byIsin(i))).filter(Boolean)); return isFinite(ms) ? ltTxt(ms) : ""; };
+  say("Aggiorno…");
+  try { await reloadData(isins); } catch {}
+  updBusy = false;
+  const at = stamp(), tok = lsGet(GH.tok), cat = isins.filter(i => byIsin(i).cat), cur14 = isins.some(i => !byIsin(i).cat);
+  if (!tok) return say(`Dati al ${at}. Per riscaricarli da Yahoo serve il token GitHub: Portafogli → Monitoraggio automatico`);
+  try { if (cur14) await dispatchWf("prices.yml"); if (cat.length) await dispatchWf("refresh.yml", { isins: cat.join(",") }); } catch (e) { return say("Aggiornamento non avviato: " + e.message, true); }
+  say(`Dati al ${at}. Richiesti dati nuovi a Yahoo: arrivano entro un paio di minuti`);
+  const again = async () => { try { await reloadData(isins); } catch {} say(`Dati al ${stamp()}`); };
+  setTimeout(again, 110000); setTimeout(again, 220000);
+}
 async function refreshEtf(isins, say) {
   const tok = lsGet(GH.tok), list = [...new Set(isins)].filter(i => { const e = byIsin(i); return e && e.cat; });
   if (!list.length) return say("Questi ETF si aggiornano già ogni 30 minuti");
@@ -2085,6 +2124,7 @@ $("hist-tbl").addEventListener("click", ev => {
 $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
 /* Rimessi: ribilanciamento, predefinito, nome, selezione dalla ricerca */
 $("ef-cap").addEventListener("change", () => PF && renderPf());
+$("pf-upd").addEventListener("click", () => refreshAll((t, bad) => { const m = $("upd-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); }));
 $("rb-goal").addEventListener("change", () => PF && renderRb());
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
