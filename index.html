@@ -240,6 +240,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
 .rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .rbctl button:disabled { opacity: .35; cursor: default; }
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .rbvol { display: flex; align-items: center; gap: 12px; margin: 10px 0 6px; font-size: var(--fs-s); }
 .rbvol input { flex: 1; min-width: 0; accent-color: var(--fg); }
 .rbvol .n { min-width: 52px; text-align: right; }
@@ -388,7 +389,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.018</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.019</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -500,7 +501,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="io">
       <button type="button" id="io-exp">Scarica tutti</button>
       <button type="button" id="io-copy">Copia</button>
-      <label class="btn" for="io-file">Carica file</label><input id="io-file" type="file" hidden>
+      <button type="button" id="io-pick">Carica file</button><input id="io-file" type="file" class="vh" tabindex="-1" aria-hidden="true">
       <button type="button" id="io-imp">Importa</button>
       <span id="io-msg" aria-live="polite"></span>
     </div>
@@ -537,9 +538,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 <dialog id="detail" aria-labelledby="d-name"><div class="d" id="d-body"></div></dialog>
 <dialog id="newpf" aria-labelledby="np-title"><form id="np-form" class="at">
   <div class="d-top"><h2 id="np-title">Nuovo portafoglio</h2><button type="button" class="icon close" id="np-x" aria-label="Chiudi">×</button></div>
-  <p class="fc-note" style="margin:0">Parte come draft vuoto: aggiungi gli ETF, scegli i pesi e simula.</p>
+  <p class="fc-note" style="margin:0">Parte vuoto, oppure con i dati del JSON che carichi o incolli.</p>
   <input id="np-name" placeholder="Titolo" maxlength="80" required autocomplete="off" aria-label="Titolo">
   <textarea id="np-descr" placeholder="Descrizione (facoltativa)" maxlength="500" rows="3" aria-label="Descrizione"></textarea>
+  <textarea id="np-json" placeholder="Oppure incolla un JSON per inizializzare il portafoglio" rows="3" spellcheck="false" aria-label="JSON"></textarea>
+  <div class="io"><button type="button" class="ghost" id="np-pick">Carica JSON</button><input id="np-file" type="file" class="vh" tabindex="-1" aria-hidden="true"><span id="np-msg" class="fc-note" aria-live="polite"></span></div>
   <div class="io"><button type="submit" class="primary">Crea</button><button type="button" class="ghost" id="np-cancel">Annulla</button></div>
 </form></dialog>
 <dialog id="info" aria-labelledby="info-title"><div class="d" id="info-body"></div></dialog>
@@ -1322,11 +1325,16 @@ async function exportJson(list = PFLIST, fname) {
   try { await navigator.clipboard.writeText(text); done += " · copiato"; } catch {}
   ioMsg(done);
 }
-function importJson(text) {
-  let j; try { j = JSON.parse(String(text).replace(/^\uFEFF/, "").trim()); } catch { ioMsg("JSON non valido", true); return $("io-msg").scrollIntoView({ block: "nearest" }); }
+function parsePfs(text) {
+  let j; try { j = JSON.parse(String(text).replace(/^\uFEFF/, "").trim()); } catch { return { ok: [], errs: ["JSON non valido"], bad: true }; }
   const arr = Array.isArray(j) ? j : Array.isArray(j && j.portfolios) ? j.portfolios : j && j.portfolio ? [j.portfolio] : [j];
   const ok = [], errs = [];
   arr.forEach(p => { const r = cleanPf(p); if (r.pf && !r.err.length) ok.push(r.pf); else errs.push(((p && p.name) || "Portafoglio") + ": " + r.err.join("; ")); });
+  return { ok, errs };
+}
+function importJson(text) {
+  const { ok, errs, bad } = parsePfs(text);
+  if (bad) { ioMsg("JSON non valido", true); return $("io-msg").scrollIntoView({ block: "nearest" }); }
   ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
   if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); ORIG = null; updSave(); fillSel(); renderPf(); renderPfs(); }
   ioMsg((ok.length ? `Importati ${ok.length}` : "Nessun portafoglio importato") + (errs.length ? " · " + errs.join(" | ") : ""), !ok.length || errs.length);
@@ -2001,7 +2009,14 @@ $("pf-comp").addEventListener("click", ev => {
 $("io-exp").addEventListener("click", () => exportJson());
 $("io-copy").addEventListener("click", async () => { try { if (!$("json-box").value) $("json-box").value = pfJson(PFLIST); await navigator.clipboard.writeText($("json-box").value); ioMsg("Copiato"); } catch { $("json-box").select(); ioMsg("Selezionato: copia con Ctrl+C"); } });
 $("io-imp").addEventListener("click", () => importJson($("json-box").value));
-$("io-file").addEventListener("change", ev => { const f = ev.target.files[0]; if (!f) return; const r = new FileReader(); ioMsg("Leggo il file…"); r.onload = () => { $("json-box").value = r.result; importJson(r.result); }; r.onerror = () => ioMsg("File non leggibile: incolla il JSON nel riquadro e premi Importa", true); r.readAsText(f); ev.target.value = ""; });
+// Il selettore file si azzera solo a lettura finita: su alcuni telefoni azzerarlo subito rende il file illeggibile.
+function readPicked(input, done) {
+  const f = input.files && input.files[0]; if (!f) return;
+  const fin = t => { input.value = ""; done(t); };
+  try { const r = new FileReader(); r.onload = () => fin(String(r.result)); r.onerror = () => fin(null); r.readAsText(f); } catch { fin(null); }
+}
+$("io-pick").addEventListener("click", () => $("io-file").click());
+$("io-file").addEventListener("change", () => { ioMsg("Leggo il file…"); readPicked($("io-file"), t => { if (t == null) return ioMsg("File non leggibile: incolla il JSON nel riquadro e premi Importa", true); $("json-box").value = t; importJson(t); }); });
 /* Monitoraggio: gli ETF dei portafogli che non hanno ancora i prezzi si scrivono in watchlist.txt (serve un token GitHub salvato qui) e GitHub ne scarica i prezzi ogni sera */
 const GH = { repo: "robypet73/myMoney", tok: "mm-gh-token", sync: "mm-watch-synced" };
 const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch { return ""; } };
@@ -2242,9 +2257,26 @@ $("pfs-list").addEventListener("click", ev => {
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
 $("pfs-restore").addEventListener("click", () => { try { localStorage.removeItem("mm-hidden"); } catch {} allPf(); fillSel(); renderPf(); });
-function openNew() { if (!keepDirty()) return; $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("newpf").showModal(); $("np-name").select(); }
+function openNew() { if (!keepDirty()) return; $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("np-json").value = ""; npMsg(""); $("newpf").showModal(); $("np-name").select(); }
+const npMsg = (t, bad) => { const m = $("np-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
+// JSON nel dialogo: titolo e descrizione si riempiono dai dati, poi si può correggerli prima di «Crea»
+function npParse() {
+  const t = $("np-json").value.trim(); if (!t) { npMsg(""); return null; }
+  const r = parsePfs(t); if (!r.ok.length) { npMsg(r.errs.join(" | ") || "Nessun portafoglio nel JSON", true); return null; }
+  const p = r.ok[0]; $("np-name").value = p.name; $("np-descr").value = p.description || "";
+  npMsg(`${r.ok.length === 1 ? "1 portafoglio" : r.ok.length + " portafogli"} · ${r.ok.reduce((a, x) => a + x.positions.length, 0)} ETF${r.errs.length ? " · " + r.errs.join(" | ") : ""}`, r.errs.length > 0);
+  return r;
+}
+$("np-pick").addEventListener("click", () => $("np-file").click());
+$("np-file").addEventListener("change", () => { npMsg("Leggo il file…"); readPicked($("np-file"), t => { if (t == null) return npMsg("File non leggibile: incolla il JSON nel riquadro", true); $("np-json").value = t; npParse(); }); });
+$("np-json").addEventListener("change", npParse);
 $("np-form").addEventListener("submit", ev => {
   ev.preventDefault(); const nm = $("np-name").value.trim(); if (!nm) return;
+  if ($("np-json").value.trim()) { // inizializza il portafoglio con i dati del JSON (nuovi id: non sovrascrive quelli esistenti)
+    const r = parsePfs($("np-json").value); if (!r.ok.length) return npMsg(r.errs.join(" | ") || "Nessun portafoglio nel JSON", true);
+    r.ok.forEach((p, k) => { p.id = newId() + k; delete p.sample; }); r.ok[0].name = nm; r.ok[0].description = $("np-descr").value.trim();
+    r.ok.slice().reverse().forEach(p => USER.unshift(p)); $("newpf").close(); commit(r.ok[0].id); showView("port"); msg(`Creato da JSON: ${nm}`); return;
+  }
   const pf = newPf(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showView("port");
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
