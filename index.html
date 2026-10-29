@@ -290,6 +290,9 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
+.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 20px 8px; }
+.edhead h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; }
+#pf-edit { border-top: 1.5px solid var(--fg); margin-top: 24px; }
 .pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; }
 .pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; display: flex; align-items: center; }
 .pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
@@ -394,7 +397,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.022</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.01.000</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -407,19 +410,12 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
     <div class="pfbtns">
       <button type="button" class="newpf" id="pf-def" aria-pressed="false">☆ Predefinito</button>
-      <button type="button" class="newpf" id="pf-new">+ Nuovo</button>
-      <button type="button" class="newpf" id="pf-reb">Ribilancia</button>
       <button type="button" class="newpf" id="pf-exp">Scarica JSON</button>
-      <button type="button" class="newpf" id="pf-del">Elimina</button>
     </div>
     <div class="updrow"><span class="badge" id="badge"></span><button type="button" class="newpf" id="pf-upd">↻ Aggiorna</button></div>
     <p class="fc-note" id="upd-msg" aria-live="polite"></p>
   </section>
-  <section class="pf-meta" id="pf-meta">
-    <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
-    <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
-    <p class="fc-note" id="pf-desc-ro" hidden></p>
-  </section>
+  <p class="fc-note" id="pf-desc-ro" hidden></p>
   <section class="live" aria-label="Valore e rendimenti">
     <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div>
     <div class="rets" id="rets"></div>
@@ -435,8 +431,40 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <p class="fc-note" id="pf-cnote"></p>
   </section>
 
-  <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div>
-    <div class="io"><button type="button" id="to-draft">Duplica</button></div></section>
+  <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div></section>
+  <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
+
+  <section class="sec pf-sec"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
+    <div class="chart tall" id="pf-ef"></div>
+    <div class="scroll"><table class="eft" id="pf-eft"></table></div>
+    <p class="fc-note" id="ef-note"></p>
+  </section>
+
+  <section class="sec pf-sec" id="corr-sec"><h3>Correlazioni<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
+    <div class="scroll"><table class="eft cmx" id="pf-corr"></table></div>
+    <p class="fc-note" id="corr-note"></p>
+  </section>
+
+
+  <section class="sec pf-sec"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
+  <section class="sec pf-sec" id="hist-sec"><h3>Storico<button type="button" class="i" data-g="storico" aria-label="Informazioni: storico">i</button></h3>
+    <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button></div></div>
+    <div class="chart" id="hist-chart"></div>
+    <ul class="leg hleg" id="hist-leg"></ul>
+  </section>
+  <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
+</main>
+
+<main class="wrap" id="v-pfs" hidden>
+  <section class="pfs-head"><h2><button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
+  <div id="pfs-list"></div>
+  <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
+<div id="pf-edit" hidden>
+  <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button><button type="button" class="ghost" id="ed-close">Chiudi</button></div></section>
+  <section class="pf-meta" id="pf-meta">
+    <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
+    <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
+  </section>
   <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
     <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
     <div class="scroll"><table class="eft pos" id="pos-tbl"></table></div>
@@ -448,22 +476,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="scroll"><table class="eft" id="dr-size"></table></div>
     <div class="io"><button type="button" id="dr-own">Registra acquisti a oggi</button></div>
   </section>
-  <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
-
-  <section class="sec pf-sec"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
+  <section class="sec pf-sec" id="ed-ef"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
     <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label><button type="button" class="i" data-g="cap" aria-label="Informazioni: peso massimo">i</button>
       <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
-    <div class="chart tall" id="pf-ef"></div>
-    <div class="scroll"><table class="eft" id="pf-eft"></table></div>
-    <p class="fc-note" id="ef-note"></p>
+    <div class="chart tall" id="pf-ef2"></div>
   </section>
-
-  <section class="sec pf-sec" id="corr-sec"><h3>Correlazioni<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
-    <div class="scroll"><table class="eft cmx" id="pf-corr"></table></div>
-    <p class="fc-note" id="corr-note"></p>
-    <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
-  </section>
-
   <section class="sec pf-sec" id="rb-sec"><h3>Ribilanciamento<button type="button" class="i" data-g="rib" aria-label="Informazioni: ribilanciamento">i</button></h3>
     <div class="rbctl">
       <select id="rb-goal" aria-label="Obiettivo">
@@ -477,16 +494,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
       <button type="button" id="rb-apply" disabled>Applica operazioni</button>
     </div>
     <div class="rbvol"><label class="k" for="rb-vol">Volatilità</label><input type="range" id="rb-vol" min="0" max="1" step="0.001" value="0" disabled><span class="n" id="rb-volv">—</span></div>
+    <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
     <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
     <p class="fc-note" id="rb-note"></p>
   </section>
-
-  <section class="sec pf-sec"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
-  <section class="sec pf-sec" id="hist-sec"><h3>Storico<button type="button" class="i" data-g="storico" aria-label="Informazioni: storico">i</button></h3>
-    <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button></div></div>
-    <div class="chart" id="hist-chart"></div>
-    <ul class="leg hleg" id="hist-leg"></ul>
-    <h3 style="margin-top:28px">Acquisti e vendite</h3>
+  <section class="sec pf-sec" id="ops-sec">    <h3>Acquisti e vendite</h3>
     <form class="lotform" id="op-form">
       <select id="op-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
       <input id="op-etf" list="etf-dl" placeholder="ETF (nome o ISIN)" autocomplete="off" aria-label="ETF">
@@ -500,13 +512,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <p class="fc-note" id="hist-msg" aria-live="polite"></p>
     <div class="scroll"><table class="eft lots" id="hist-tbl"></table></div>
   </section>
-  <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
-</main>
-
-<main class="wrap" id="v-pfs" hidden>
-  <section class="pfs-head"><h2><button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
-  <div id="pfs-list"></div>
-  <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
+</div>
   <section class="sec pf-sec"><h3>Salvataggio e JSON</h3>
     <p class="fc-note" style="margin:0 0 12px">I portafogli sono salvati in questo browser. Scarica il JSON per tenerne una copia o spostarli, importalo per ripristinarli.</p>
     <textarea id="json-box" spellcheck="false" aria-label="JSON dei portafogli" placeholder="Scarica o copia il JSON dei portafogli, oppure incolla qui un JSON e premi Importa"></textarea>
@@ -1326,6 +1332,7 @@ function cleanPf(p) {
   return { pf, err };
 }
 
+const homeMsg = t => { const m = $("upd-msg"); m.textContent = t; m.className = "fc-note"; };
 function ioMsg(t, bad) { const m = $("io-msg"); m.textContent = t; m.className = bad ? "err" : ""; }
 const pfBody = p => ({ id: p.id, name: p.name, description: p.description || "", currency: p.currency, amount: p.amount, start: p.start,
   positions: p.positions.map(x => ({ isin: x.isin, ...(x.weight != null ? { weight: x.weight } : x.qty != null ? { qty: x.qty } : {}), ...(x.txs.length ? { transactions: x.txs.map(t => ({ date: t.date, price: t.price, qty: t.qty })) } : {}) })) });
@@ -1350,7 +1357,7 @@ function importJson(text) {
   ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
   if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); ORIG = null; updSave(); fillSel(); renderPf(); renderPfs(); }
   ioMsg((ok.length ? `Importati ${ok.length}` : "Nessun portafoglio importato") + (errs.length ? " · " + errs.join(" | ") : ""), !ok.length || errs.length);
-  if (ok.length && !errs.length) { showView("port"); msg(ok.length === 1 ? `Importato: ${ok[0].name}` : `Importati ${ok.length} portafogli`); } else $("io-msg").scrollIntoView({ block: "nearest" });
+  if (ok.length && !errs.length) { showView("port"); homeMsg(ok.length === 1 ? `Importato: ${ok[0].name}` : `Importati ${ok.length} portafogli`); } else $("io-msg").scrollIntoView({ block: "nearest" });
 }
 
 // Serie allineate su una griglia di date comune (ultimo prezzo noto).
@@ -1602,11 +1609,13 @@ function renderCorr() {
   const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
   note.innerHTML = `Media ${fmt(sum / k, 2)} · più alta ${pr(hi)} · più bassa ${pr(lo)}<br>Diversificazione${ib("div")} ${fmt(d0, 2)} ora · ${fmt(d1, 2)} con l'ottimizzazione`;
 }
-function drawEF() {
-  const box = $("pf-ef"), F = EF; if (!box || !PF) return;
+function drawEF() { drawEFTo($("pf-ef"), false); drawEFTo($("pf-ef2"), true); }
+// Home: sola lettura, solo «Attuale» e «Max Sharpe»; editor in Portafogli: tutti i punti e il pallino «Obiettivo»
+function drawEFTo(box, full) {
+  const F = EF; if (!box || !PF) return;
   if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
   const W = box.clientWidth, H = box.clientHeight; if (!W) return;
-  const pl = 44, pr = 14, pt = 10, pb = 28, keep = [...F.bg, F.cur, F.minV, F.maxS, ...F.line, rbTarget(F)];
+  const pl = 44, pr = 14, pt = 10, pb = 28, keep = full ? [...F.bg, F.cur, F.minV, F.maxS, ...F.line, rbTarget(F)] : [...F.bg, F.cur, F.maxS, ...F.line];
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   keep.forEach(p => { x0 = Math.min(x0, p.v); x1 = Math.max(x1, p.v); y0 = Math.min(y0, p.r); y1 = Math.max(y1, p.r); });
   const px = (x1 - x0) * 0.06 || 0.01, py = (y1 - y0) * 0.08 || 0.01; x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
@@ -1620,7 +1629,7 @@ function drawEF() {
     ${xt.map(v => `<text class="ax" x="${X(v)}" y="${H - 8}" text-anchor="middle">${fmt(v * 100, dx)}%</text>`).join("")}
     ${F.bg.map(p => `<circle cx="${X(p.v).toFixed(1)}" cy="${Y(p.r).toFixed(1)}" r="1.7" fill="var(--soft)" fill-opacity=".28"/>`).join("")}
     <path d="${F.line.map((p, i) => (i ? "L" : "M") + X(p.v).toFixed(1) + " " + Y(p.r).toFixed(1)).join("")}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
-    ${lab(F.minV, "Min varianza", "var(--c2)", false)}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}${lab(rbTarget(F), "Obiettivo", "var(--c3)", false)}
+    ${full ? lab(F.minV, "Min varianza", "var(--c2)", false) : ""}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}${full ? lab(rbTarget(F), "Obiettivo", "var(--c3)", false) : ""}
     <text class="ax" x="${W - pr}" y="${pt + 8}" text-anchor="end">Rendimento ↑ · Volatilità →</text></svg>`;
 }
 const donut = items => {
@@ -1652,7 +1661,7 @@ function renderPf() {
   if (need.length) { const id = pfCur.id; Promise.all(need.map(e => loadSeries(e.isin))).then(() => { if (pfCur && pfCur.id === id) renderPf(); }); }
   const dr = isDraft(pfCur);
   const own = !pfCur.sample; $("pf-name").hidden = !own; $("pf-descr").hidden = !own; $("pf-name").value = pfCur.name; $("pf-descr").value = pfCur.description || "";
-  $("pf-desc-ro").hidden = own; $("pf-desc-ro").textContent = pfCur.description || "";
+  $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = "Modifica · " + pfCur.name;
   renderPfs();
   $("to-draft").hidden = dr;
   renderPos(); renderHist();
@@ -1679,7 +1688,7 @@ function renderPf() {
 
   EF = frontier(P, +$("ef-cap").value);
   const wl = w => (EF ? EF.items : []).map((e, j) => [e.ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
-  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th><th>Diversif.${ib("div")}</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS], ["Max diversif.", "var(--c4)", EF.div]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Min varianza": ib("minvar"), "Max Sharpe": ib("maxsharpe") }[n] || ""}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td><td class="n">${fmt(EF.drOf(p.w), 2)}</td></tr>`).join("")}</tbody>` : "";
+  $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th><th>Diversif.${ib("div")}</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Min varianza": ib("minvar"), "Max Sharpe": ib("maxsharpe") }[n] || ""}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td><td class="n">${fmt(EF.drOf(p.w), 2)}</td></tr>`).join("")}</tbody>` : "";
   renderCorr();
   $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === aEs.length ? "" : " · prezzi simulati"}` : "";
 
@@ -1706,6 +1715,7 @@ function showView(v) {
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); updSave();
   try { history.replaceState(null, "", { port: "#portafoglio", pfs: "#portafogli", search: "#cerca" }[v]); } catch {}
   if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); drawHist(); });
+  if (v === "pfs") requestAnimationFrame(() => drawEF());
 }
 function applyPrices() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
@@ -1945,7 +1955,7 @@ $("addto").addEventListener("submit", ev => {
   { const se = sellErr(pfLots(c)); if (se) return bad(se.charAt(0).toUpperCase() + se.slice(1)); }
   let target;
   if (t0) { target = ownPf(t0); target.positions = c.positions; } else { USER.unshift(c); target = c; }
-  $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showView("port");
+  $("addto").close(); SEL.clear(); render(); updSel(); commit(target.id); showEditor();
 });
 function updSel() { const n = SEL.size; $("selbar").hidden = !n; $("sel-n").textContent = n + (n === 1 ? " selezionato" : " selezionati"); }
 
@@ -2032,7 +2042,10 @@ document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELEC
 
 /* ---------- Avvio ---------- */
 applyPrices(); startLive(); loadUser(); allPf(); pfCur = PFLIST.find(p => p.id === getDef()) || PFLIST.find(p => p.id === "prova-bilanciato") || PFLIST[0]; fillSel();
-document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => showView(b.dataset.v)));
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  if (ORIG && !$("v-pfs").hidden && b.dataset.v !== "pfs") { if (!keepDirty()) return; pfCur = ORIG; ORIG = null; resetForm(); fillSel(); renderPf(); } // uscendo da Portafogli le modifiche non salvate si scartano
+  showView(b.dataset.v);
+}));
 $("pf-sel").addEventListener("change", ev => { if (!keepDirty()) { $("pf-sel").value = pfCur.id; return; } ORIG = null; updSave(); pfCur = PFLIST.find(p => p.id === ev.target.value); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); renderPf(); });
 $("pf-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfView = b.dataset.m; renderPfPeriods(); drawPfNav(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
@@ -2142,7 +2155,7 @@ function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copi
 // Applica la modifica a una copia, controlla che le vendite non superino le quote possedute e solo allora salva.
 // Le modifiche restano in una copia (ORIG è la versione salvata) finché non si preme «Salva»; save = true salva subito (azioni con un proprio pulsante).
 let ORIG = null;
-const updSave = () => { $("savebar").hidden = !ORIG || $("v-port").hidden; };
+const updSave = () => { $("savebar").hidden = !ORIG || $("v-pfs").hidden || $("pf-edit").hidden; };
 function savePf(c) {
   const src = ORIG || pfCur; ORIG = null;
   const t = ownPf(src); t.positions = c.positions; t.amount = c.amount; t.start = c.start; t.description = c.description || "";
@@ -2274,11 +2287,18 @@ function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
     return `<div class="pfrow" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="open">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
-      <div class="pfact"><button type="button" class="ghost" data-a="open">Apri</button><button type="button" class="ghost" data-a="reb">Ribilancia</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
+      <div class="pfact"><button type="button" class="ghost" data-a="open">Apri</button><button type="button" class="ghost" data-a="edit">Modifica</button><button type="button" class="ghost" data-a="reb">Ribilancia</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
   $("pfs-restore").hidden = !hiddenSamples().length;
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
 }
+// Editor del portafoglio nella scheda Portafogli: posizioni, movimenti, simulazione e ribilanciamento
+function showEditor(toRb) { $("pf-edit").hidden = false; showView("pfs"); updSave(); requestAnimationFrame(() => { drawEF(); $(toRb ? "rb-sec" : "pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
+function openEdit(id, then) {
+  if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showEditor(then === "reb");
+}
+$("ed-close").addEventListener("click", () => { if (!keepDirty()) return; if (ORIG) { pfCur = ORIG; ORIG = null; resetForm(); fillSel(); renderPf(); } $("pf-edit").hidden = true; updSave(); });
+$("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); $("pf-edit").hidden = true; updSave(); }));
 function openPf(id, then) {
   if (!keepDirty()) return; ORIG = null; updSave();
   pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showView("port");
@@ -2287,7 +2307,7 @@ function openPf(id, then) {
 $("pfs-list").addEventListener("click", ev => {
   const b = ev.target.closest("button[data-a]"); if (!b) return;
   const id = b.closest(".pfrow").dataset.id, p = PFLIST.find(x => x.id === id), a = b.dataset.a;
-  if (a === "open") openPf(id); else if (a === "reb") openPf(id, "reb");
+  if (a === "open") openPf(id); else if (a === "edit") openEdit(id); else if (a === "reb") openEdit(id, "reb");
   else if (a === "exp") exportJson([p], (p.id || "portafoglio") + ".json");
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
@@ -2310,17 +2330,15 @@ $("np-form").addEventListener("submit", ev => {
   if ($("np-json").value.trim()) { // inizializza il portafoglio con i dati del JSON (nuovi id: non sovrascrive quelli esistenti)
     const r = parsePfs($("np-json").value); if (!r.ok.length) return npMsg(r.errs.join(" | ") || "Nessun portafoglio nel JSON", true);
     r.ok.forEach((p, k) => { p.id = newId() + k; delete p.sample; }); r.ok[0].name = nm; r.ok[0].description = $("np-descr").value.trim();
-    r.ok.slice().reverse().forEach(p => USER.unshift(p)); $("newpf").close(); commit(r.ok[0].id); showView("port"); msg(`Creato da JSON: ${nm}`); return;
+    r.ok.slice().reverse().forEach(p => USER.unshift(p)); $("newpf").close(); commit(r.ok[0].id); showView("port"); homeMsg(`Creato da JSON: ${nm}`); return;
   }
-  const pf = newPf(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showView("port");
+  const pf = newPf(nm, $("np-descr").value.trim()); USER.unshift(pf); $("newpf").close(); commit(pf.id); showEditor();
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
-$("pf-new").addEventListener("click", openNew); $("pfs-new").addEventListener("click", openNew);
+$("pfs-new").addEventListener("click", openNew);
 $("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio") + ".json"));
-$("pf-reb").addEventListener("click", () => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
-$("pf-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => deletePf(pfCur)));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; const v = ev.target.value.trim().slice(0, 500); editPf(c => { c.description = v; }); });
-let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); } }, 120); });
+let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); } else if (!$("v-pfs").hidden) drawEF(); }, 120); });
 
 /* App installabile: service worker (solo su http/https) e pulsante «Installa app» quando il browser lo permette */
 let deferredInstall = null;
