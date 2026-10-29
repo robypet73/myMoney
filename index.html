@@ -240,6 +240,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .rbctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
 .rbctl button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .rbctl button:disabled { opacity: .35; cursor: default; }
+.cmx { min-width: 0; width: auto; }
+.cmx th, .cmx td { text-align: center; padding: 6px 8px; min-width: 44px; font-size: var(--fs-s); }
+.cmx td { font-family: var(--m); }
+.cmx th:first-child, .cmx td:first-child { text-align: left; padding-left: 0; font-family: var(--m); font-size: var(--fs-s); color: var(--fg); font-weight: 500; }
+.cmx td.dg { color: var(--soft); background: var(--fill); }
 .vh { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .rbvol { display: flex; align-items: center; gap: 12px; margin: 10px 0 6px; font-size: var(--fs-s); }
 .rbvol input { flex: 1; min-width: 0; accent-color: var(--fg); }
@@ -389,7 +394,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.019</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.00.020</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -453,6 +458,12 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <p class="fc-note" id="ef-note"></p>
   </section>
 
+  <section class="sec pf-sec" id="corr-sec"><h3>Correlazioni<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
+    <div class="scroll"><table class="eft cmx" id="pf-corr"></table></div>
+    <p class="fc-note" id="corr-note"></p>
+    <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
+  </section>
+
   <section class="sec pf-sec" id="rb-sec"><h3>Ribilanciamento<button type="button" class="i" data-g="rib" aria-label="Informazioni: ribilanciamento">i</button></h3>
     <div class="rbctl">
       <select id="rb-goal" aria-label="Obiettivo">
@@ -460,6 +471,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
         <option value="ret">Stesso rendimento, meno volatilità</option>
         <option value="maxS">Massimo Sharpe</option>
         <option value="minV">Minima varianza</option>
+        <option value="div">Massima diversificazione</option>
         <option value="custom">Volatilità scelta</option>
       </select>
       <button type="button" id="rb-apply" disabled>Applica operazioni</button>
@@ -1451,8 +1463,12 @@ function frontier(P, cap = 1) {
   pts.push(minV, maxS, vol, ret);
   const srt = pts.slice().sort((a, b) => a.v - b.v), line = [minV]; let top = minV.r;
   for (const p of srt) if (p.v > minV.v && p.r > top) { top = p.r; line.push(p); }
+  // Correlazioni dei rendimenti giornalieri e rapporto di diversificazione DR = Σ(peso × volatilità) / volatilità del portafoglio (1 = nessun beneficio, più alto = meglio)
+  const sd = C.map((r, i) => Math.sqrt(C[i][i])), corr = C.map((r, i) => r.map((c, j) => c / (sd[i] * sd[j])));
+  const drOf = w => { const v = ev(w).v; return v > 0 ? w.reduce((a, x, i) => a + x * sd[i], 0) / v : 0; }, sDiv = p => (p.v > 0 ? p.w.reduce((a, x, i) => a + x * sd[i], 0) / p.v : 0);
+  const div = refine(best(sDiv), sDiv); pts.push(div);
   const at = vt => { const sc = p => p.r - pen * Math.max(0, p.v - vt); return refine(best(sc), sc); }; // massimo rendimento con volatilità non oltre vt
-  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, at, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, at, div, corr, drOf, cap, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
 }
 
 // Ribilanciamento: operazioni (a quantità intere, ai prezzi correnti) per portare il portafoglio sull'obiettivo scelto.
@@ -1572,6 +1588,19 @@ function drawPfNav() {
   if (T[T.length - 1] !== P.t[P.last]) { T.push(P.t[P.last]); V.push(P.V[P.last]); C.push(back ? P.V[i0] : P.cost[P.last]); }
   drawLine(box, T, [V, C], (back ? "Valore storico dei titoli " : "Valore del portafoglio ") + pfPeriod, "gpf");
 }
+// Matrice di correlazione: rosso = si muovono insieme (poca diversificazione), verde = si compensano
+const shortNm = e => (e.ticker && e.ticker !== e.isin && e.ticker.length <= 8 ? e.ticker : e.isin.slice(-5));
+function renderCorr() {
+  const F = EF, tb = $("pf-corr"), note = $("corr-note"), btn = $("corr-opt");
+  if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; btn.hidden = true; return; }
+  btn.hidden = false; const n = F.items.length, nm = F.items.map(shortNm), c = F.corr;
+  const bg = x => (x === 1 ? "" : ` style="background:color-mix(in srgb, var(${x >= 0 ? "--down" : "--up"}) ${Math.round(Math.min(Math.abs(x), 1) * 60)}%, transparent)"`);
+  tb.innerHTML = `<thead><tr><th></th>${nm.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${esc(nm[i])}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
+  let hi = null, lo = null, sum = 0, k = 0;
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const x = c[i][j]; sum += x; k++; if (!hi || x > hi[2]) hi = [i, j, x]; if (!lo || x < lo[2]) lo = [i, j, x]; }
+  const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
+  note.innerHTML = `Media ${fmt(sum / k, 2)} · più alta ${pr(hi)} · più bassa ${pr(lo)}<br>Diversificazione${ib("div")} ${fmt(d0, 2)} ora · ${fmt(d1, 2)} con l'ottimizzazione`;
+}
 function drawEF() {
   const box = $("pf-ef"), F = EF; if (!box || !PF) return;
   if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
@@ -1650,6 +1679,7 @@ function renderPf() {
   EF = frontier(P, +$("ef-cap").value);
   const wl = w => (EF ? EF.items : []).map((e, j) => [e.ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
   $("pf-eft").innerHTML = EF ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th></tr></thead><tbody>${[["Attuale", "var(--fg)", EF.cur], ["Min varianza", "var(--c2)", EF.minV], ["Max Sharpe", "var(--c1)", EF.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Min varianza": ib("minvar"), "Max Sharpe": ib("maxsharpe") }[n] || ""}<span class="wl n">${wl(p.w)}</span></td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td></tr>`).join("")}</tbody>` : "";
+  renderCorr();
   $("ef-note").textContent = EF ? `Rendimenti e correlazioni storici (${fmt(EF.yrs, 1)} anni), pesi attuali, solo posizioni lunghe${EF.cap < 1 ? ` · max ${fmt(EF.cap * 100, 0)}% per ETF` : ""}${nReal === P.es.length ? "" : " · prezzi simulati"}` : "";
 
   let cov = 0, acc = 0;
@@ -1927,6 +1957,7 @@ const GL_LINKS = {
   liq: ["justETF · Liquidità degli ETF", JE + "news/etf/etf-liquidity-what-you-need-to-know.html"],
   trading: ["justETF · Come funziona la negoziazione", JE + "academy/how-does-etf-trading-work.html"],
   guida: ["justETF · Guida completa agli ETF", JE + "academy/ultimate-guide.html"],
+  divers: ["justETF · Come capire se il portafoglio è diversificato", JE + "academy/is-your-portfolio-diversified.html"],
   token: ["GitHub · Token di accesso personale", "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"],
 };
 const GL = {
@@ -1961,6 +1992,8 @@ const GL = {
   adv: { t: "Volume medio giornaliero", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di eseguire ordini.", how: "Il volume sulla borsa può sottostimare la liquidità reale, perché i market maker creano e rimborsano quote.", ref: [["Oltre 10 Mln €", "ottimo"], ["1–10 Mln €", "adeguato per importi piccoli"], ["Sotto 1 Mln €", "prudenza"]], links: ["trading"] },
   agg: { t: "Aggiorna e ora dei dati", what: "Il pulsante «Aggiorna» rilegge subito prezzi, bid/ask e serie dal sito. Accanto al valore e al prezzo compaiono data e ora dell'ultimo dato live; con più ETF vale il più vecchio.", use: "Ti dice quanto sono freschi i numeri che vedi.", how: "I prezzi dei 14 ETF principali si aggiornano ogni 30 minuti nei giorni di borsa, gli altri ogni sera (domenica per i primi 150). Con il token GitHub («Monitoraggio automatico») il pulsante chiede anche a Yahoo Finance dati nuovi, che arrivano entro un paio di minuti. Fuori orario di borsa il dato resta quello dell'ultima chiusura.", ref: [] },
   qnet: { t: "Quote e ripartizione", what: "Quote nette di ogni ETF: quantità iniziale più acquisti meno vendite (somma algebrica dei movimenti). La percentuale è il peso dell'ETF sul valore attuale del portafoglio, ai prezzi correnti.", use: "Mostra quante quote possiedi oggi e come è ripartito il portafoglio.", how: "Una percentuale iniziale vale alle quote del giorno di partenza. Gli ETF senza prezzi scaricati mostrano le quote ma non la percentuale. Una posizione chiusa (acquisti uguali a vendite) mostra 0 quote.", ref: [] },
+  corr: { t: "Matrice di correlazione", what: "Per ogni coppia di ETF, quanto si muovono insieme i rendimenti giornalieri: da −1 a +1, sugli ultimi anni di prezzi disponibili. Rosso = salgono e scendono insieme, verde = si compensano. Sulla diagonale ogni ETF è confrontato con sé stesso (1,00).", use: "Dice se i tuoi ETF si diversificano davvero: due ETF con correlazione alta portano quasi lo stesso rischio, quindi averli entrambi aggiunge poco.", how: "Per ottimizzarla: sostituisci o riduci gli ETF con correlazione alta, aggiungi asset poco correlati (obbligazioni, oro) e premi «Ottimizza»: propone i pesi con il massimo rapporto di diversificazione, cioè la media delle volatilità pesata sui pesi divisa per la volatilità del portafoglio (1 = nessun beneficio). Applica le operazioni da Ribilanciamento. Le correlazioni sono storiche, in crisi tendono ad aumentare, e le soglie indicate sono indicative.", ref: [["0,8 – 1", "quasi ridondanti"], ["0,4 – 0,8", "diversificazione parziale"], ["0 – 0,4", "buona diversificazione"], ["Sotto 0", "si compensano, rari"]], links: ["divers"] },
+  div: { t: "Rapporto di diversificazione", what: "Media delle volatilità degli ETF, pesata sui pesi, divisa per la volatilità del portafoglio.", use: "Misura quanto la combinazione degli ETF riduce il rischio rispetto a tenerli separati.", how: "Vale 1 se tutti gli ETF si muovono identici; più è alto, meglio ti diversifichi. «Ottimizza» cerca i pesi che lo massimizzano, rispettando il peso massimo per ETF.", ref: [["Vicino a 1", "poca diversificazione"], ["Più alto", "meglio: il rischio si riduce di più"]], links: ["divers"] },
   spr: { t: "Spread denaro-lettera", what: "Bid è il miglior prezzo a cui trovi un compratore, ask il miglior prezzo a cui trovi un venditore. Lo spread è la differenza, in percentuale del prezzo medio: un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Qui si calcola sui valori bid e ask dell'ultimo aggiornamento di Yahoo Finance (l'orario è indicato): non è un prezzo in tempo reale. Fuori orario di borsa bid e ask possono mancare. Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
   rend: { t: "Rendimenti 1A, 3A, da inizio", what: "Variazione di prezzo dell'ETF su un anno, su tre e su cinque anni (annualizzata) e dal lancio (annualizzata).", use: "Confronta la redditività di ETF diversi.", how: "Confronta ETF simili sullo stesso periodo. Per gli ETF a distribuzione il rendimento di prezzo non include i dividendi pagati. Il passato non garantisce il futuro.", ref: [["1 anno", "molto variabile, poco indicativo"], ["3–5 anni", "più significativo"], ["Da inizio", "dipende dall'epoca di lancio"]] },
   settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (da justETF quando scaricati, altrimenti indicativi). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
@@ -2184,6 +2217,7 @@ $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("bu
 $("ef-cap").addEventListener("change", () => PF && renderPf());
 $("pf-upd").addEventListener("click", () => refreshAll((t, bad) => { const m = $("upd-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); }));
 $("rb-goal").addEventListener("change", () => { if (!PF) return; renderRb(); drawEF(); });
+$("corr-opt").addEventListener("click", () => { if (!PF || !EF) return; $("rb-goal").value = "div"; renderRb(); drawEF(); $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }); });
 $("rb-vol").addEventListener("input", () => { if (!PF || !EF) return; $("rb-goal").value = "custom"; renderRb(); drawEF(); });
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
