@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bid e ask (in EUR) di tutti gli ETF con prezzi scaricati: i 14 di prices.js e quelli di data/symbols.json. Scrive quotes.js.
+"""Ultimo prezzo, orario, bid e ask (in EUR) di tutti gli ETF con prezzi scaricati: i 14 di prices.js e quelli di data/symbols.json. Scrive quotes.js.
 
     python scripts/fetch_quotes.py
 
@@ -42,7 +42,7 @@ def raw_quotes(syms):
     res = {}
     syms = list(syms)
     for i in range(0, len(syms), 40):
-        url = "https://query1.finance.yahoo.com/v7/finance/quote?" + urllib.parse.urlencode({"symbols": ",".join(syms[i:i + 40]), "crumb": crumb, "fields": "bid,ask,currency,regularMarketPrice"})
+        url = "https://query1.finance.yahoo.com/v7/finance/quote?" + urllib.parse.urlencode({"symbols": ",".join(syms[i:i + 40]), "crumb": crumb, "fields": "bid,ask,currency,regularMarketPrice,regularMarketTime"})
         for r in json.load(op.open(urllib.request.Request(url, headers=fp.HEADERS), timeout=30))["quoteResponse"]["result"]:
             res[r["symbol"]] = r
         time.sleep(0.5)
@@ -71,16 +71,18 @@ def main():
                 continue
             div = rate / (0.01 if c == "GBp" else 1.0)
         b, a, p = r.get("bid"), r.get("ask"), r.get("regularMarketPrice")
-        if not (b and a and p and a > b):
+        if not p:
             continue
-        if abs((a + b) / 2 / p - 1) > 0.03:  # valore vecchio (mercato chiuso)
-            continue
-        out[isin] = {"bid": round(b / div, 4), "ask": round(a / div, 4), "sym": sym}
+        # ultimo prezzo e orario di mercato: servono agli ETF che non stanno in prices.js, la cui serie giornaliera arriva solo la sera
+        e = {"sym": sym, "p": round(p / div, 4), "pt": r.get("regularMarketTime")}
+        if b and a and a > b and abs((a + b) / 2 / p - 1) <= 0.03:  # bid/ask lontani dal prezzo sono vecchi (mercato chiuso)
+            e["bid"], e["ask"] = round(b / div, 4), round(a / div, 4)
+        out[isin] = e
     path = ROOT / "quotes.js"
     tmp = path.with_suffix(".tmp")
     tmp.write_text("window.QUOTES=" + json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "q": out}, separators=(",", ":")) + ";\n", encoding="utf-8")
     tmp.replace(path)
-    print(f"Scritto {path}: bid/ask attendibili per {len(out)} ETF su {len(sy)}")
+    print(f"Scritto {path}: prezzi per {len(out)} ETF su {len(sy)}, bid/ask attendibili per {sum(1 for v in out.values() if "bid" in v)}")
 
 
 if __name__ == "__main__":
