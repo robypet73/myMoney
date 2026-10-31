@@ -295,12 +295,16 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 #pf-edit { border-top: 1.5px solid var(--fg); margin-top: 24px; }
 .pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; }
 .pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; display: flex; align-items: center; }
-.pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
+.pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 96px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
 .pfrow:last-child { border-bottom: 1px solid var(--hair); }
 .pfrow .main { display: grid; gap: 3px; min-width: 0; }
 .pfrow .desc { color: var(--soft); font-size: var(--fs-s); line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pfact { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-@media (max-width: 700px) { .pfrow { grid-template-columns: minmax(0, 1fr) auto; } .pfrow .v { grid-column: 2; grid-row: 1; } .pfact { grid-column: 1 / -1; justify-content: flex-start; } }
+@media (max-width: 700px) { .pfrow { grid-template-columns: minmax(0, 1fr) auto; } .pfrow .v:nth-of-type(1) { grid-column: 2; grid-row: 1; } .pfrow .v:nth-of-type(2) { grid-column: 2; grid-row: 2; } .pfact { grid-column: 1 / -1; justify-content: flex-start; } }
+.pfrow.sel { background: var(--fill); box-shadow: -10px 0 0 var(--fill), 10px 0 0 var(--fill); }
+.bench { font-size: var(--fs-s); color: var(--soft); margin-top: 6px; }
+.bench:empty { display: none; }
+.chk2 { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); color: var(--soft); }
 .pf-meta { display: grid; gap: 4px; padding-top: 12px; }
 .pf-meta input { max-width: 560px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); padding: 6px 0; font-family: inherit; }
 #pf-name { font-size: var(--fs-m); font-weight: 500; }
@@ -397,7 +401,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.01.007</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.000</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -417,7 +421,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   </section>
   <p class="fc-note" id="pf-desc-ro" hidden></p>
   <section class="live" aria-label="Valore e rendimenti">
-    <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div>
+    <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div><div class="bench" id="pf-bench"></div>
     <div class="rets" id="rets"></div>
   </section>
   <section class="kpi" id="kpi" aria-label="Sintesi"></section>
@@ -461,31 +465,10 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <section class="pfs-head"><h2><button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
   <div id="pfs-list"></div>
   <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
-  <section class="sec pf-sec" id="rb-sec"><h3>Frontiera e ribilanciamento<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button><button type="button" class="i" data-g="rib" aria-label="Informazioni: ribilanciamento">i</button></h3>
-    <div class="rbctl"><select id="rb-pf" aria-label="Portafoglio da ribilanciare"></select></div>
-    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label><button type="button" class="i" data-g="cap" aria-label="Informazioni: peso massimo">i</button>
-      <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
-    <div class="chart tall" id="pf-ef2"></div>
-    <div class="rbctl">
-      <select id="rb-goal" aria-label="Obiettivo">
-        <option value="vol">Stessa volatilità, più rendimento</option>
-        <option value="ret">Stesso rendimento, meno volatilità</option>
-        <option value="maxS">Massimo Sharpe</option>
-        <option value="minV">Minima varianza</option>
-        <option value="div">Massima diversificazione</option>
-        <option value="custom">Volatilità scelta</option>
-      </select>
-      <button type="button" id="rb-apply" disabled>Applica operazioni</button>
-    </div>
-    <div class="rbvol"><label class="k" for="rb-vol">Volatilità</label><input type="range" id="rb-vol" min="0" max="1" step="0.001" value="0" disabled><span class="n" id="rb-volv">—</span></div>
-    <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
-    <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
-    <p class="fc-note" id="rb-note"></p>
-    <h3 style="margin-top:28px">Scenari</h3>
-    <div class="scroll"><table class="eft" id="ed-scn"></table></div>
-  </section>
-<div id="pf-edit" hidden>
-  <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button><button type="button" class="ghost" id="ed-close">Chiudi</button></div></section>
+<div id="pf-edit">
+  <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></section>
+  <div class="kpi" id="ed-kpi"></div>
+  <div class="bench" id="ed-bench"></div>
   <section class="pf-meta" id="pf-meta">
     <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
     <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
@@ -516,6 +499,37 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="scroll"><table class="eft lots" id="hist-tbl"></table></div>
   </section>
 </div>
+  <section class="sec pf-sec" id="corr2-sec"><h3>Correlazione e diversificazione<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
+    <div class="kpi" id="corr-idx"></div>
+    <div class="scroll"><table class="eft cmx" id="pf-corr2"></table></div>
+    <p class="fc-note" id="corr-note2"></p>
+  </section>
+  <section class="sec pf-sec" id="rb-sec"><h3>Frontiera e ribilanciamento<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button><button type="button" class="i" data-g="rib" aria-label="Informazioni: ribilanciamento">i</button></h3>
+    <div class="capr"><label class="k" for="ef-cap">Peso max per ETF</label><button type="button" class="i" data-g="cap" aria-label="Informazioni: peso massimo">i</button>
+      <select id="ef-cap"><option value="1">Nessuno</option><option value="0.5">50%</option><option value="0.4" selected>40%</option><option value="0.3">30%</option></select></div>
+    <div class="chart tall" id="pf-ef2"></div>
+    <div class="rbctl">
+      <select id="rb-goal" aria-label="Obiettivo">
+        <option value="vol">Stessa volatilità, più rendimento</option>
+        <option value="ret">Stesso rendimento, meno volatilità</option>
+        <option value="maxS">Massimo Sharpe</option>
+        <option value="minV">Minima varianza</option>
+        <option value="div">Massima diversificazione</option>
+        <option value="custom">Volatilità scelta</option>
+      </select>
+      <button type="button" id="rb-apply" disabled>Applica operazioni</button>
+    </div>
+    <div class="rbvol"><label class="k" for="rb-vol">Volatilità</label><input type="range" id="rb-vol" min="0" max="1" step="0.001" value="0" disabled><span class="n" id="rb-volv">—</span></div>
+    <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
+    <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
+    <p class="fc-note" id="rb-note"></p>
+    <h3 style="margin-top:28px">Scenari</h3>
+    <div class="scroll"><table class="eft" id="ed-scn"></table></div>
+  </section>
+  <section class="sec pf-sec" id="save-sec"><h3>Salvataggio</h3>
+    <p class="fc-note" id="save-hint">Le modifiche (acquisti, vendite, pesi, ETF) restano in una copia: salvandole crei un nuovo portafoglio e l'originale non cambia.</p>
+    <div class="io"><button type="button" class="primary" id="save-open">Salva</button></div>
+  </section>
   <section class="sec pf-sec"><h3>Salvataggio e JSON</h3>
     <p class="fc-note" style="margin:0 0 12px">I portafogli sono salvati in questo browser. Scarica il JSON per tenerne una copia o spostarli, importalo per ripristinarli.</p>
     <textarea id="json-box" spellcheck="false" aria-label="JSON dei portafogli" placeholder="Scarica o copia il JSON dei portafogli, oppure incolla qui un JSON e premi Importa"></textarea>
@@ -565,6 +579,15 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <textarea id="np-json" placeholder="Oppure incolla un JSON per inizializzare il portafoglio" rows="3" spellcheck="false" aria-label="JSON"></textarea>
   <div class="io"><button type="button" class="ghost" id="np-pick">Carica JSON</button><input id="np-file" type="file" class="vh" tabindex="-1" aria-hidden="true"><span id="np-msg" class="fc-note" aria-live="polite"></span></div>
   <div class="io"><button type="submit" class="primary">Crea</button><button type="button" class="ghost" id="np-cancel">Annulla</button></div>
+</form></dialog>
+<dialog id="savepf" aria-labelledby="sp-title"><form id="sp-form" class="at">
+  <div class="d-top"><h2 id="sp-title">Salva le modifiche</h2><button type="button" class="icon close" id="sp-x" aria-label="Chiudi">×</button></div>
+  <p class="fc-note" style="margin:0">Crea un nuovo portafoglio con le modifiche: l'originale resta com'è.</p>
+  <input id="sp-name" placeholder="Titolo" maxlength="80" required autocomplete="off" aria-label="Titolo">
+  <textarea id="sp-descr" placeholder="Descrizione (facoltativa)" maxlength="500" rows="3" aria-label="Descrizione"></textarea>
+  <label class="chk2"><input type="checkbox" id="sp-json"> Scarica anche il JSON</label>
+  <div class="io"><button type="submit" class="primary">Crea nuovo portafoglio</button><button type="button" class="ghost" id="sp-upd">Aggiorna questo portafoglio</button><button type="button" class="ghost" id="sp-cancel">Annulla</button></div>
+  <p class="fc-note" id="sp-msg"></p>
 </form></dialog>
 <dialog id="info" aria-labelledby="info-title"><div class="d" id="info-body"></div></dialog>
 <dialog id="addto" aria-labelledby="at-title"><form id="at-form" class="at"></form></dialog>
@@ -1481,7 +1504,7 @@ function frontier(P, cap = 1) {
   const drOf = w => { const v = ev(w).v; return v > 0 ? w.reduce((a, x, i) => a + x * sd[i], 0) / v : 0; }, sDiv = p => (p.v > 0 ? p.w.reduce((a, x, i) => a + x * sd[i], 0) / p.v : 0);
   const div = refine(best(sDiv), sDiv); pts.push(div);
   const at = vt => { const sc = p => p.r - pen * Math.max(0, p.v - vt); return refine(best(sc), sc); }; // massimo rendimento con volatilità non oltre vt
-  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, at, div, corr, drOf, cap, start, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
+  return { pts, bg: pts.filter((_, i) => i % 60 === 0), line, minV, maxS, vol, ret, cur, act, na, items: es, ev, at, div, corr, drOf, cap, start, sd, yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY) };
 }
 
 // Ribilanciamento: operazioni (a quantità intere, ai prezzi correnti) per portare il portafoglio sull'obiettivo scelto.
@@ -1626,15 +1649,19 @@ function renderScn() {
 // Matrice di correlazione: rosso = si muovono insieme (poca diversificazione), verde = si compensano
 const shortNm = e => (e.ticker && e.ticker !== e.isin && e.ticker.length <= 8 ? e.ticker : e.isin.slice(-5));
 function renderCorr() {
-  const F = EFH, tb = $("pf-corr"), note = $("corr-note");
-  if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; return; }
-  const n = F.items.length, nm = F.items.map(shortNm), c = F.corr;
-  const bg = x => (x === 1 ? "" : ` style="background:color-mix(in srgb, var(${x >= 0 ? "--down" : "--up"}) ${Math.round(Math.min(Math.abs(x), 1) * 60)}%, transparent)"`);
-  tb.innerHTML = `<thead><tr><th></th>${nm.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${esc(nm[i])}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
-  let hi = null, lo = null, sum = 0, k = 0;
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const x = c[i][j]; sum += x; k++; if (!hi || x > hi[2]) hi = [i, j, x]; if (!lo || x < lo[2]) lo = [i, j, x]; }
-  const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
-  note.innerHTML = `Media ${fmt(sum / k, 2)} · più alta ${pr(hi)} · più bassa ${pr(lo)}<br>Diversificazione${ib("div")} ${fmt(d0, 2)} ora · ${fmt(d1, 2)} con l'ottimizzazione`;
+  const F = EFH, set = (tb, note, idx) => {
+    if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; if (idx) idx.innerHTML = ""; return; }
+    const n = F.items.length, nm = F.items.map(shortNm), c = F.corr;
+    const bg = x => (x === 1 ? "" : ` style="background:color-mix(in srgb, var(${x >= 0 ? "--down" : "--up"}) ${Math.round(Math.min(Math.abs(x), 1) * 60)}%, transparent)"`);
+    tb.innerHTML = `<thead><tr><th></th>${nm.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${esc(nm[i])}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
+    let hi = null, lo = null, sum = 0, k = 0;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const x = c[i][j]; sum += x; k++; if (!hi || x > hi[2]) hi = [i, j, x]; if (!lo || x < lo[2]) lo = [i, j, x]; }
+    const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
+    let num = 0, den = 0; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) { const a = w[i] * w[j] * F.sd[i] * F.sd[j]; num += a * c[i][j]; den += a; }
+    note.innerHTML = `Media ${fmt(sum / k, 2)} · più alta ${pr(hi)} · più bassa ${pr(lo)}<br>Diversificazione${ib("div")} ${fmt(d0, 2)} ora · ${fmt(d1, 2)} con l'ottimizzazione`;
+    if (idx) idx.innerHTML = [["Correlazione media pesata", den > 1e-9 ? fmt(num / den, 2) : "—", "corr"], ["Diversificazione", fmt(d0, 2), "div"], ["Massima possibile", fmt(d1, 2), ""]].map(([k, v, g]) => `<div><span class="k">${k}${g ? ib(g) : ""}</span><span class="n">${v}</span></div>`).join("");
+  };
+  set($("pf-corr"), $("corr-note")); set($("pf-corr2"), $("corr-note2"), $("corr-idx"));
 }
 function drawEF() { drawEFTo($("pf-ef"), false); drawEFTo($("pf-ef2"), true); }
 // Home: sola lettura, solo «Attuale» e «Max Sharpe»; editor in Portafogli: tutti i punti e il pallino «Obiettivo»
@@ -1679,7 +1706,8 @@ function idleRows(P) {
 }
 function renderEmpty() {
   PF = null; EF = null; EFH = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
-  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src"].forEach(id => ($(id).innerHTML = ""));
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src", "ed-kpi", "ed-bench", "pf-bench", "pf-corr2", "corr-idx"].forEach(id => ($(id).innerHTML = ""));
+  $("corr-note2").textContent = "";
   $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
   $("pf-comp").innerHTML = (pfCur.positions.length ? "" : '<p class="fc-note">Aggiungi un ETF e registra un movimento (acquisto o vendita) o la quantità iniziale</p>') + idleRows(null);
 }
@@ -1688,7 +1716,7 @@ function renderPf() {
   if (need.length) { const id = pfCur.id; Promise.all(need.map(e => loadSeries(e.isin))).then(() => { if (pfCur && pfCur.id === id) renderPf(); }); }
   const dr = isDraft(pfCur);
   const own = !pfCur.sample; $("pf-name").hidden = !own; $("pf-descr").hidden = !own; $("pf-name").value = pfCur.name; $("pf-descr").value = pfCur.description || "";
-  $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = "Modifica · " + pfCur.name;
+  $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = "Dettaglio · " + pfCur.name;
   renderPfs();
   $("to-draft").hidden = dr;
   renderPos(); renderHist();
@@ -1703,6 +1731,7 @@ function renderPf() {
     ["Max drawdown", pct(S.dd, 1), ""], ["Sharpe", S.sh == null ? "—" : fmt(S.sh), ""],
   ].map(([k, v, c]) => `<div data-k="${k}"><span class="k">${k}${KI[k] ? ib(KI[k]) : ""}</span><span class="n ${c}">${v}</span></div>`).join("");
   liveUpdate(true);
+  renderDetail(P, inv);
   PB = null; renderPfPeriods();
 
   const order = P.act.slice().sort((a, b) => P.vh[b] - P.vh[a]);
@@ -1732,7 +1761,7 @@ function renderPf() {
   renderRb(); updDef();
   drawPfNav(); drawEF(); drawHist();
 }
-function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").innerHTML = o; $("rb-pf").innerHTML = o; $("pf-sel").value = pfCur.id; $("rb-pf").value = pfCur.id; }
+function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").innerHTML = o; $("pf-sel").value = pfCur.id; }
 function showView(v) {
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); updSave();
@@ -1752,6 +1781,36 @@ function applyPrices() {
 const gauss = () => { let u = 0; while (!u) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); };
 const lastBefore = (t, ms) => { let lo = 0, hi = t.length; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < ms) lo = m + 1; else hi = m; } return lo - 1; };
 // Rendimento a pesi temporali (neutro rispetto ad acquisti e vendite) e utile in euro per ogni periodo, al prezzo corrente.
+// Benchmark dagli indici mondiali: ETF su MSCI World per la parte azionaria, Bloomberg Global Aggregate (coperto in EUR) per le obbligazioni, oro e immobiliare globale per il resto;
+// pesi = composizione attuale del portafoglio per asset class, ribilanciati ogni giorno, sullo stesso periodo del portafoglio
+const BM = { eq: "IE00B4L5Y983", bd: "IE00BDBRDM35", cm: "IE00B579F325", re: "IE00B1FZS350" };
+const BM_NAME = { eq: "MSCI World", bd: "Global Aggregate in EUR", cm: "oro", re: "immobiliare globale" };
+function benchInfo(P) {
+  if (P._bm !== undefined) return P._bm;
+  let out = null;
+  try {
+    const tot = P.act.reduce((a, i) => a + P.vh[i], 0); if (!(tot > 0)) throw 0;
+    const w = { eq: 0, bd: 0, cm: 0, re: 0 };
+    P.act.forEach(i => { const a = P.es[i].asset, x = P.vh[i] / tot; if (a === "Azionario") w.eq += x; else if (a === "Materie prime") w.cm += x; else if (a === "Immobiliare") w.re += x; else if (a === "Obbligazionario" || a === "Monetario") w.bd += x; else { w.eq += x * 0.6; w.bd += x * 0.4; } });
+    const ks = Object.keys(w).filter(k => w[k] > 0.005), es = ks.map(k => byIsin(BM[k]));
+    if (!ks.length || es.some(e => !e || !e.s)) throw 0;
+    const sw = ks.reduce((a, k) => a + w[k], 0), start = Math.max(P.t[0], ...es.map(e => e.s.t[0])), { t, px } = alignPx(es, start);
+    if (t.length < 20) throw 0;
+    let g = 1; for (let m = 1; m < t.length; m++) { let r = 0; ks.forEach((k, j) => { r += w[k] / sw * (px[j][m] / px[j][m - 1] - 1); }); g *= 1 + r; }
+    const i0 = Math.max(0, idxOf(P.t, start));
+    out = { bm: g - 1, pf: P.idx[P.last] / P.idx[i0] - 1, start: t[0], parts: ks.map(k => [BM_NAME[k], w[k] / sw]).sort((a, b) => b[1] - a[1]) };
+  } catch {}
+  return (P._bm = out);
+}
+const benchTxt = b => { const d = (b.pf - b.bm) * 100; return `Benchmark ${pct(b.bm, 1)} dal ${dateTxt(b.start)} · tu ${pct(b.pf, 1)} · <span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>${ib("bench")}`; };
+// Dettaglio del portafoglio: rendimento dall'acquisto e benchmark in alto
+function renderDetail(P, inv) {
+  const L = livePerf(P), pl = L.Vl - inv, it = L.items[5][1], b = benchInfo(P);
+  $("ed-kpi").innerHTML = [["Valore", eur(L.Vl), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)], ["Dall'acquisto", it ? pct(it.r, 1) : "—", it ? cls(it.r) : ""], ["Benchmark", b ? pct(b.bm, 1) : "—", ""]]
+    .map(([k, v, c]) => `<div><span class="k">${k}${k === "Benchmark" ? ib("bench") : ""}</span><span class="n ${c}">${v}</span></div>`).join("");
+  const txt = b ? benchTxt(b) : "", sub = b ? " · " + b.parts.map(([n, x]) => `${fmt(x * 100, 0)}% ${n}`).join(" · ") : "";
+  $("ed-bench").innerHTML = txt + (b ? `<br>${sub.slice(3)}` : ""); $("pf-bench").innerHTML = txt;
+}
 function livePerf(P) {
   const n = P.last, Vl = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0);
   const li = n >= 1 && P.V[n - 1] > 0 ? P.idx[n - 1] * (Vl - P.flow[n]) / P.V[n - 1] : P.idx[n];
@@ -1862,7 +1921,7 @@ $("movs").addEventListener("click", ev => { if (ev.target.id === "mv-cancel" || 
 $("movs").addEventListener("submit", ev => {
   ev.preventDefault(); const isin = $("mv-form").dataset.isin, res = readMovs($("mv-form").querySelector(".atetf")), bad = t => { $("mv-msg").textContent = t; $("mv-msg").className = "fc-note err"; };
   if (res.err) return bad(res.err);
-  const err = editPf(c => { c.positions.find(p => p.isin === isin).txs = res.txs; }, true);
+  const err = editPf(c => { c.positions.find(p => p.isin === isin).txs = res.txs; });
   if (err) return bad(err);
   $("movs").close(); msg("Movimenti salvati");
 });
@@ -1997,7 +2056,11 @@ const GL_LINKS = {
   divers: ["justETF · Come capire se il portafoglio è diversificato", JE + "academy/is-your-portfolio-diversified.html"],
   token: ["GitHub · Token di accesso personale", "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"],
 };
+GL_LINKS.bm_eq = ["justETF · iShares Core MSCI World (indice azionario mondiale)", JE + "etf-profile.html?isin=IE00B4L5Y983"];
+GL_LINKS.bm_bd = ["justETF · iShares Core Global Aggregate Bond EUR Hedged (obbligazioni mondiali)", JE + "etf-profile.html?isin=IE00BDBRDM35"];
+GL_LINKS.bm_cm = ["justETF · Invesco Physical Gold (oro)", JE + "etf-profile.html?isin=IE00B579F325"];
 const GL = {
+  bench: { t: "Benchmark", what: "Rendimento che avresti avuto investendo in indici mondiali comparabili con la composizione del tuo portafoglio: azionario su MSCI World, obbligazionario su Bloomberg Global Aggregate coperto in euro, più oro e immobiliare globale se presenti. I pesi sono quelli di oggi per asset class, ribilanciati ogni giorno.", use: "Dice se il tuo portafoglio ha fatto meglio o peggio di un'alternativa passiva e diversificata a livello mondiale, con lo stesso mix di rischio.", how: "Confronta il rendimento del periodo (non annualizzato, a pesi temporali, senza l'effetto di quando hai comprato o venduto) con quello del tuo portafoglio e guarda lo scarto in punti. Il periodo parte dal primo acquisto, o dalla data di lancio del più recente degli ETF usati come indici. È una stima con ETF come proxy degli indici: non tiene conto di costi e tasse.", ref: [["Scarto positivo", "hai battuto il benchmark"], ["Scarto vicino a zero", "in linea con i mercati"], ["Scarto negativo", "meglio un'alternativa passiva"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
   inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra le operazioni con data, quantità e prezzo reali. Una vendita riduce l'investito. Una quantità senza data è simulata: si considera aperta alla data «Da» al prezzo di quel giorno.", ref: [] },
   pos: { t: "Posizioni", what: "Per ogni ETF indichi la quantità: in quote (assoluta) o in percentuale dell'importo. In più, con «Movimenti», registri acquisti e vendite, anche più di uno: per ciascuno data, quote e prezzo medio per quota oppure prezzo totale.", use: "Senza operazioni il portafoglio è una simulazione (draft). Con le operazioni è un portafoglio acquistato con storico reale.", how: "La quantità iniziale si considera aperta alla data «Da» al prezzo di quel giorno, poi si sommano le operazioni. Una vendita non può superare le quote possedute. Il JSON del portafoglio contiene ISIN, quantità o peso e le operazioni. Un portafoglio senza quantità parte con pesi uguali (salvati nel JSON); gli ETF senza quote partecipano alla frontiera come candidati, con peso attuale 0, e «Applica pesi» salva l'obiettivo nel JSON.", ref: [] },
@@ -2074,7 +2137,6 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 }));
 const pickPf = (el, id) => { if (!keepDirty()) { el.value = pfCur.id; return; } ORIG = null; updSave(); pfCur = PFLIST.find(p => p.id === id); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); fillSel(); renderPf(); };
 $("pf-sel").addEventListener("change", ev => pickPf(ev.target, ev.target.value));
-$("rb-pf").addEventListener("change", ev => pickPf(ev.target, ev.target.value));
 $("pf-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfView = b.dataset.m; renderPfPeriods(); drawPfNav(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
 $("pf-comp").addEventListener("click", ev => {
@@ -2183,7 +2245,7 @@ function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copi
 // Applica la modifica a una copia, controlla che le vendite non superino le quote possedute e solo allora salva.
 // Le modifiche restano in una copia (ORIG è la versione salvata) finché non si preme «Salva»; save = true salva subito (azioni con un proprio pulsante).
 let ORIG = null;
-const updSave = () => { $("savebar").hidden = !ORIG || $("v-pfs").hidden || $("pf-edit").hidden; };
+const updSave = () => { $("savebar").hidden = !ORIG || $("v-pfs").hidden; };
 function savePf(c) {
   const src = ORIG || pfCur; ORIG = null;
   const t = ownPf(src); t.positions = c.positions; t.amount = c.amount; t.start = c.start; t.description = c.description || "";
@@ -2198,7 +2260,26 @@ function editPf(fn, save) {
   pfCur = c; renderPf(); updSave(); return "";
 }
 const keepDirty = () => !ORIG || confirm("Ci sono modifiche non salvate. Scartarle?");
-$("sv-save").addEventListener("click", () => savePf(clonePf(pfCur)));
+function openSave() {
+  if (!ORIG) { $("save-hint").textContent = "Nessuna modifica da salvare."; return; }
+  $("save-hint").textContent = "";
+  $("sp-name").value = `${(ORIG.name || pfCur.name).replace("Prova · ", "")} (modificato)`; $("sp-descr").value = pfCur.description || ""; $("sp-msg").textContent = ""; $("sp-json").checked = false;
+  $("sp-upd").hidden = !!ORIG.sample; $("savepf").showModal(); $("sp-name").select();
+}
+$("sv-save").addEventListener("click", openSave); $("save-open").addEventListener("click", openSave);
+$("sp-x").addEventListener("click", () => $("savepf").close()); $("sp-cancel").addEventListener("click", () => $("savepf").close());
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio";
+$("sp-form").addEventListener("submit", ev => {
+  ev.preventDefault(); const nm = $("sp-name").value.trim(); if (!nm) return;
+  const pf = clonePf(pfCur); pf.id = newId(); pf.name = nm; pf.description = $("sp-descr").value.trim(); delete pf.sample;
+  const dl = $("sp-json").checked; $("savepf").close(); USER.unshift(pf); commit(pf.id); updSave(); msg(`Creato: ${nm}`);
+  if (dl) exportJson([pf], slug(nm) + ".json");
+});
+$("sp-upd").addEventListener("click", () => {
+  const nm = $("sp-name").value.trim(); if (!nm) return;
+  const c = clonePf(pfCur); c.name = nm; c.description = $("sp-descr").value.trim(); const dl = $("sp-json").checked; $("savepf").close(); savePf(c); updSave(); msg(`Aggiornato: ${nm}`);
+  if (dl) exportJson([pfCur], slug(nm) + ".json");
+});
 $("sv-cancel").addEventListener("click", () => { pfCur = ORIG || pfCur; ORIG = null; resetForm(); fillSel(); renderPf(); updSave(); msg(""); });
 const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
 function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
@@ -2242,7 +2323,7 @@ $("op-form").addEventListener("submit", ev => {
   if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
   if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
   if (!(qty > 0) || !(price > 0)) return hmsg("Quantità e prezzo devono essere maggiori di zero", true);
-  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); }, true);
+  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
   if (err) return hmsg(err, true);
   resetOp(); hmsg(ed ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
 });
@@ -2252,7 +2333,7 @@ $("hist-tbl").addEventListener("click", ev => {
   if (b.classList.contains("ed")) {
     $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-mode").value = "u"; $("op-price").value = t.price.toFixed(3); $("op-price").dataset.touched = "1";
     editOp = { pi, ti }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
-  } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1), true); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
+  } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1)); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
 });
 $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
 /* Rimessi: ribilanciamento, predefinito, nome, selezione dalla ricerca */
@@ -2271,8 +2352,8 @@ $("corr-opt").addEventListener("click", () => { if (!PF || !EF) return; $("rb-go
 $("rb-vol").addEventListener("input", () => { if (!PF || !EF) return; $("rb-goal").value = "custom"; renderRb(); drawEF(); renderScn(); });
 $("rb-apply").addEventListener("click", () => {
   if (!RB || !RB.length) return;
-  if (isDraft(pfCur)) { editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } }), true); return msg("Pesi aggiornati"); }
-  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(3), qty: r.dq }); x.txs.sort(byDate); } }), true);
+  if (isDraft(pfCur)) { editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.weight = r.w; x.qty = null; } })); return msg("Pesi aggiornati"); }
+  const today = ymd(Date.now()), n = RB.length, err = editPf(c => RB.forEach(r => { const x = c.positions.find(p => p.isin === r.isin); if (x) { x.txs.push({ date: today, price: +r.pr.toFixed(3), qty: r.dq }); x.txs.sort(byDate); } }));
   if (err) { $("rb-note").textContent = err; return; }
   msg(`Ribilanciamento applicato: ${n} operazioni`);
 });
@@ -2288,7 +2369,7 @@ $("dr-add-btn").addEventListener("click", () => { const isin = resolveEtf($("dr-
 $("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
   if (!DRSIZE.length) return; const today = ymd(Date.now());
-  editBase(c => c.positions.forEach(x => { const r = DRSIZE.find(d => d.isin === x.isin); if (!hasBase(x)) return; x.qty = x.weight = null; if (r) { x.txs.push({ date: today, price: +r.price.toFixed(3), qty: r.qty }); x.txs.sort(byDate); } }), true);
+  editBase(c => c.positions.forEach(x => { const r = DRSIZE.find(d => d.isin === x.isin); if (!hasBase(x)) return; x.qty = x.weight = null; if (r) { x.txs.push({ date: today, price: +r.price.toFixed(3), qty: r.qty }); x.txs.sort(byDate); } }));
   msg("Acquisti registrati a oggi ai prezzi correnti");
 });
 $("to-draft").addEventListener("click", () => {
@@ -2316,34 +2397,34 @@ function deletePf(p) {
 function pfSummary(p) {
   const out = { n: p.positions.length, val: null };
   if (p.positions.some(x => { const e = byIsin(x.isin); return e && !e.s && !e.tried; })) return out; // prezzi ancora in caricamento: niente conteggio parziale
-  try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); } } catch {}
+  try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); const it = livePerf(P).items[5][1]; out.ret = it ? it.r : null; } } catch {}
   return out;
 }
 function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
-    return `<div class="pfrow" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="open">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
+    return `<div class="pfrow${pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
-      <div class="pfact"><button type="button" class="ghost" data-a="open">Apri</button><button type="button" class="ghost" data-a="edit">Modifica</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
+      <span class="v n ${cls(s.ret)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>dall'acquisto</small></span>
+      <div class="pfact"><button type="button" class="ghost" data-a="open">Home</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
   $("pfs-restore").hidden = !hiddenSamples().length;
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
 }
-// Editor del portafoglio nella scheda Portafogli: posizioni, movimenti, simulazione e ribilanciamento
-function showEditor(toRb) { $("pf-edit").hidden = false; showView("pfs"); updSave(); requestAnimationFrame(() => { drawEF(); $(toRb ? "rb-sec" : "pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
-function openEdit(id, then) {
-  if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showEditor(then === "reb");
+// Dettaglio del portafoglio selezionato nella scheda Portafogli
+function showEditor() { showView("pfs"); updSave(); requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
+function selectPf(id) {
+  if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); updSave();
+  requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); });
 }
-$("ed-close").addEventListener("click", () => { if (!keepDirty()) return; if (ORIG) { pfCur = ORIG; ORIG = null; resetForm(); fillSel(); renderPf(); } $("pf-edit").hidden = true; updSave(); });
-$("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); $("pf-edit").hidden = true; updSave(); }));
-function openPf(id, then) {
+$("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); updSave(); }));
+function openPf(id) {
   if (!keepDirty()) return; ORIG = null; updSave();
   pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showView("port");
-  if (then === "reb") requestAnimationFrame(() => $("rb-sec").scrollIntoView({ behavior: "smooth", block: "start" }));
 }
 $("pfs-list").addEventListener("click", ev => {
-  const b = ev.target.closest("button[data-a]"); if (!b) return;
-  const id = b.closest(".pfrow").dataset.id, p = PFLIST.find(x => x.id === id), a = b.dataset.a;
-  if (a === "open") openPf(id); else if (a === "edit") openEdit(id);
+  const row = ev.target.closest(".pfrow"); if (!row) return;
+  const b = ev.target.closest("button[data-a]"), id = row.dataset.id, p = PFLIST.find(x => x.id === id), a = b ? b.dataset.a : "sel";
+  if (a === "sel") selectPf(id); else if (a === "open") openPf(id);
   else if (a === "exp") exportJson([p], (p.id || "portafoglio") + ".json");
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
