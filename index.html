@@ -127,6 +127,9 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .big { font-family: var(--m); font-size: var(--fs-l); font-weight: 400; letter-spacing: -.05em; line-height: 1; }
 .big small { font-size: var(--fs-s); color: var(--soft); letter-spacing: 0; margin-left: 6px; }
 .chg { font-size: var(--fs-m); margin-top: 8px; }
+.chg .roi { font-family: var(--m); font-size: var(--fs-l); font-weight: 500; letter-spacing: -.05em; line-height: 1.1; }
+.chg .roi-l { color: var(--fg); margin-left: 4px; }
+.chg .roi-s { display: block; margin-top: 4px; font-size: var(--fs-s); }
 .periods { display: flex; gap: 2px; }
 .periods button { border: 0; background: none; border-radius: 99px; padding: 5px 10px; font-size: var(--fs-s); color: var(--soft); cursor: pointer; font-family: var(--m); }
 .periods button:hover { color: var(--fg); }
@@ -182,6 +185,9 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 16px 16px; padding-top: 20px; }
 .kpi div { display: grid; gap: 4px; min-width: 0; }
 .kpi .n { font-size: var(--fs-m); }
+.kpi.hi { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+.kpi.hi .n { font-size: var(--fs-l); letter-spacing: -.04em; line-height: 1.1; }
+.kpi.hi .k { white-space: normal; }
 @media (max-width: 480px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kpi .k { white-space: nowrap; }
 .pf-sec { padding-top: 32px; }
@@ -229,6 +235,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .newpf[aria-pressed="true"] { border-color: var(--fg); }
 .pfbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 auto 0 0; }
 .live { padding-top: 16px; }
+.lhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 24px; }
+.lh-r { margin-left: auto; text-align: right; }
+.lh-r .since { display: grid; gap: 2px; justify-items: end; }
+.lh-r .since .n { font-size: var(--fs-m); font-weight: 500; letter-spacing: -.03em; }
+.lh-r .bench { margin-top: 4px; }
 .live .big { font-size: var(--fs-l); }
 .rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 14px 16px; padding-top: 16px; }
 .rets > div { display: grid; gap: 2px; min-width: 0; border-top: 1.5px solid var(--hair); padding-top: 10px; }
@@ -417,7 +428,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.005</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.006</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -437,7 +448,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   </section>
   <p class="fc-note" id="pf-desc-ro" hidden></p>
   <section class="live" aria-label="Valore e rendimenti">
-    <div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div><div class="bench" id="pf-bench"></div>
+    <div class="lhead"><div class="lh-l"><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div></div><div class="lh-r"><div id="pf-since"></div><div class="bench" id="pf-bench"></div></div></div>
     <div class="rets" id="rets"></div>
   </section>
   <section class="kpi" id="kpi" aria-label="Sintesi"></section>
@@ -467,6 +478,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   </section>
 
   <section class="sec pf-sec" id="corr-sec"><h3>Correlazioni<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
+    <div class="kpi hi" id="corr-idx-h"></div>
     <div class="scroll"><table class="eft cmx" id="pf-corr"></table></div>
     <p class="fc-note" id="corr-note"></p>
   </section>
@@ -527,7 +539,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   </section>
 </div>
   <section class="sec pf-sec" id="corr2-sec"><h3>Correlazione e diversificazione<button type="button" class="i" data-g="corr" aria-label="Informazioni: correlazioni">i</button></h3>
-    <div class="kpi" id="corr-idx"></div>
+    <div class="kpi hi" id="corr-idx"></div>
     <div class="scroll"><table class="eft cmx" id="pf-corr2"></table></div>
     <p class="fc-note" id="corr-note2"></p>
   </section>
@@ -1142,9 +1154,7 @@ function drawChart() {
   const line = T.map((t, i) => (i ? "L" : "M") + X(t).toFixed(1) + " " + Y(V[i]).toFixed(1)).join("");
   const dec = hi < 10 ? 2 : hi < 100 ? 1 : 0;
   const spanDays = (T[T.length - 1] - T[0]) / DAY;
-  const xo = spanDays > 900 ? { year: "numeric" } : spanDays > 80 ? { month: "short" } : { day: "numeric", month: "short" };
-  const nx = W < 420 ? 3 : 4, xt = [];
-  for (let k = 0; k < nx; k++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (k + 0.5) / nx);
+  const xo = xoOf(T[0], T[T.length - 1]), xt = timeTicks(T[0], T[T.length - 1], W);
 
   const art = splitArt(T, V, V.map(() => V[0]), X, Y, "gf");
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="NAV ${esc(e.ticker)} ${curPeriod}">
@@ -1596,6 +1606,15 @@ function splitArt(T, V, B, X, Y, gid) {
     stroke: `url(#${gid}s)`,
   };
 }
+// Asse del tempo: tick sui primi del mese (passo 1, 2, 3, 6 o 12 mesi, il più fitto che sta) e sempre con l'anno
+const xoOf = (t0, t1) => ((t1 - t0) / DAY > 80 ? { month: "short", year: "2-digit" } : { day: "numeric", month: "short", year: "2-digit" });
+function timeTicks(t0, t1, W) {
+  const max = Math.max(3, Math.floor(W / (W < 500 ? 80 : 56))), span = (t1 - t0) / DAY;
+  if (span <= 80) { const out = []; for (let q = 0; q < Math.min(max, 5); q++) out.push(t0 + (t1 - t0) * (q + 0.5) / Math.min(max, 5)); return out; }
+  const all = []; for (let d = new Date(new Date(t0).getFullYear(), new Date(t0).getMonth() + 1, 1); d.getTime() < t1; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) all.push(d);
+  for (const st of [1, 2, 3, 6, 12]) { const sel = all.filter(d => d.getMonth() % st === 0 || st === 1); if (sel.length <= max) { const e = (t1 - t0) * 0.04; return sel.map(d => d.getTime()).filter(t => t > t0 + e && t < t1 - e * 3); } }
+  return [];
+}
 function drawLine(box, T, S, label, gid) {
   const W = box.clientWidth, H = box.clientHeight; if (!W || !T.length) return;
   const pl = 0, pr = 62, pt = 8, pb = 24;
@@ -1604,8 +1623,7 @@ function drawLine(box, T, S, label, gid) {
   const lo = Math.min(ticks[0], mn - pad), hi = Math.max(ticks[ticks.length - 1], mx + pad);
   const X = t => pl + (t - T[0]) / ((T[T.length - 1] - T[0]) || 1) * (W - pl - pr), Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
   const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
-  const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
-  const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
+  const xo = xoOf(T[0], T[T.length - 1]), xt = timeTicks(T[0], T[T.length - 1], W);
   const m = S[0], ref = S[1], art = splitArt(T, m, ref || m.map(() => m[0]), X, Y, gid);
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
     <defs>${art.defs}</defs>
@@ -1629,7 +1647,7 @@ function drawLine(box, T, S, label, gid) {
   hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
 }
 // Storico titoli: valore nel tempo delle quote che possiedi oggi, come se le avessi avute per tutta la storia disponibile (simulazione)
-let pfView = "real", PB = null;
+let pfView = "back", PB = null;
 function backBuild(P) {
   const pos = P.act.map(i => ({ isin: P.isins[i], qty: P.qty[i] })).filter(x => x.qty > 0); if (!pos.length) return null;
   try { return pfBuild(mkPf({ id: "storico", start: "1990-01-01", positions: pos.map(x => mkPos(x.isin, { qty: x.qty })) })); } catch { return null; }
@@ -1658,9 +1676,11 @@ function computeEF(P) {
   EFH = cap === 0.4 ? EF : frontier(P, 0.4);
 }
 const wlOf = (F, w) => (F ? F.items : []).map((e, j) => [e.ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
+// Casi di ribilanciamento mostrati in Home (sola lettura): stessi colori in tabella e sul grafico
+const EFH_CASES = F => [["Attuale", "var(--fg)", F.cur], ["Max Sharpe", "var(--c1)", F.maxS], ["Stessa vol., più rend.", "var(--c2)", F.vol], ["Stesso rend., meno vol.", "var(--c3)", F.ret], ["Min. varianza", "var(--c4)", F.minV], ["Max diversif.", "var(--c5)", F.div]];
 function renderEF(P, allReal) {
   const F = EFH;
-  $("pf-eft").innerHTML = F ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th><th>Diversif.${ib("div")}</th></tr></thead><tbody>${[["Attuale", "var(--fg)", F.cur], ["Max Sharpe", "var(--c1)", F.maxS]].map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Max Sharpe": ib("maxsharpe") }[n] || ""}</td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td><td class="n">${fmt(F.drOf(p.w), 2)}</td></tr>`).join("")}</tbody>` : "";
+  $("pf-eft").innerHTML = F ? `<thead><tr><th></th><th>Rendimento${ib("ann")}</th><th>Volatilità${ib("vol")}</th><th>Sharpe${ib("sharpe")}</th><th>Diversif.${ib("div")}</th></tr></thead><tbody>${EFH_CASES(F).map(([n, c, p]) => `<tr><td><span class="dotm" style="background:${c}"></span>${n}${{ "Max Sharpe": ib("maxsharpe") }[n] || (n === "Attuale" ? "" : ib("scn"))}</td><td class="n">${fmt(p.r * 100, 1)}%</td><td class="n">${fmt(p.v * 100, 1)}%</td><td class="n">${fmt(p.r / p.v)}</td><td class="n">${fmt(F.drOf(p.w), 2)}</td></tr>`).join("")}</tbody>` : "";
   renderCorr();
   $("ef-note").textContent = F ? `Simulazione con i pesi di oggi sugli ultimi ${fmt(F.yrs, 1)} anni, non il rendimento reale · rendimenti a 5 giorni · solo posizioni lunghe${F.cap < 1 ? ` · max ${fmt(F.cap * 100, 0)}% per ETF` : ""}${allReal ? "" : " · prezzi simulati"}` : "";
   $("corr-opt").hidden = !EF;
@@ -1677,7 +1697,7 @@ function renderScn() {
 const shortNm = e => (e.ticker && e.ticker !== e.isin && e.ticker.length <= 8 ? e.ticker : e.isin.slice(-5));
 function renderCorr() {
   const F = EFH, set = (tb, note, idx) => {
-    if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; if (idx) idx.innerHTML = ""; return; }
+    if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; idx.innerHTML = ""; return; }
     const n = F.items.length, nm = F.items.map(shortNm), c = F.corr;
     const bg = x => (x === 1 ? "" : ` style="background:color-mix(in srgb, var(${x >= 0 ? "--down" : "--up"}) ${Math.round(Math.min(Math.abs(x), 1) * 60)}%, transparent)"`);
     tb.innerHTML = `<thead><tr><th></th>${nm.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${esc(nm[i])}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
@@ -1685,10 +1705,11 @@ function renderCorr() {
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const x = c[i][j]; sum += x; k++; if (!hi || x > hi[2]) hi = [i, j, x]; if (!lo || x < lo[2]) lo = [i, j, x]; }
     const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
     let num = 0, den = 0; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) { const a = w[i] * w[j] * F.sd[i] * F.sd[j]; num += a * c[i][j]; den += a; }
-    note.innerHTML = `Media ${fmt(sum / k, 2)} · più alta ${pr(hi)} · più bassa ${pr(lo)}<br>Diversificazione${ib("div")} ${fmt(d0, 2)} ora · ${fmt(d1, 2)} con l'ottimizzazione`;
-    if (idx) idx.innerHTML = [["Correlazione media pesata", den > 1e-9 ? fmt(num / den, 2) : "—", "corr"], ["Diversificazione", fmt(d0, 2), "div"], ["Massima possibile", fmt(d1, 2), ""]].map(([k, v, g]) => `<div><span class="k">${k}${g ? ib(g) : ""}</span><span class="n">${v}</span></div>`).join("");
+    note.innerHTML = `Più alta ${pr(hi)} · più bassa ${pr(lo)}`;
+    const avg = sum / k, cw = den > 1e-9 ? num / den : null, cc = x => (x == null ? "" : x >= 0.8 ? "neg" : x < 0.4 ? "pos" : "");
+    idx.innerHTML = [["Correlazione media", fmt(avg, 2), "corrm", cc(avg)], ["Media pesata sui pesi", cw == null ? "—" : fmt(cw, 2), "corrw", cc(cw)], ["Diversificazione", fmt(d0, 2), "div", ""], ["Massima possibile", fmt(d1, 2), "div", ""]].map(([k, v, g, c]) => `<div><span class="k">${k}${ib(g)}</span><span class="n ${c}">${v}</span></div>`).join("");
   };
-  set($("pf-corr"), $("corr-note")); set($("pf-corr2"), $("corr-note2"), $("corr-idx"));
+  set($("pf-corr"), $("corr-note"), $("corr-idx-h")); set($("pf-corr2"), $("corr-note2"), $("corr-idx"));
 }
 function drawEF() { drawEFTo($("pf-ef"), false); drawEFTo($("pf-ef2"), true); }
 // Home: sola lettura, solo «Attuale» e «Max Sharpe»; editor in Portafogli: tutti i punti e il pallino «Obiettivo»
@@ -1696,7 +1717,7 @@ function drawEFTo(box, full) {
   const F = full ? EF : EFH; if (!box || !PF) return;
   if (!F) { box.innerHTML = '<p class="fc-note" style="padding-top:24px">Servono almeno 2 ETF e 3 mesi di storico</p>'; return; }
   const W = box.clientWidth, H = box.clientHeight; if (!W) return;
-  const pl = 44, pr = 14, pt = 10, pb = 28, keep = full ? [...F.bg, F.cur, F.minV, F.maxS, ...F.line, rbTarget(F)] : [...F.bg, F.cur, F.maxS, ...F.line];
+  const pl = 44, pr = 14, pt = 10, pb = 28, keep = full ? [...F.bg, F.cur, F.minV, F.maxS, ...F.line, rbTarget(F)] : [...F.bg, ...EFH_CASES(F).map(c => c[2]), ...F.line];
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   keep.forEach(p => { x0 = Math.min(x0, p.v); x1 = Math.max(x1, p.v); y0 = Math.min(y0, p.r); y1 = Math.max(y1, p.r); });
   const px = (x1 - x0) * 0.06 || 0.01, py = (y1 - y0) * 0.08 || 0.01; x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
@@ -1710,7 +1731,7 @@ function drawEFTo(box, full) {
     ${xt.map(v => `<text class="ax" x="${X(v)}" y="${H - 8}" text-anchor="middle">${fmt(v * 100, dx)}%</text>`).join("")}
     ${F.bg.map(p => `<circle cx="${X(p.v).toFixed(1)}" cy="${Y(p.r).toFixed(1)}" r="1.7" fill="var(--soft)" fill-opacity=".28"/>`).join("")}
     <path d="${F.line.map((p, i) => (i ? "L" : "M") + X(p.v).toFixed(1) + " " + Y(p.r).toFixed(1)).join("")}" fill="none" stroke="var(--fg)" stroke-width="1.7" stroke-linejoin="round"/>
-    ${full ? lab(F.minV, "Min varianza", "var(--c2)", false) : ""}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}${full ? lab(rbTarget(F), "Obiettivo", "var(--c3)", false) : ""}
+    ${full ? lab(F.minV, "Min varianza", "var(--c2)", false) : EFH_CASES(F).slice(2).map(([n, c, p]) => `<circle cx="${X(p.v)}" cy="${Y(p.r)}" r="4.5" fill="${c}" stroke="var(--bg)" stroke-width="1.5"><title>${n}</title></circle>`).join("")}${lab(F.maxS, "Max Sharpe", "var(--c1)", false)}${lab(F.cur, "Attuale", "var(--fg)", true)}${full ? lab(rbTarget(F), "Obiettivo", "var(--c3)", false) : ""}
     <text class="ax" x="${W - pr}" y="${pt + 8}" text-anchor="end">Rendimento ↑ · Volatilità →</text></svg>`;
 }
 const donut = items => {
@@ -1733,7 +1754,7 @@ function idleRows(P) {
 }
 function renderEmpty() {
   PF = null; EF = null; EFH = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
-  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src", "ed-kpi", "ed-bench", "pf-bench", "pf-corr2", "corr-idx"].forEach(id => ($(id).innerHTML = ""));
+  ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src", "ed-kpi", "ed-bench", "pf-bench", "pf-since", "pf-corr2", "corr-idx", "corr-idx-h"].forEach(id => ($(id).innerHTML = ""));
   $("corr-note2").textContent = "";
   $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
   $("pf-comp").innerHTML = (pfCur.positions.length ? "" : '<p class="fc-note">Aggiungi un ETF e registra un movimento (acquisto o vendita) o la quantità iniziale</p>') + idleRows(null);
@@ -1891,14 +1912,13 @@ function drawBm() {
     if (bmMode === "cum") {
       const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
       body = `<path d="${path(B)}" fill="none" stroke="var(--soft)" stroke-width="1.6" stroke-dasharray="4 3" stroke-linejoin="round"/><path d="${path(A)}" fill="none" stroke="var(--c1)" stroke-width="1.8" stroke-linejoin="round"/>`;
-      const span = (T[n - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" }, nx = W < 420 ? 3 : 4;
-      for (let q = 0; q < nx; q++) { const t = T[0] + (T[n - 1] - T[0]) * (q + 0.5) / nx; xt.push([X(t), dateTxt(t, xo)]); }
+      const xo = xoOf(T[0], T[n - 1]); timeTicks(T[0], T[n - 1], W).forEach(t => xt.push([X(t), dateTxt(t, xo)]));
     } else {
       bw = Math.max(1.5, Math.min(12, cw * 0.38));
       const rect = (x, v, c, op) => `<rect x="${(x).toFixed(1)}" y="${Math.min(Y(v), Y(0)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.8, Math.abs(Y(v) - Y(0))).toFixed(1)}" fill="${c}" opacity="${op}"/>`;
       body = T.map((t, i) => { const x = X(t, i); return rect(x - bw - 0.5, A[i], "var(--c1)", mo[i].open ? 0.55 : 1) + rect(x + 0.5, B[i], "var(--soft)", mo[i].open ? 0.55 : 1); }).join("");
       const every = Math.max(1, Math.ceil(n / (W < 420 ? 4 : 8)));
-      T.forEach((t, i) => { if (i % every === 0) xt.push([X(t, i), dateTxt(t, n > 14 ? { month: "short", year: "2-digit" } : { month: "short" })]); });
+      T.forEach((t, i) => { if (i % every === 0) xt.push([X(t, i), dateTxt(t, { month: "short", year: "2-digit" })]); });
     }
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Strategia e benchmark">
       ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" ${v === 0 ? 'style="stroke:var(--soft)"' : ""}/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 0)}%</text>`).join("")}
@@ -1922,13 +1942,15 @@ function drawBm() {
     hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
   });
 }
+// Versione compatta per l'intestazione della Home
+const benchShort = b => { const d = (b.pf - b.bm) * 100; return `${semHtml(d)} Benchmark ${pct(b.bm, 1)} · <span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>${ib("bench")}`; };
 // Dettaglio del portafoglio: rendimento dall'acquisto e benchmark in alto
 function renderDetail(P, inv) {
   const L = livePerf(P), pl = L.Vl - inv, it = L.items[5][1], b = benchInfo(P);
   $("ed-kpi").innerHTML = [["Valore", eur(L.Vl), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)], ["Sull'investito", inv > 0 ? pct(pl / inv, 1) : "—", cls(pl)], ["A pesi temporali", it ? pct(it.r, 1) : "—", it ? cls(it.r) : ""], ["Benchmark", b ? pct(b.bm, 1) : "—", ""]]
     .map(([k, v, c]) => `<div><span class="k">${k}${k === "Benchmark" ? ib("bench") : k === "A pesi temporali" ? ib("twr") : k === "Sull'investito" ? ib("roi") : ""}</span><span class="n ${c}">${v}</span>${k === "Benchmark" && b ? `<span class="sub">${semHtml((b.pf - b.bm) * 100)}</span>` : ""}</div>`).join("");
   const txt = b ? benchTxt(b) : "", sub = b ? " · " + b.parts.map(([n, x]) => `${fmt(x * 100, 0)}% ${n}`).join(" · ") : "";
-  $("ed-bench").innerHTML = txt + (b ? `<br>In media ${sub.slice(3)}` : ""); $("pf-bench").innerHTML = txt;
+  $("ed-bench").innerHTML = txt + (b ? `<br>In media ${sub.slice(3)}` : ""); $("pf-bench").innerHTML = b ? benchShort(b) : "";
 }
 function livePerf(P) {
   const n = P.last, Vl = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0);
@@ -1949,8 +1971,10 @@ function liveUpdate(force) {
   const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.act.some(i => !P.es[i].real);
   const act = P.act.map(i => P.es[i]).filter(e => e.real), oldE = act.reduce((a, e) => (!a || liveMs(e) < liveMs(a) ? e : a), null), oldMs = oldE ? liveMs(oldE) : 0, oldTxt = oldE ? `Dato più vecchio: ${oldE.ticker} · ${ltTxt(oldMs)}` : "";
   $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
-  $("pf-chg").innerHTML = `<span class="${cls(pl)}">${eurS(pl)} · ${pct(pl / inv, 1)} sull'investito</span>${ib("roi")} <span class="k" title="${esc(oldTxt)}">${sim ? "simulato" : "live · " + ltTxt(oldMs)}</span>`;
+  $("pf-chg").innerHTML = `<span class="roi ${cls(pl)}">${pct(pl / inv, 1)}</span> <span class="roi-l">sull'investito${ib("roi")}</span><span class="roi-s"><span class="${cls(pl)}">${eurS(pl)}</span> · <span class="k" title="${esc(oldTxt)}">${sim ? "simulato" : "live · " + ltTxt(oldMs)}</span></span>`;
   $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}${ib("twr")}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
+  const it0 = L.items[5][1];
+  $("pf-since").innerHTML = it0 ? `<div class="since"><span class="k">Dall'inizio${ib("twr")}</span><span class="n ${cls(it0.r)}">${pct(it0.r, 1)}</span><span class="sub n ${cls(it0.e)}">${eurS2(it0.e)}</span></div>` : "";
   const kv = k => $("kpi").querySelector(`[data-k="${k}"] .n`);
   if (kv("Valore")) { kv("Valore").textContent = eur(L.Vl); kv("Utile").className = "n " + cls(pl); kv("Utile").textContent = eurS(pl); }
 }
@@ -2101,8 +2125,7 @@ function drawHist() {
   const X = t => pl + (t - T[0]) / ((T[T.length - 1] - T[0]) || 1) * (W - pl - pr), Y = v => pt + (mx - v) / mx * (H - pt - pb);
   let base = ix.map(() => 0); const bands = ser.map(s => { const lo = base, hi = s.map((v, k) => lo[k] + v); base = hi; return { lo, hi }; });
   const pts = (a) => a.map((v, k) => X(T[k]).toFixed(1) + " " + Y(v).toFixed(1));
-  const span = (T[T.length - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" };
-  const nx = W < 420 ? 3 : 4, xt = []; for (let q = 0; q < nx; q++) xt.push(T[0] + (T[T.length - 1] - T[0]) * (q + 0.5) / nx);
+  const xo = xoOf(T[0], T[T.length - 1]), xt = timeTicks(T[0], T[T.length - 1], W);
   const col = k => `var(--c${(k % 6) + 1})`;
   const ops = pfLots(P.pf).filter(l => !l.base).map(l => ({ x: X(Math.min(Math.max(dateMs(l.date), T[0]), T[T.length - 1])), buy: l.qty > 0 }));
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${isPct ? "Composizione" : "Valore per ETF"} nel tempo">
@@ -2179,6 +2202,7 @@ GL_LINKS.bm_eq = ["justETF · iShares Core MSCI World (indice azionario mondiale
 GL_LINKS.bm_bd = ["justETF · iShares Core Global Aggregate Bond EUR Hedged (obbligazioni mondiali)", JE + "etf-profile.html?isin=IE00BDBRDM35"];
 GL_LINKS.bm_cm = ["justETF · Invesco Physical Gold (oro)", JE + "etf-profile.html?isin=IE00B579F325"];
 const GL = {
+  scn: { t: "Casi di ribilanciamento", what: "Portafogli ottenibili con gli stessi ETF cambiando solo i pesi, calcolati sulla frontiera efficiente: stessa volatilità con più rendimento, stesso rendimento con meno volatilità, minima varianza, massima diversificazione.", use: "Mostrano quanto margine c'è rispetto ai pesi attuali, a parità di rischio o di rendimento. Sono simulazioni sui dati storici, non previsioni.", how: "Confronta le righe con «Attuale»: ogni caso migliora un solo aspetto (rendimento, volatilità o diversificazione). Per generare un portafoglio con quei pesi vai in Portafogli → Frontiera e ribilanciamento." },
   sem: { t: "Semaforo del benchmark", what: "Confronto sintetico tra il tuo rendimento a pesi temporali e quello del benchmark sullo stesso periodo.", use: "Dice a colpo d'occhio se la tua strategia ha battuto un'alternativa passiva e diversificata.", how: "Si guarda lo scarto in punti percentuali (tu meno benchmark) dal primo investimento. Verde: scarto di almeno +0,5 punti, benchmark battuto. Giallo: tra −1 e +0,5 punti, in linea. Rosso: sotto di più di 1 punto. Le soglie sono una convenzione di questa app, non uno standard.", ref: [["Verde", "scarto ≥ +0,5 pp"], ["Giallo", "da −1 a +0,5 pp"], ["Rosso", "scarto < −1 pp"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   bmc: { t: "Strategia e benchmark nel tempo", what: "Andamento del tuo portafoglio e del benchmark dal primo investimento, a pesi temporali (senza l'effetto di acquisti e vendite). Cumulato: linee con il rendimento accumulato dall'inizio. Mensile: barre affiancate con il rendimento di ogni mese di calendario (l'ultimo, in corso, è più chiaro).", use: "Il cumulato mostra dove si è formato il vantaggio o lo svantaggio nel tempo; il mensile mostra se vinci con regolarità o per pochi mesi eccezionali.", how: "Passa il dito o il mouse sul grafico per vedere i due valori e lo scarto in punti. Il benchmark segue giorno per giorno l'asset allocation del tuo portafoglio (MSCI World, Global Aggregate in EUR, oro, immobiliare globale). I rendimenti mensili non si sommano: per l'andamento complessivo guarda il cumulato.", ref: [["Linea sopra il benchmark", "hai battuto il mercato"], ["Barra più alta del benchmark", "mese migliore del benchmark"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   bench: { dynT: "Ripartizione e rendimenti per periodo", dyn: () => bmTable(), calc: "1) Ogni giorno guardo come è composto il tuo portafoglio per asset class (valore delle quote in mano ÷ valore totale): azionario, obbligazionario/monetario, oro, immobiliare; i fondi multi-asset contano 60% azionario e 40% obbligazionario. 2) A ogni asset class associo un ETF su un indice mondiale: azionario → MSCI World, obbligazionario → Bloomberg Global Aggregate in EUR, oro → oro fisico, immobiliare → immobiliare globale. 3) Il rendimento del benchmark in un giorno è la somma dei rendimenti di quegli ETF, ciascuno pesato con la composizione del giorno prima. 4) I rendimenti giornalieri si concatenano dal primo investimento (o dal lancio del più recente tra gli ETF indice). 5) Il tuo rendimento è quello a pesi temporali sullo stesso periodo, e lo scarto è la differenza in punti.", t: "Benchmark", what: "Rendimento che avresti avuto investendo in indici mondiali comparabili con la composizione del tuo portafoglio: azionario su MSCI World, obbligazionario su Bloomberg Global Aggregate coperto in euro, più oro e immobiliare globale se presenti. I pesi seguono la composizione del tuo portafoglio per asset class giorno per giorno: se cambi mix, cambia anche il benchmark.", use: "Dice se il tuo portafoglio ha fatto meglio o peggio di un'alternativa passiva e diversificata a livello mondiale, con lo stesso mix di rischio.", how: "Confronta il rendimento del periodo (non annualizzato, a pesi temporali, senza l'effetto di quando hai comprato o venduto) con quello del tuo portafoglio e guarda lo scarto in punti. Il periodo parte dal primo acquisto, o dalla data di lancio del più recente degli ETF usati come indici. Il benchmark confronta le tue scelte di asset allocation (quanto azionario, obbligazionario, oro) con un'implementazione passiva: lo scarto misura la selezione degli ETF e la tempistica, non il livello di rischio scelto. È una stima con ETF come proxy degli indici: non tiene conto di costi e tasse.", ref: [["Scarto positivo", "hai battuto il benchmark"], ["Scarto vicino a zero", "in linea con i mercati"], ["Scarto negativo", "meglio un'alternativa passiva"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
@@ -2215,7 +2239,9 @@ const GL = {
   agg: { t: "Aggiorna e ora dei dati", what: "Il pulsante «Aggiorna» rilegge subito prezzi, bid/ask e serie dal sito. Accanto al valore e al prezzo compaiono data e ora dell'ultimo dato live; con più ETF vale il più vecchio.", use: "Ti dice quanto sono freschi i numeri che vedi.", how: "I prezzi dei 14 ETF principali si aggiornano ogni 30 minuti nei giorni di borsa, gli altri ogni sera (domenica per i primi 150). Con il token GitHub («Monitoraggio automatico») il pulsante chiede anche a Yahoo Finance dati nuovi, che arrivano entro un paio di minuti. Fuori orario di borsa il dato resta quello dell'ultima chiusura.", ref: [] },
   qnet: { t: "Quote e ripartizione", what: "Quote nette di ogni ETF: quantità iniziale più acquisti meno vendite (somma algebrica dei movimenti). La percentuale è il peso dell'ETF sul valore attuale del portafoglio, ai prezzi correnti.", use: "Mostra quante quote possiedi oggi e come è ripartito il portafoglio.", how: "Una percentuale iniziale vale alle quote del giorno di partenza. Gli ETF senza prezzi scaricati mostrano le quote ma non la percentuale. Una posizione chiusa (acquisti uguali a vendite) mostra 0 quote.", ref: [] },
   corr: { t: "Matrice di correlazione", what: "Per ogni coppia di ETF, quanto si muovono insieme i rendimenti a 5 giorni: da −1 a +1, sugli ultimi anni di prezzi disponibili. Rosso = salgono e scendono insieme, verde = si compensano. Sulla diagonale ogni ETF è confrontato con sé stesso (1,00).", use: "Dice se i tuoi ETF si diversificano davvero: due ETF con correlazione alta portano quasi lo stesso rischio, quindi averli entrambi aggiunge poco.", how: "Per ottimizzarla: sostituisci o riduci gli ETF con correlazione alta, aggiungi asset poco correlati (obbligazioni, oro) e premi «Ottimizza»: propone i pesi con il massimo rapporto di diversificazione, cioè la media delle volatilità pesata sui pesi divisa per la volatilità del portafoglio (1 = nessun beneficio). Applica le operazioni da Ribilanciamento. Le correlazioni sono storiche, in crisi tendono ad aumentare, e le soglie indicate sono indicative.", ref: [["0,8 – 1", "quasi ridondanti"], ["0,4 – 0,8", "diversificazione parziale"], ["0 – 0,4", "buona diversificazione"], ["Sotto 0", "si compensano, rari"]], links: ["divers"] },
-  div: { t: "Rapporto di diversificazione", what: "Media delle volatilità degli ETF, pesata sui pesi, divisa per la volatilità del portafoglio.", use: "Misura quanto la combinazione degli ETF riduce il rischio rispetto a tenerli separati. Dipende dalle correlazioni: più sono basse, più il rapporto sale.", how: "Vale 1 se tutti gli ETF si muovono identici (correlazione 1); con n ETF di pari volatilità e pari peso e correlazione media ρ vale √(n / (1 + (n − 1)ρ)): con ρ = 0 è √n, con ρ = 1 è 1. Più è alto, meglio ti diversifichi. «Ottimizza» cerca i pesi che lo massimizzano, rispettando il peso massimo per ETF.", ref: [["Vicino a 1", "poca diversificazione"], ["Più alto", "meglio: il rischio si riduce di più"]], links: ["divers"] },
+  corrm: { t: "Correlazione media", what: "Media delle correlazioni di tutte le coppie di ETF del portafoglio (rendimenti a 5 giorni, ultimi anni di prezzi disponibili), senza contare la diagonale. Non tiene conto dei pesi: ogni coppia conta uguale.", use: "Dà un'idea rapida di quanto i tuoi ETF si muovono insieme: più è bassa, più il portafoglio è composto da strumenti che si compensano.", how: "Va da −1 a +1. Si legge sulle soglie sotto: sopra 0,8 gli ETF sono quasi ridondanti, tra 0,4 e 0,8 la diversificazione è parziale, sotto 0,4 è buona. Azioni di aree diverse stanno di solito tra 0,6 e 0,9, azioni e obbligazioni governative vicino a 0 o poco sopra, oro vicino a 0. Per abbassarla servono asset di classi diverse, non altri ETF azionari simili. In crisi le correlazioni tendono a salire. Le soglie sono indicative.", ref: [["0,8 – 1", "quasi ridondanti (rosso)"], ["0,4 – 0,8", "diversificazione parziale"], ["0 – 0,4", "buona diversificazione (verde)"], ["Sotto 0", "si compensano, raro"]], links: ["divers"] },
+  corrw: { t: "Correlazione media pesata", what: "Correlazione media tra gli ETF in cui ogni coppia conta in proporzione ai pesi e alle volatilità: le coppie con più rischio e più peso contano di più.", use: "Misura la correlazione che conta davvero nel tuo portafoglio, quella dei pesi reali. Cambia anche se non cambi gli ETF, ma solo i pesi.", how: "Stessa scala della correlazione media: sotto 0,4 buona, tra 0,4 e 0,8 parziale, sopra 0,8 quasi ridondante. Se è più alta della media semplice, il rischio è concentrato su coppie molto correlate; se è più bassa, i pesi stanno già compensando. Si abbassa spostando peso verso gli ETF meno correlati con gli altri.", ref: [["0,8 – 1", "quasi ridondanti"], ["0,4 – 0,8", "diversificazione parziale"], ["0 – 0,4", "buona diversificazione"]], links: ["divers"] },
+  div: { t: "Rapporto di diversificazione", what: "Media delle volatilità degli ETF, pesata sui pesi, divisa per la volatilità del portafoglio.", use: "Misura quanto la combinazione degli ETF riduce il rischio rispetto a tenerli separati. Dipende dalle correlazioni: più sono basse, più il rapporto sale.", how: "Vale 1 se tutti gli ETF si muovono identici (correlazione 1); con n ETF di pari volatilità e pari peso e correlazione media ρ vale √(n / (1 + (n − 1)ρ)): con ρ = 0 è √n, con ρ = 1 è 1. Più è alto, meglio ti diversifichi. «Ottimizza» cerca i pesi che lo massimizzano, rispettando il peso massimo per ETF.", ref: [["1,00 – 1,10", "nessun beneficio"], ["1,10 – 1,30", "diversificazione bassa"], ["1,30 – 1,60", "buona"], ["Oltre 1,60", "alta (servono molti ETF o classi diverse)"], ["Massima possibile", "il valore ottenibile cambiando solo i pesi"]], links: ["divers"] },
   spr: { t: "Spread denaro-lettera", what: "Bid è il miglior prezzo a cui trovi un compratore, ask il miglior prezzo a cui trovi un venditore. Lo spread è la differenza, in percentuale del prezzo medio: un costo implicito a ogni operazione.", use: "È l'indicatore pratico più importante della liquidità.", how: "Qui si calcola sui valori bid e ask dell'ultimo aggiornamento di Yahoo Finance (l'orario è indicato): non è un prezzo in tempo reale. Fuori orario di borsa bid e ask possono mancare. Si allarga in giornate agitate e quando la borsa dei titoli sottostanti è chiusa. Più market maker e più volume lo riducono.", ref: [["Grande ETF S&P 500 (justETF)", "circa 0,01%"], ["Fino a 0,05%", "eccellente"], ["Fino a 0,10%", "buono"], ["Oltre 0,20%", "costoso"], ["ETF poco scambiati (justETF)", "1% o più"]], links: ["liq"] },
   rend: { t: "Rendimenti 1A, 3A, da inizio", what: "Variazione di prezzo dell'ETF su un anno, su tre e su cinque anni (annualizzata) e dal lancio (annualizzata).", use: "Confronta la redditività di ETF diversi.", how: "Confronta ETF simili sullo stesso periodo. Per gli ETF a distribuzione il rendimento di prezzo non include i dividendi pagati. Il passato non garantisce il futuro.", ref: [["1 anno", "molto variabile, poco indicativo"], ["3–5 anni", "più significativo"], ["Da inizio", "dipende dall'epoca di lancio"]] },
   settore: { t: "Settore", what: "I settori che pesano almeno il 10% nell'ETF (da justETF quando scaricati, altrimenti indicativi). Non si applica a obbligazioni e oro.", use: "Capire dove è concentrato il rischio.", how: "Un ETF globale ampio copre molti settori, un ETF tematico ne ha pochi. Verifica la composizione aggiornata sulla scheda dell'ETF.", ref: [] },
