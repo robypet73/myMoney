@@ -308,6 +308,13 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .tl i { width: 8px; height: 8px; border-radius: 50%; background: var(--soft); opacity: .3; }
 .tl i.on { opacity: 1; }
 .semw { white-space: nowrap; }
+.tl.sm { margin: 0; }
+.bmt { overflow-x: auto; }
+.bmt table { width: 100%; border-collapse: collapse; font-size: var(--fs-s); }
+.bmt th { text-align: right; color: var(--soft); font-weight: 400; padding: 4px 6px; white-space: nowrap; }
+.bmt td { text-align: right; padding: 4px 6px; border-top: 1px solid var(--hair); white-space: nowrap; }
+.bmt th:first-child, .bmt td:first-child { text-align: left; padding-left: 0; }
+.bmt tr.tot td { font-weight: 500; border-top-color: var(--soft); }
 .tl i.on.r { background: var(--down); } .tl i.on.y { background: var(--c3); } .tl i.on.g { background: var(--up); }
 .bm-leg { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--soft); }
 .bm-leg i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
@@ -410,7 +417,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.004</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.005</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -1821,12 +1828,12 @@ function benchInfo(P) {
     if (!ks.length || es.some(e => !e || !e.s)) throw 0;
     const start = Math.max(P.t[0], ...es.map(e => e.s.t[0])), i0 = Math.max(0, idxOf(P.t, start)), avg = { eq: 0, bd: 0, cm: 0, re: 0 };
     let g = 1, cnt = 0;
-    const ser = { T: [P.t[i0]], pf: [1], bm: [1] };
+    const ser = { T: [P.t[i0]], pf: [1], bm: [1], w: [W[i0] || W[i0 + 1] || {}] };
     for (let m = i0 + 1; m <= P.last; m++) {
       const w = W[m - 1]; if (!w) continue;
       let r = 0; ks.forEach((k, j) => { r += w[k] * (priceAt(es[j], P.t[m]) / priceAt(es[j], P.t[m - 1]) - 1); });
       g *= 1 + r; cnt++; for (const k in avg) avg[k] += w[k];
-      ser.T.push(P.t[m]); ser.pf.push(P.idx[m] / P.idx[i0]); ser.bm.push(g);
+      ser.T.push(P.t[m]); ser.pf.push(P.idx[m] / P.idx[i0]); ser.bm.push(g); ser.w.push(w);
     }
     if (cnt < 20) throw 0;
     out = { bm: g - 1, pf: P.idx[P.last] / P.idx[i0] - 1, start: P.t[i0], ser, parts: ks.map(k => [BM_NAME[k], avg[k] / cnt]).sort((a, b) => b[1] - a[1]) };
@@ -1835,7 +1842,24 @@ function benchInfo(P) {
 }
 // Semaforo: verde = benchmark battuto (scarto ≥ +0,5 pp), giallo = in linea (da −1 a +0,5 pp), rosso = sotto (< −1 pp)
 const semOf = d => (d >= 0.5 ? ["g", "Benchmark battuto"] : d >= -1 ? ["y", "In linea con il benchmark"] : ["r", "Sotto il benchmark"]);
-const semHtml = d => { const [c, n] = semOf(d); return `<span class="semw"><span class="tl" role="img" aria-label="${n}" title="${n}"><i class="${c === "r" ? "on r" : ""}"></i><i class="${c === "y" ? "on y" : ""}"></i><i class="${c === "g" ? "on g" : ""}"></i></span>${ib("sem")}</span>`; };
+const semLights = d => { const [c, n] = semOf(d); return `<span class="tl" role="img" aria-label="${n}" title="${n}"><i class="${c === "r" ? "on r" : ""}"></i><i class="${c === "y" ? "on y" : ""}"></i><i class="${c === "g" ? "on g" : ""}"></i></span>`; };
+const semHtml = d => `<span class="semw">${semLights(d)}${ib("sem")}</span>`;
+// Tabella nella «i» del benchmark: ripartizione del portafoglio e rendimenti per trimestre, dal primo investimento
+function bmTable() {
+  const b = PF ? benchInfo(PF) : null; if (!b) return "";
+  const s = b.ser, ks = [["eq", "Azion."], ["bd", "Obblig."], ["cm", "Oro"], ["re", "Immob."]].filter(([k]) => s.w.some(w => w && w[k] > 0.005));
+  const qOf = t => { const d = new Date(t); return d.getFullYear() * 4 + Math.floor(d.getMonth() / 3); };
+  const rows = []; let a = 0;
+  for (let i = 1; i < s.T.length; i++) {
+    if (i + 1 < s.T.length && qOf(s.T[i + 1]) === qOf(s.T[i])) continue;
+    const q = qOf(s.T[i]), avg = {}; ks.forEach(([k]) => { let x = 0; for (let j = a + 1; j <= i; j++) x += (s.w[j] && s.w[j][k]) || 0; avg[k] = x / (i - a); });
+    rows.push({ l: `T${(q % 4) + 1} ${Math.floor(q / 4)}${i + 1 === s.T.length ? "*" : ""}`, avg, p: s.pf[i] / s.pf[a] - 1, b: s.bm[i] / s.bm[a] - 1 }); a = i;
+  }
+  const avg = {}; ks.forEach(([k]) => { const x = b.parts.find(([n]) => n === BM_NAME[k]); avg[k] = x ? x[1] : 0; });
+  rows.push({ l: "Totale", avg, p: b.pf, b: b.bm, tot: true });
+  const sg = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v), 1);
+  return `<div class="bmt"><table><thead><tr><th>Periodo</th>${ks.map(([, n]) => `<th>${n}</th>`).join("")}<th>Tu</th><th>Bench.</th><th>Scarto</th></tr></thead><tbody>${rows.map(r => `<tr${r.tot ? ' class="tot"' : ""}><td>${r.l}</td>${ks.map(([k]) => `<td class="n">${fmt(r.avg[k] * 100, 0)}%</td>`).join("")}<td class="n">${sg(r.p * 100)}%</td><td class="n">${sg(r.b * 100)}%</td><td class="n ${cls(r.p - r.b)}">${sg((r.p - r.b) * 100)}</td></tr>`).join("")}</tbody></table></div><p class="fc-note">Ripartizione media del tuo portafoglio nel periodo; rendimenti a pesi temporali; scarto in punti. * trimestre in corso.</p>`;
+}
 const benchTxt = b => { const d = (b.pf - b.bm) * 100; return `${semHtml(d)} Benchmark ${pct(b.bm, 1)} dal ${dateTxt(b.start)} · tu ${pct(b.pf, 1)} · <span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>${ib("bench")}`; };
 // Strategia e benchmark nel tempo: cumulato (linee, % dal primo investimento) o mensile (barre affiancate)
 let bmMode = "cum";
@@ -2157,7 +2181,7 @@ GL_LINKS.bm_cm = ["justETF · Invesco Physical Gold (oro)", JE + "etf-profile.ht
 const GL = {
   sem: { t: "Semaforo del benchmark", what: "Confronto sintetico tra il tuo rendimento a pesi temporali e quello del benchmark sullo stesso periodo.", use: "Dice a colpo d'occhio se la tua strategia ha battuto un'alternativa passiva e diversificata.", how: "Si guarda lo scarto in punti percentuali (tu meno benchmark) dal primo investimento. Verde: scarto di almeno +0,5 punti, benchmark battuto. Giallo: tra −1 e +0,5 punti, in linea. Rosso: sotto di più di 1 punto. Le soglie sono una convenzione di questa app, non uno standard.", ref: [["Verde", "scarto ≥ +0,5 pp"], ["Giallo", "da −1 a +0,5 pp"], ["Rosso", "scarto < −1 pp"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   bmc: { t: "Strategia e benchmark nel tempo", what: "Andamento del tuo portafoglio e del benchmark dal primo investimento, a pesi temporali (senza l'effetto di acquisti e vendite). Cumulato: linee con il rendimento accumulato dall'inizio. Mensile: barre affiancate con il rendimento di ogni mese di calendario (l'ultimo, in corso, è più chiaro).", use: "Il cumulato mostra dove si è formato il vantaggio o lo svantaggio nel tempo; il mensile mostra se vinci con regolarità o per pochi mesi eccezionali.", how: "Passa il dito o il mouse sul grafico per vedere i due valori e lo scarto in punti. Il benchmark segue giorno per giorno l'asset allocation del tuo portafoglio (MSCI World, Global Aggregate in EUR, oro, immobiliare globale). I rendimenti mensili non si sommano: per l'andamento complessivo guarda il cumulato.", ref: [["Linea sopra il benchmark", "hai battuto il mercato"], ["Barra più alta del benchmark", "mese migliore del benchmark"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
-  bench: { t: "Benchmark", what: "Rendimento che avresti avuto investendo in indici mondiali comparabili con la composizione del tuo portafoglio: azionario su MSCI World, obbligazionario su Bloomberg Global Aggregate coperto in euro, più oro e immobiliare globale se presenti. I pesi seguono la composizione del tuo portafoglio per asset class giorno per giorno: se cambi mix, cambia anche il benchmark.", use: "Dice se il tuo portafoglio ha fatto meglio o peggio di un'alternativa passiva e diversificata a livello mondiale, con lo stesso mix di rischio.", how: "Confronta il rendimento del periodo (non annualizzato, a pesi temporali, senza l'effetto di quando hai comprato o venduto) con quello del tuo portafoglio e guarda lo scarto in punti. Il periodo parte dal primo acquisto, o dalla data di lancio del più recente degli ETF usati come indici. Il benchmark confronta le tue scelte di asset allocation (quanto azionario, obbligazionario, oro) con un'implementazione passiva: lo scarto misura la selezione degli ETF e la tempistica, non il livello di rischio scelto. È una stima con ETF come proxy degli indici: non tiene conto di costi e tasse.", ref: [["Scarto positivo", "hai battuto il benchmark"], ["Scarto vicino a zero", "in linea con i mercati"], ["Scarto negativo", "meglio un'alternativa passiva"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
+  bench: { dynT: "Ripartizione e rendimenti per periodo", dyn: () => bmTable(), calc: "1) Ogni giorno guardo come è composto il tuo portafoglio per asset class (valore delle quote in mano ÷ valore totale): azionario, obbligazionario/monetario, oro, immobiliare; i fondi multi-asset contano 60% azionario e 40% obbligazionario. 2) A ogni asset class associo un ETF su un indice mondiale: azionario → MSCI World, obbligazionario → Bloomberg Global Aggregate in EUR, oro → oro fisico, immobiliare → immobiliare globale. 3) Il rendimento del benchmark in un giorno è la somma dei rendimenti di quegli ETF, ciascuno pesato con la composizione del giorno prima. 4) I rendimenti giornalieri si concatenano dal primo investimento (o dal lancio del più recente tra gli ETF indice). 5) Il tuo rendimento è quello a pesi temporali sullo stesso periodo, e lo scarto è la differenza in punti.", t: "Benchmark", what: "Rendimento che avresti avuto investendo in indici mondiali comparabili con la composizione del tuo portafoglio: azionario su MSCI World, obbligazionario su Bloomberg Global Aggregate coperto in euro, più oro e immobiliare globale se presenti. I pesi seguono la composizione del tuo portafoglio per asset class giorno per giorno: se cambi mix, cambia anche il benchmark.", use: "Dice se il tuo portafoglio ha fatto meglio o peggio di un'alternativa passiva e diversificata a livello mondiale, con lo stesso mix di rischio.", how: "Confronta il rendimento del periodo (non annualizzato, a pesi temporali, senza l'effetto di quando hai comprato o venduto) con quello del tuo portafoglio e guarda lo scarto in punti. Il periodo parte dal primo acquisto, o dalla data di lancio del più recente degli ETF usati come indici. Il benchmark confronta le tue scelte di asset allocation (quanto azionario, obbligazionario, oro) con un'implementazione passiva: lo scarto misura la selezione degli ETF e la tempistica, non il livello di rischio scelto. È una stima con ETF come proxy degli indici: non tiene conto di costi e tasse.", ref: [["Scarto positivo", "hai battuto il benchmark"], ["Scarto vicino a zero", "in linea con i mercati"], ["Scarto negativo", "meglio un'alternativa passiva"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
   inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra le operazioni con data, quantità e prezzo reali. Una vendita riduce l'investito. Una quantità senza data è simulata: si considera aperta alla data «Da» al prezzo di quel giorno.", ref: [] },
   pos: { t: "Posizioni", what: "Per ogni ETF indichi la quantità: in quote (assoluta) o in percentuale dell'importo. In più, con «Movimenti», registri acquisti e vendite, anche più di uno: per ciascuno data, quote e prezzo medio per quota oppure prezzo totale.", use: "Senza operazioni il portafoglio è una simulazione (draft). Con le operazioni è un portafoglio acquistato con storico reale.", how: "La quantità iniziale si considera aperta alla data «Da» al prezzo di quel giorno, poi si sommano le operazioni. Una vendita non può superare le quote possedute. Il JSON del portafoglio contiene ISIN, quantità o peso e le operazioni. Un portafoglio senza quantità parte con pesi uguali (salvati nel JSON); gli ETF senza quote partecipano alla frontiera come candidati, con peso attuale 0, e «Applica pesi» salva l'obiettivo nel JSON.", ref: [] },
@@ -2203,7 +2227,8 @@ function glItem(k) {
   const g = GL[k], row = (l, t) => (t ? `<div><dt>${l}</dt><dd>${esc(t)}</dd></div>` : "");
   const refs = g.ref && g.ref.length ? `<div><dt>Parametri di riferimento</dt><dd><ul>${g.ref.map(([a, b]) => `<li><span>${esc(a)}</span><span class="n">${esc(b)}</span></li>`).join("")}</ul></dd></div>` : "";
   const links = g.links ? `<div><dt>Approfondisci</dt><dd class="lk">${g.links.map(x => `<a href="${GL_LINKS[x][1]}" target="_blank" rel="noopener">${esc(GL_LINKS[x][0])} ↗</a>`).join("")}</dd></div>` : "";
-  return `<article class="gl"><h4>${esc(g.t)}</h4><dl>${row("Cos'è", g.what)}${row("A cosa serve", g.use)}${row("Come si usa", g.how)}${refs}${links}</dl></article>`;
+  const dyn = g.dyn ? g.dyn() : "";
+  return `<article class="gl"><h4>${esc(g.t)}</h4><dl>${row("Cos'è", g.what)}${row("A cosa serve", g.use)}${row("Come si usa", g.how)}${row("Come è calcolato", g.calc)}${dyn ? `<div><dt>${esc(g.dynT || "")}</dt><dd>${dyn}</dd></div>` : ""}${refs}${links}</dl></article>`;
 }
 function openInfo(k) {
   const g = GL[k]; if (!g) return;
@@ -2494,16 +2519,16 @@ function deletePf(p) {
   fillSel(); renderPf();
 }
 function pfSummary(p) {
-  const out = { n: p.positions.length, val: null };
+  const out = { n: p.positions.length, val: null, d: null };
   if (p.positions.some(x => { const e = byIsin(x.isin); return e && !e.s && !e.tried; })) return out; // prezzi ancora in caricamento: niente conteggio parziale
-  try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); const it = livePerf(P).items[5][1]; out.ret = it ? it.r : null; const inv = P.cost[P.last]; out.roi = inv > 0 ? out.val / inv - 1 : null; } } catch {}
+  try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); const it = livePerf(P).items[5][1]; out.ret = it ? it.r : null; const inv = P.cost[P.last]; out.roi = inv > 0 ? out.val / inv - 1 : null; const bi = benchInfo(P); if (bi) out.d = (bi.pf - bi.bm) * 100; } } catch {}
   return out;
 }
 function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
     return `<div class="pfrow${pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
-      <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>a pesi temporali</small></span>
+      <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>${s.d == null ? "" : semLights(s.d) + " "}a pesi temporali</small></span>
       <div class="pfact"><button type="button" class="ghost" data-a="open">Home</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
   $("pfs-restore").hidden = !hiddenSamples().length;
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
