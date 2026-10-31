@@ -304,6 +304,15 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .pfrow.sel { background: var(--fill); box-shadow: -10px 0 0 var(--fill), 10px 0 0 var(--fill); }
 .bench { font-size: var(--fs-s); color: var(--soft); margin-top: 6px; }
 .bench:empty { display: none; }
+.tl { display: inline-flex; gap: 3px; vertical-align: middle; padding: 3px 5px; border-radius: 99px; background: var(--fill); margin-right: 4px; }
+.tl i { width: 8px; height: 8px; border-radius: 50%; background: var(--soft); opacity: .3; }
+.tl i.on { opacity: 1; }
+.semw { white-space: nowrap; }
+.tl i.on.r { background: var(--down); } .tl i.on.y { background: var(--c3); } .tl i.on.g { background: var(--up); }
+.bm-leg { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--soft); }
+.bm-leg i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+.bm-leg i + i { margin-left: 8px; }
+.bm-sec[hidden] { display: none; }
 .chk2 { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); color: var(--soft); }
 .pf-meta { display: grid; gap: 4px; padding-top: 12px; }
 .pf-meta input { max-width: 560px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); padding: 6px 0; font-family: inherit; }
@@ -401,7 +410,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.003</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.02.004</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -433,6 +442,12 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     </div>
     <div class="chart" id="pf-chart"></div>
     <p class="fc-note" id="pf-cnote"></p>
+  </section>
+
+<section class="pf-sec bm-sec" hidden>
+    <div class="price"><span class="pf-mode"><div class="periods bm-mode" role="group" aria-label="Vista"><button type="button" data-m="cum" aria-pressed="true">Cumulato</button><button type="button" data-m="mon" aria-pressed="false">Mensile</button></div><button type="button" class="i" data-g="bmc" aria-label="Informazioni: strategia e benchmark nel tempo">i</button></span>
+      <span class="bm-leg"><i style="background:var(--c1)"></i>Tu <i style="background:var(--soft)"></i>Benchmark</span></div>
+    <div class="chart" id="bm-chart"></div>
   </section>
 
   <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div></section>
@@ -469,6 +484,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></section>
   <div class="kpi" id="ed-kpi"></div>
   <div class="bench" id="ed-bench"></div>
+  <section class="pf-sec bm-sec" hidden>
+    <div class="price"><span class="pf-mode"><div class="periods bm-mode" role="group" aria-label="Vista"><button type="button" data-m="cum" aria-pressed="true">Cumulato</button><button type="button" data-m="mon" aria-pressed="false">Mensile</button></div><button type="button" class="i" data-g="bmc" aria-label="Informazioni: strategia e benchmark nel tempo">i</button></span>
+      <span class="bm-leg"><i style="background:var(--c1)"></i>Tu <i style="background:var(--soft)"></i>Benchmark</span></div>
+    <div class="chart" id="bm-chart2"></div>
+  </section>
   <section class="pf-meta" id="pf-meta">
     <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
     <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
@@ -1759,15 +1779,15 @@ function renderPf() {
   ].map(x => `<li>${x}</li>`).join("");
 
   renderRb(); updDef();
-  drawPfNav(); drawEF(); drawHist();
+  drawPfNav(); drawEF(); drawHist(); drawBm();
 }
 function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").innerHTML = o; $("pf-sel").value = pfCur.id; }
 function showView(v) {
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); updSave();
   try { history.replaceState(null, "", { port: "#portafoglio", pfs: "#portafogli", search: "#cerca" }[v]); } catch {}
-  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); drawHist(); });
-  if (v === "pfs") requestAnimationFrame(() => drawEF());
+  if (v === "port") requestAnimationFrame(() => { drawPfNav(); drawEF(); drawHist(); drawBm(); });
+  if (v === "pfs") requestAnimationFrame(() => { drawEF(); drawBm(); });
 }
 function applyPrices() {
   const PR = window.PRICES; if (!PR || !PR.series) return;
@@ -1801,22 +1821,88 @@ function benchInfo(P) {
     if (!ks.length || es.some(e => !e || !e.s)) throw 0;
     const start = Math.max(P.t[0], ...es.map(e => e.s.t[0])), i0 = Math.max(0, idxOf(P.t, start)), avg = { eq: 0, bd: 0, cm: 0, re: 0 };
     let g = 1, cnt = 0;
+    const ser = { T: [P.t[i0]], pf: [1], bm: [1] };
     for (let m = i0 + 1; m <= P.last; m++) {
       const w = W[m - 1]; if (!w) continue;
       let r = 0; ks.forEach((k, j) => { r += w[k] * (priceAt(es[j], P.t[m]) / priceAt(es[j], P.t[m - 1]) - 1); });
       g *= 1 + r; cnt++; for (const k in avg) avg[k] += w[k];
+      ser.T.push(P.t[m]); ser.pf.push(P.idx[m] / P.idx[i0]); ser.bm.push(g);
     }
     if (cnt < 20) throw 0;
-    out = { bm: g - 1, pf: P.idx[P.last] / P.idx[i0] - 1, start: P.t[i0], parts: ks.map(k => [BM_NAME[k], avg[k] / cnt]).sort((a, b) => b[1] - a[1]) };
+    out = { bm: g - 1, pf: P.idx[P.last] / P.idx[i0] - 1, start: P.t[i0], ser, parts: ks.map(k => [BM_NAME[k], avg[k] / cnt]).sort((a, b) => b[1] - a[1]) };
   } catch {}
   return (P._bm = out);
 }
-const benchTxt = b => { const d = (b.pf - b.bm) * 100; return `Benchmark ${pct(b.bm, 1)} dal ${dateTxt(b.start)} · tu ${pct(b.pf, 1)} · <span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>${ib("bench")}`; };
+// Semaforo: verde = benchmark battuto (scarto ≥ +0,5 pp), giallo = in linea (da −1 a +0,5 pp), rosso = sotto (< −1 pp)
+const semOf = d => (d >= 0.5 ? ["g", "Benchmark battuto"] : d >= -1 ? ["y", "In linea con il benchmark"] : ["r", "Sotto il benchmark"]);
+const semHtml = d => { const [c, n] = semOf(d); return `<span class="semw"><span class="tl" role="img" aria-label="${n}" title="${n}"><i class="${c === "r" ? "on r" : ""}"></i><i class="${c === "y" ? "on y" : ""}"></i><i class="${c === "g" ? "on g" : ""}"></i></span>${ib("sem")}</span>`; };
+const benchTxt = b => { const d = (b.pf - b.bm) * 100; return `${semHtml(d)} Benchmark ${pct(b.bm, 1)} dal ${dateTxt(b.start)} · tu ${pct(b.pf, 1)} · <span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>${ib("bench")}`; };
+// Strategia e benchmark nel tempo: cumulato (linee, % dal primo investimento) o mensile (barre affiancate)
+let bmMode = "cum";
+function bmMonths(ser) {
+  const out = []; let prev = 0;
+  for (let i = 1; i < ser.T.length; i++) {
+    const d = new Date(ser.T[i]), nx = i + 1 < ser.T.length ? new Date(ser.T[i + 1]) : null;
+    if (!nx || nx.getMonth() !== d.getMonth()) { out.push({ t: ser.T[i], p: ser.pf[i] / ser.pf[prev] - 1, b: ser.bm[i] / ser.bm[prev] - 1, open: !nx }); prev = i; }
+  }
+  return out;
+}
+function drawBm() {
+  const b = PF ? benchInfo(PF) : null;
+  document.querySelectorAll(".bm-mode button").forEach(x => x.setAttribute("aria-pressed", x.dataset.m === bmMode));
+  document.querySelectorAll(".bm-sec").forEach(sec => { sec.hidden = !b; });
+  if (!b) return;
+  const ser = b.ser, mo = bmMonths(ser);
+  ["bm-chart", "bm-chart2"].forEach(id => {
+    const box = $(id), W = box && box.clientWidth, H = box && box.clientHeight; if (!W) return;
+    const pr = 50, pt = 8, pb = 24, pl = 0;
+    let T, A, B, X, bw = 0;
+    if (bmMode === "cum") { T = ser.T; A = ser.pf.map(v => (v - 1) * 100); B = ser.bm.map(v => (v - 1) * 100); }
+    else { T = mo.map(x => x.t); A = mo.map(x => x.p * 100); B = mo.map(x => x.b * 100); }
+    let mn = Math.min(0, ...A, ...B), mx = Math.max(0, ...A, ...B); const pad = (mx - mn) * 0.08 || 1, ticks = niceTicks(mn - pad, mx + pad, 4);
+    const lo = Math.min(ticks[0], mn - pad), hi = Math.max(ticks[ticks.length - 1], mx + pad), Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+    const n = T.length, cw = (W - pl - pr) / n;
+    X = bmMode === "cum" ? t => pl + (t - T[0]) / ((T[n - 1] - T[0]) || 1) * (W - pl - pr) : (t, i) => pl + cw * (i + 0.5);
+    let body = "", xt = [];
+    if (bmMode === "cum") {
+      const path = a => a.map((v, i) => (i ? "L" : "M") + X(T[i]).toFixed(1) + " " + Y(v).toFixed(1)).join("");
+      body = `<path d="${path(B)}" fill="none" stroke="var(--soft)" stroke-width="1.6" stroke-dasharray="4 3" stroke-linejoin="round"/><path d="${path(A)}" fill="none" stroke="var(--c1)" stroke-width="1.8" stroke-linejoin="round"/>`;
+      const span = (T[n - 1] - T[0]) / DAY, xo = span > 900 ? { year: "numeric" } : span > 80 ? { month: "short" } : { day: "numeric", month: "short" }, nx = W < 420 ? 3 : 4;
+      for (let q = 0; q < nx; q++) { const t = T[0] + (T[n - 1] - T[0]) * (q + 0.5) / nx; xt.push([X(t), dateTxt(t, xo)]); }
+    } else {
+      bw = Math.max(1.5, Math.min(12, cw * 0.38));
+      const rect = (x, v, c, op) => `<rect x="${(x).toFixed(1)}" y="${Math.min(Y(v), Y(0)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.8, Math.abs(Y(v) - Y(0))).toFixed(1)}" fill="${c}" opacity="${op}"/>`;
+      body = T.map((t, i) => { const x = X(t, i); return rect(x - bw - 0.5, A[i], "var(--c1)", mo[i].open ? 0.55 : 1) + rect(x + 0.5, B[i], "var(--soft)", mo[i].open ? 0.55 : 1); }).join("");
+      const every = Math.max(1, Math.ceil(n / (W < 420 ? 4 : 8)));
+      T.forEach((t, i) => { if (i % every === 0) xt.push([X(t, i), dateTxt(t, n > 14 ? { month: "short", year: "2-digit" } : { month: "short" })]); });
+    }
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Strategia e benchmark">
+      ${ticks.filter(v => v >= lo && v <= hi).map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" ${v === 0 ? 'style="stroke:var(--soft)"' : ""}/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, 0)}%</text>`).join("")}
+      ${xt.map(([x, l]) => `<text class="ax" x="${x}" y="${H - 4}" text-anchor="middle">${l}</text>`).join("")}
+      ${body}
+      <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/></g>
+      <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip mx" hidden></div>`;
+    const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hit = box.querySelector(".hit");
+    const sg = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v), 1) + "%";
+    const move = ev => {
+      const x = ev.clientX - box.getBoundingClientRect().left; let j = 0;
+      if (bmMode === "cum") { const tt = T[0] + (x - pl) / (W - pl - pr) * (T[n - 1] - T[0]); let bd = Infinity; for (let q = 0; q < n; q++) { const d = Math.abs(T[q] - tt); if (d < bd) { bd = d; j = q; } } }
+      else j = Math.max(0, Math.min(n - 1, Math.floor((x - pl) / cw)));
+      const cx = X(T[j], j), d = A[j] - B[j];
+      g.setAttribute("visibility", "visible"); hl.setAttribute("x1", cx); hl.setAttribute("x2", cx);
+      tip.hidden = false;
+      tip.innerHTML = `<b>${dateTxt(T[j], bmMode === "cum" ? undefined : { month: "long", year: "numeric" })}${bmMode !== "cum" && mo[j].open ? " (in corso)" : ""}</b>Tu ${sg(A[j])} · Benchmark ${sg(B[j])}<br><span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>`;
+      const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px"; tip.style.top = "0px";
+    };
+    hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+    hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+  });
+}
 // Dettaglio del portafoglio: rendimento dall'acquisto e benchmark in alto
 function renderDetail(P, inv) {
   const L = livePerf(P), pl = L.Vl - inv, it = L.items[5][1], b = benchInfo(P);
   $("ed-kpi").innerHTML = [["Valore", eur(L.Vl), ""], ["Investito", eur(inv), ""], ["Utile", eurS(pl), cls(pl)], ["Sull'investito", inv > 0 ? pct(pl / inv, 1) : "—", cls(pl)], ["A pesi temporali", it ? pct(it.r, 1) : "—", it ? cls(it.r) : ""], ["Benchmark", b ? pct(b.bm, 1) : "—", ""]]
-    .map(([k, v, c]) => `<div><span class="k">${k}${k === "Benchmark" ? ib("bench") : k === "A pesi temporali" ? ib("twr") : k === "Sull'investito" ? ib("roi") : ""}</span><span class="n ${c}">${v}</span></div>`).join("");
+    .map(([k, v, c]) => `<div><span class="k">${k}${k === "Benchmark" ? ib("bench") : k === "A pesi temporali" ? ib("twr") : k === "Sull'investito" ? ib("roi") : ""}</span><span class="n ${c}">${v}</span>${k === "Benchmark" && b ? `<span class="sub">${semHtml((b.pf - b.bm) * 100)}</span>` : ""}</div>`).join("");
   const txt = b ? benchTxt(b) : "", sub = b ? " · " + b.parts.map(([n, x]) => `${fmt(x * 100, 0)}% ${n}`).join(" · ") : "";
   $("ed-bench").innerHTML = txt + (b ? `<br>In media ${sub.slice(3)}` : ""); $("pf-bench").innerHTML = txt;
 }
@@ -2069,6 +2155,8 @@ GL_LINKS.bm_eq = ["justETF · iShares Core MSCI World (indice azionario mondiale
 GL_LINKS.bm_bd = ["justETF · iShares Core Global Aggregate Bond EUR Hedged (obbligazioni mondiali)", JE + "etf-profile.html?isin=IE00BDBRDM35"];
 GL_LINKS.bm_cm = ["justETF · Invesco Physical Gold (oro)", JE + "etf-profile.html?isin=IE00B579F325"];
 const GL = {
+  sem: { t: "Semaforo del benchmark", what: "Confronto sintetico tra il tuo rendimento a pesi temporali e quello del benchmark sullo stesso periodo.", use: "Dice a colpo d'occhio se la tua strategia ha battuto un'alternativa passiva e diversificata.", how: "Si guarda lo scarto in punti percentuali (tu meno benchmark) dal primo investimento. Verde: scarto di almeno +0,5 punti, benchmark battuto. Giallo: tra −1 e +0,5 punti, in linea. Rosso: sotto di più di 1 punto. Le soglie sono una convenzione di questa app, non uno standard.", ref: [["Verde", "scarto ≥ +0,5 pp"], ["Giallo", "da −1 a +0,5 pp"], ["Rosso", "scarto < −1 pp"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
+  bmc: { t: "Strategia e benchmark nel tempo", what: "Andamento del tuo portafoglio e del benchmark dal primo investimento, a pesi temporali (senza l'effetto di acquisti e vendite). Cumulato: linee con il rendimento accumulato dall'inizio. Mensile: barre affiancate con il rendimento di ogni mese di calendario (l'ultimo, in corso, è più chiaro).", use: "Il cumulato mostra dove si è formato il vantaggio o lo svantaggio nel tempo; il mensile mostra se vinci con regolarità o per pochi mesi eccezionali.", how: "Passa il dito o il mouse sul grafico per vedere i due valori e lo scarto in punti. Il benchmark segue giorno per giorno l'asset allocation del tuo portafoglio (MSCI World, Global Aggregate in EUR, oro, immobiliare globale). I rendimenti mensili non si sommano: per l'andamento complessivo guarda il cumulato.", ref: [["Linea sopra il benchmark", "hai battuto il mercato"], ["Barra più alta del benchmark", "mese migliore del benchmark"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   bench: { t: "Benchmark", what: "Rendimento che avresti avuto investendo in indici mondiali comparabili con la composizione del tuo portafoglio: azionario su MSCI World, obbligazionario su Bloomberg Global Aggregate coperto in euro, più oro e immobiliare globale se presenti. I pesi seguono la composizione del tuo portafoglio per asset class giorno per giorno: se cambi mix, cambia anche il benchmark.", use: "Dice se il tuo portafoglio ha fatto meglio o peggio di un'alternativa passiva e diversificata a livello mondiale, con lo stesso mix di rischio.", how: "Confronta il rendimento del periodo (non annualizzato, a pesi temporali, senza l'effetto di quando hai comprato o venduto) con quello del tuo portafoglio e guarda lo scarto in punti. Il periodo parte dal primo acquisto, o dalla data di lancio del più recente degli ETF usati come indici. Il benchmark confronta le tue scelte di asset allocation (quanto azionario, obbligazionario, oro) con un'implementazione passiva: lo scarto misura la selezione degli ETF e la tempistica, non il livello di rischio scelto. È una stima con ETF come proxy degli indici: non tiene conto di costi e tasse.", ref: [["Scarto positivo", "hai battuto il benchmark"], ["Scarto vicino a zero", "in linea con i mercati"], ["Scarto negativo", "meglio un'alternativa passiva"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   val: { t: "Valore", what: "Valore di mercato attuale del portafoglio: quote possedute per prezzo corrente di ogni ETF.", use: "Dice quanto vale oggi quello che possiedi.", how: "Confrontalo con l'investito per vedere l'utile. Le oscillazioni giornaliere sono normali.", ref: [["Oscillazione giornaliera tipica, azioni", "circa ±1%"], ["Oscillazione giornaliera tipica, obbligazioni", "circa ±0,3%"]] },
   inv: { t: "Investito", what: "Somma degli acquisti meno le vendite, ai prezzi a cui hai operato.", use: "È la base per calcolare l'utile.", how: "Registra le operazioni con data, quantità e prezzo reali. Una vendita riduce l'investito. Una quantità senza data è simulata: si considera aperta alla data «Da» al prezzo di quel giorno.", ref: [] },
@@ -2147,6 +2235,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 }));
 const pickPf = (el, id) => { if (!keepDirty()) { el.value = pfCur.id; return; } ORIG = null; updSave(); pfCur = PFLIST.find(p => p.id === id); ioMsg(""); $("lot-msg").textContent = ""; resetForm(); fillSel(); renderPf(); };
 $("pf-sel").addEventListener("change", ev => pickPf(ev.target, ev.target.value));
+document.querySelectorAll(".bm-mode").forEach(el => el.addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; bmMode = b.dataset.m; drawBm(); }));
 $("pf-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfView = b.dataset.m; renderPfPeriods(); drawPfNav(); });
 $("pf-periods").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; pfPeriod = b.dataset.p; document.querySelectorAll("#pf-periods button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawPfNav(); });
 $("pf-comp").addEventListener("click", ev => {
@@ -2465,7 +2554,7 @@ $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" ||
 $("pfs-new").addEventListener("click", openNew);
 $("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio") + ".json"));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; const v = ev.target.value.trim().slice(0, 500); editPf(c => { c.description = v; }); });
-let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); } else if (!$("v-pfs").hidden) drawEF(); }, 120); });
+let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); drawBm(); } else if (!$("v-pfs").hidden) { drawEF(); drawBm(); } }, 120); });
 
 /* App installabile: service worker (solo su http/https) e pulsante «Installa app» quando il browser lo permette */
 let deferredInstall = null;
