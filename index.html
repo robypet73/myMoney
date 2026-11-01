@@ -145,7 +145,13 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .stats div { display: grid; gap: 4px; min-width: 0; }
 .k { font-size: var(--fs-s); color: var(--soft); }
 .stats .n { font-size: var(--fs-m); }
-.sec h3 { font-size: var(--fs-s); font-weight: 500; color: var(--soft); margin: 0 0 14px; }
+.sec h3, .sec-t { display: flex; align-items: center; gap: 8px; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; color: var(--fg); margin: 0 0 16px; }
+.sec h3::before, .sec-t::before, .edhead h2::before, .pfs-head h2::before { content: ""; flex: none; width: 4px; height: 1.1em; border-radius: 2px; background: var(--c1); }
+.sec-t { margin: 32px 0 6px; padding-top: 24px; border-top: 1px solid var(--hair); }
+.sec h3.sub { font-size: var(--fs-s); font-weight: 500; color: var(--soft); margin: 28px 0 12px; padding-top: 16px; border-top: 1px solid var(--hair); }
+.sec h3.sub::before { display: none; }
+.sec .dn h3 { display: block; font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; color: var(--soft); margin: 0 0 12px; }
+.sec .dn h3::before { display: none; }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; margin: 0; }
 .facts div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--hair); font-size: var(--fs-m); min-width: 0; }
 .facts dt { color: var(--soft); flex: none; }
@@ -190,7 +196,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .kpi.hi .k { white-space: normal; }
 @media (max-width: 480px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kpi .k { white-space: nowrap; }
-.pf-sec { padding-top: 32px; }
+.pf-sec { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--hair); }
 .pf-sec .price { margin-bottom: 0; }
 .scroll { overflow-x: auto; }
 .chart.tall { height: 320px; }
@@ -301,13 +307,13 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
-.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 20px 8px; }
-.edhead h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; }
+.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 24px 8px; margin-top: 32px; border-top: 2px solid var(--fg); }
+.edhead h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
 #pf-edit { border-top: 1.5px solid var(--fg); margin-top: 24px; }
-.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; }
-.pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 500; display: flex; align-items: center; }
+.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; border-top: 2px solid var(--fg); margin-top: 16px; }
+.pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
 .pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 96px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
-.pfrow:last-child { border-bottom: 1px solid var(--hair); }
+.pfrow:last-child { border-bottom: 0; }
 .pfrow .main { display: grid; gap: 3px; min-width: 0; }
 .pfrow .desc { color: var(--soft); font-size: var(--fs-s); line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pfact { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
@@ -428,7 +434,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.000</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.001</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -449,11 +455,13 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <p class="fc-note" id="pf-desc-ro" hidden></p>
   <section class="live" aria-label="Valore e rendimenti">
     <div class="lhead"><div class="lh-l"><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div></div><div class="lh-r"><div id="pf-since"></div><div class="bench" id="pf-bench"></div></div></div>
+    <h3 class="sec-t">Performance<button type="button" class="i" data-g="twr" aria-label="Informazioni: rendimento a pesi temporali">i</button></h3>
     <div class="rets" id="rets"></div>
   </section>
+  <h3 class="sec-t">Sintesi e rischio</h3>
   <section class="kpi" id="kpi" aria-label="Sintesi"></section>
 
-  <section class="pf-sec" aria-label="NAV del portafoglio">
+  <section class="sec pf-sec" aria-label="NAV del portafoglio"><h3>Andamento del valore</h3>
     <div class="price">
       <span class="pf-mode"><div class="periods" role="group" aria-label="Vista del grafico" id="pf-mode"><button type="button" data-m="real" aria-pressed="true">Dall'acquisto</button><button type="button" data-m="back" aria-pressed="false">Storico titoli</button></div><button type="button" class="i" data-g="retro" aria-label="Informazioni: storico dei titoli">i</button></span>
       <div class="periods" role="group" aria-label="Periodo" id="pf-periods"></div>
@@ -462,14 +470,14 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <p class="fc-note" id="pf-cnote"></p>
   </section>
 
-<section class="pf-sec bm-sec" hidden>
+<section class="sec pf-sec bm-sec" hidden><h3>Strategia e benchmark</h3>
     <div class="price"><span class="pf-mode"><div class="periods bm-mode" role="group" aria-label="Vista"><button type="button" data-m="cum" aria-pressed="true">Cumulato</button><button type="button" data-m="mon" aria-pressed="false">Mensile</button></div><button type="button" class="i" data-g="bmc" aria-label="Informazioni: strategia e benchmark nel tempo">i</button></span>
       <span class="bm-leg"><i style="background:var(--c1)"></i>Tu <i style="background:var(--soft)"></i>Benchmark</span></div>
     <div class="chart" id="bm-chart"></div>
   </section>
 
   <section class="sec pf-sec"><h3>Composizione<button type="button" class="i" data-g="peso" aria-label="Informazioni: composizione">i</button></h3><div id="pf-comp"></div></section>
-  <section class="pf-sec"><div class="donuts" id="pf-donuts"></div></section>
+  <section class="sec pf-sec"><h3>Ripartizione</h3><div class="donuts" id="pf-donuts"></div></section>
 
   <section class="sec pf-sec"><h3>Frontiera efficiente<button type="button" class="i" data-g="frontiera" aria-label="Informazioni: frontiera efficiente">i</button></h3>
     <div class="chart tall" id="pf-ef"></div>
@@ -489,21 +497,22 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button></div></div>
     <div class="chart" id="hist-chart"></div>
     <ul class="leg hleg" id="hist-leg"></ul>
-    <h3 style="margin-top:28px">Acquisti e vendite</h3>
+    <h3 class="sub">Acquisti e vendite</h3>
     <div class="scroll"><table class="eft lots" id="hist-ro"></table></div>
   </section>
   <section class="sec pf-sec"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
 </main>
 
 <main class="wrap" id="v-pfs" hidden>
-  <section class="pfs-head"><h2><button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
+  <section class="pfs-head"><h2>I tuoi portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
   <div id="pfs-list"></div>
   <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
 <div id="pf-edit">
   <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></section>
+  <h3 class="sec-t" style="margin-top:8px;border-top:0;padding-top:0">Performance<button type="button" class="i" data-g="twr" aria-label="Informazioni: rendimento a pesi temporali">i</button></h3>
   <div class="kpi" id="ed-kpi"></div>
   <div class="bench" id="ed-bench"></div>
-  <section class="pf-sec bm-sec" hidden>
+  <section class="sec pf-sec bm-sec" hidden><h3>Strategia e benchmark</h3>
     <div class="price"><span class="pf-mode"><div class="periods bm-mode" role="group" aria-label="Vista"><button type="button" data-m="cum" aria-pressed="true">Cumulato</button><button type="button" data-m="mon" aria-pressed="false">Mensile</button></div><button type="button" class="i" data-g="bmc" aria-label="Informazioni: strategia e benchmark nel tempo">i</button></span>
       <span class="bm-leg"><i style="background:var(--c1)"></i>Tu <i style="background:var(--soft)"></i>Benchmark</span></div>
     <div class="chart" id="bm-chart2"></div>
@@ -562,7 +571,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="io"><button type="button" class="ghost" id="corr-opt">Ottimizza: massima diversificazione</button></div>
     <div class="scroll"><table class="eft" id="rb-tbl"></table></div>
     <p class="fc-note" id="rb-note"></p>
-    <h3 style="margin-top:28px">Scenari</h3>
+    <h3 class="sub">Scenari</h3>
     <div class="scroll"><table class="eft" id="ed-scn"></table></div>
   </section>
   <section class="sec pf-sec" id="save-sec"><h3>Salvataggio</h3>
