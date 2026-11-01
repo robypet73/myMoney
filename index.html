@@ -135,7 +135,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .periods button { border: 0; background: none; border-radius: 99px; padding: 5px 10px; font-size: var(--fs-s); color: var(--soft); cursor: pointer; font-family: var(--m); }
 .periods button:hover { color: var(--fg); }
 .periods button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.chart { position: relative; height: 260px; margin-top: 20px; touch-action: pan-y; }
+.chart { position: relative; height: 260px; margin-top: 12px; touch-action: pan-y; }
 .chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .chart .ax { fill: var(--soft); font-family: var(--m); font-size: var(--fs-s); }
 .chart .gl { stroke: var(--hair); }
@@ -146,10 +146,10 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .stats div { display: grid; gap: 4px; min-width: 0; }
 .k { font-size: var(--fs-s); color: var(--soft); }
 .stats .n { font-size: var(--fs-m); }
-.sec h3, .sec-t { display: flex; align-items: center; gap: 8px; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; color: var(--fg); margin: 0 0 16px; }
+.sec h3, .sec-t { display: flex; align-items: center; gap: 8px; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; color: var(--fg); margin: 0 0 12px; }
 .sec h3::before, .sec-t::before, .edhead h2::before, .pfs-head h2::before { content: ""; flex: none; width: 4px; height: 1.1em; border-radius: 2px; background: var(--c1); }
-.sec-t { margin: 32px 0 6px; padding-top: 24px; border-top: 1px solid var(--hair); }
-.sec h3.sub { font-size: var(--fs-s); font-weight: 500; color: var(--soft); margin: 28px 0 12px; padding-top: 16px; border-top: 1px solid var(--hair); }
+.sec-t { margin: 22px 0 4px; padding-top: 16px; border-top: 1px solid var(--hair); }
+.sec h3.sub { font-size: var(--fs-s); font-weight: 500; color: var(--soft); margin: 20px 0 10px; padding-top: 12px; border-top: 1px solid var(--hair); }
 .sec h3.sub::before { display: none; }
 .sec .dn h3 { display: block; font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; color: var(--soft); margin: 0 0 12px; }
 .sec .dn h3::before { display: none; }
@@ -175,7 +175,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
-.pf-sel { padding-block: 20px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.pf-sel { padding-block: 14px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
 .selwrap { position: relative; max-width: 100%; }
 .selwrap::after { content: ""; position: absolute; right: 4px; top: 50%; margin-top: -7px; width: 8px; height: 8px; border-right: 1.5px solid var(--soft); border-bottom: 1.5px solid var(--soft); transform: rotate(45deg); pointer-events: none; }
 select { color: var(--fg); }
@@ -194,7 +194,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .badge i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--soft); margin-right: 7px; vertical-align: 1px; }
 .badge.real i { background: var(--up); }
 
-.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 16px 16px; padding-top: 20px; }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 14px 16px; padding-top: 12px; }
 .kpi div { display: grid; gap: 4px; min-width: 0; }
 .kpi .n { font-size: var(--fs-m); }
 .kpi.hi { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
@@ -202,7 +202,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .kpi.hi .k { white-space: normal; }
 @media (max-width: 480px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kpi .k { white-space: nowrap; }
-.pf-sec { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--hair); }
+.pf-sec { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--hair); }
 .pf-sec .price { margin-bottom: 0; }
 .scroll { overflow-x: auto; }
 .chart.tall { height: 320px; }
@@ -253,7 +253,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .lh-r .since .n { font-size: var(--fs-m); font-weight: 500; letter-spacing: -.03em; }
 .lh-r .bench { margin-top: 4px; }
 .live .big { font-size: var(--fs-l); }
-.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 14px 16px; padding-top: 16px; }
+.rets { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px 16px; padding-top: 10px; }
 .rets > div { display: grid; gap: 2px; min-width: 0; border-top: 1.5px solid var(--hair); padding-top: 10px; }
 .rets .n { font-size: var(--fs-m); letter-spacing: -.03em; }
 .rets .sub { font-family: var(--m); font-size: var(--fs-s); color: var(--soft); }
@@ -313,13 +313,14 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
-.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 24px 8px; margin-top: 32px; border-top: 2px solid var(--fg); }
+.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 16px 6px; margin-top: 20px; border-top: 2px solid var(--fg); }
 .edhead h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
 #pf-edit { border-top: 1.5px solid var(--fg); margin-top: 24px; }
 .pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; border-top: 2px solid var(--fg); margin-top: 16px; }
 .pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
 .pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 96px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
 .pfrow:last-child { border-bottom: 0; }
+#v-pfs.list-only #pf-edit, #v-pfs.list-only #corr2-sec, #v-pfs.list-only #rb-sec, #v-pfs.list-only #save-sec { display: none; }
 .pfrow .main { display: grid; gap: 3px; min-width: 0; }
 .pfrow .desc { color: var(--soft); font-size: var(--fs-s); line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pfact { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
@@ -440,7 +441,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.002</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.003</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Home</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -1436,7 +1437,7 @@ function importJson(text) {
   const { ok, errs, bad } = parsePfs(text);
   if (bad) { ioMsg("JSON non valido", true); return $("io-msg").scrollIntoView({ block: "nearest" }); }
   ok.forEach(pf => { const i = USER.findIndex(u => u.id === pf.id); if (i >= 0) USER[i] = pf; else USER.unshift(pf); });
-  if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); ORIG = null; updSave(); fillSel(); renderPf(); renderPfs(); }
+  if (ok.length) { saveUser(); allPf(); pfCur = PFLIST.find(p => p.id === ok[0].id); ORIG = null; window.pfsOpen = !$("v-pfs").hidden; applyPfsOpen(); updSave(); fillSel(); renderPf(); renderPfs(); }
   ioMsg((ok.length ? `Importati ${ok.length}` : "Nessun portafoglio importato") + (errs.length ? " · " + errs.join(" | ") : ""), !ok.length || errs.length);
   if (ok.length && !errs.length) { showView("port"); homeMsg(ok.length === 1 ? `Importato: ${ok[0].name}` : `Importati ${ok.length} portafogli`); } else $("io-msg").scrollIntoView({ block: "nearest" });
 }
@@ -1831,7 +1832,11 @@ function renderPf() {
   drawPfNav(); drawEF(); drawHist(); drawBm();
 }
 function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(""); $("pf-sel").innerHTML = o; $("pf-sel").value = pfCur.id; }
+// Portafogli: all'ingresso solo l'elenco; il dettaglio compare quando se ne seleziona uno
+function applyPfsOpen() { $("v-pfs").classList.toggle("list-only", !window.pfsOpen); }
 function showView(v) {
+  if (v === "pfs" && !ORIG) { window.pfsOpen = false; if (typeof renderPfs === "function" && pfCur) renderPfs(); }
+  applyPfsOpen();
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); updSave();
   try { history.replaceState(null, "", { port: "#portafoglio", pfs: "#portafogli", search: "#cerca" }[v]); } catch {}
@@ -2467,7 +2472,7 @@ async function refreshEtf(isins, say) {
 $("pos-refresh").addEventListener("click", () => refreshEtf(pfCur.positions.map(x => x.isin), msg));
 
 /* Posizioni e operazioni */
-function commit(id) { ORIG = null; saveUser(); watchSync(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; fillSel(); renderPf(); updSave(); }
+function commit(id) { ORIG = null; saveUser(); watchSync(); allPf(); pfCur = PFLIST.find(p => p.id === id) || PFLIST[0]; window.pfsOpen = !$("v-pfs").hidden; applyPfsOpen(); fillSel(); renderPf(); updSave(); }
 function ownPf(src = pfCur) { // un portafoglio di prova si modifica su una copia personale
   if (!src.sample) return src;
   let id = src.id + "-mio", n = 2; while (USER.some(u => u.id === id)) id = src.id + "-mio" + n++;
@@ -2489,7 +2494,7 @@ function editPf(fn, save) {
   if (c.sample) { c.sample = false; c.name = c.name.replace("Prova · ", "") + " (mio)"; } // un portafoglio di prova si modifica su una copia
   if (!ORIG) ORIG = pfCur;
   if (save) return savePf(c);
-  pfCur = c; renderPf(); updSave(); return "";
+  pfCur = c; window.pfsOpen = true; applyPfsOpen(); renderPf(); updSave(); return "";
 }
 const keepDirty = () => !ORIG || confirm("Ci sono modifiche non salvate. Scartarle?");
 function openSave() {
@@ -2634,7 +2639,7 @@ function pfSummary(p) {
 }
 function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
-    return `<div class="pfrow${pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
+    return `<div class="pfrow${window.pfsOpen && pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
       <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>${s.d == null ? "" : semLights(s.d) + " "}a pesi temporali</small></span>
       <div class="pfact"><button type="button" class="ghost" data-a="open">Home</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
@@ -2645,8 +2650,9 @@ function renderPfs() {
 // Dettaglio del portafoglio selezionato nella scheda Portafogli
 function showEditor() { showView("pfs"); updSave(); requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
 function selectPf(id) {
-  if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); updSave();
-  requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  if (window.pfsOpen && pfCur && pfCur.id === id && !ORIG) { window.pfsOpen = false; applyPfsOpen(); renderPfs(); return; } // secondo clic sul portafoglio aperto: chiude il dettaglio
+  if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); window.pfsOpen = true; applyPfsOpen(); fillSel(); renderPf(); updSave();
+  requestAnimationFrame(() => { drawEF(); drawBm(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); });
 }
 $("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); updSave(); }));
 function openPf(id) {
