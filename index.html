@@ -97,6 +97,7 @@ header .wrap { padding-block: 16px 0; }
 .rh span { color: var(--fg); }
 .rv { font-weight: 400; font-family: var(--m); color: var(--soft); }
 .rs.nl .rh span { display: none; }
+.rhp { border: 0; background: var(--fill); color: var(--fg); font: inherit; font-size: var(--fs-s); border-radius: 99px; height: 28px; padding: 0 10px; }
 .rs.nl .rh { justify-content: flex-end; }
 .rs.on .rv { color: var(--fg); font-weight: 500; }
 .rt { position: relative; height: 24px; }
@@ -469,7 +470,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.002</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.003</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -642,7 +643,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="guide" id="guide">
       <div class="gh"><h3>Ricerca guidata<button type="button" class="i" data-g="guida" aria-label="Informazioni: ricerca guidata">i</button></h3><span class="k">Ogni criterio è facoltativo</span><button type="button" class="ghost" id="gclear" hidden>Azzera</button></div>
       <div class="gd" id="gd"></div>
-      <label class="chk2"><input type="checkbox" id="g-unk"> Includi gli ETF senza dato di borsa, liquidità o spread</label>
+      <label class="chk2"><input type="checkbox" id="g-unk"> Includi gli ETF senza dato di borsa, liquidità o spread<button type="button" class="i" data-g="g_unk" aria-label="Informazioni: ETF senza dato">i</button></label>
       <p class="fc-note" id="g-note"></p>
       <button type="button" class="primary" id="g-go" hidden></button>
       <div class="adv"><div class="gh"><h3>Altri criteri</h3><span class="k">Cursori: agli estremi non c'è limite</span></div><div class="gd" id="filters"></div></div>
@@ -966,10 +967,7 @@ const FMULTI = [ // chiave, etichetta, lettura del valore, elenco fisso (se manc
   ["bx", "Obbligazioni: altro", e => e.bx, ["Indicizzati all'inflazione", "Mercati emergenti", "ESG / green"]],
 ];
 const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la visualizzazione, passo
-  ["r1", "Rend. 1A", e => e.r1, "%", 100, 1],
-  ["r3", "Rend. 3A ann.", e => e.r3, "%", 100, 1],
-  ["r5", "Rend. 5A ann.", e => e.r5, "%", 100, 1],
-  ["rinc", "Rend. da inizio ann.", e => e.rinc, "%", 100, 1],
+  ["rh", "Rendimento storico annuo", e => e[FS.rp || "r3"], "%", 100, 1], // periodo scelto con FS.rp: r1 (1 anno), r3 e r5 (annualizzati)
   ["vol", "Volatilità", e => e.vol1, "%", 100, 1],
   ["sh", "Sharpe", e => e.sh1, "", 1, 0.1],
   ["dd", "Max drawdown", e => e.dd1, "%", 100, 1],
@@ -979,7 +977,7 @@ const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la 
   ["adv", "Volume medio", e => e.adv, "Mln €/g", 1, 1],
   ["spr", "Spread", e => e.spr, "%", 1, 0.01],
 ];
-const FS = { m: {}, r: {}, x: new Set(), unk: false }; // x: aree escluse; unk: includi gli ETF senza dato di borsa, liquidità o spread
+const FS = { m: {}, r: {}, x: new Set(), unk: false, rp: "r3" }; // x: aree escluse; unk: includi gli ETF senza dato di borsa, liquidità o spread
 const PARTIAL = new Set(["exch", "tcur", "liq", "spr", "adv"]);
 const flat = v => (Array.isArray(v) ? v : [v]);
 function matches(e) {
@@ -1008,12 +1006,12 @@ const numTxt = x => fmt(x, Math.abs(x) < 10 && x % 1 ? 2 : 0).replace(/,00$/, ""
 // Cursori min–max: le posizioni sono indici di una scala di valori (nell'unità mostrata); agli estremi il limite non c'è
 const lin = (a, b, st) => { const o = []; for (let v = a; v <= b + 1e-9; v += st) o.push(+v.toFixed(4)); return o; };
 const RSCALE = {
-  r1: lin(-50, 100, 5), r3: lin(-20, 40, 2), r5: lin(-10, 30, 2), rinc: lin(-20, 30, 2), vol: lin(0, 60, 2), sh: lin(-1, 3, 0.1), dd: lin(-80, 0, 5),
+  rh: lin(-20, 40, 2), vol: lin(0, 60, 2), sh: lin(-1, 3, 0.1), dd: lin(-80, 0, 5),
   ter: lin(0, 1.5, 0.05), aum: [0, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000], age: lin(0, 25, 1), adv: [0, 0.5, 1, 2, 5, 10, 25, 50, 100], spr: [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.75, 1],
 };
 const sliderHtml = k => {
   const def = FRANGE.find(d => d[0] === k), N = RSCALE[k].length - 1;
-  return `<div class="rs" data-r="${k}"><div class="rh"><span>${esc(def[1])}</span><b class="rv">tutti</b></div><div class="rt"><div class="rfill"></div><input type="range" min="0" max="${N}" step="1" value="0" data-r="${k}" data-i="0" aria-label="${esc(def[1])} minimo"><input type="range" min="0" max="${N}" step="1" value="${N}" data-r="${k}" data-i="1" aria-label="${esc(def[1])} massimo"></div></div>`;
+  return `<div class="rs" data-r="${k}"><div class="rh"><span>${esc(def[1])}${ib("g_" + k)}</span>${k === "rh" ? '<select id="rh-p" class="rhp" aria-label="Periodo del rendimento"><option value="r1">1 anno</option><option value="r3" selected>3 anni, annuo</option><option value="r5">5 anni, annuo</option></select>' : ""}<b class="rv">tutti</b></div><div class="rt"><div class="rfill"></div><input type="range" min="0" max="${N}" step="1" value="0" data-r="${k}" data-i="0" aria-label="${esc(def[1])} minimo"><input type="range" min="0" max="${N}" step="1" value="${N}" data-r="${k}" data-i="1" aria-label="${esc(def[1])} massimo"></div></div>`;
 };
 const idxNear = (vals, v) => vals.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(vals[b] - v) ? i : b), 0);
 function syncSliders() {
@@ -1028,12 +1026,12 @@ function syncSliders() {
 }
 // Altri criteri, sempre visibili: selezione multipla a pulsanti e cursori min–max
 const ADV_MULTI = [["region", "Area (solo queste)"], ["repl", "Replica"], ["dom", "Domicilio"], ["focus", "Focus"], ["provider", "Emittente"]];
-const ADV_RANGE = [["Rendimento e rischio", ["r1", "r3", "r5", "rinc", "vol", "sh", "dd"]], ["Costi e dimensioni", ["ter", "aum", "age"]], ["Volume scambiato", ["adv"]]];
+const ADV_RANGE = [["Rischio", ["sh", "dd"]], ["Costi e dimensioni", ["ter", "aum", "age"]], ["Volume scambiato", ["adv"]]];
 // Selezione multipla a tendina: le opzioni stanno nel menu (non nella pagina), che resta aperto finché scegli
 const msHtml = (k, vals, isX) => `<div class="ms" data-k="${k}"${isX ? ' data-x="1"' : ""}><button type="button" class="msb" aria-haspopup="listbox" aria-expanded="false"><span class="mst">${isX ? "Nessuna" : "Tutte"}</span><i>▾</i></button><div class="msp" hidden>${vals.length > 10 ? '<input type="search" class="mss" placeholder="Cerca" aria-label="Cerca nell\'elenco">' : ""}<div class="mso">${vals.map(v => `<label><input type="checkbox" data-k="${k}"${isX ? ' data-x="1"' : ""} value="${esc(v)}"><span>${esc(v)}</span></label>`).join("")}</div></div></div>`;
 function buildAdv() {
   const vals = k => { const def = FMULTI.find(d => d[0] === k); return def[3] || topVals(def[2], k === "provider" ? 200 : k === "dom" ? 12 : 40); };
-  const multi = ADV_MULTI.map(([k, t]) => { const v = vals(k); return v.length ? `<div class="gg" data-g="${k}"><div class="gl2">${esc(t)}</div>${msHtml(k, v, false)}</div>` : ""; }).join("");
+  const multi = ADV_MULTI.map(([k, t]) => { const v = vals(k); return v.length ? `<div class="gg" data-g="${k}"><div class="gl2">${esc(t)}${ib("g_" + k)}</div>${msHtml(k, v, false)}</div>` : ""; }).join("");
   const range = ADV_RANGE.map(([t, ks]) => `<div class="gg"><div class="gl2">${esc(t)}</div><div class="rsg">${ks.map(sliderHtml).join("")}</div></div>`).join("");
   $("filters").innerHTML = multi + range;
 }
@@ -1055,11 +1053,14 @@ const G_GROUPS = [ // chiave, titolo, valori, gruppo obbligazioni, nota
   ["cur", "Valuta del fondo", () => topVals(e => e.cur, 10)],
   ["liq", "Liquidità", () => ["Alta", "Media", "Bassa"], "", "solo ETF monitorati"],
   ["spr", "Spread", () => [], "", "solo ETF monitorati"],
+  ["rh", "Rendimento storico", () => [], "", "dato passato, non una previsione"],
+  ["vol", "Volatilità", () => [], "", "oscillazione annua, 1 anno"],
   ["x", "Escludi aree geografiche", () => topVals(e => e.region, 24)],
   ["sector", "Settore", () => [...new Set(ALL.flatMap(e => e.sector || []))].sort((a, b) => a.localeCompare(b, "it")), "", "dedotto dal nome"],
 ];
+const SLIDER_KEYS = new Set(["spr", "rh", "vol"]);
 function buildGuide() {
-  $("gd").innerHTML = G_GROUPS.map(([k, t, vals, grp, note]) => `<div class="gg${grp ? " gbond" : ""}" data-g="${k}"><div class="gl2">${esc(t)}${note ? `<em>${esc(note)}</em>` : ""}</div>${k === "spr" ? sliderHtml("spr").replace('class="rs"', 'class="rs nl"') : msHtml(k, vals(), k === "x")}</div>`).join("");
+  $("gd").innerHTML = G_GROUPS.map(([k, t, vals, grp, note]) => `<div class="gg${grp ? " gbond" : ""}" data-g="${k}"><div class="gl2">${esc(t)}${ib("g_" + k)}${note ? `<em>${esc(note)}</em>` : ""}</div>${SLIDER_KEYS.has(k) ? sliderHtml(k).replace('class="rs"', 'class="rs nl"') : msHtml(k, vals(), k === "x")}</div>`).join("");
   buildAdv();
 }
 function syncGuide() {
@@ -1075,9 +1076,12 @@ function syncGuide() {
   $("gclear").hidden = !activeCount();
   $("g-unk").checked = FS.unk;
 }
-buildGuide();
-// Criteri preimpostati: borsa Borsa Italiana e valuta di negoziazione EUR; gli ETF senza questi dati restano inclusi finché non si disattiva l'interruttore
-FS.m.exch = new Set(["Borsa Italiana"]); FS.m.tcur = new Set(["EUR"]); FS.unk = true;
+// Criteri preimpostati; gli ETF senza dato di borsa, liquidità o spread restano inclusi finché non si disattiva l'interruttore
+function initGuide() {
+  buildGuide();
+  FS.m.type = new Set(["ETF"]); FS.m.dist = new Set(["Accumulazione"]); FS.m.asset = new Set(["Obbligazionario"]);
+  FS.m.exch = new Set(["Borsa Italiana"]); FS.m.tcur = new Set(["EUR"]); FS.m.cur = new Set(["EUR"]); FS.m.provider = new Set(["Amundi"]); FS.unk = true;
+}
 const closeMs = except => document.querySelectorAll("#guide .msp").forEach(p => { if (p !== except) { p.hidden = true; p.closest(".ms").querySelector(".msb").setAttribute("aria-expanded", "false"); } });
 $("guide").addEventListener("click", ev => {
   const b = ev.target.closest(".msb"); if (!b) return;
@@ -1087,6 +1091,7 @@ $("guide").addEventListener("click", ev => {
 document.addEventListener("click", ev => { if (!ev.target.closest(".ms")) closeMs(); });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeMs(); });
 $("guide").addEventListener("change", ev => {
+  if (ev.target.id === "rh-p") { FS.rp = ev.target.value; return render(); }
   const c = ev.target.closest('.ms input[type="checkbox"]'); if (!c) return; const v = c.value;
   if (c.dataset.x) { if (c.checked) FS.x.add(v); else FS.x.delete(v); }
   else { const S = FS.m[c.dataset.k] || (FS.m[c.dataset.k] = new Set()); if (c.checked) S.add(v); else S.delete(v); }
@@ -2536,6 +2541,37 @@ const GL = {
   borsa: { t: "Borsa di quotazione", what: "Le borse su cui l'ETF è quotato, dalla tabella delle quotazioni di justETF. Stesso ETF e stesso ISIN, ma ticker e valuta di negoziazione cambiano da borsa a borsa.", use: "Ti dice dove puoi comprarlo con il tuo broker.", how: "Scegli di solito la borsa in euro con più volume e spread più stretto, per esempio Borsa Italiana, Xetra o Euronext Amsterdam. Controlla ticker e valuta nel tuo broker prima di operare.", ref: [] },
   parametri: { t: "Guida ai parametri", group: ["rend", "ter", "aum", "repl", "dist", "dom", "cur", "settore", "borsa", "liq", "adv", "spr", "vol", "dd", "sharpe"] },
 };
+// Spiegazioni dei criteri della ricerca guidata (g_<chiave>)
+Object.assign(GL, {
+  g_type: { t: "Tipologia", what: "ETF è un fondo quotato; ETC è un titolo legato a una materia prima (oro, petrolio…); ETN/ETP sono note o prodotti strutturati, spesso su criptovalute, il cui valore dipende anche dall'emittente.", use: "Distingue strumenti con rischi diversi: nell'ETF il patrimonio è separato da quello della società che lo gestisce, in ETC ed ETN no.", how: "Per cominciare lascia «ETF». Scegli ETC o ETN/ETP solo se vuoi materie prime o cripto e accetti il rischio dell'emittente. Dedotta dal nome del fondo, quindi indicativa.", ref: [["ETF", "scelta di base, patrimonio separato"], ["ETC", "materie prime, rischio emittente"], ["ETN/ETP", "il più rischioso: cripto, prodotti strutturati"]] },
+  g_dist: { t: "Distribuzione", what: "Accumulazione (ACC): i dividendi o le cedole restano nel fondo e fanno salire il prezzo. Distribuzione (DIST): il fondo ti paga i proventi periodicamente.", use: "Decide se vuoi far crescere il capitale o ricevere un flusso di reddito.", how: "Per accumulare nel lungo periodo scegli Accumulazione; se ti serve un reddito regolare, Distribuzione. Il rendimento totale lordo è simile: cambia il momento in cui i proventi sono tassati, da valutare sulla tua situazione fiscale.", ref: [["Accumulazione", "crescita composta, nessun incasso"], ["Distribuzione", "incassi periodici da reinvestire o spendere"]] },
+  g_asset: { t: "Classe di attivo", what: "Il tipo di investimento che il fondo detiene: azioni, obbligazioni, strumenti monetari, materie prime, immobili, criptovalute.", use: "È la scelta che pesa di più su rischio e rendimento atteso del portafoglio.", how: "Parti da quanto rischio vuoi: crescita = Azionario; prudenza = Obbligazionario e Monetario; diversificazione = oro (Materie prime) e Immobiliare. Scegliendo Obbligazionario compaiono i criteri specifici per le obbligazioni.", ref: [["Azionario", "rischio e rendimento attesi più alti"], ["Obbligazionario", "più stabile, rendimento da cedole"], ["Monetario", "liquidità a breve, rischio minimo"], ["Materie prime / Immobiliare", "diversificatori"]], links: ["scelta"] },
+  g_btype: { t: "Obbligazioni: emittente", what: "Chi ha emesso le obbligazioni nel fondo: Stati (Titoli di Stato), società (Societarie), un mix (Aggregate) o altro.", use: "Cambia il rischio di insolvenza e il rendimento: gli Stati solidi sono più sicuri, le società rendono di più ma rischiano di più.", how: "Per stabilità scegli Titoli di Stato; per più rendimento Societarie; se vuoi un solo ETF già diversificato, Aggregate. Dedotto dal nome del fondo, quindi indicativo.", ref: [["Titoli di Stato", "rischio di credito più basso (Paesi solidi)"], ["Societarie", "più rendimento, più rischio"], ["Aggregate", "mix di Stati e società"]] },
+  g_bq: { t: "Obbligazioni: rischio", what: "Investment grade: emittenti con rating BBB- o superiore, considerati solidi. High yield: rating più basso, rendimento maggiore ma più rischio di insolvenza e oscillazioni.", use: "Misura il rischio di credito delle obbligazioni.", how: "Per una base prudente scegli Investment grade. High yield solo come parte limitata del portafoglio, sapendo che nelle crisi si comporta più come un'azione. Dedotto dal nome.", ref: [["Investment grade", "rating BBB- o più"], ["High yield", "rating sotto BBB-"]] },
+  g_bdur: { t: "Obbligazioni: scadenza", what: "Quanto lontane sono in media le scadenze delle obbligazioni. Più sono lontane, più il prezzo reagisce ai tassi d'interesse (duration).", use: "È il principale rischio delle obbligazioni di qualità: con tassi in rialzo i fondi a scadenza lunga perdono di più.", how: "Breve (fino a circa 3 anni) per prudenza e poche oscillazioni; Media come compromesso; Lunga (oltre 10 anni) solo se accetti forti oscillazioni, ad esempio per proteggere le azioni nelle crisi. Indicativamente un fondo con duration 10 perde circa 10% se i tassi salgono di un punto. Dedotta dal nome.", ref: [["Breve", "fino a circa 3 anni"], ["Media", "circa 3–7 anni"], ["Lunga", "oltre 10 anni"]] },
+  g_bx: { t: "Obbligazioni: altre caratteristiche", what: "Indicizzati all'inflazione: il rendimento segue i prezzi. Mercati emergenti: obbligazioni di Paesi emergenti. ESG/green: selezione con criteri ambientali e sociali.", use: "Affina la ricerca su obiettivi specifici.", how: "Inflazione per difendere il potere d'acquisto; Mercati emergenti solo se accetti più rischio e rischio di cambio; ESG/green se ti interessa il filtro. Dedotte dal nome.", ref: [["Inflazione", "protegge il potere d'acquisto"], ["Mercati emergenti", "più rendimento e più rischio"]] },
+  g_exch: { t: "Borsa di riferimento", what: "Il mercato dove puoi comprare e vendere l'ETF. Lo stesso ETF può essere quotato su più borse, con prezzi quasi uguali.", use: "Serve a trovare ETF che il tuo broker ti fa negoziare nella borsa che preferisci.", how: "Scegli la borsa del tuo broker: Borsa Italiana per operare in euro con orari italiani. Il dato esiste solo per gli ETF monitorati: per gli altri la condizione non si può verificare (vedi l'interruttore sugli ETF senza dato).", ref: [["Borsa Italiana", "euro, orari italiani"], ["Xetra", "Germania, molto liquida"], ["Londra", "sterline, anche dollari"]] },
+  g_tcur: { t: "Valuta di negoziazione", what: "La valuta in cui l'ETF si compra e si vende sulla borsa scelta. Non coincide per forza con la valuta del fondo.", use: "Evita il cambio al momento dell'operazione se il tuo conto è in euro.", how: "Con un conto in euro scegli EUR. Dedotta dalle borse note: il dato esiste solo per gli ETF monitorati.", ref: [["EUR", "nessun cambio valuta al momento dell'acquisto"]] },
+  g_cur: { t: "Valuta del fondo", what: "La valuta in cui sono espresse le attività del fondo (USD per azioni americane, EUR per titoli europei). «Hedged» significa che il rischio di cambio verso quella valuta è coperto.", use: "Con attività in valuta estera, il rendimento in euro cambia anche con il cambio.", how: "Lascia vuoto per non limitare la ricerca. Scegli «EUR Hedged» per obbligazioni estere se vuoi eliminare l'effetto del cambio; per azioni globali il fondo in USD è normale e si compra comunque in euro.", ref: [["EUR", "fondo in euro"], ["USD", "fondo in dollari, si può comprare in euro"], ["… Hedged", "rischio di cambio coperto"]] },
+  g_liq: { t: "Liquidità", what: "Facilità di comprare e vendere senza spostare il prezzo: dipende da volume scambiato e spread.", use: "Una liquidità bassa fa pagare di più ogni operazione e rende difficile uscire in fretta.", how: "Per importi normali scegli Alta o Media. Il dato esiste solo per gli ETF monitorati.", ref: [["Alta", "volume alto e spread ridotto"], ["Media", "adatta alla maggior parte degli usi"], ["Bassa", "attenzione ai costi di uscita"]], links: ["scelta"] },
+  g_spr: { t: "Spread", what: "Differenza tra il prezzo a cui compri (ask) e a cui vendi (bid), in percentuale del prezzo: è un costo implicito a ogni operazione.", use: "Misura quanto costa negoziare l'ETF.", how: "Sposta la maniglia destra per fissare il massimo accettato, per esempio 0,10–0,20%. Lo spread si calcola su bid e ask recenti: fuori dall'orario di borsa può mancare.", ref: [["≤ 0,10%", "molto liquido"], ["0,10–0,20%", "liquido"], ["> 0,50%", "costoso da negoziare"]] },
+  g_rh: { t: "Rendimento storico", what: "Quanto ha reso il fondo in passato, in percentuale annua: scegli il periodo (1 anno, oppure 3 o 5 anni annualizzati). Non è una previsione.", use: "Aiuta a scartare i fondi che hanno reso molto poco, ma non garantisce nulla per il futuro.", how: "Sposta le maniglie per dare un minimo e un massimo; agli estremi non c'è limite. Un minimo ragionevole elimina i fondi deboli; diffida dei massimi: rendimenti molto alti vengono spesso da rischi alti o fasi non ripetibili.", ref: [["Periodo 3 anni", "buon compromesso tra breve e lungo"], ["Agli estremi", "nessun limite"]] },
+  g_vol: { t: "Volatilità", what: "Quanto oscillano i prezzi in un anno (deviazione standard dei rendimenti, ultimo anno): è la misura classica del rischio.", use: "Ti dice quanto puoi vedere salire e scendere il fondo.", how: "Fissa un massimo in base a quanto sai sopportare: indicativamente in un anno sfavorevole si può perdere circa il doppio della volatilità. Riferimenti tipici: azionario mondiale 12–18%, obbligazioni di Stato 3–8%, monetario sotto 1%.", ref: [["Sotto 5%", "bassa (obbligazionario, monetario)"], ["10–18%", "azionario diversificato"], ["Oltre 25%", "alta (settori, singoli Paesi, cripto)"]], links: ["scelta"] },
+  g_x: { t: "Escludi aree geografiche", what: "Toglie dall'elenco gli ETF il cui mercato è l'area scelta.", use: "Serve per evitare sovrapposizioni o concentrazioni, per esempio troppi Stati Uniti.", how: "Seleziona le aree da escludere. Gli ETF «Globali» includono tutte le aree: per evitarne una cerca un ETF «ex» quell'area (ad esempio «ex USA»).", ref: [["Nessuna", "nessuna esclusione"]] },
+  g_sector: { t: "Settore", what: "Il settore dell'economia a cui è legato l'ETF (salute, tecnologia, energia…), dedotto dal nome o dai dati del fondo.", use: "Serve per scommesse mirate o per tematiche.", how: "Lascia vuoto per ETF ampi e diversificati. Un ETF settoriale concentra il rischio: dagli un peso contenuto nel portafoglio.", ref: [["Vuoto", "ETF diversificati su tutti i settori"]] },
+  g_unk: { t: "ETF senza dato", what: "Borsa, valuta di negoziazione, liquidità e spread esistono solo per gli ETF monitorati (circa 170). Per gli altri la condizione non si può verificare.", use: "Decide se gli ETF senza questo dato restano nell'elenco.", how: "Attivo: li vedi comunque, con la condizione non verificata. Disattivo: restano solo gli ETF per cui il dato esiste e la condizione è vera (elenco molto più corto).", ref: [["Attivo", "elenco ampio, condizioni non verificabili"], ["Disattivo", "solo ETF verificati"]] },
+  g_region: { t: "Area (solo queste)", what: "Mostra solo gli ETF il cui mercato principale è l'area scelta.", use: "Per costruire un portafoglio per aree geografiche.", how: "Selezione multipla: scegli le aree che ti interessano. «Globale» include tutto il mondo.", ref: [["Globale", "tutto il mondo"], ["Mercati emergenti", "più rischio e crescita attesa"]] },
+  g_repl: { t: "Replica", what: "Come il fondo segue l'indice: fisica (compra i titoli, tutti o un campione) oppure sintetica (usa contratti swap con una banca).", use: "Cambia il tipo di rischio: la replica sintetica aggiunge il rischio della controparte.", how: "Per semplicità scegli Fisica completa o a campione; la sintetica può essere ok per indici difficili da replicare.", ref: [["Fisica completa", "tutti i titoli dell'indice"], ["Fisica a campione", "un campione rappresentativo"], ["Sintetica", "swap, rischio controparte"]] },
+  g_dom: { t: "Domicilio", what: "Il Paese in cui il fondo è registrato (Irlanda, Lussemburgo, Germania…).", use: "Influisce sulle imposte sui dividendi alla fonte e sulla struttura legale.", how: "Gli ETF irlandesi e lussemburghesi sono i più comuni per gli investitori europei; lascia vuoto se non hai preferenze.", ref: [["Irlanda", "il più diffuso, trattati fiscali favorevoli sugli USA"], ["Lussemburgo", "molto diffuso"]] },
+  g_focus: { t: "Focus", what: "Lo stile o il tema dell'ETF (large cap, small cap, governativo, tematico…), per gli ETF in cui è indicato.", use: "Affina la ricerca su stile di investimento.", how: "Lascia vuoto se non hai un'idea precisa.", ref: [["Large cap", "grandi società"], ["Small cap", "piccole società, più volatili"]] },
+  g_provider: { t: "Emittente", what: "La società che gestisce l'ETF (iShares, Amundi, Vanguard, Xtrackers…).", use: "Serve per limitare la ricerca a pochi gestori di tua fiducia o già in portafoglio.", how: "Apri il menù, usa la ricerca per trovare il gestore e spunta quelli che ti interessano. Lascia vuoto per vederli tutti.", ref: [["Vuoto", "tutti i gestori"]] },
+  g_sh: { t: "Sharpe", what: "Rendimento per unità di rischio: quanto rende il fondo rispetto a quanto oscilla (ultimo anno).", use: "Confronta fondi simili: più alto è meglio.", how: "Un minimo di circa 0,5 elimina i fondi poco efficienti; sopra 1 è molto buono. Dipende dal periodo, non estrapolare.", ref: [["Sotto 0,5", "debole"], ["0,5–1", "buono"], ["Sopra 1", "molto buono"]] },
+  g_dd: { t: "Max drawdown", what: "La perdita massima dal picco al minimo nel periodo (ultimo anno): quanto è sceso al peggio.", use: "Mostra il dolore che avresti sopportato nel momento peggiore.", how: "Sposta la maniglia sinistra per escludere i fondi che sono scesi più di quanto sopporti (per esempio −15%).", ref: [["0 / −10%", "oscillazioni contenute"], ["Oltre −30%", "forti discese"]] },
+  g_ter: { t: "TER", what: "Costo annuo di gestione, in percentuale del capitale.", use: "Un costo più basso lascia più rendimento nel tempo.", how: "Per ETF su indici ampi punta a un massimo di 0,20–0,30%; settoriali e obbligazioni specializzate costano di più.", ref: [["≤ 0,10%", "molto basso"], ["0,10–0,30%", "basso"], ["Oltre 0,50%", "alto per un ETF"]] },
+  g_aum: { t: "Patrimonio", what: "Quanto capitale gestisce il fondo, in milioni di euro.", use: "Un fondo grande ha più probabilità di essere liquido e di non chiudere.", how: "Meglio oltre 100–200 milioni; sotto i 50 il rischio di chiusura è maggiore.", ref: [["< 50 Mln", "piccolo, rischio chiusura"], ["> 1.000 Mln", "grande, solido"]] },
+  g_age: { t: "Anni dal lancio", what: "Da quanto tempo esiste il fondo.", use: "Un fondo con più storia ha dati più affidabili.", how: "Per avere almeno 3–5 anni di prezzi imposta un minimo di 3–5 anni.", ref: [["< 3 anni", "storia breve"], ["> 10 anni", "lunga storia"]] },
+  g_adv: { t: "Volume medio", what: "Controvalore medio scambiato ogni giorno, in milioni di euro.", use: "Stima la facilità di negoziare l'ETF.", how: "Più è alto meglio è: per importi piccoli bastano pochi milioni al giorno. Dato disponibile solo per gli ETF monitorati.", ref: [["< 1 Mln/g", "poco scambiato"], ["> 10 Mln/g", "molto scambiato"]] },
+});
 const ib = k => `<button type="button" class="i" data-g="${k}" aria-label="Informazioni: ${esc(GL[k].t)}">i</button>`;
 function glItem(k) {
   const g = GL[k], row = (l, t) => (t ? `<div><dt>${l}</dt><dd>${esc(t)}</dd></div>` : "");
@@ -2971,6 +3007,6 @@ window.addEventListener("appinstalled", () => { deferredInstall = null; $("insta
 $("install").addEventListener("click", async () => { if (!deferredInstall) return; deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch {} deferredInstall = null; $("install").hidden = true; });
 try { if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch {}
 
-render(); renderPf();
+initGuide(); render(); renderPf();
 showView(location.hash === "#cerca" ? "search" : location.hash === "#portafogli" ? "pfs" : "port");
 </script>
