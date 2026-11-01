@@ -81,24 +81,26 @@ header .wrap { padding-block: 16px 0; }
 .chip { height: var(--ctl-h); padding: 0 12px; border: 0; border-radius: 99px; background: var(--fill); color: var(--soft); font: inherit; font-size: var(--fs-s); cursor: pointer; }
 .chip:hover { color: var(--fg); }
 .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.adv > summary { cursor: pointer; font-size: var(--fs-s); color: var(--soft); list-style: none; padding: 4px 0; }
-.adv > summary::-webkit-details-marker { display: none; }
-.adv > summary::before { content: "+ "; }
-.adv[open] > summary::before { content: "− "; }
-.fd { position: relative; }
-.fd > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; height: var(--ctl-h); padding: 0 14px; border-radius: 99px; background: var(--fill); color: var(--soft); font-size: var(--fs-s); white-space: nowrap; user-select: none; }
-.fd > summary::-webkit-details-marker { display: none; }
-.fd > summary.on { background: var(--fg); color: var(--bg); }
-.fd[open] > summary { outline: 1.5px solid var(--fg); outline-offset: -1.5px; }
-.pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 6; min-width: 220px; max-width: min(320px, calc(100vw - 32px)); max-height: 320px; overflow: auto; background: var(--bg); border: 1px solid var(--hair); border-radius: 12px; padding: 8px; box-shadow: 0 12px 32px rgba(0, 0, 0, .14); }
-.opt { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; cursor: pointer; font-size: var(--fs-m); }
-.opt:hover { background: var(--fill); }
-.opt input { accent-color: var(--fg); width: 16px; height: 16px; margin: 0; flex: none; }
-.opt span { flex: 1; min-width: 0; }
-.opt em { font-style: normal; color: var(--soft); font-size: var(--fs-s); }
-.rng { display: flex; align-items: center; gap: 8px; padding: 6px 4px; }
-.rng input { width: 92px; height: var(--ctl-h); box-sizing: border-box; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 0 12px; font-size: var(--fs-m); font-family: var(--m); }
-.rng .u { color: var(--soft); font-size: var(--fs-s); }
+.adv { display: grid; gap: 12px; padding-top: 8px; border-top: 1px solid var(--hair); }
+.chips.scr { max-height: 150px; overflow: auto; padding-right: 4px; }
+.chip[hidden] { display: none; }
+.mls { width: 100%; max-width: 320px; margin-bottom: 8px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font: inherit; font-size: var(--fs-s); padding: 6px 0; outline: none; }
+.rsg { display: grid; gap: 12px; }
+.rs { display: grid; gap: 4px; }
+.rh { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-s); }
+.rh span { color: var(--fg); }
+.rv { font-weight: 400; font-family: var(--m); color: var(--soft); }
+.rs.nl .rh span { display: none; }
+.rs.nl .rh { justify-content: flex-end; }
+.rs.on .rv { color: var(--fg); font-weight: 500; }
+.rt { position: relative; height: 24px; }
+.rt::before { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--hair); }
+.rfill { position: absolute; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--fg); }
+.rt input[type="range"] { position: absolute; left: 0; top: 0; width: 100%; height: 24px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+.rt input[type="range"]::-webkit-slider-runnable-track { background: transparent; height: 24px; }
+.rt input[type="range"]::-moz-range-track { background: transparent; height: 24px; }
+.rt input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 18px; height: 18px; margin-top: 3px; border-radius: 50%; background: var(--bg); border: 2px solid var(--fg); cursor: pointer; }
+.rt input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--fg); cursor: pointer; }
 .sortbox { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .bar { flex-wrap: wrap; gap: 8px 16px; }
 .row .id { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -461,7 +463,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.000</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.001</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -637,7 +639,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
       <label class="chk2"><input type="checkbox" id="g-unk"> Includi gli ETF senza dato di borsa, liquidità o spread</label>
       <p class="fc-note" id="g-note"></p>
       <button type="button" class="primary" id="g-go" hidden></button>
-      <details class="adv"><summary>Altri filtri: area, emittente, replica, rendimenti, rischio…</summary><div class="filters" id="filters"></div></details>
+      <div class="adv"><div class="gh"><h3>Altri criteri</h3><span class="k">Cursori: agli estremi non c'è limite</span></div><div class="gd" id="filters"></div></div>
     </div>
   </section>
   <p class="fc-note" id="srch-target" hidden></p>
@@ -993,51 +995,41 @@ function matches(e) {
 }
 const activeCount = () => (FS.x.size ? 1 : 0) + FMULTI.filter(([k]) => FS.m[k] && FS.m[k].size).length + FRANGE.filter(([k]) => FS.r[k] && (FS.r[k][0] != null || FS.r[k][1] != null)).length;
 const numTxt = x => fmt(x, Math.abs(x) < 10 && x % 1 ? 2 : 0).replace(/,00$/, "");
-function filterLabel(def, kind) {
-  if (kind === "m") { const n = (FS.m[def[0]] || new Set()).size; return def[1] + (n ? ` · ${n}` : ""); }
-  const R = FS.r[def[0]] || [null, null], u = def[3] ? " " + def[3] : "";
-  if (R[0] != null && R[1] != null) return `${def[1]} ${numTxt(R[0])}–${numTxt(R[1])}${u}`;
-  if (R[0] != null) return `${def[1]} ≥ ${numTxt(R[0])}${u}`;
-  if (R[1] != null) return `${def[1]} ≤ ${numTxt(R[1])}${u}`;
-  return def[1];
+// Cursori min–max: le posizioni sono indici di una scala di valori (nell'unità mostrata); agli estremi il limite non c'è
+const lin = (a, b, st) => { const o = []; for (let v = a; v <= b + 1e-9; v += st) o.push(+v.toFixed(4)); return o; };
+const RSCALE = {
+  r1: lin(-50, 100, 5), r3: lin(-20, 40, 2), r5: lin(-10, 30, 2), rinc: lin(-20, 30, 2), vol: lin(0, 60, 2), sh: lin(-1, 3, 0.1), dd: lin(-80, 0, 5),
+  ter: lin(0, 1.5, 0.05), aum: [0, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000], age: lin(0, 25, 1), adv: [0, 0.5, 1, 2, 5, 10, 25, 50, 100], spr: [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.75, 1],
+};
+const sliderHtml = k => {
+  const def = FRANGE.find(d => d[0] === k), N = RSCALE[k].length - 1;
+  return `<div class="rs" data-r="${k}"><div class="rh"><span>${esc(def[1])}</span><b class="rv">tutti</b></div><div class="rt"><div class="rfill"></div><input type="range" min="0" max="${N}" step="1" value="0" data-r="${k}" data-i="0" aria-label="${esc(def[1])} minimo"><input type="range" min="0" max="${N}" step="1" value="${N}" data-r="${k}" data-i="1" aria-label="${esc(def[1])} massimo"></div></div>`;
+};
+const idxNear = (vals, v) => vals.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(vals[b] - v) ? i : b), 0);
+function syncSliders() {
+  document.querySelectorAll("#guide .rs").forEach(box => {
+    const k = box.dataset.r, vals = RSCALE[k], N = vals.length - 1, def = FRANGE.find(d => d[0] === k), R = FS.r[k] || [null, null], u = def[3] ? " " + def[3] : "";
+    const i0 = R[0] == null ? 0 : idxNear(vals, R[0]), i1 = R[1] == null ? N : idxNear(vals, R[1]), ins = box.querySelectorAll("input");
+    if (document.activeElement !== ins[0]) ins[0].value = i0; if (document.activeElement !== ins[1]) ins[1].value = i1;
+    const f = box.querySelector(".rfill"); f.style.left = `calc(9px + (100% - 18px) * ${i0 / N})`; f.style.width = `calc((100% - 18px) * ${(i1 - i0) / N})`;
+    box.querySelector(".rv").textContent = R[0] != null && R[1] != null ? `${numTxt(R[0])} – ${numTxt(R[1])}${u}` : R[0] != null ? `≥ ${numTxt(R[0])}${u}` : R[1] != null ? `≤ ${numTxt(R[1])}${u}` : "tutti";
+    box.classList.toggle("on", R[0] != null || R[1] != null);
+  });
 }
-function buildFilters() {
-  const opts = (k, get, fixed) => fixed || [...new Set(ALL.flatMap(e => flat(get(e))))].filter(Boolean).sort((a, b) => a.localeCompare(b, "it"));
-  const multi = FMULTI.map(def => { const [k, label, get, fixed] = def;
-    return `<details class="fd" data-k="${k}"><summary>${esc(label)}</summary><div class="pop">${opts(k, get, fixed).map(o => `<label class="opt"><input type="checkbox" data-k="${k}" value="${esc(o)}"><span>${esc(o)}</span><em>${ALL.filter(e => flat(get(e)).includes(o)).length}</em></label>`).join("")}</div></details>`; }).join("");
-  const range = FRANGE.map(def => { const [k, label, , unit, , step] = def;
-    return `<details class="fd" data-r="${k}"><summary>${esc(label)}</summary><div class="pop"><div class="rng"><input type="number" step="${step}" placeholder="Min" data-r="${k}" data-i="0" aria-label="${esc(label)} minimo"><span class="u">–</span><input type="number" step="${step}" placeholder="Max" data-r="${k}" data-i="1" aria-label="${esc(label)} massimo"><span class="u">${esc(unit)}</span></div></div></details>`; }).join("");
-  $("filters").innerHTML = multi + range + '<button class="clear ghost" type="button" id="clear" hidden>Azzera filtri</button>';
+// Altri criteri, sempre visibili: selezione multipla a pulsanti e cursori min–max
+const ADV_MULTI = [["region", "Area (solo queste)"], ["repl", "Replica"], ["dom", "Domicilio"], ["focus", "Focus"], ["provider", "Emittente"]];
+const ADV_RANGE = [["Rendimento e rischio", ["r1", "r3", "r5", "rinc", "vol", "sh", "dd"]], ["Costi e dimensioni", ["ter", "aum", "age"]], ["Volume scambiato", ["adv"]]];
+function buildAdv() {
+  const vals = k => { const def = FMULTI.find(d => d[0] === k); return def[3] || topVals(def[2], k === "provider" ? 200 : k === "dom" ? 12 : 40); };
+  const multi = ADV_MULTI.map(([k, t]) => { const v = vals(k); if (!v.length) return "";
+    const chips = v.map(o => `<button type="button" class="chip" data-k="${k}" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join("");
+    return `<div class="gg" data-g="${k}"><div class="gl2">${esc(t)}</div>${k === "provider" ? `<input type="search" class="mls" placeholder="Filtra gli emittenti" aria-label="Filtra gli emittenti"><div class="chips scr">${chips}</div>` : `<div class="chips">${chips}</div>`}</div>`; }).join("");
+  const range = ADV_RANGE.map(([t, ks]) => `<div class="gg"><div class="gl2">${esc(t)}</div><div class="rsg">${ks.map(sliderHtml).join("")}</div></div>`).join("");
+  $("filters").innerHTML = multi + range;
 }
-function syncFilters() {
-  FMULTI.forEach(def => { const d = document.querySelector(`.fd[data-k="${def[0]}"] > summary`); d.textContent = filterLabel(def, "m"); d.classList.toggle("on", !!(FS.m[def[0]] && FS.m[def[0]].size)); });
-  FRANGE.forEach(def => { const R = FS.r[def[0]], d = document.querySelector(`.fd[data-r="${def[0]}"] > summary`); d.textContent = filterLabel(def, "r"); d.classList.toggle("on", !!R && (R[0] != null || R[1] != null)); });
-}
-$("filters").addEventListener("change", ev => {
-  const c = ev.target.closest('input[type="checkbox"]'); if (!c) return;
-  const S = FS.m[c.dataset.k] || (FS.m[c.dataset.k] = new Set()); if (c.checked) S.add(c.value); else S.delete(c.value); render();
-});
-$("filters").addEventListener("input", ev => {
-  const n = ev.target.closest('input[type="number"]'); if (!n) return;
-  const R = FS.r[n.dataset.r] || (FS.r[n.dataset.r] = [null, null]); R[+n.dataset.i] = n.value === "" ? null : +n.value; render();
-});
-$("filters").addEventListener("click", ev => {
-  if (!ev.target.closest("#clear")) return;
-  clearFilters();
-});
 function clearFilters() {
-  FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; $("g-unk").checked = false;
-  $("filters").querySelectorAll("input").forEach(i => { if (i.type === "checkbox") i.checked = false; else i.value = ""; }); render();
+  FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; $("g-unk").checked = false; render();
 }
-$("filters").addEventListener("toggle", ev => {
-  const d = ev.target; if (!d.classList || !d.classList.contains("fd") || !d.open) return;
-  $("filters").querySelectorAll(".fd[open]").forEach(o => { if (o !== d) o.open = false; });
-  const p = d.querySelector(".pop"); p.style.left = "0"; p.style.right = "auto";
-  if (p.getBoundingClientRect().right > innerWidth - 12) { p.style.left = "auto"; p.style.right = "0"; }
-}, true);
-document.addEventListener("click", ev => { if (!ev.target.closest(".fd")) document.querySelectorAll(".fd[open]").forEach(o => (o.open = false)); });
-document.addEventListener("keydown", ev => { if (ev.key === "Escape") document.querySelectorAll(".fd[open]").forEach(o => (o.open = false)); });
-buildFilters();
 // Ricerca guidata: criteri a pulsanti, ognuno facoltativo; usano gli stessi filtri (FS) dell'elenco
 const topVals = (get, n) => { const c = new Map(); ALL.forEach(e => flat(get(e)).forEach(v => v && c.set(v, (c.get(v) || 0) + 1))); return [...c].sort((a, b) => b[1] - a[1]).slice(0, n).map(x => x[0]); };
 const G_GROUPS = [ // chiave, titolo, valori, gruppo obbligazioni, nota
@@ -1051,38 +1043,44 @@ const G_GROUPS = [ // chiave, titolo, valori, gruppo obbligazioni, nota
   ["exch", "Borsa di riferimento", () => EXCH_ALL, "", "solo ETF monitorati"],
   ["cur", "Valuta del fondo", () => topVals(e => e.cur, 10)],
   ["liq", "Liquidità", () => ["Alta", "Media", "Bassa"], "", "solo ETF monitorati"],
-  ["spr", "Spread massimo", () => [0.1, 0.2, 0.5, 1], "", "solo ETF monitorati"],
+  ["spr", "Spread", () => [], "", "solo ETF monitorati"],
   ["x", "Escludi aree geografiche", () => topVals(e => e.region, 24)],
   ["sector", "Settore", () => [...new Set(ALL.flatMap(e => e.sector || []))].sort((a, b) => a.localeCompare(b, "it")), "", "dedotto dal nome"],
 ];
 function buildGuide() {
-  $("gd").innerHTML = G_GROUPS.map(([k, t, vals, grp, note]) => `<div class="gg${grp ? " gbond" : ""}" data-g="${k}"><div class="gl2">${esc(t)}${note ? `<em>${esc(note)}</em>` : ""}</div><div class="chips">${vals().map(v => `<button type="button" class="chip" data-${k === "x" ? "x" : k === "spr" ? "spr" : "k"}="${k === "x" || k === "spr" ? "1" : k}" data-v="${esc(v)}" aria-pressed="false">${k === "spr" ? "≤ " + fmt(v, 1) + "%" : esc(v)}</button>`).join("")}</div></div>`).join("");
+  $("gd").innerHTML = G_GROUPS.map(([k, t, vals, grp, note]) => `<div class="gg${grp ? " gbond" : ""}" data-g="${k}"><div class="gl2">${esc(t)}${note ? `<em>${esc(note)}</em>` : ""}</div>${k === "spr" ? sliderHtml("spr").replace('class="rs"', 'class="rs nl"') : `<div class="chips">${vals().map(v => `<button type="button" class="chip" data-${k === "x" ? "x" : "k"}="${k === "x" ? "1" : k}" data-v="${esc(v)}" aria-pressed="false">${esc(v)}</button>`).join("")}</div>`}</div>`).join("");
+  buildAdv();
 }
 function syncGuide() {
-  document.querySelectorAll("#gd .chip").forEach(c => {
-    const v = c.dataset.v; let on;
-    if (c.dataset.x) on = FS.x.has(v); else if (c.dataset.spr) on = FS.r.spr && FS.r.spr[1] === +v; else on = !!(FS.m[c.dataset.k] && FS.m[c.dataset.k].has(v));
-    c.setAttribute("aria-pressed", !!on);
+  document.querySelectorAll("#guide .chip").forEach(c => {
+    const v = c.dataset.v, on = c.dataset.x ? FS.x.has(v) : !!(FS.m[c.dataset.k] && FS.m[c.dataset.k].has(v));
+    c.setAttribute("aria-pressed", on);
   });
+  syncSliders();
   const bond = !!(FS.m.asset && FS.m.asset.has("Obbligazionario"));
   document.querySelectorAll("#gd .gbond").forEach(g => (g.hidden = !bond));
   $("gclear").hidden = !activeCount();
   $("g-unk").checked = FS.unk;
 }
 buildGuide();
-$("gd").addEventListener("click", ev => {
+$("guide").addEventListener("click", ev => {
   const c = ev.target.closest(".chip"); if (!c) return; const v = c.dataset.v;
   if (c.dataset.x) { if (FS.x.has(v)) FS.x.delete(v); else FS.x.add(v); }
-  else if (c.dataset.spr) { FS.r.spr = FS.r.spr && FS.r.spr[1] === +v ? [null, null] : [null, +v]; }
   else { const S = FS.m[c.dataset.k] || (FS.m[c.dataset.k] = new Set()); if (S.has(v)) S.delete(v); else S.add(v); }
   render();
+});
+$("guide").addEventListener("input", ev => {
+  const r = ev.target.closest('input[type="range"]');
+  if (r) {
+    const k = r.dataset.r, ins = r.closest(".rt").querySelectorAll("input"), vals = RSCALE[k], N = vals.length - 1;
+    let a = +ins[0].value, b = +ins[1].value; if (a > b) { if (r === ins[0]) a = b; else b = a; ins[0].value = a; ins[1].value = b; }
+    FS.r[k] = [a === 0 ? null : vals[a], b === N ? null : vals[b]]; return render();
+  }
+  const f = ev.target.closest(".mls"); if (f) { const q = f.value.trim().toLowerCase(); f.nextElementSibling.querySelectorAll(".chip").forEach(c => (c.hidden = q && !c.dataset.v.toLowerCase().includes(q))); }
 });
 $("g-unk").addEventListener("change", ev => { FS.unk = ev.target.checked; render(); });
 $("gclear").addEventListener("click", clearFilters);
 $("g-go").addEventListener("click", () => $("count").scrollIntoView({ behavior: "smooth", block: "start" }));
-// i criteri della guida non si ripetono tra gli «Altri filtri»
-["asset", "dist", "cur", "exch", "liq", "sector", "type", "btype", "bq", "bdur", "bx"].forEach(k => { const d = document.querySelector(`.fd[data-k="${k}"]`); if (d) d.hidden = true; });
-{ const d = document.querySelector('.fd[data-r="spr"]'); if (d) d.hidden = true; }
 
 /* ---------- Ordinamento ---------- */
 const SORTS = { // chiave: [etichetta, lettura, direzione iniziale]
@@ -1113,9 +1111,8 @@ const SEL = new Set();
 let shown = 100;
 function render(more) {
   if (!more) shown = 100;
-  syncFilters(); syncGuide();
+  syncGuide();
   const nAct = activeCount();
-  $("clear").hidden = !nAct;
   $("fbtn").querySelector(".dot")?.remove();
   if (nAct) $("fbtn").insertAdjacentHTML("beforeend", '<span class="dot"></span>');
 
