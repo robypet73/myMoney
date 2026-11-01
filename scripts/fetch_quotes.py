@@ -6,6 +6,7 @@
 Valori non attendibili (lontani oltre il 3% dall'ultimo prezzo: fuori orario sono vecchi) si scartano; i simboli non in EUR si convertono al cambio del momento.
 """
 import json
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -32,6 +33,23 @@ def symbols():
     return out
 
 
+def volumes():
+    """Volume medio giornaliero (Mln €) già scaricato con i prezzi: da prices.js e da data/p/ISIN.js."""
+    out = {}
+    s = (ROOT / "prices.js").read_text(encoding="utf-8")
+    if "{" in s:
+        for isin, v in json.loads(s[s.index("{"): s.rindex("}") + 1]).get("series", {}).items():
+            if v.get("adv"):
+                out[isin] = v["adv"]
+    d = ROOT / "data" / "p"
+    if d.exists():
+        for f in d.glob("*.js"):
+            m = re.search(r'"adv":([0-9.]+)', f.read_text(encoding="utf-8")[:3000])
+            if m:
+                out.setdefault(f.stem, float(m.group(1)))
+    return out
+
+
 def raw_quotes(syms):
     """Come fp.quotes ma con valuta e ultimo prezzo."""
     import urllib.request
@@ -51,6 +69,7 @@ def raw_quotes(syms):
 
 def main():
     sy = symbols()
+    adv = volumes()
     print(f"ETF con simbolo: {len(sy)}")
     try:
         q = raw_quotes(set(sy.values()))
@@ -77,6 +96,8 @@ def main():
         e = {"sym": sym, "p": round(p / div, 4), "pt": r.get("regularMarketTime")}
         if b and a and a > b and abs((a + b) / 2 / p - 1) <= 0.03:  # bid/ask lontani dal prezzo sono vecchi (mercato chiuso)
             e["bid"], e["ask"] = round(b / div, 4), round(a / div, 4)
+        if adv.get(isin):
+            e["adv"] = adv[isin]
         out[isin] = e
     path = ROOT / "quotes.js"
     tmp = path.with_suffix(".tmp")

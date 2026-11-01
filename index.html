@@ -66,7 +66,25 @@ header .wrap { padding-block: 16px 0; }
 .icon:hover, .icon[aria-expanded="true"] { color: var(--fg); }
 .icon .dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
 
-.filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 18px; align-items: center; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; align-items: center; }
+.guide { padding-top: 16px; display: grid; gap: 12px; }
+.guide[hidden] { display: none; }
+.gh { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.gh h3 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
+.gh h3::before { content: ""; width: 4px; height: 1.1em; border-radius: 2px; background: var(--c1); }
+.gh .ghost { margin-left: auto; }
+.gd { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px 28px; }
+.gg[hidden] { display: none; }
+.gl2 { font-size: var(--fs-s); color: var(--fg); font-weight: 500; margin-bottom: 6px; }
+.gl2 em { font-style: normal; color: var(--soft); font-weight: 400; margin-left: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: var(--ctl-h); padding: 0 12px; border: 0; border-radius: 99px; background: var(--fill); color: var(--soft); font: inherit; font-size: var(--fs-s); cursor: pointer; }
+.chip:hover { color: var(--fg); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.adv > summary { cursor: pointer; font-size: var(--fs-s); color: var(--soft); list-style: none; padding: 4px 0; }
+.adv > summary::-webkit-details-marker { display: none; }
+.adv > summary::before { content: "+ "; }
+.adv[open] > summary::before { content: "− "; }
 .fd { position: relative; }
 .fd > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; height: var(--ctl-h); padding: 0 14px; border-radius: 99px; background: var(--fill); color: var(--soft); font-size: var(--fs-s); white-space: nowrap; user-select: none; }
 .fd > summary::-webkit-details-marker { display: none; }
@@ -171,6 +189,7 @@ dialog[open] { animation: in .25s cubic-bezier(.2, .8, .2, 1); }
 
 .bar2 { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .tabs { display: flex; gap: 2px; }
+@media (max-width: 480px) { .bar2 { flex-wrap: wrap; } .tabs { width: 100%; } .tabs button { flex: 1; padding: 6px 4px; } }
 .tabs button { border: 0; background: none; border-radius: 99px; padding: 6px 14px; font-size: var(--fs-m); color: var(--soft); cursor: pointer; }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
@@ -388,7 +407,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .lotform select, .lotform input { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 7px 14px; font-size: var(--fs-m); min-width: 0; }
 #op-op { flex: 0 0 110px; }
 #op-etf { flex: 1 1 220px; }
-#dr-add { flex: 1 1 260px; }
+
 #op-date { flex: 0 0 150px; }
 #op-qty, #op-price { flex: 0 0 110px; }
 .qcell { display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end; }
@@ -442,7 +461,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.005</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.000</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -532,7 +551,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
     <div class="rn"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
     <div class="scroll"><table class="eft pos" id="pos-tbl"></table></div>
-    <div class="lotform" style="margin-top:12px"><input id="dr-add" list="etf-dl" placeholder="Cerca ETF: nome, ticker o ISIN" autocomplete="off" aria-label="ETF da aggiungere"><datalist id="etf-dl"></datalist><button type="button" id="dr-add-btn">Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button><button type="button" id="pos-refresh" class="ghost">Aggiorna dati ETF</button></div>
+    <div class="lotform" style="margin-top:12px"><datalist id="etf-dl"></datalist><button type="button" id="dr-add-btn" class="primary">+ Aggiungi ETF</button><button type="button" id="dr-norm" class="ghost">Normalizza a 100%</button><button type="button" id="pos-refresh" class="ghost">Aggiorna dati ETF</button></div>
     <p class="fc-note" id="dr-note"></p>
     <p class="fc-note" id="lot-msg" aria-live="polite"></p>
   </section>
@@ -608,12 +627,20 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <section class="search">
     <div class="q">
       <input id="q" type="search" placeholder="Cerca ETF, ticker, ISIN" autocomplete="off" aria-label="Cerca ETF">
-      <button class="icon fb" type="button" id="fbtn" aria-expanded="true" aria-controls="filters" aria-label="Filtri">
+      <button class="icon fb" type="button" id="fbtn" aria-expanded="true" aria-controls="guide" aria-label="Filtri">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6h14M6 10h8M8.5 14h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Filtri</span>
       </button>
     </div>
-    <div class="filters" id="filters"></div>
+    <div class="guide" id="guide">
+      <div class="gh"><h3>Ricerca guidata<button type="button" class="i" data-g="guida" aria-label="Informazioni: ricerca guidata">i</button></h3><span class="k">Ogni criterio è facoltativo</span><button type="button" class="ghost" id="gclear" hidden>Azzera</button></div>
+      <div class="gd" id="gd"></div>
+      <label class="chk2"><input type="checkbox" id="g-unk"> Includi gli ETF senza dato di borsa, liquidità o spread</label>
+      <p class="fc-note" id="g-note"></p>
+      <button type="button" class="primary" id="g-go" hidden></button>
+      <details class="adv"><summary>Altri filtri: area, emittente, replica, rendimenti, rischio…</summary><div class="filters" id="filters"></div></details>
+    </div>
   </section>
+  <p class="fc-note" id="srch-target" hidden></p>
 
   <div class="bar">
     <span><span id="count" aria-live="polite"></span><button type="button" class="i" data-g="parametri" aria-label="Informazioni: guida ai parametri">i</button></span>
@@ -803,9 +830,59 @@ const CAT = [];
 })();
 const ALL = ETFS.concat(CAT), BYISIN = new Map(ALL.map(e => [e.isin, e]));
 
+// Attributi per la ricerca guidata che il catalogo non fornisce: si deducono dal nome (tipologia, tipo di obbligazione, settore) e sono indicativi.
+const RX = {
+  gov: /government|govt|treasur|sovereign|gilt|bund\b|btp\b|\boat\b|bonos|public sector|agency|state bond|\bgov\b/i,
+  corp: /corporate|\bcorp\b|credit|high yield|\bhy\b|investment grade|\big\b|financials?\b/i,
+  agg: /aggregate|universal|multiverse|global bond|multi[- ]?sector|total bond|\bbond market\b/i,
+  hy: /high[- ]yield|\bhy\b/i, ig: /investment grade|\big\b/i,
+  infl: /inflation|\btips\b|\bilb\b|linked|breakeven/i, em: /emerging|\bem\b/i, esg: /green|\besg\b|\bsri\b|sustainab|climate|paris/i,
+  short: /\b0-[1-5]\b|\b1-[2-5]\b|ultra ?short|\bshort\b/i, mid: /\b3-[57]\b|\b5-7\b|\b5-10\b|\b3-10\b|intermediate/i, long: /\b7-10\b|\b10\+|\b10-[12]5?\b|\b1[05]-3?0\b|\b1[05]\+|\b2[05]\+|\blong\b|10 ?year|10yr/i,
+};
+const SECTOR_RX = [ // stessi nomi dei settori di justETF (etfdata.js) più alcuni temi
+  ["Informatica", /technolog|\btech\b|software|semiconductor|cyber|cloud|artificial intelligence|\bai\b|robotic|internet|digital|fintech|blockchain/i],
+  ["Assistenza sanitaria", /health|pharma|biotech|medical|life science|genomic/i],
+  ["Finanza", /financials?\b|\bbanks?\b|insurance/i],
+  ["Energia", /\boil\b|\bgas\b|petrol|energy (producers|sector)|\benergy\b(?!.*(clean|renew|transition))/i],
+  ["Energie rinnovabili", /clean energy|renewable|solar|\bwind\b|hydrogen|lithium|battery|uranium|nuclear|energy transition|new energy/i],
+  ["Immobiliare", /real estate|\breit|property/i],
+  ["Beni di consumo ciclici", /consumer discretionary|luxury|retail|brands|lifestyle|leisure|\bconsumer\b(?!.*staples)/i],
+  ["Beni di consumo non ciclici", /consumer staples|food|beverage|\bconsumer\b(?!.*discretionary)/i],
+  ["Industria", /industrial|aerospace|defen[cs]e|infrastructure|transport|machinery|automotive|mobility/i],
+  ["Servizi di pubblica utilità", /utilit/i],
+  ["Materiali non energetici", /materials|mining|metals|miners|steel/i],
+  ["Comunicazioni e media", /communication|telecom|\bmedia\b|entertainment/i],
+  ["Acqua e ambiente", /\bwater\b|environment|waste|ecolog/i],
+  ["Videogiochi", /gaming|esports|video ?games/i],
+];
+function deriveAttrs(e) {
+  const n = e.name || "";
+  if (e.cur) e.cur = e.cur.replace(/<br\s*\/?>/gi, " ");
+  e.type = /\bETN\b|\bETP\b|exchange traded (note|product)/i.test(n) || (e.asset === "Criptovalute" && !/\bETF\b/i.test(n)) ? "ETN/ETP" : /\bETC\b|securities|physical/i.test(n) && /Materie prime|Altro/.test(e.asset || "") ? "ETC" : "ETF";
+  e.btype = []; e.bq = []; e.bdur = []; e.bx = [];
+  if (e.asset === "Obbligazionario") {
+    const gov = RX.gov.test(n), corp = RX.corp.test(n), agg = RX.agg.test(n);
+    if (gov) e.btype.push("Titoli di Stato"); if (corp) e.btype.push("Societarie"); if (agg && !gov && !corp) e.btype.push("Aggregate"); if (!e.btype.length) e.btype.push("Altre");
+    if (RX.hy.test(n)) e.bq.push("High yield"); else if (RX.ig.test(n) || gov || corp) e.bq.push("Investment grade");
+    if (RX.short.test(n)) e.bdur.push("Breve"); if (RX.mid.test(n)) e.bdur.push("Media"); if (RX.long.test(n)) e.bdur.push("Lunga");
+    if (RX.infl.test(n)) e.bx.push("Indicizzati all'inflazione"); if (RX.em.test(n)) e.bx.push("Mercati emergenti"); if (RX.esg.test(n) || e.sust) e.bx.push("ESG / green");
+  }
+  if (!(e.sector && e.sector.length) && /Azionario|Immobiliare|Altro/.test(e.asset || "")) {
+    e.sector = SECTOR_RX.filter(([, rx]) => rx.test(n)).map(([k]) => k);
+    if (e.asset === "Immobiliare" && !e.sector.includes("Immobiliare")) e.sector.push("Immobiliare");
+  }
+}
+ALL.forEach(deriveAttrs);
+// Borsa: dall'elenco dei 14 dettagliati e, per gli altri ETF monitorati, dal suffisso del simbolo Yahoo usato per i prezzi (quotes.js)
+const EXCH_SUFFIX = { DE: "Xetra", MI: "Borsa Italiana", L: "Londra (LSE)", AS: "Euronext Amsterdam", PA: "Euronext Parigi", SW: "SIX Swiss", F: "Francoforte" };
+function exchOf(e) {
+  const out = new Set(e.exch || []), q = window.QUOTES && window.QUOTES.q && window.QUOTES.q[e.isin], m = q && /\.([A-Z]+)$/.exec(q.sym || ""), nm = m && EXCH_SUFFIX[m[1]];
+  if (nm) out.add(nm); return [...out];
+}
+
 // Liquidità: volume medio giornaliero (€ Mln) e spread denaro-lettera (%) sono stime indicative; con prezzi reali il volume arriva dai dati scaricati.
 const LIQ = { SWDA: [150, .03], VWCE: [60, .06], CSPX: [200, .02], XMME: [5, .15], EIMI: [40, .08], IMAE: [8, .07], FMI: [1.5, .12], XMJP: [2, .12], RBOT: [4, .12], IWDP: [2, .15], IEGA: [20, .05], IBTM: [15, .04], AGGH: [25, .05], SGLD: [60, .05] };
-const liqRating = e => (e.spr <= 0.08 && e.adv >= 10 ? "Alta" : e.spr <= 0.15 && e.adv >= 2 ? "Media" : "Bassa");
+const liqRating = e => (e.spr == null ? (e.adv >= 10 ? "Alta" : e.adv >= 2 ? "Media" : "Bassa") : e.spr <= 0.08 && e.adv >= 10 ? "Alta" : e.spr <= 0.15 && e.adv >= 2 ? "Media" : "Bassa");
 function calcStats(e) { // volatilità, massimo calo e Sharpe a 12 mesi
   const s = e.s, i0 = idxFrom(s, back(12)), r = [];
   for (let i = i0 + 1; i < s.v.length; i++) r.push(Math.log(s.v[i] / s.v[i - 1]));
@@ -820,7 +897,7 @@ ETFS.forEach(e => { [e.adv, e.spr] = LIQ[e.ticker]; calcStats(e); });
 /* ---------- Filtri ---------- */
 const $ = id => document.getElementById(id);
 /* Borse: elenco delle quotazioni da justETF (tabella «Listing» di ogni scheda, 24 ott 2026) */
-const EXCH_ALL = ["Borsa Italiana", "Xetra", "Euronext Amsterdam", "Euronext Parigi", "Londra (LSE)", "SIX Swiss", "gettex", "Stoccarda"];
+const EXCH_ALL = ["Borsa Italiana", "Xetra", "Euronext Amsterdam", "Euronext Parigi", "Londra (LSE)", "SIX Swiss", "Francoforte", "gettex", "Stoccarda"];
 const EXCH = {
   CSPX: ["Borsa Italiana", "Xetra", "Euronext Amsterdam", "Londra (LSE)"],
   SWDA: ["Borsa Italiana", "Xetra", "Euronext Amsterdam", "Londra (LSE)", "gettex", "Stoccarda"],
@@ -868,8 +945,13 @@ const FMULTI = [ // chiave, etichetta, lettura del valore, elenco fisso (se manc
   ["repl", "Replica", e => e.repl, REPL_ALL],
   ["cur", "Valuta", e => e.cur],
   ["dom", "Domicilio", e => e.dom],
-  ["exch", "Borsa", e => e.exch, EXCH_ALL],
+  ["exch", "Borsa", e => exchOf(e), EXCH_ALL],
   ["liq", "Liquidità", e => (e.adv == null ? null : liqRating(e)), ["Alta", "Media", "Bassa"]],
+  ["type", "Tipologia", e => e.type, ["ETF", "ETC", "ETN/ETP"]],
+  ["btype", "Obbligazioni: emittente", e => e.btype, ["Titoli di Stato", "Societarie", "Aggregate", "Altre"]],
+  ["bq", "Obbligazioni: rischio", e => e.bq, ["Investment grade", "High yield"]],
+  ["bdur", "Obbligazioni: scadenza", e => e.bdur, ["Breve", "Media", "Lunga"]],
+  ["bx", "Obbligazioni: altro", e => e.bx, ["Indicizzati all'inflazione", "Mercati emergenti", "ESG / green"]],
 ];
 const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la visualizzazione, passo
   ["r1", "Rend. 1A", e => e.r1, "%", 100, 1],
@@ -885,7 +967,8 @@ const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la 
   ["adv", "Volume medio", e => e.adv, "Mln €/g", 1, 1],
   ["spr", "Spread", e => e.spr, "%", 1, 0.01],
 ];
-const FS = { m: {}, r: {} };
+const FS = { m: {}, r: {}, x: new Set(), unk: false }; // x: aree escluse; unk: includi gli ETF senza dato di borsa, liquidità o spread
+const PARTIAL = new Set(["exch", "liq", "spr", "adv"]);
 const flat = v => (Array.isArray(v) ? v : [v]);
 function matches(e) {
   const q = $("q").value.trim().toLowerCase();
@@ -893,16 +976,22 @@ function matches(e) {
     const hay = [e.name, e.ticker, e.isin, e.index, e.provider, e.region, e.asset, e.focus].join(" ").toLowerCase();
     if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
   }
-  for (const [k, , get] of FMULTI) { const S = FS.m[k]; if (S && S.size && !flat(get(e)).some(x => S.has(x))) return false; }
+  if (FS.x.size && FS.x.has(e.region)) return false;
+  for (const [k, , get] of FMULTI) {
+    const S = FS.m[k]; if (!S || !S.size) continue;
+    const v = flat(get(e)).filter(x => x != null);
+    if (!v.length && FS.unk && PARTIAL.has(k)) continue;
+    if (!v.some(x => S.has(x))) return false;
+  }
   for (const [k, , get, , sc] of FRANGE) {
     const R = FS.r[k]; if (!R || (R[0] == null && R[1] == null)) continue;
-    const v = get(e); if (v == null) return false;
+    const v = get(e); if (v == null) { if (FS.unk && PARTIAL.has(k)) continue; return false; }
     const x = v * sc;
     if ((R[0] != null && x < R[0] - 1e-9) || (R[1] != null && x > R[1] + 1e-9)) return false;
   }
   return true;
 }
-const activeCount = () => FMULTI.filter(([k]) => FS.m[k] && FS.m[k].size).length + FRANGE.filter(([k]) => FS.r[k] && (FS.r[k][0] != null || FS.r[k][1] != null)).length;
+const activeCount = () => (FS.x.size ? 1 : 0) + FMULTI.filter(([k]) => FS.m[k] && FS.m[k].size).length + FRANGE.filter(([k]) => FS.r[k] && (FS.r[k][0] != null || FS.r[k][1] != null)).length;
 const numTxt = x => fmt(x, Math.abs(x) < 10 && x % 1 ? 2 : 0).replace(/,00$/, "");
 function filterLabel(def, kind) {
   if (kind === "m") { const n = (FS.m[def[0]] || new Set()).size; return def[1] + (n ? ` · ${n}` : ""); }
@@ -934,8 +1023,12 @@ $("filters").addEventListener("input", ev => {
 });
 $("filters").addEventListener("click", ev => {
   if (!ev.target.closest("#clear")) return;
-  FS.m = {}; FS.r = {}; $("filters").querySelectorAll("input").forEach(i => { if (i.type === "checkbox") i.checked = false; else i.value = ""; }); render();
+  clearFilters();
 });
+function clearFilters() {
+  FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; $("g-unk").checked = false;
+  $("filters").querySelectorAll("input").forEach(i => { if (i.type === "checkbox") i.checked = false; else i.value = ""; }); render();
+}
 $("filters").addEventListener("toggle", ev => {
   const d = ev.target; if (!d.classList || !d.classList.contains("fd") || !d.open) return;
   $("filters").querySelectorAll(".fd[open]").forEach(o => { if (o !== d) o.open = false; });
@@ -945,6 +1038,51 @@ $("filters").addEventListener("toggle", ev => {
 document.addEventListener("click", ev => { if (!ev.target.closest(".fd")) document.querySelectorAll(".fd[open]").forEach(o => (o.open = false)); });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") document.querySelectorAll(".fd[open]").forEach(o => (o.open = false)); });
 buildFilters();
+// Ricerca guidata: criteri a pulsanti, ognuno facoltativo; usano gli stessi filtri (FS) dell'elenco
+const topVals = (get, n) => { const c = new Map(); ALL.forEach(e => flat(get(e)).forEach(v => v && c.set(v, (c.get(v) || 0) + 1))); return [...c].sort((a, b) => b[1] - a[1]).slice(0, n).map(x => x[0]); };
+const G_GROUPS = [ // chiave, titolo, valori, gruppo obbligazioni, nota
+  ["type", "Tipologia", () => ["ETF", "ETC", "ETN/ETP"], "", "dedotta dal nome"],
+  ["dist", "Distribuzione", () => ["Accumulazione", "Distribuzione"]],
+  ["asset", "Classe di attivo", () => ["Azionario", "Obbligazionario", "Monetario", "Materie prime", "Immobiliare", "Criptovalute", "Altro"]],
+  ["btype", "Obbligazioni · emittente", () => ["Titoli di Stato", "Societarie", "Aggregate", "Altre"], "b", "dedotto dal nome"],
+  ["bq", "Obbligazioni · rischio", () => ["Investment grade", "High yield"], "b", "dedotto dal nome"],
+  ["bdur", "Obbligazioni · scadenza", () => ["Breve", "Media", "Lunga"], "b", "dedotta dal nome"],
+  ["bx", "Obbligazioni · altro", () => ["Indicizzati all'inflazione", "Mercati emergenti", "ESG / green"], "b", "dedotto dal nome"],
+  ["exch", "Borsa di riferimento", () => EXCH_ALL, "", "solo ETF monitorati"],
+  ["cur", "Valuta del fondo", () => topVals(e => e.cur, 10)],
+  ["liq", "Liquidità", () => ["Alta", "Media", "Bassa"], "", "solo ETF monitorati"],
+  ["spr", "Spread massimo", () => [0.1, 0.2, 0.5, 1], "", "solo ETF monitorati"],
+  ["x", "Escludi aree geografiche", () => topVals(e => e.region, 24)],
+  ["sector", "Settore", () => [...new Set(ALL.flatMap(e => e.sector || []))].sort((a, b) => a.localeCompare(b, "it")), "", "dedotto dal nome"],
+];
+function buildGuide() {
+  $("gd").innerHTML = G_GROUPS.map(([k, t, vals, grp, note]) => `<div class="gg${grp ? " gbond" : ""}" data-g="${k}"><div class="gl2">${esc(t)}${note ? `<em>${esc(note)}</em>` : ""}</div><div class="chips">${vals().map(v => `<button type="button" class="chip" data-${k === "x" ? "x" : k === "spr" ? "spr" : "k"}="${k === "x" || k === "spr" ? "1" : k}" data-v="${esc(v)}" aria-pressed="false">${k === "spr" ? "≤ " + fmt(v, 1) + "%" : esc(v)}</button>`).join("")}</div></div>`).join("");
+}
+function syncGuide() {
+  document.querySelectorAll("#gd .chip").forEach(c => {
+    const v = c.dataset.v; let on;
+    if (c.dataset.x) on = FS.x.has(v); else if (c.dataset.spr) on = FS.r.spr && FS.r.spr[1] === +v; else on = !!(FS.m[c.dataset.k] && FS.m[c.dataset.k].has(v));
+    c.setAttribute("aria-pressed", !!on);
+  });
+  const bond = !!(FS.m.asset && FS.m.asset.has("Obbligazionario"));
+  document.querySelectorAll("#gd .gbond").forEach(g => (g.hidden = !bond));
+  $("gclear").hidden = !activeCount();
+  $("g-unk").checked = FS.unk;
+}
+buildGuide();
+$("gd").addEventListener("click", ev => {
+  const c = ev.target.closest(".chip"); if (!c) return; const v = c.dataset.v;
+  if (c.dataset.x) { if (FS.x.has(v)) FS.x.delete(v); else FS.x.add(v); }
+  else if (c.dataset.spr) { FS.r.spr = FS.r.spr && FS.r.spr[1] === +v ? [null, null] : [null, +v]; }
+  else { const S = FS.m[c.dataset.k] || (FS.m[c.dataset.k] = new Set()); if (S.has(v)) S.delete(v); else S.add(v); }
+  render();
+});
+$("g-unk").addEventListener("change", ev => { FS.unk = ev.target.checked; render(); });
+$("gclear").addEventListener("click", clearFilters);
+$("g-go").addEventListener("click", () => $("count").scrollIntoView({ behavior: "smooth", block: "start" }));
+// i criteri della guida non si ripetono tra gli «Altri filtri»
+["asset", "dist", "cur", "exch", "liq", "sector", "type", "btype", "bq", "bdur", "bx"].forEach(k => { const d = document.querySelector(`.fd[data-k="${k}"]`); if (d) d.hidden = true; });
+{ const d = document.querySelector('.fd[data-r="spr"]'); if (d) d.hidden = true; }
 
 /* ---------- Ordinamento ---------- */
 const SORTS = { // chiave: [etichetta, lettura, direzione iniziale]
@@ -975,7 +1113,7 @@ const SEL = new Set();
 let shown = 100;
 function render(more) {
   if (!more) shown = 100;
-  syncFilters();
+  syncFilters(); syncGuide();
   const nAct = activeCount();
   $("clear").hidden = !nAct;
   $("fbtn").querySelector(".dot")?.remove();
@@ -983,7 +1121,7 @@ function render(more) {
 
   if (!$("q").value.trim() && !nAct) { // si cerca per criteri: senza testo né filtri non si elenca nulla
     $("count").textContent = ""; $("lh").innerHTML = ""; $("sort").value = sortKey; $("sort-dir").textContent = sortDir === "desc" ? "↓" : "↑";
-    $("list").innerHTML = '<div class="empty">Scrivi un nome, un ticker o un ISIN, oppure scegli i filtri</div>'; return;
+    $("g-go").hidden = true; $("list").innerHTML = '<div class="empty">Scegli i criteri della ricerca guidata, oppure scrivi un ISIN, un nome o un ticker</div>'; $("g-note").textContent = ""; return;
   }
   const get = SORTS[sortKey][1], dir = sortDir === "desc" ? -1 : 1;
   const res = ALL.filter(matches).sort((a, b) => {
@@ -991,8 +1129,15 @@ function render(more) {
     if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
     return (typeof x === "string" ? x.localeCompare(y, "it") : x - y) * dir;
   });
+  { // quanti ETF restano fuori solo perché senza dato di borsa, liquidità o spread
+    const partial = (FS.m.exch && FS.m.exch.size) || (FS.m.liq && FS.m.liq.size) || (FS.r.spr && FS.r.spr[1] != null) || (FS.r.adv && (FS.r.adv[0] != null || FS.r.adv[1] != null));
+    let txt = ""; if (partial && !FS.unk) { FS.unk = true; const n2 = ALL.filter(matches).length; FS.unk = false; if (n2 > res.length) txt = `${(n2 - res.length).toLocaleString("it-IT")} ETF in più non hanno il dato di borsa, liquidità o spread (disponibile solo per gli ETF monitorati): attiva l'interruttore per includerli`; }
+    else if (partial) txt = "Inclusi gli ETF senza dato di borsa, liquidità o spread: per quelli la condizione non è verificata";
+    $("g-note").textContent = txt;
+  }
   const sim = res.some(e => !e.cat && !e.real);
   $("count").textContent = res.length.toLocaleString("it-IT") + " ETF" + (sim ? " · rendimenti simulati" : "");
+  $("g-go").hidden = !activeCount(); $("g-go").textContent = `Mostra ${res.length.toLocaleString("it-IT")} ETF ↓`;
   $("sort").value = sortKey; $("sort-dir").textContent = sortDir === "desc" ? "↓" : "↑";
   const H = (k, t, c = "") => `<button type="button" data-s="${k}" class="${c}${sortKey === k ? " on" : ""}">${t}${sortKey === k ? (sortDir === "desc" ? " ↓" : " ↑") : ""}</button>`;
   $("lh").innerHTML = `<span></span>${H("r1", "1A")}${H("r3", "3A ann.", "c3")}${H("vol", "Vol.", "cv")}${H("ter", "TER", "ct")}<span></span>`;
@@ -1005,7 +1150,7 @@ function render(more) {
       <span class="v n cv">${e.vol1 == null ? "—" : fmt(e.vol1 * 100, 1) + "%"}</span>
       <span class="v n ct">${e.ter == null ? "—" : fmt(e.ter) + "%"}</span>
       ${e.s ? sparkSvg(e) : '<span class="spark"></span>'}
-    </button></div>`).join("") + (res.length > shown ? `<button type="button" class="ghost" id="more" style="margin:16px auto;display:block">Mostra altri ${Math.min(200, res.length - shown).toLocaleString("it-IT")} di ${(res.length - shown).toLocaleString("it-IT")}</button>` : "") : `<div class="empty">Nessun risultato: allarga i filtri</div>`;
+    </button></div>`).join("") + (res.length > shown ? `<button type="button" class="ghost" id="more" style="margin:16px auto;display:block">Mostra altri ${Math.min(200, res.length - shown).toLocaleString("it-IT")} di ${(res.length - shown).toLocaleString("it-IT")}</button>` : "") : `<div class="empty">${/^[A-Za-z]{2}[A-Za-z0-9]{9}\d$/.test($("q").value.trim()) ? "ISIN non presente nel catalogo (ETF UCITS quotati in Europa): controlla il codice" : "Nessun risultato: allarga i criteri"}</div>`;
 }
 
 /* ---------- Dettaglio ---------- */
@@ -1877,6 +2022,7 @@ function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${e
 // Portafogli: all'ingresso solo l'elenco; il dettaglio compare quando se ne seleziona uno
 function applyPfsOpen() { $("v-pfs").classList.toggle("list-only", !window.pfsOpen); }
 function showView(v) {
+  if (v === "search" && typeof updTarget === "function") updTarget();
   if (v === "pfs" && !ORIG) { window.pfsOpen = false; if (typeof renderPfs === "function" && pfCur) renderPfs(); }
   applyPfsOpen();
   $("v-port").hidden = v !== "port"; $("v-pfs").hidden = v !== "pfs"; $("v-search").hidden = v !== "search";
@@ -2061,6 +2207,8 @@ function applyQuotes() {
   for (const [isin, v] of Object.entries(Q.q)) {
     const e = byIsin(isin); if (!e) continue;
     e.bid = v.bid; e.ask = v.ask; e.qt = qt; e.qsym = v.sym;
+    if (v.bid && v.ask) { e.spr = (v.ask - v.bid) / ((v.ask + v.bid) / 2) * 100; e.sprReal = true; } // spread misurato dagli ultimi bid e ask
+    if (v.adv != null && e.adv == null) e.adv = v.adv; // volume medio giornaliero (Mln €) dai prezzi scaricati
     // ETF fuori da prices.js: la serie giornaliera arriva la sera, l'ultimo prezzo (e il suo orario di mercato) viene da quotes.js
     if (e.s && v.p > 0 && v.pt && v.pt * 1000 >= (e.lt || 0) - (live[isin] ? 0 : 36e5)) { e.live = v.p; e.lt = v.pt * 1000; }
   }
@@ -2269,7 +2417,8 @@ function drawHist() {
 function openAddTo(isins) {
   if (!isins.length) return;
   AT = isins.slice();
-  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
+  const defId = window.searchTarget && PFLIST.some(p => p.id === window.searchTarget) ? window.searchTarget : pfCur && pfCur.id;
+  const opts = PFLIST.map(p => `<option value="${esc(p.id)}"${p.id === defId ? " selected" : ""}>${esc(p.name)}</option>`).join("") + '<option value="@new">+ Nuovo portafoglio</option>';
   $("at-form").innerHTML = `<div class="d-top"><h2 id="at-title">Aggiungi a portafoglio</h2><button type="button" class="icon close" id="at-x" aria-label="Chiudi">×</button></div>
     <select id="at-pf" aria-label="Portafoglio">${opts}</select>
     <div class="newf" id="at-new" hidden><input id="at-name" placeholder="Titolo del nuovo portafoglio" maxlength="80" autocomplete="off" aria-label="Titolo"><input id="at-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione"></div>
@@ -2320,6 +2469,7 @@ GL_LINKS.bm_eq = ["justETF · iShares Core MSCI World (indice azionario mondiale
 GL_LINKS.bm_bd = ["justETF · iShares Core Global Aggregate Bond EUR Hedged (obbligazioni mondiali)", JE + "etf-profile.html?isin=IE00BDBRDM35"];
 GL_LINKS.bm_cm = ["justETF · Invesco Physical Gold (oro)", JE + "etf-profile.html?isin=IE00B579F325"];
 const GL = {
+  guida: { t: "Ricerca guidata", what: "Scegli i criteri che ti interessano: ogni criterio è facoltativo e l'elenco si restringe a mano a mano. Dentro uno stesso criterio le voci scelte sono alternative (ETF o ETC), tra criteri diversi valgono tutte insieme. «Escludi aree» toglie gli ETF il cui mercato è quell'area.", use: "Ti porta dai tanti ETF disponibili a quelli adatti alla tua idea di portafoglio: tipologia, distribuzione, classe di attivo, tipo di obbligazioni, borsa, valuta, liquidità, spread, aree escluse e settore.", how: "Tipologia, tipo di obbligazione, scadenza e settore sono dedotti dal nome del fondo e quindi indicativi. Borsa, liquidità e spread esistono solo per gli ETF monitorati (quelli con prezzi scaricati): per gli altri la condizione non si può verificare e restano fuori, a meno di attivare «Includi gli ETF senza dato». Gli ETF «Globali» includono tutte le aree: per evitarne una cerca un ETF «ex» quell'area (ad esempio «ex USA»). Per un ISIN preciso scrivilo nel campo di ricerca in alto.", ref: [["Spread ≤ 0,1%", "molto liquido"], ["Spread 0,1–0,2%", "liquido"], ["Spread > 0,5%", "costoso da negoziare"]], links: ["scelta"] },
   scn: { t: "Casi di ribilanciamento", what: "Portafogli ottenibili con gli stessi ETF cambiando solo i pesi, calcolati sulla frontiera efficiente: stessa volatilità con più rendimento, stesso rendimento con meno volatilità, minima varianza, massima diversificazione.", use: "Mostrano quanto margine c'è rispetto ai pesi attuali, a parità di rischio o di rendimento. Sono simulazioni sui dati storici, non previsioni.", how: "Confronta le righe con «Attuale»: ogni caso migliora un solo aspetto (rendimento, volatilità o diversificazione). Per generare un portafoglio con quei pesi vai in Portafogli → Frontiera e ribilanciamento." },
   sem: { t: "Semaforo del benchmark", what: "Confronto sintetico tra il tuo rendimento a pesi temporali e quello del benchmark sullo stesso periodo.", use: "Dice a colpo d'occhio se la tua strategia ha battuto un'alternativa passiva e diversificata.", how: "Si guarda lo scarto in punti percentuali (tu meno benchmark) dal primo investimento. Verde: scarto di almeno +0,5 punti, benchmark battuto. Giallo: tra −1 e +0,5 punti, in linea. Rosso: sotto di più di 1 punto. Le soglie sono una convenzione di questa app, non uno standard.", ref: [["Verde", "scarto ≥ +0,5 pp"], ["Giallo", "da −1 a +0,5 pp"], ["Rosso", "scarto < −1 pp"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
   bmc: { t: "Strategia e benchmark nel tempo", what: "Andamento del tuo portafoglio e del benchmark dal primo investimento, a pesi temporali (senza l'effetto di acquisti e vendite). Cumulato: linee con il rendimento accumulato dall'inizio. Mensile: barre affiancate con il rendimento di ogni mese di calendario (l'ultimo, in corso, è più chiaro).", use: "Il cumulato mostra dove si è formato il vantaggio o lo svantaggio nel tempo; il mensile mostra se vinci con regolarità o per pochi mesi eccezionali.", how: "Passa il dito o il mouse sul grafico per vedere i due valori e lo scarto in punti. Il benchmark segue giorno per giorno l'asset allocation del tuo portafoglio (MSCI World, Global Aggregate in EUR, oro, immobiliare globale). I rendimenti mensili non si sommano: per l'andamento complessivo guarda il cumulato.", ref: [["Linea sopra il benchmark", "hai battuto il mercato"], ["Barra più alta del benchmark", "mese migliore del benchmark"]], links: ["bm_eq", "bm_bd", "bm_cm"] },
@@ -2392,7 +2542,7 @@ let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTime
 $("q").addEventListener("input", () => render());
 $("fbtn").addEventListener("click", ev => {
   const b = ev.currentTarget, open = b.getAttribute("aria-expanded") !== "true";
-  b.setAttribute("aria-expanded", open); $("filters").hidden = !open;
+  b.setAttribute("aria-expanded", open); $("guide").hidden = !open;
 });
 document.addEventListener("keydown", ev => { if (ev.key === "/" && !/INPUT|SELECT/.test(document.activeElement.tagName)) { ev.preventDefault(); $("q").focus(); } });
 
@@ -2687,7 +2837,7 @@ $("sel-add").addEventListener("click", () => openAddTo([...SEL]));
 const editBase = (fn, save) => { const err = editPf(fn, save); err ? msg(err, true) : msg(""); };
 $("dr-amt").addEventListener("change", ev => { const v = +ev.target.value; if (v > 0) editBase(c => { c.amount = v; }); else renderPf(); });
 $("dr-start").addEventListener("change", ev => { const v = ev.target.value; if (v && dateMs(v) <= Date.now() + DAY) editBase(c => { c.start = v; }); else renderPf(); });
-$("dr-add-btn").addEventListener("click", () => { const isin = resolveEtf($("dr-add").value); if (!isin) return msg("Scegli un ETF dall'elenco", true); opEtf = isin; $("dr-add").value = ""; editBase(c => addPos(c, [isin])); });
+$("dr-add-btn").addEventListener("click", () => goSearch());
 $("dr-norm").addEventListener("click", () => editBase(c => { const t = c.positions.reduce((a, x) => a + (x.weight > 0 ? x.weight : 0), 0); if (t > 0) c.positions.forEach(x => { if (x.weight > 0) x.weight = +(x.weight / t * 100).toFixed(1); }); }));
 $("dr-own").addEventListener("click", () => {
   if (!DRSIZE.length) return; const today = ymd(Date.now());
@@ -2733,7 +2883,22 @@ function renderPfs() {
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
 }
 // Dettaglio del portafoglio selezionato nella scheda Portafogli
-function showEditor() { showView("pfs"); updSave(); requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
+// «Aggiungi ETF» porta nella scheda Cerca, con il portafoglio di destinazione già scelto
+function goSearch(id) {
+  window.searchTarget = id || (pfCur && pfCur.id) || null;
+  document.querySelector('.tabs button[data-v="search"]').click();
+  $("q").focus();
+}
+function updTarget() {
+  const p = window.searchTarget && PFLIST.find(x => x.id === window.searchTarget), n = $("srch-target");
+  n.hidden = !p; if (!p) return;
+  n.innerHTML = `Stai aggiungendo ETF a <b>${esc(p.name)}</b> <button type="button" class="ghost" id="st-back">Torna al portafoglio</button> <button type="button" class="ghost" id="st-x" aria-label="Non aggiungere a questo portafoglio">✕</button>`;
+}
+$("srch-target").addEventListener("click", ev => {
+  if (ev.target.closest("#st-x")) { window.searchTarget = null; updTarget(); }
+  else if (ev.target.closest("#st-back")) { const id = window.searchTarget; window.searchTarget = null; updTarget(); selectPf(id); showEditor(); }
+});
+function showEditor() { showView("pfs"); window.pfsOpen = true; applyPfsOpen(); renderPfs(); updSave(); requestAnimationFrame(() => { drawEF(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); }); }
 function selectPf(id) {
   if (window.pfsOpen && pfCur && pfCur.id === id && !ORIG) { window.pfsOpen = false; applyPfsOpen(); renderPfs(); return; } // secondo clic sul portafoglio aperto: chiude il dettaglio
   if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); window.pfsOpen = true; applyPfsOpen(); fillSel(); renderPf(); updSave();
