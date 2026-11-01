@@ -295,8 +295,9 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 #pos-sec .scroll, #dim-sec .scroll { max-width: 720px; }
 .wi { width: 72px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); border-radius: 0; padding: 4px 0; font-family: var(--m); font-size: var(--fs-m); text-align: right; }
 .rn input[type="number"], .rn input[type="date"] { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: var(--fs-m); }
-.i { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; padding: 0; border: 1px solid var(--soft); border-radius: 50%; background: none; color: var(--soft); font: 500 var(--fs-s)/1 var(--f); text-transform: none; letter-spacing: 0; cursor: pointer; vertical-align: -3px; }
+.i { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; padding: 0; border: 1px solid var(--soft); border-radius: 50%; background: none; color: var(--soft); font: 500 var(--fs-s)/1 var(--f); text-transform: none; letter-spacing: 0; cursor: pointer; vertical-align: middle; position: relative; top: -1px; }
 .i:hover { color: var(--fg); border-color: var(--fg); }
+.sec h3 .i, .sec-t .i { top: 0; }
 #info { width: min(460px, 100%); }
 .gl { display: grid; gap: 14px; padding-bottom: 24px; border-bottom: 1px solid var(--hair); }
 .gl h4 { margin: 0; font-size: var(--fs-m); font-weight: 500; }
@@ -441,9 +442,9 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.003</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.03.004</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
-    <button type="button" data-v="port" aria-pressed="true">Home</button>
+    <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
     <button type="button" data-v="search" aria-pressed="false">Cerca</button>
   </nav>
@@ -454,7 +455,6 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="selwrap"><select id="pf-sel" aria-label="Portafoglio"></select></div>
     <div class="pfbtns">
       <button type="button" class="newpf" id="pf-def" aria-pressed="false">☆ Predefinito</button>
-      <button type="button" class="newpf" id="pf-exp">Scarica JSON</button>
     </div>
     <div class="updrow"><div class="updtxt"><span class="badge" id="badge"></span><span class="k" id="pf-stamp"></span></div><button type="button" class="newpf" id="pf-upd">↻ Aggiorna</button></div>
     <p class="fc-note" id="upd-msg" aria-live="polite"></p>
@@ -1158,10 +1158,11 @@ function drawChart() {
   const e = cur, s = e.s, box = $("chart"); if (!box) return;
   const from = PERIODS.find(p => p[0] === curPeriod)[1]();
   const i0 = from === 0 ? 0 : idxFrom(s, from), n = s.v.length;
-  const step = Math.max(1, Math.floor((n - i0) / 420));
+  const [za, zb] = zoomIdx(s.t, i0, n - 1, zoomState(box, `${e.isin}|${curPeriod}`)), step = Math.max(1, Math.floor((zb - za) / 420));
   const T = [], V = [];
-  for (let i = i0; i < n; i += step) { T.push(s.t[i]); V.push(s.v[i]); }
-  if (T[T.length - 1] !== s.t[n - 1]) { T.push(s.t[n - 1]); V.push(s.v[n - 1]); }
+  for (let i = za; i <= zb; i += step) { T.push(s.t[i]); V.push(s.v[i]); }
+  if (T[T.length - 1] !== s.t[zb]) { T.push(s.t[zb]); V.push(s.v[zb]); }
+  bindZoom(box, drawChart, [0, 48]);
 
   const W = box.clientWidth, H = box.clientHeight, pl = 0, pr = 48, pt = 8, pb = 24;
   const mn0 = Math.min(...V), mx0 = Math.max(...V), pad = (mx0 - mn0) * 0.08 || mx0 * 0.02;
@@ -1628,6 +1629,45 @@ function splitArt(T, V, B, X, Y, gid) {
     stroke: `url(#${gid}s)`,
   };
 }
+// Zoom orizzontale dei grafici nel tempo: rotella (PC) o pinch a due dita (telefono); trascinamento per spostarsi quando è ingrandito, doppio clic o doppio tocco per reimpostare
+function zoomState(box, key) { if (box._zk !== key) { box._zk = key; box._z = [0, 1]; } return box._z; }
+// indici [a, b] di t (tra i0 e i1) visibili con lo zoom z (frazioni del periodo)
+function zoomIdx(t, i0, i1, z) {
+  if (z[0] <= 0 && z[1] >= 1) return [i0, i1];
+  const t0 = t[i0], t1 = t[i1], A = t0 + z[0] * (t1 - t0), B = t0 + z[1] * (t1 - t0);
+  let a = i0; while (a < i1 && t[a + 1] <= A) a++;
+  let b = i1; while (b > a && t[b - 1] >= B) b--;
+  if (b <= a) b = Math.min(i1, a + 1);
+  if (b <= a) a = Math.max(i0, b - 1);
+  return [a, b];
+}
+function bindZoom(box, redraw, plot) {
+  box._rd = redraw; box._plot = plot || [0, 0];
+  if (box._zb) return; box._zb = true; box.title = "Rotella o pinch per ingrandire, trascina per spostare, doppio clic per reimpostare";
+  const ptrs = new Map(); let d0 = 0, drag = null;
+  const frac = cx => { const r = box.getBoundingClientRect(), [pl, pr] = box._plot, w = r.width - pl - pr; return Math.min(1, Math.max(0, (cx - r.left - pl) / (w || 1))); };
+  const set = (a, b) => { if (a < 0) { b -= a; a = 0; } if (b > 1) { a -= b - 1; b = 1; } box._z = [Math.max(0, a), Math.min(1, b)]; box._rd(); };
+  const zoomAt = (fx, k) => { const z = box._z || [0, 1], sp = z[1] - z[0], ns = Math.min(1, Math.max(0.03, sp * k)), a = z[0] + fx * sp - fx * ns; set(a, a + ns); };
+  box.addEventListener("wheel", ev => { ev.preventDefault(); zoomAt(frac(ev.clientX), ev.deltaY > 0 ? 1.18 : 1 / 1.18); }, { passive: false });
+  box.addEventListener("dblclick", () => { box._z = [0, 1]; box._rd(); });
+  box.addEventListener("pointerdown", ev => {
+    if (ev.pointerType === "mouse" && ev.button !== 0) return;
+    ptrs.set(ev.pointerId, { x: ev.clientX });
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; d0 = Math.abs(a.x - b.x) || 1; drag = null; ptrs.forEach((_, id) => { try { box.setPointerCapture(id); } catch {} }); }
+    else if (ptrs.size === 1) drag = { x: ev.clientX, z: (box._z || [0, 1]).slice(), on: false };
+  });
+  box.addEventListener("pointermove", ev => {
+    const q = ptrs.get(ev.pointerId); if (!q) return; q.x = ev.clientX;
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.abs(a.x - b.x) || 1; if (d0) zoomAt(frac((a.x + b.x) / 2), d0 / d); d0 = d; return; }
+    const z = box._z || [0, 1];
+    if (drag && z[1] - z[0] < 1) {
+      if (!drag.on && Math.abs(ev.clientX - drag.x) > 6) { drag.on = true; try { box.setPointerCapture(ev.pointerId); } catch {} }
+      if (drag.on) { const r = box.getBoundingClientRect(), w = r.width - box._plot[0] - box._plot[1], sp = drag.z[1] - drag.z[0], a = drag.z[0] - (ev.clientX - drag.x) / (w || 1) * sp; set(a, a + sp); }
+    }
+  });
+  const up = ev => { ptrs.delete(ev.pointerId); if (ptrs.size < 2) d0 = 0; if (!ptrs.size) drag = null; };
+  box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+}
 // Asse del tempo: tick sui primi del mese (passo 1, 2, 3, 6 o 12 mesi, il più fitto che sta) e sempre con l'anno
 const xoOf = (t0, t1) => ((t1 - t0) / DAY > 80 ? { month: "short", year: "2-digit" } : { day: "numeric", month: "short", year: "2-digit" });
 function timeTicks(t0, t1, W) {
@@ -1685,10 +1725,12 @@ function renderPfPeriods() {
 }
 function drawPfNav() {
   const box = $("pf-chart"); if (!PF || !box) return;
-  const P = chartP(), back = P !== PF, from = PERIODS.find(p => p[0] === pfPeriod)[1](), i0 = from === 0 ? 0 : idxOf(P.t, from), step = Math.max(1, Math.floor((P.last - i0) / 420));
+  const P = chartP(), back = P !== PF, from = PERIODS.find(p => p[0] === pfPeriod)[1](), i0 = from === 0 ? 0 : idxOf(P.t, from);
+  const [za, zb] = zoomIdx(P.t, i0, P.last, zoomState(box, `${pfPeriod}|${pfView}|${pfCur && pfCur.id}`)), step = Math.max(1, Math.floor((zb - za) / 420));
   const T = [], V = [], C = [];
-  for (let m = i0; m <= P.last; m += step) { T.push(P.t[m]); V.push(P.V[m]); C.push(back ? P.V[i0] : P.cost[m]); }
-  if (T[T.length - 1] !== P.t[P.last]) { T.push(P.t[P.last]); V.push(P.V[P.last]); C.push(back ? P.V[i0] : P.cost[P.last]); }
+  for (let m = za; m <= zb; m += step) { T.push(P.t[m]); V.push(P.V[m]); C.push(back ? P.V[i0] : P.cost[m]); }
+  if (T[T.length - 1] !== P.t[zb]) { T.push(P.t[zb]); V.push(P.V[zb]); C.push(back ? P.V[i0] : P.cost[zb]); }
+  bindZoom(box, drawPfNav, [0, 62]);
   drawLine(box, T, [V, C], (back ? "Valore storico dei titoli " : "Valore del portafoglio ") + pfPeriod, "gpf");
 }
 // Frontiera sul massimo periodo in comune (max 3 anni): EF per l'editor (tetto scelto), EFH per la Home (tetto 40%)
@@ -1927,9 +1969,11 @@ function drawBm() {
   ["bm-chart", "bm-chart2"].forEach(id => {
     const box = $(id), W = box && box.clientWidth, H = box && box.clientHeight; if (!W) return;
     const pr = 50, pt = 8, pb = 24, pl = 0;
-    let T, A, B, X, bw = 0;
-    if (bmMode === "cum") { T = ser.T; A = ser.pf.map(v => (v - 1) * 100); B = ser.bm.map(v => (v - 1) * 100); }
-    else { T = mo.map(x => x.t); A = mo.map(x => x.p * 100); B = mo.map(x => x.b * 100); }
+    let T, A, B, X, bw = 0, mw = mo;
+    const zs = zoomState(box, `${bmMode}|${pfCur && pfCur.id}`);
+    if (bmMode === "cum") { const [za, zb] = zoomIdx(ser.T, 0, ser.T.length - 1, zs); T = ser.T.slice(za, zb + 1); A = ser.pf.slice(za, zb + 1).map(v => (v - 1) * 100); B = ser.bm.slice(za, zb + 1).map(v => (v - 1) * 100); }
+    else { const [za, zb] = zoomIdx(mo.map(x => x.t), 0, mo.length - 1, zs); mw = mo.slice(za, zb + 1); T = mw.map(x => x.t); A = mw.map(x => x.p * 100); B = mw.map(x => x.b * 100); }
+    bindZoom(box, drawBm, [pl, pr]);
     let mn = Math.min(0, ...A, ...B), mx = Math.max(0, ...A, ...B); const pad = (mx - mn) * 0.08 || 1, ticks = niceTicks(mn - pad, mx + pad, 4);
     const lo = Math.min(ticks[0], mn - pad), hi = Math.max(ticks[ticks.length - 1], mx + pad), Y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
     const n = T.length, cw = (W - pl - pr) / n;
@@ -1942,7 +1986,7 @@ function drawBm() {
     } else {
       bw = Math.max(1.5, Math.min(12, cw * 0.38));
       const rect = (x, v, c, op) => `<rect x="${(x).toFixed(1)}" y="${Math.min(Y(v), Y(0)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.8, Math.abs(Y(v) - Y(0))).toFixed(1)}" fill="${c}" opacity="${op}"/>`;
-      body = T.map((t, i) => { const x = X(t, i); return rect(x - bw - 0.5, A[i], "var(--c1)", mo[i].open ? 0.55 : 1) + rect(x + 0.5, B[i], "var(--soft)", mo[i].open ? 0.55 : 1); }).join("");
+      body = T.map((t, i) => { const x = X(t, i); return rect(x - bw - 0.5, A[i], "var(--c1)", mw[i].open ? 0.55 : 1) + rect(x + 0.5, B[i], "var(--soft)", mw[i].open ? 0.55 : 1); }).join("");
       const every = Math.max(1, Math.ceil(n / (W < 420 ? 4 : 8)));
       T.forEach((t, i) => { if (i % every === 0) xt.push([X(t, i), dateTxt(t, { month: "short", year: "2-digit" })]); });
     }
@@ -1961,7 +2005,7 @@ function drawBm() {
       const cx = X(T[j], j), d = A[j] - B[j];
       g.setAttribute("visibility", "visible"); hl.setAttribute("x1", cx); hl.setAttribute("x2", cx);
       tip.hidden = false;
-      tip.innerHTML = `<b>${dateTxt(T[j], bmMode === "cum" ? undefined : { month: "long", year: "numeric" })}${bmMode !== "cum" && mo[j].open ? " (in corso)" : ""}</b>Tu ${sg(A[j])} · Benchmark ${sg(B[j])}<br><span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>`;
+      tip.innerHTML = `<b>${dateTxt(T[j], bmMode === "cum" ? undefined : { month: "long", year: "numeric" })}${bmMode !== "cum" && mw[j].open ? " (in corso)" : ""}</b>Tu ${sg(A[j])} · Benchmark ${sg(B[j])}<br><span class="${cls(d)}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</span>`;
       const tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(cx, tw / 2), W - tw / 2) + "px"; tip.style.top = "0px";
     };
     hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
@@ -2150,8 +2194,9 @@ function histOrder(P) {
 }
 function drawHist() {
   const box = $("hist-chart"); if (!PF || !box) return; const P = PF, W = box.clientWidth, H = box.clientHeight; if (!W) return;
-  const order = histOrder(P), n = P.t.length, step = Math.max(1, Math.floor((n - 1) / 360)), ix = [];
-  for (let m = 0; m < n; m += step) ix.push(m); if (ix[ix.length - 1] !== n - 1) ix.push(n - 1);
+  const order = histOrder(P), n = P.t.length, [ha, hb] = zoomIdx(P.t, 0, n - 1, zoomState(box, `hist|${histMode}|${pfCur && pfCur.id}`)), step = Math.max(1, Math.floor((hb - ha) / 360)), ix = [];
+  for (let m = ha; m <= hb; m += step) ix.push(m); if (ix[ix.length - 1] !== hb) ix.push(hb);
+  bindZoom(box, drawHist, [0, 62]);
   const T = ix.map(m => P.t[m]), val = order.map(i => ix.map(m => Math.max(0, P.units[i][m] * P.px[i][m]))), tot = ix.map((_, k) => val.reduce((a, s) => a + s[k], 0));
   const isPct = histMode === "pct", ser = isPct ? val.map(s => s.map((v, k) => (tot[k] > 0 ? v / tot[k] * 100 : 0))) : val, cost = ix.map(m => P.cost[m]);
   const pl = 0, pr = 62, pt = 8, pb = 24, mx = isPct ? 100 : Math.max(...tot, ...cost) * 1.06 || 1, ticks = isPct ? [0, 50, 100] : niceTicks(0, mx, 3);
@@ -2160,7 +2205,7 @@ function drawHist() {
   const pts = (a) => a.map((v, k) => X(T[k]).toFixed(1) + " " + Y(v).toFixed(1));
   const xo = xoOf(T[0], T[T.length - 1]), xt = timeTicks(T[0], T[T.length - 1], W);
   const col = k => `var(--c${(k % 6) + 1})`;
-  const ops = pfLots(P.pf).filter(l => !l.base).map(l => ({ x: X(Math.min(Math.max(dateMs(l.date), T[0]), T[T.length - 1])), buy: l.qty > 0 }));
+  const ops = pfLots(P.pf).filter(l => !l.base && dateMs(l.date) >= T[0] && dateMs(l.date) <= T[T.length - 1]).map(l => ({ x: X(dateMs(l.date)), buy: l.qty > 0 }));
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${isPct ? "Composizione" : "Valore per ETF"} nel tempo">
     ${ticks.map(v => `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${W}" y="${Y(v) + 4}" text-anchor="end">${isPct ? v + "%" : fmt(v, 0)}</text>`).join("")}
     ${xt.map(t => `<text class="ax" x="${X(t)}" y="${H - 4}" text-anchor="middle">${dateTxt(t, xo)}</text>`).join("")}
@@ -2642,7 +2687,7 @@ function renderPfs() {
     return `<div class="pfrow${window.pfsOpen && pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
       <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>${s.d == null ? "" : semLights(s.d) + " "}a pesi temporali</small></span>
-      <div class="pfact"><button type="button" class="ghost" data-a="open">Home</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
+      <div class="pfact"><button type="button" class="ghost" data-a="open">Monitoraggio</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
   $("pfs-restore").hidden = !hiddenSamples().length;
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
@@ -2691,7 +2736,6 @@ $("np-form").addEventListener("submit", ev => {
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
 $("pfs-new").addEventListener("click", openNew);
-$("pf-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "portafoglio") + ".json"));
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; const v = ev.target.value.trim().slice(0, 500); editPf(c => { c.description = v; }); });
 let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); drawBm(); } else if (!$("v-pfs").hidden) { drawEF(); drawBm(); } }, 120); });
 
