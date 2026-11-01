@@ -67,6 +67,9 @@ header .wrap { padding-block: 16px 0; }
 .icon .dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; align-items: center; }
+.isinl { display: grid; gap: 8px; padding-top: 14px; }
+.isinl .rw { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.isinl textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--hair); border-radius: 12px; background: var(--fill); color: var(--fg); font: inherit; font-family: var(--m); font-size: var(--fs-s); padding: 10px 12px; margin-bottom: 8px; resize: vertical; }
 .guide { padding-top: 16px; display: grid; gap: 12px; }
 .guide[hidden] { display: none; }
 .gh { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -236,13 +239,20 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 :root { --card-sh: 0 1px 2px rgba(20, 30, 25, .06), 0 12px 26px -14px rgba(20, 30, 25, .22); --card-mix: 7%; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --card-sh: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 14px 30px -14px rgba(0, 0, 0, .8); --card-mix: 10%; } }
 :root[data-theme="dark"] { --card-sh: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 14px 30px -14px rgba(0, 0, 0, .8); --card-mix: 10%; }
-#v-pfs .pf-sec { --tc: var(--c6); background: color-mix(in srgb, var(--tc) var(--card-mix), var(--bg)); border: 1px solid color-mix(in srgb, var(--tc) 24%, var(--hair)); border-radius: 16px; padding: 16px 18px 18px; margin-top: 16px; box-shadow: var(--card-sh); }
+#v-pfs .pf-sec, #v-port .pf-sec { --tc: var(--c6); background: color-mix(in srgb, var(--tc) var(--card-mix), var(--bg)); border: 1px solid color-mix(in srgb, var(--tc) 24%, var(--hair)); border-radius: 16px; padding: 16px 18px 18px; margin-top: 16px; box-shadow: var(--card-sh); }
 #v-pfs #list-sec, #v-pfs #pos-sec { --tc: var(--c2); }
 #v-pfs #perf-sec, #v-pfs #rb-sec { --tc: var(--c1); }
 #v-pfs #bm-sec2, #v-pfs #corr2-sec { --tc: var(--c4); }
 #v-pfs #dim-sec, #v-pfs #save-sec { --tc: var(--c3); }
 #v-pfs #list-sec .pfs-head { border-top: 0; margin-top: 0; padding-top: 0; }
-@media (max-width: 480px) { #v-pfs .pf-sec { padding: 12px 12px 14px; border-radius: 14px; } }
+#v-port .pf-sec { margin-top: 16px; }
+#v-port #s-live, #v-port #s-nav, #v-port #s-ef { --tc: var(--c1); }
+#v-port #s-perf, #v-port #s-comp { --tc: var(--c2); }
+#v-port #s-risk, #v-port .bm-sec, #v-port #corr-sec { --tc: var(--c4); }
+#v-port #s-alloc, #v-port #s-fc { --tc: var(--c3); }
+#v-port .live h3.sec-t { border-top: 0; margin: 0 0 12px; padding-top: 0; }
+#v-pfs #head-sec { --tc: var(--c2); }
+@media (max-width: 480px) { #v-pfs .pf-sec, #v-port .pf-sec { padding: 12px 12px 14px; border-radius: 14px; } }
 .pf-sec .price { margin-bottom: 0; }
 .scroll { overflow-x: auto; }
 .chart.tall { height: 320px; }
@@ -255,6 +265,8 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .hrow.idle .idle-why { grid-column: 2 / -1; display: grid; grid-template-rows: 20px 16px; align-items: center; gap: 3px; justify-items: end; text-align: right; color: var(--soft); font-size: var(--fs-s); }
 .hrow.idle .idle-why button { border: 0; background: none; padding: 0; margin: 0; color: var(--fg); font: inherit; line-height: 16px; text-decoration: underline; cursor: pointer; }
 .nm-btn { border: 0; background: none; padding: 0; text-align: left; font-weight: 500; font-size: var(--fs-m); letter-spacing: -.01em; cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.etf-link { border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; letter-spacing: inherit; cursor: pointer; text-align: inherit; }
+.etf-link:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .nm-btn:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .id a { color: inherit; }
 .id a:hover { color: var(--fg); }
@@ -354,10 +366,10 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
-.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 16px 6px; margin-top: 20px; border-top: 2px solid var(--fg); }
+.edhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .edhead h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
-#pf-edit { border-top: 1.5px solid var(--fg); margin-top: 24px; }
-.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; border-top: 2px solid var(--fg); margin-top: 16px; }
+#pf-edit { margin-top: 0; }
+.pfs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; }
 .pfs-head h2 { margin: 0; font-size: var(--fs-m); font-weight: 600; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
 .pfrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 96px auto; gap: 12px 20px; align-items: center; padding: 16px 0; border-top: 1px solid var(--hair); }
 .pfrow:last-child { border-bottom: 0; }
@@ -482,7 +494,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.005</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.04.006</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -500,7 +512,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <p class="fc-note" id="upd-msg" aria-live="polite"></p>
   </section>
   <p class="fc-note" id="pf-desc-ro" hidden></p>
-  <section class="live" aria-label="Valore e rendimenti">
+  <section class="live sec pf-sec" id="s-live" aria-label="Valore e rendimenti">
     <h3 class="sec-t">Sintesi</h3>
     <div class="lhead"><div class="lh-l"><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div><div class="strat"><span id="pf-since"></span><span class="bench" id="pf-bench"></span></div></div></div>
   </section>
@@ -558,7 +570,13 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <div id="pfs-list"></div></section>
   <div class="io"><button type="button" class="ghost" id="pfs-restore" hidden>Ripristina i portafogli di prova</button><button type="button" class="primary" id="install" hidden>Installa app</button></div>
 <div id="pf-edit">
-  <section class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></section>
+  <section class="sec pf-sec" id="head-sec">
+    <div class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></div>
+    <div class="pf-meta" id="pf-meta">
+      <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
+      <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
+    </div>
+  </section>
   <section class="sec pf-sec" id="perf-sec"><h3>Performance<button type="button" class="i" data-g="twr" aria-label="Informazioni: rendimento a pesi temporali">i</button></h3>
     <div class="kpi" id="ed-kpi"></div>
     <div class="bench" id="ed-bench"></div>
@@ -567,10 +585,6 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="price"><span class="pf-mode"><div class="periods bm-mode" role="group" aria-label="Vista"><button type="button" data-m="cum" aria-pressed="true">Cumulato</button><button type="button" data-m="mon" aria-pressed="false">Mensile</button></div><button type="button" class="i" data-g="bmc" aria-label="Informazioni: strategia e benchmark nel tempo">i</button></span>
       <span class="bm-leg"><i style="background:var(--c1)"></i>Tu <i style="background:var(--soft)"></i>Benchmark</span></div>
     <div class="chart" id="bm-chart2"></div>
-  </section>
-  <section class="pf-meta" id="pf-meta">
-    <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
-    <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
   </section>
   <section class="sec pf-sec" id="pos-sec"><h3>Posizioni<button type="button" class="i" data-g="pos" aria-label="Informazioni: posizioni">i</button></h3>
     <div class="rn" id="pos-base"><label class="k" for="dr-amt">Importo €</label><input id="dr-amt" type="number" min="0" step="any" style="max-width:130px"><label class="k" for="dr-start">Da</label><input id="dr-start" type="date" style="max-width:160px"></div>
@@ -654,6 +668,16 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
       <button class="icon fb" type="button" id="fbtn" aria-expanded="true" aria-controls="guide" aria-label="Filtri">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6h14M6 10h8M8.5 14h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Filtri</span>
       </button>
+    </div>
+    <div class="isinl" id="isinl">
+      <div class="gl2">Cerca solo tra i tuoi ISIN<button type="button" class="i" data-g="g_list" aria-label="Informazioni: lista di ISIN">i</button></div>
+      <div class="rw">
+        <button type="button" class="ghost" id="il-file">Carica CSV</button><input type="file" id="il-input" class="vh" tabindex="-1" aria-hidden="true">
+        <button type="button" class="ghost" id="il-paste">Incolla testo</button>
+        <button type="button" class="ghost" id="il-clear" hidden>Rimuovi lista</button>
+        <span class="k" id="il-state">Tutto il catalogo</span>
+      </div>
+      <div id="il-box" hidden><textarea id="il-text" rows="3" spellcheck="false" placeholder="Incolla qui gli ISIN: uno per riga o separati da virgole o punti e virgola"></textarea><button type="button" class="primary" id="il-apply">Usa questa lista</button></div>
     </div>
     <div class="guide" id="guide">
       <div class="gh"><h3>Ricerca guidata<button type="button" class="i" data-g="guida" aria-label="Informazioni: ricerca guidata">i</button></h3><span class="k">Ogni criterio è facoltativo</span><button type="button" class="ghost" id="gclear" hidden>Azzera</button></div>
@@ -781,6 +805,8 @@ const chkTxt = () => (window.LOCAL ? "locale · " : "") + (window.lastCheck ? ne
 const ltTxt = ms => ms ? new Date(ms).toLocaleString("it-IT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 const liveMs = e => e.lt || (e.s ? e.s.t[e.s.t.length - 1] : 0); // data e ora dell'ultimo prezzo mostrato come live
 const dateTxt = (t, o = { day: "2-digit", month: "short", year: "numeric" }) => new Date(t).toLocaleDateString("it-IT", o);
+// Un ETF citato in qualsiasi tabella o elenco è un link che apre il pannello laterale con grafico e dati
+const eL = (e, t) => `<button type="button" class="etf-link" data-etf="${e.isin}">${t == null ? esc(e.ticker) : t}</button>`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -993,9 +1019,11 @@ const FRANGE = [ // chiave, etichetta, lettura, unità, fattore di scala per la 
   ["spr", "Spread", e => e.spr, "%", 1, 0.01],
 ];
 const FS = { m: {}, r: {}, x: new Set(), unk: false, rp: "r3" }; // x: aree escluse; unk: includi gli ETF senza dato di borsa, liquidità o spread
+let ISINSET = null; // lista di ISIN a cui limitare la ricerca (CSV o testo incollato)
 const PARTIAL = new Set(["exch", "tcur", "liq", "spr", "adv"]);
 const flat = v => (Array.isArray(v) ? v : [v]);
 function matches(e) {
+  if (ISINSET && !ISINSET.has(e.isin)) return false;
   const q = $("q").value.trim().toLowerCase();
   if (q) {
     const hay = [e.name, e.ticker, e.isin, e.index, e.provider, e.region, e.asset, e.focus].join(" ").toLowerCase();
@@ -1016,7 +1044,7 @@ function matches(e) {
   }
   return true;
 }
-const activeCount = () => (FS.x.size ? 1 : 0) + FMULTI.filter(([k]) => FS.m[k] && FS.m[k].size).length + FRANGE.filter(([k]) => FS.r[k] && (FS.r[k][0] != null || FS.r[k][1] != null)).length;
+const activeCount = () => (ISINSET ? 1 : 0) + (FS.x.size ? 1 : 0) + FMULTI.filter(([k]) => FS.m[k] && FS.m[k].size).length + FRANGE.filter(([k]) => FS.r[k] && (FS.r[k][0] != null || FS.r[k][1] != null)).length;
 const numTxt = x => fmt(x, Math.abs(x) < 10 && x % 1 ? 2 : 0).replace(/,00$/, "");
 // Cursori min–max: le posizioni sono indici di una scala di valori (nell'unità mostrata); agli estremi il limite non c'è
 const lin = (a, b, st) => { const o = []; for (let v = a; v <= b + 1e-9; v += st) o.push(+v.toFixed(4)); return o; };
@@ -1050,6 +1078,21 @@ function buildAdv() {
   const range = ADV_RANGE.map(([t, ks]) => `<div class="gg"><div class="gl2">${esc(t)}</div><div class="rsg">${ks.map(sliderHtml).join("")}</div></div>`).join("");
   $("filters").innerHTML = multi + range;
 }
+function setIsinList(text, fresh) {
+  const toks = [...new Set(String(text || "").toUpperCase().match(/\b[A-Z]{2}[A-Z0-9]{9}[0-9]\b/g) || [])];
+  ISINSET = toks.length ? new Set(toks) : null;
+  try { if (ISINSET) localStorage.setItem("mm-isin-list", toks.join(",")); else localStorage.removeItem("mm-isin-list"); } catch {}
+  const miss = toks.filter(i => !BYISIN.has(i));
+  $("il-state").textContent = ISINSET ? `Solo ${toks.length} ISIN della lista${miss.length ? ` · ${miss.length} non nel catalogo: ${miss.slice(0, 4).join(", ")}${miss.length > 4 ? "…" : ""}` : " · tutti nel catalogo"}` : "Tutto il catalogo";
+  $("il-clear").hidden = !ISINSET;
+  if (fresh && ISINSET) { FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; } // cercando in una lista, i criteri preimpostati ripartono da zero
+  if (fresh) render();
+}
+$("il-file").addEventListener("click", () => $("il-input").click());
+$("il-input").addEventListener("change", () => readPicked($("il-input"), t => { if (t == null) { $("il-state").textContent = "File non leggibile: incolla il testo"; return; } setIsinList(t, true); $("il-box").hidden = true; }));
+$("il-paste").addEventListener("click", () => { $("il-box").hidden = !$("il-box").hidden; if (!$("il-box").hidden) $("il-text").focus(); });
+$("il-apply").addEventListener("click", () => { setIsinList($("il-text").value, true); if (ISINSET) $("il-box").hidden = true; });
+$("il-clear").addEventListener("click", () => { $("il-text").value = ""; setIsinList("", true); });
 function clearFilters() {
   FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; $("g-unk").checked = false; render();
 }
@@ -1096,6 +1139,8 @@ function initGuide() {
   buildGuide();
   FS.m.type = new Set(["ETF"]); FS.m.dist = new Set(["Accumulazione"]); FS.m.asset = new Set(["Obbligazionario"]);
   FS.m.exch = new Set(["Borsa Italiana"]); FS.m.tcur = new Set(["EUR"]); FS.m.cur = new Set(["EUR"]); FS.m.provider = new Set(["Amundi"]); FS.unk = true;
+  let saved = ""; try { saved = localStorage.getItem("mm-isin-list") || ""; } catch {}
+  if (saved) { setIsinList(saved, false); FS.m = {}; FS.r = {}; FS.x = new Set(); FS.unk = false; $("il-text").value = saved.split(",").join("\n"); } // lista salvata: parte solo quella
 }
 const closeMs = except => document.querySelectorAll("#guide .msp").forEach(p => { if (p !== except) { p.hidden = true; p.closest(".ms").querySelector(".msb").setAttribute("aria-expanded", "false"); } });
 $("guide").addEventListener("click", ev => {
@@ -1778,7 +1823,7 @@ function renderRb() {
     const T0 = rbTarget(F), tw = T0.w.map(x => +(x * 100).toFixed(1)), tot = F.act.reduce((a, ai) => a + P.vh[ai], 0), cw0 = F.items.map((_, j) => (j < F.na ? P.vh[F.act[j]] / tot : 0));
     const a0 = F.ev(cw0), b0 = F.ev(tw.map(x => x / 100)), mm = x => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)} · divers. ${fmt(F.drOf(x.w), 2)}`;
     RB = F.items.map((e, j) => ({ isin: e.isin, w: tw[j] }));
-    tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.items.map((e, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${e.ticker}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody>`;
+    tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.items.map((e, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${eL(e)}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody>`;
     note.innerHTML = `Ora ${mm(a0)}<br>Dopo ${mm(b0)}`; btn.disabled = false; return;
   }
   const T = rbTarget(F), Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
@@ -1786,7 +1831,7 @@ function renderRb() {
   const val2 = rows.map(r => r.tq * r.pr), s2 = val2.reduce((a, b) => a + b, 0), w2 = val2.map(v => v / s2);
   const a = F.ev(rows.map(r => r.cur)), b = F.ev(w2), cash = -rows.reduce((x, r) => x + r.dq * r.pr, 0);
   RB = rows.filter(r => r.dq !== 0).map(r => ({ isin: r.e.isin, dq: r.dq, pr: r.pr }));
-  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${r.e.ticker}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody>`;
+  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${eL(r.e)}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody>`;
   const m = (x) => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)} · divers. ${fmt(F.drOf(x.w), 2)}`;
   note.innerHTML = `Ora ${m(a)}<br>Dopo ${m(b)} · residuo ${eurS2(cash)}`;
   btn.disabled = !RB.length;
@@ -1926,7 +1971,7 @@ function computeEF(P) {
   EF = frontier(P, cap);
   EFH = cap === 0.4 ? EF : frontier(P, 0.4);
 }
-const wlOf = (F, w) => (F ? F.items : []).map((e, j) => [e.ticker, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([t, x]) => `${t} ${fmt(x * 100, 0)}%`).join(" · ");
+const wlOf = (F, w) => (F ? F.items : []).map((e, j) => [e, w[j]]).filter(x => x[1] >= 0.01).sort((a, b) => b[1] - a[1]).map(([e, x]) => `${eL(e)} ${fmt(x * 100, 0)}%`).join(" · ");
 // Casi di ribilanciamento mostrati in Home (sola lettura): stessi colori in tabella e sul grafico
 const EFH_CASES = F => [["Attuale", "var(--fg)", F.cur], ["Max Sharpe", "var(--c1)", F.maxS], ["Stessa vol., più rend.", "var(--c2)", F.vol], ["Stesso rend., meno vol.", "var(--c3)", F.ret], ["Min. varianza", "var(--c4)", F.minV], ["Max diversif.", "var(--c5)", F.div]];
 function renderEF(P, allReal) {
@@ -1951,7 +1996,7 @@ function renderCorr() {
     if (!F) { tb.innerHTML = ""; note.textContent = "Servono almeno 2 ETF e 3 mesi di storico"; idx.innerHTML = ""; return; }
     const n = F.items.length, nm = F.items.map(shortNm), c = F.corr;
     const bg = x => (x === 1 ? "" : ` style="background:color-mix(in srgb, var(${x >= 0 ? "--down" : "--up"}) ${Math.round(Math.min(Math.abs(x), 1) * 60)}%, transparent)"`);
-    tb.innerHTML = `<thead><tr><th></th>${nm.map(t => `<th>${esc(t)}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${esc(nm[i])}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
+    tb.innerHTML = `<thead><tr><th></th>${nm.map((t, i) => `<th>${eL(F.items[i], esc(t))}</th>`).join("")}</tr></thead><tbody>${c.map((r, i) => `<tr><td>${eL(F.items[i], esc(nm[i]))}</td>${r.map((x, j) => (i === j ? '<td class="dg">1,00</td>' : `<td${bg(x)}>${fmt(x, 2)}</td>`)).join("")}</tr>`).join("")}</tbody>`;
     let hi = null, lo = null, sum = 0, k = 0;
     for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const x = c[i][j]; sum += x; k++; if (!hi || x > hi[2]) hi = [i, j, x]; if (!lo || x < lo[2]) lo = [i, j, x]; }
     const w = F.cur.w, d0 = F.drOf(w), d1 = F.drOf(F.div.w), pr = a => `${nm[a[0]]}–${nm[a[1]]} ${fmt(a[2], 2)}`;
@@ -2047,7 +2092,7 @@ function renderPf() {
   let cov = 0, acc = 0;
   const blocks = order.map(i => { const e = P.es[i], fc = fcFor(e), ups = fc ? fc.items.map(it => upOf(fc, it)).filter(x => x != null) : [], m = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
     if (m != null) { cov += P.cw[i]; acc += P.cw[i] * m; }
-    return `<div class="fb"><h4><span>${e.ticker}<em>${fc ? esc(fc.ref) : esc(e.index)}</em></span><span class="n ${cls(m)}">${m == null ? "—" : pct(m, 1)}</span></h4>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</div>`; });
+    return `<div class="fb"><h4><span>${eL(e)}<em>${fc ? esc(fc.ref) : esc(e.index)}</em></span><span class="n ${cls(m)}">${m == null ? "—" : pct(m, 1)}</span></h4>${fc ? fcList(fc) : '<p class="fc-note">Nessuna previsione da fonte ufficiale trovata</p>'}</div>`; });
   const tot = cov ? acc / cov : null; window.fcAny = cov > 0;
   $("pf-fc").innerHTML = blocks.join("") + `<div class="fb-sum"><span>Atteso sul portafoglio <span class="k">(copre ${fmt(cov * 100, 0)}%)</span></span><span class="n ${cls(tot)}">${tot == null ? "—" : pct(tot, 1)}</span></div>`;
 
@@ -2363,14 +2408,14 @@ function renderPos() {
   const lots = pfLots(pf), net = x => { const e = byIsin(x.isin); return e.s ? lots.filter(l => l.isin === x.isin).reduce((a, l) => a + l.qty, 0) : (x.qty > 0 ? x.qty : 0) + x.txs.reduce((a, t) => a + t.qty, 0); };
   const nets = pf.positions.map(net), vals = pf.positions.map((x, i) => (byIsin(x.isin).s && nets[i] > 1e-9 ? nets[i] * byIsin(x.isin).live : 0)), vTot = vals.reduce((a, b) => a + b, 0);
   $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quote${ib("qnet")}</th><th>%</th><th>Quantità iniziale${ib("pos")}</th><th>Movimenti</th><th></th></tr></thead><tbody>${pf.positions.map((x, i) => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x), q = nets[i];
-    return `<tr data-isin="${x.isin}"><td class="n">${e.ticker}<span class="wl nmx">${esc(e.name)}</span></td><td class="n">${Math.abs(q) > 1e-9 || x.txs.length ? fmt(q, Math.abs(q - Math.round(q)) < 1e-9 ? 0 : 2) : "—"}</td><td class="n">${vTot > 0 && vals[i] > 0 ? fmt(vals[i] / vTot * 100, 1) + "%" : x.txs.length && Math.abs(q) < 1e-9 ? "Chiusa" : "—"}</td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="n"><button type="button" class="ghost mvb">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " movimento" : " movimenti") : "+ Movimento"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr data-isin="${x.isin}"><td class="n">${eL(e)}<span class="wl nmx">${esc(e.name)}</span></td><td class="n">${Math.abs(q) > 1e-9 || x.txs.length ? fmt(q, Math.abs(q - Math.round(q)) < 1e-9 ? 0 : 2) : "—"}</td><td class="n">${vTot > 0 && vals[i] > 0 ? fmt(vals[i] / vTot * 100, 1) + "%" : x.txs.length && Math.abs(q) < 1e-9 ? "Chiusa" : "—"}</td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="n"><button type="button" class="ghost mvb">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " movimento" : " movimenti") : "+ Movimento"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
   const noPx = pf.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s);
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
   $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, primo prezzo disponibile` : "") + (noPx.length ? `${W || clamp ? "<br>" : ""}Senza prezzi, esclusi dal calcolo: ${noPx.map(e => esc(e.ticker)).join(", ")}${noPx.every(e => e.tried) ? ` · aggiungili a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : " · carico…"}` : "");
   const rows = pf.positions.filter(x => hasBase(x) && byIsin(x.isin).s).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
   const spent = rows.filter(r => r.w).reduce((a, r) => a + r.cost, 0), anyW = rows.some(r => r.w);
   $("dim-sec").hidden = !rows.length;
-  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${r.e.ticker}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
+  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${eL(r.e)}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
   DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
   $("dr-own").disabled = !DRSIZE.length;
 }
@@ -2383,9 +2428,9 @@ function renderHist() {
   const lots = pfLots(pf).reverse();
   // Home: stessi movimenti in sola lettura (senza modifica né eliminazione)
   $("hist-ro").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
-    return `<tr><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${eL(e)}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td></tr>`; }).join("")}</tbody>` : "";
   $("hist-tbl").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th><th></th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
-    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${e.ticker}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${eL(e)}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
 }
 // Composizione nel tempo: aree impilate per ETF (in € o in %), con i punti di acquisto e vendita sull'asse.
 function histOrder(P) {
@@ -2454,7 +2499,7 @@ function drawHist() {
     ${ops.map(o => `<circle cx="${o.x.toFixed(1)}" cy="${H - pb}" r="3.5" fill="${o.buy ? "var(--up)" : "var(--down)"}" stroke="var(--bg)" stroke-width="1.5"/>`).join("")}
     <g class="hv" visibility="hidden"><line class="hl" y1="${pt}" y2="${H - pb}" stroke="var(--soft)" stroke-dasharray="2 3"/></g>
     <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hit"/></svg><div class="tip mx" hidden></div>`;
-  $("hist-leg").innerHTML = order.map((i, k) => `<li><span class="sw" style="background:${col(k)}"></span><span class="lt">${P.es[i].ticker}</span></li>`).join("");
+  $("hist-leg").innerHTML = order.map((i, k) => `<li><span class="sw" style="background:${col(k)}"></span><span class="lt">${eL(P.es[i])}</span></li>`).join("");
   const g = box.querySelector(".hv"), tip = box.querySelector(".tip"), hl = box.querySelector(".hl"), hit = box.querySelector(".hit");
   const move = ev => {
     const x = ev.clientX - box.getBoundingClientRect().left, tt = T[0] + (x - pl) / (W - pl - pr) * (T[T.length - 1] - T[0]);
@@ -2586,6 +2631,7 @@ Object.assign(GL, {
   g_vol: { t: "Volatilità", what: "Quanto oscillano i prezzi in un anno (deviazione standard dei rendimenti, ultimo anno): è la misura classica del rischio.", use: "Ti dice quanto puoi vedere salire e scendere il fondo.", how: "Fissa un massimo in base a quanto sai sopportare: indicativamente in un anno sfavorevole si può perdere circa il doppio della volatilità. Riferimenti tipici: azionario mondiale 12–18%, obbligazioni di Stato 3–8%, monetario sotto 1%.", ref: [["Sotto 5%", "bassa (obbligazionario, monetario)"], ["10–18%", "azionario diversificato"], ["Oltre 25%", "alta (settori, singoli Paesi, cripto)"]], links: ["scelta"] },
   g_x: { t: "Escludi aree geografiche", what: "Toglie dall'elenco gli ETF il cui mercato è l'area scelta.", use: "Serve per evitare sovrapposizioni o concentrazioni, per esempio troppi Stati Uniti.", how: "Seleziona le aree da escludere. Gli ETF «Globali» includono tutte le aree: per evitarne una cerca un ETF «ex» quell'area (ad esempio «ex USA»).", ref: [["Nessuna", "nessuna esclusione"]] },
   g_sector: { t: "Settore", what: "Il settore dell'economia a cui è legato l'ETF (salute, tecnologia, energia…), dedotto dal nome o dai dati del fondo.", use: "Serve per scommesse mirate o per tematiche.", how: "Lascia vuoto per ETF ampi e diversificati. Un ETF settoriale concentra il rischio: dagli un peso contenuto nel portafoglio.", ref: [["Vuoto", "ETF diversificati su tutti i settori"]] },
+  g_list: { t: "Cerca solo tra i tuoi ISIN", what: "Limita la ricerca a un elenco di ISIN che fornisci tu, da un file CSV o incollando il testo: tutti gli altri ETF restano fuori.", use: "Serve quando hai già una lista di candidati (da un broker, da un foglio, da un consulente) e vuoi confrontarli o filtrarli con i criteri sotto.", how: "Carica un CSV o un file di testo con gli ISIN, oppure «Incolla testo»: va bene un ISIN per riga o separati da virgole e punti e virgola, anche con altre colonne; ne leggo solo i codici ISIN (12 caratteri). Quando carichi una lista i criteri preimpostati si azzerano, così vedi tutta la lista; poi aggiungi i criteri che vuoi. La lista resta salvata in questo browser finché non premi «Rimuovi lista». Gli ISIN non presenti nel catalogo (ETF non UCITS o non quotati in Europa) vengono segnalati.", ref: [["Formato", "ISIN da 12 caratteri, ad esempio IE00B4L5Y983"]] },
   g_unk: { t: "ETF senza dato", what: "Borsa, valuta di negoziazione, liquidità e spread esistono solo per gli ETF monitorati (circa 170). Per gli altri la condizione non si può verificare.", use: "Decide se gli ETF senza questo dato restano nell'elenco.", how: "Attivo: li vedi comunque, con la condizione non verificata. Disattivo: restano solo gli ETF per cui il dato esiste e la condizione è vera (elenco molto più corto).", ref: [["Attivo", "elenco ampio, condizioni non verificabili"], ["Disattivo", "solo ETF verificati"]] },
   g_region: { t: "Area (solo queste)", what: "Mostra solo gli ETF il cui mercato principale è l'area scelta.", use: "Per costruire un portafoglio per aree geografiche.", how: "Selezione multipla: scegli le aree che ti interessano. «Globale» include tutto il mondo.", ref: [["Globale", "tutto il mondo"], ["Mercati emergenti", "più rischio e crescita attesa"]] },
   g_repl: { t: "Replica", what: "Come il fondo segue l'indice: fisica (compra i titoli, tutti o un campione) oppure sintetica (usa contratti swap con una banca).", use: "Cambia il tipo di rischio: la replica sintetica aggiunge il rischio della controparte.", how: "Per semplicità scegli Fisica completa o a campione; la sintetica può essere ok per indici difficili da replicare.", ref: [["Fisica completa", "tutti i titoli dell'indice"], ["Fisica a campione", "un campione rappresentativo"], ["Sintetica", "swap, rischio controparte"]] },
@@ -2619,6 +2665,7 @@ $("info").addEventListener("click", ev => { if (ev.target === $("info") || ev.ta
 
 /* ---------- Eventi ---------- */
 /* ---------- Eventi ---------- */
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-etf]"); if (b && byIsin(b.dataset.etf)) openDetail(b.dataset.etf); });
 $("list").addEventListener("click", ev => { if (ev.target.closest("#more")) { shown += 200; return render(true); } const b = ev.target.closest(".row"); if (b) openDetail(b.dataset.isin); });
 $("detail").addEventListener("click", ev => { if (ev.target === $("detail")) $("detail").close(); });
 let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => $("detail").open && drawChart(), 120); });
