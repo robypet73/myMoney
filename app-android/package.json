@@ -1,0 +1,10 @@
+{
+  "name": "mymoney-android",
+  "private": true,
+  "description": "Involucro Capacitor di myMoney: stessa pagina index.html, download dei dati dal telefono (native.js)",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

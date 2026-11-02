@@ -1,0 +1,8 @@
+{
+  "appId": "it.robypet73.mymoney",
+  "appName": "myMoney",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": { "CapacitorHttp": { "enabled": true } },
+  "android": { "backgroundColor": "#FAFAF9" }
+}

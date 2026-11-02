@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 *.tmp
+app-android/node_modules/
+app-android/www/
+app-android/android/
