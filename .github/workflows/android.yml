@@ -44,7 +44,7 @@ jobs:
           main=android/app/src/main
           cp overlay/java/*.java $main/java/it/robypet73/mymoney/
           cp -r overlay/res/. $main/res/
-          python3 overlay/patch_manifest.py $main/AndroidManifest.xml overlay/receiver.xml
+          python3 overlay/patch_manifest.py $main/AndroidManifest.xml overlay/receiver.xml overlay/permissions.xml
       - name: Icona e versione
         working-directory: app-android/android/app/src/main
         run: |
@@ -64,6 +64,19 @@ jobs:
           echo "VER=$v" >> "$GITHUB_ENV"
           cd ../..
           sed -i "s/versionCode 1/versionCode ${GITHUB_RUN_NUMBER}/; s/versionName \"1.0\"/versionName \"$v\"/" build.gradle
+      - name: Chiave di firma fissa
+        # Android aggiorna un'app solo se la firma è la stessa: con la chiave di debug casuale di ogni esecuzione
+        # l'aggiornamento viene rifiutato. La chiave fissa sta nel segreto MYMONEY_KEYSTORE_B64 (base64 del keystore).
+        env:
+          KS: ${{ secrets.MYMONEY_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            mkdir -p ~/.android
+            echo "$KS" | base64 -d > ~/.android/debug.keystore
+            echo "Firma con la chiave fissa"
+          else
+            echo "::warning::Segreto MYMONEY_KEYSTORE_B64 non impostato: firma casuale, Android rifiuterà l'aggiornamento sopra l'app già installata"
+          fi
       - name: Costruisci l'APK
         working-directory: app-android/android
         run: ./gradlew assembleDebug --no-daemon

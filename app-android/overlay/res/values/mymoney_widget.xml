@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_desc">Sintesi e andamento del portafoglio preferito</string>
-    <color name="widget_bg">#FAFAF9</color>
+    <color name="widget_bg">#E6FAFAF9</color>
     <color name="widget_text">#1A1D1B</color>
     <color name="widget_sub">#6B726E</color>
 </resources>
