@@ -43,11 +43,13 @@ jobs:
           set -e
           sudo apt-get install -y --no-install-recommends imagemagick >/dev/null
           conv() { command -v convert >/dev/null && convert "$@" || magick "$@"; }
+          # il disegno si riduce al 72% al centro, così la maschera adattiva di Android (circa 61% al centro) non taglia la freccia
+          conv ../../../../../icons/icon-maskable-512.png \( ../../../../../icons/icon-maskable-512.png -resize 72% \) -gravity center -composite /tmp/icon-fg.png
           for s in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
             IFS=: read d l f <<< "$s"
-            conv ../../../../../icons/icon-512.png -resize ${l}x${l} res/mipmap-$d/ic_launcher.png
-            conv ../../../../../icons/icon-512.png -resize ${l}x${l} res/mipmap-$d/ic_launcher_round.png
-            conv ../../../../../icons/icon-maskable-512.png -resize ${f}x${f} res/mipmap-$d/ic_launcher_foreground.png
+            conv /tmp/icon-fg.png -resize ${l}x${l} res/mipmap-$d/ic_launcher.png
+            conv /tmp/icon-fg.png -resize ${l}x${l} res/mipmap-$d/ic_launcher_round.png
+            conv /tmp/icon-fg.png -resize ${f}x${f} res/mipmap-$d/ic_launcher_foreground.png
           done
           sed -i 's/#FFFFFF/#0B1F1A/I' res/values/ic_launcher_background.xml
           v=$(grep -o 'id="ver">v[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9][0-9]' ../../../../../index.html | head -1 | sed 's/.*>v//')
