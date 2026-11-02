@@ -37,6 +37,14 @@ jobs:
           cp -r ../index.html ../sw.js ../native.js ../manifest.webmanifest ../prices.js ../etfdata.js ../catalog.js ../quotes.js ../watchlist.txt ../icons ../data www/
           npx cap add android
           npx cap sync android
+      - name: Widget della schermata Home
+        working-directory: app-android
+        run: |
+          set -e
+          main=android/app/src/main
+          cp overlay/java/*.java $main/java/it/robypet73/mymoney/
+          cp -r overlay/res/. $main/res/
+          python3 overlay/patch_manifest.py $main/AndroidManifest.xml overlay/receiver.xml
       - name: Icona e versione
         working-directory: app-android/android/app/src/main
         run: |
