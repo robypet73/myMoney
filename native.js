@@ -56,6 +56,16 @@
   const EXTRA = { IE00B4L5Y983: ["EUNL.DE"], IE00BKM4GZ66: ["IS3N.DE"], IE00B5BMR087: ["SXR8.DE"], IE00BYZK4552: ["2B76.DE"], IE00B1FZS350: ["IQQ6.DE"], IE00B4WXJJ64: ["EUNH.DE"], IE00B579F325: ["8PSG.DE"], IE00BK5BQT80: ["VWCE.DE"] };
   const Q1 = "https://query1.finance.yahoo.com";
 
+  // errori di Yahoo: ultima chiusura fuori scala (es. barra in yen di LCUJ.DE) → prezzo di mercato; punti isolati che saltano oltre il doppio → eliminati (come clean() in scripts/fetch_prices.py)
+  function cleanSeries(t, v, price) {
+    t = t.slice(); v = v.slice();
+    const n = v.length;
+    if (n >= 2 && price > 0 && Math.abs(v[n - 1] / price - 1) > 0.2 && Math.abs(v[n - 2] / price - 1) < 0.2) v[n - 1] = r4(+price);
+    for (let i = 1; i < v.length - 1;) { const a = v[i - 1], b = v[i], c = v[i + 1]; if (a > 0 && (b / a > 2 || b / a < 0.5) && c / a >= 0.5 && c / a <= 2) { t.splice(i, 1); v.splice(i, 1); } else i++; }
+    const m = v.length; if (m >= 2 && v[m - 2] > 0 && (v[m - 1] / v[m - 2] > 2 || v[m - 1] / v[m - 2] < 0.5)) { t.pop(); v.pop(); }
+    return [t, v];
+  }
+
   function parseChart(p) {
     const res = p.chart.result[0], q = res.indicators.quote[0], closes = q.close, vols = q.volume || closes.map(() => null);
     const t = [], v = [], tv = [];
@@ -65,7 +75,8 @@
       const d = new Date(ts * 1000); d.setUTCHours(12, 0, 0, 0);
       t.push(d.getTime()); v.push(r4(+c));
     });
-    const m = res.meta, tail = tv.slice(-60);
+    const m = res.meta, tail = tv.slice(-60), cl = cleanSeries(t, v, m.regularMarketPrice);
+    t.length = 0; v.length = 0; t.push(...cl[0]); v.push(...cl[1]);
     return [m.currency || "", t, v, { price: m.regularMarketPrice || v[v.length - 1] || null, time: m.regularMarketTime || null, adv: tail.length ? r2(tail.reduce((a, b) => a + b, 0) / tail.length) : null, name: m.longName || m.shortName || null }];
   }
 

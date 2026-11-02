@@ -103,6 +103,24 @@ def best_listing(isin, ticker=None, rng=None):
     return found
 
 
+def clean(t, v, price=None):
+    """Toglie gli errori di Yahoo: l'ultima chiusura lontana oltre il 20% dal prezzo di mercato (es. LCUJ.DE con una barra in yen: 4057 invece di 23) si sostituisce col prezzo;
+    i punti isolati che saltano oltre il doppio (o sotto la metà) e poi tornano normali si eliminano; un ultimo punto fuori scala senza prezzo di riferimento si scarta."""
+    t, v = list(t), list(v)
+    if len(v) >= 2 and price and price > 0 and abs(v[-1] / price - 1) > 0.2 and abs(v[-2] / price - 1) < 0.2:
+        v[-1] = round(float(price), 4)
+    i = 1
+    while i < len(v) - 1:
+        a, b, c = v[i - 1], v[i], v[i + 1]
+        if a > 0 and (b / a > 2 or b / a < 0.5) and 0.5 <= c / a <= 2:
+            del t[i], v[i]
+        else:
+            i += 1
+    if len(v) >= 2 and v[-2] > 0 and (v[-1] / v[-2] > 2 or v[-1] / v[-2] < 0.5):
+        del t[-1], v[-1]
+    return t, v
+
+
 def parse_chart(payload):
     """Restituisce (valuta, [timestamp ms a mezzogiorno UTC], [chiusure], ultima quotazione) senza giorni vuoti."""
     res = payload["chart"]["result"][0]
@@ -117,6 +135,7 @@ def parse_chart(payload):
         t.append(int(day.timestamp() * 1000))
         v.append(round(float(c), 4))
     meta = res["meta"]
+    t, v = clean(t, v, meta.get("regularMarketPrice"))
     last = {"price": meta.get("regularMarketPrice") or (v[-1] if v else None), "time": meta.get("regularMarketTime"),
             "adv": round(sum(tv[-60:]) / len(tv[-60:]), 2) if tv else None, "name": meta.get("longName") or meta.get("shortName")}  # volume medio giornaliero 3 mesi, in milioni di valuta
     return meta.get("currency", ""), t, v, last
