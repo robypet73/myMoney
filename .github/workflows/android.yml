@@ -70,23 +70,38 @@ jobs:
         env:
           KS: ${{ secrets.MYMONEY_KEYSTORE_B64 }}
         run: |
-          if [ -n "$KS" ]; then
-            mkdir -p ~/.android
-            echo "$KS" | base64 -d > ~/.android/debug.keystore
-            echo "Firma con la chiave fissa"
-          else
+          if [ -z "$KS" ]; then
             echo "::warning::Segreto MYMONEY_KEYSTORE_B64 non impostato: firma casuale, Android rifiuterà l'aggiornamento sopra l'app già installata"
+            exit 0
           fi
+          printf '%s' "$KS" | tr -d ' \n\r\t' | base64 -d > "$RUNNER_TEMP/mymoney.keystore"
+          keytool -list -v -keystore "$RUNNER_TEMP/mymoney.keystore" -storepass android | grep -E "Alias name|Owner|SHA256" || { echo "::error::Il segreto MYMONEY_KEYSTORE_B64 non è un keystore valido (incollato male?)"; exit 1; }
+          echo "KEYSTORE=$RUNNER_TEMP/mymoney.keystore" >> "$GITHUB_ENV"
       - name: Costruisci l'APK
         working-directory: app-android/android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          if [ -n "$KEYSTORE" ]; then
+            ./gradlew assembleDebug --no-daemon -Pandroid.injected.signing.store.file="$KEYSTORE" -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
+          else
+            ./gradlew assembleDebug --no-daemon
+          fi
+      - name: Controlla la firma
+        run: |
+          apk=app-android/android/app/build/outputs/apk/debug/app-debug.apk
+          keytool -printcert -jarfile "$apk" | grep -E "Owner|SHA256"
+          if [ -n "$KEYSTORE" ]; then
+            want=$(keytool -list -v -keystore "$KEYSTORE" -storepass android | grep -m1 "SHA256:")
+            got=$(keytool -printcert -jarfile "$apk" | grep -m1 "SHA256:")
+            [ "$(echo $want)" = "$(echo $got)" ] || { echo "::error::L'APK non è firmato con la chiave fissa"; exit 1; }
+            echo "APK firmato con la chiave fissa"
+          fi
       - name: Pubblica la release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp app-android/android/app/build/outputs/apk/debug/app-debug.apk myMoney.apk
           gh release delete android-latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create android-latest myMoney.apk --target main --title "App Android v${VER}" --notes "APK di prova firmato con chiave di debug: installabile da telefono. Versione ${VER}."
+          gh release create android-latest myMoney.apk --target main --title "App Android v${VER}" --notes "APK firmato con la chiave fissa del progetto: si installa sopra la versione precedente. Versione ${VER}."
       - uses: actions/upload-artifact@v4
         with:
           name: myMoney-apk
