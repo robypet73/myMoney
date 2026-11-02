@@ -67,6 +67,14 @@ header .wrap { padding-block: 16px 0; }
 .icon .dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; align-items: center; }
+.prop { display: grid; gap: 10px; padding: 16px 0 4px; }
+.prop .pr { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
+.prop label.pf { display: grid; gap: 4px; }
+.prop input[type="number"], .prop select { height: var(--ctl-h); border: 0; border-radius: 99px; background: var(--fill); color: var(--fg); font: inherit; font-size: var(--fs-m); padding: 0 14px; min-width: 150px; }
+.prop #inv-amt { font-family: var(--m); width: 170px; }
+.pout { display: grid; gap: 12px; border: 1px solid var(--hair); border-radius: 16px; padding: 14px 16px; background: color-mix(in srgb, var(--c1) 6%, var(--bg)); box-shadow: var(--card-sh); }
+.pout .scroll { margin-top: 2px; }
+@media (max-width: 480px) { .pout .nmx, .pout th:nth-child(5), .pout td:nth-child(5) { display: none; } .pout { padding: 12px; } }
 .isinl { display: grid; gap: 8px; padding-top: 14px; }
 .isinl .rw { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .isinl textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--hair); border-radius: 12px; background: var(--fill); color: var(--fg); font: inherit; font-family: var(--m); font-size: var(--fs-s); padding: 10px 12px; margin-bottom: 8px; resize: vertical; }
@@ -494,7 +502,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.05.001</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.000</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -663,6 +671,17 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 
 <main class="wrap" id="v-search" hidden>
   <section class="search">
+    <div class="prop" id="prop">
+      <div class="gh"><h3>Investimento e proposta di portafoglio<button type="button" class="i" data-g="g_prop" aria-label="Informazioni: proposta di portafoglio">i</button></h3></div>
+      <div class="pr">
+        <label class="pf"><span class="gl2">Valore dell'investimento €<button type="button" class="i" data-g="g_inv" aria-label="Informazioni: valore dell'investimento">i</button></span><input id="inv-amt" type="number" min="100" step="100" inputmode="decimal" value="10000" aria-label="Valore dell'investimento in euro"></label>
+        <label class="pf"><span class="gl2">Numero di ETF<button type="button" class="i" data-g="g_n" aria-label="Informazioni: numero di ETF">i</button></span><select id="inv-n" aria-label="Numero di ETF"></select></label>
+        <label class="pf"><span class="gl2">Profilo<button type="button" class="i" data-g="g_prof" aria-label="Informazioni: profilo">i</button></span><select id="inv-prof" aria-label="Profilo di rischio"><option value="prudente">Prudente · minima volatilità</option><option value="equilibrato" selected>Equilibrato · massimo Sharpe</option><option value="dinamico">Dinamico · più rendimento</option></select></label>
+        <button type="button" class="primary" id="prop-go">Proponi portafoglio</button>
+      </div>
+      <p class="fc-note" id="inv-hint"></p>
+      <div id="prop-out" aria-live="polite"></div>
+    </div>
     <div class="q">
       <input id="q" type="search" placeholder="Cerca ETF, ticker, ISIN" autocomplete="off" aria-label="Cerca ETF">
       <button class="icon fb" type="button" id="fbtn" aria-expanded="true" aria-controls="guide" aria-label="Filtri">
@@ -2631,6 +2650,10 @@ Object.assign(GL, {
   g_vol: { t: "Volatilità", what: "Quanto oscillano i prezzi in un anno (deviazione standard dei rendimenti, ultimo anno): è la misura classica del rischio.", use: "Ti dice quanto puoi vedere salire e scendere il fondo.", how: "Fissa un massimo in base a quanto sai sopportare: indicativamente in un anno sfavorevole si può perdere circa il doppio della volatilità. Riferimenti tipici: azionario mondiale 12–18%, obbligazioni di Stato 3–8%, monetario sotto 1%.", ref: [["Sotto 5%", "bassa (obbligazionario, monetario)"], ["10–18%", "azionario diversificato"], ["Oltre 25%", "alta (settori, singoli Paesi, cripto)"]], links: ["scelta"] },
   g_x: { t: "Escludi aree geografiche", what: "Toglie dall'elenco gli ETF il cui mercato è l'area scelta.", use: "Serve per evitare sovrapposizioni o concentrazioni, per esempio troppi Stati Uniti.", how: "Seleziona le aree da escludere. Gli ETF «Globali» includono tutte le aree: per evitarne una cerca un ETF «ex» quell'area (ad esempio «ex USA»).", ref: [["Nessuna", "nessuna esclusione"]] },
   g_sector: { t: "Settore", what: "Il settore dell'economia a cui è legato l'ETF (salute, tecnologia, energia…), dedotto dal nome o dai dati del fondo.", use: "Serve per scommesse mirate o per tematiche.", how: "Lascia vuoto per ETF ampi e diversificati. Un ETF settoriale concentra il rischio: dagli un peso contenuto nel portafoglio.", ref: [["Vuoto", "ETF diversificati su tutti i settori"]] },
+  g_inv: { t: "Valore dell'investimento", what: "La somma che pensi di investire, in euro. Serve a dimensionare la proposta: da questo dipendono il numero di ETF consigliato, gli importi per ETF e le quote intere da comprare.", use: "Con poca somma troppi ETF fanno pesare i costi fissi di ogni ordine; con tanta somma conviene spezzare di più, ma il beneficio cala presto.", how: "Scrivi l'importo reale che intendi investire adesso. Il valore resta salvato in questo browser. Se pensi di versare a rate, usa l'importo totale previsto in un anno.", ref: [["Fino a 3.000 €", "2 ETF"], ["6.000 €", "circa 4 ETF"], ["25.000 €", "circa 7 ETF"], ["Oltre 50.000 €", "8 ETF"]] },
+  g_n: { t: "Numero ideale di ETF", what: "Quanti ETF mettere in portafoglio. In «Auto» l'app lo ricava dall'importo con una regola pratica: circa 2 + 1,2 × log₂(importo ÷ 1.500 €), tra 2 e 8. Equivale a posizioni di almeno circa 1.500 € ciascuna.", use: "Con troppo pochi ETF resti concentrato; con troppi paghi più commissioni fisse e il beneficio di diversificazione quasi non cresce, perché gli ETF sono già diversificati dentro.", how: "Lascia «Auto» salvo motivi precisi. In letteratura i 10–15 titoli di Evans e Archer (1968) e i 30–40 di Statman (1987) riguardano azioni singole: con ETF su indici ampi bastano poche posizioni. Tra gli ETF scelti l'algoritmo si ferma prima del numero indicato se un ETF in più migliora la diversificazione di meno del 2%. Gli ETF su più classi di attivo (azioni, obbligazioni, oro) diversificano più di tanti ETF azionari simili.", ref: [["2–3 ETF", "somme piccole o portafoglio semplice (ad esempio azioni mondo + obbligazioni)"], ["4–6 ETF", "somme medie"], ["7–8 ETF", "somme grandi, più classi di attivo"]], links: ["divers"] },
+  g_prof: { t: "Profilo", what: "Il punto della frontiera efficiente su cui piazzare il portafoglio. Prudente: minima volatilità. Equilibrato: massimo rendimento per unità di rischio (Sharpe). Dinamico: più rendimento accettando una volatilità circa 30% maggiore di quella dell'Equilibrato.", use: "Adatta il portafoglio al rischio che sai sopportare: tutti e tre sono efficienti, cambia solo dove ti fermi.", how: "Se non sei sicuro scegli Equilibrato; Prudente se non sopporti perdite sul valore; Dinamico solo se l'orizzonte è lungo. I numeri sono storici sul passato dei soli ETF scelti: non sono previsioni.", ref: [["Prudente", "volatilità più bassa possibile"], ["Equilibrato", "Sharpe massimo"], ["Dinamico", "volatilità +30% rispetto all'Equilibrato"]] },
+  g_prop: { t: "Proposta di portafoglio", what: "Costruisce un portafoglio con gli ETF che rispettano i criteri della ricerca (e la tua lista di ISIN, se l'hai caricata): sceglie quali ETF usare in base alle correlazioni e ne calcola i pesi sulla frontiera efficiente.", use: "Ti porta da molte centinaia di ETF a una composizione concreta, con importi e quote, che puoi poi creare come portafoglio e rivedere in Portafogli.", how: "1) Universo: ETF che rispettano i criteri e hanno almeno 18 mesi di prezzi scaricati (i 40 più grandi per patrimonio). 2) Scelta: si parte dall'ETF con miglior rapporto rendimento/rischio storico e si aggiunge, uno alla volta, quello che alza di più il rapporto di diversificazione (media delle volatilità pesata ÷ volatilità del portafoglio, Choueifaty e Coignard 2008): è un algoritmo greedy per il problema a numero limitato di titoli, che è difficile da risolvere esattamente. 3) Pesi: tra gli ETF scelti, punto della frontiera efficiente di Markowitz (1952) secondo il profilo, con tetto per ETF per non concentrarsi. 4) Importi e quote intere ai prezzi di oggi; le posizioni troppo piccole si scartano. Limiti: usa rendimenti passati (ultimi anni, a 5 giorni): l'ottimizzazione amplifica gli errori di stima e fuori campione spesso un portafoglio a pesi uguali la eguaglia (DeMiguel, Garlappi, Uppal 2009), per questo ci sono i tetti. Solo ETF con prezzi scaricati. Non è consulenza.", ref: [["Massima diversificazione", "Choueifaty e Coignard, 2008"], ["Frontiera efficiente", "Markowitz, 1952"], ["Risk parity (contributi uguali al rischio)", "Maillard, Roncalli, Teïletche, 2010"], ["Hierarchical Risk Parity", "López de Prado, 2016"], ["1/N contro ottimizzato", "DeMiguel, Garlappi, Uppal, 2009"]], links: ["divers"] },
   g_list: { t: "Cerca solo tra i tuoi ISIN", what: "Limita la ricerca a un elenco di ISIN che fornisci tu, da un file CSV o incollando il testo: tutti gli altri ETF restano fuori.", use: "Serve quando hai già una lista di candidati (da un broker, da un foglio, da un consulente) e vuoi confrontarli o filtrarli con i criteri sotto.", how: "Carica un CSV o un file di testo con gli ISIN, oppure «Incolla testo»: va bene un ISIN per riga o separati da virgole e punti e virgola, anche con altre colonne; ne leggo solo i codici ISIN (12 caratteri). Quando carichi una lista i criteri preimpostati si azzerano, così vedi tutta la lista; poi aggiungi i criteri che vuoi. La lista resta salvata in questo browser finché non premi «Rimuovi lista». Gli ISIN non presenti nel catalogo (ETF non UCITS o non quotati in Europa) vengono segnalati.", ref: [["Formato", "ISIN da 12 caratteri, ad esempio IE00B4L5Y983"]] },
   g_unk: { t: "ETF senza dato", what: "Borsa, valuta di negoziazione, liquidità e spread esistono solo per gli ETF monitorati (circa 170). Per gli altri la condizione non si può verificare.", use: "Decide se gli ETF senza questo dato restano nell'elenco.", how: "Attivo: li vedi comunque, con la condizione non verificata. Disattivo: restano solo gli ETF per cui il dato esiste e la condizione è vera (elenco molto più corto).", ref: [["Attivo", "elenco ampio, condizioni non verificabili"], ["Disattivo", "solo ETF verificati"]] },
   g_region: { t: "Area (solo queste)", what: "Mostra solo gli ETF il cui mercato principale è l'area scelta.", use: "Per costruire un portafoglio per aree geografiche.", how: "Selezione multipla: scegli le aree che ti interessano. «Globale» include tutto il mondo.", ref: [["Globale", "tutto il mondo"], ["Mercati emergenti", "più rischio e crescita attesa"]] },
@@ -3079,6 +3102,112 @@ window.addEventListener("appinstalled", () => { deferredInstall = null; $("insta
 $("install").addEventListener("click", async () => { if (!deferredInstall) return; deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch {} deferredInstall = null; $("install").hidden = true; });
 try { if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {}); } catch {}
 
-initGuide(); render(); renderPf();
+/* ---------- Proposta di portafoglio ---------- */
+// Numero consigliato di ETF in base all'importo: posizioni di almeno ~1.500 € (costi fissi sotto lo 0,3–0,5%) e beneficio di diversificazione decrescente (regola pratica dell'app)
+const idealN = amt => Math.max(2, Math.min(8, Math.round(2 + 1.2 * Math.log2(Math.max(+amt || 0, 1500) / 1500))));
+const invAmt = () => Math.max(100, +$("inv-amt").value || 0);
+function updInvHint() {
+  const n = idealN(invAmt()), sel = $("inv-n");
+  sel.options[0].textContent = `Auto (consigliato: ${n})`;
+  $("inv-hint").textContent = `Con ${eur(invAmt())} si consigliano circa ${n} ETF: posizioni di almeno ${eur(Math.round(invAmt() / n / 100) * 100)}, oltre il beneficio di aggiungerne altri è piccolo.`;
+}
+function initProp() {
+  const sel = $("inv-n"); sel.innerHTML = '<option value="0"></option>' + [2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}">${n} ETF</option>`).join("");
+  try { const v = +localStorage.getItem("mm-invest"); if (v >= 100) $("inv-amt").value = v; } catch {}
+  updInvHint();
+}
+$("inv-amt").addEventListener("input", () => { try { localStorage.setItem("mm-invest", String(invAmt())); } catch {} updInvHint(); });
+// Statistiche dai rendimenti a 5 giorni sovrapposti sul massimo periodo in comune (mai oltre 3 anni)
+function propStats(es) {
+  const start = Math.max(back(0, 3), ...es.map(e => e.s.t[0])), { t, px } = alignPx(es, start), STEP = 5, ANN = 252 / STEP;
+  const R = px.map(p => { const r = []; for (let j = STEP; j < p.length; j++) r.push(p[j] / p[j - STEP] - 1); return r; }), n = R[0].length;
+  const mu = R.map(r => r.reduce((a, b) => a + b, 0) / n);
+  const C = R.map((a, i) => R.map((b, j) => { let x = 0; for (let m = 0; m < n; m++) x += (a[m] - mu[i]) * (b[m] - mu[j]); return x / (n - 1) * ANN; }));
+  return { C, M: mu.map(x => x * ANN), sd: C.map((r, i) => Math.sqrt(C[i][i])), yrs: (t[t.length - 1] - t[0]) / (365.25 * DAY), days: t.length };
+}
+// Rapporto di diversificazione (Choueifaty e Coignard, 2008): media delle volatilità pesata sui pesi ÷ volatilità del portafoglio
+const propDR = (S, idx, w) => { let v = 0; idx.forEach((i, a) => idx.forEach((j, b) => (v += w[a] * w[b] * S.C[i][j]))); return v > 0 ? w.reduce((a, x, k) => a + x * S.sd[idx[k]], 0) / Math.sqrt(v) : 1; };
+// Scelta degli ETF: parte dal miglior rendimento/rischio storico e aggiunge, uno alla volta, quello che fa salire di più la diversificazione (greedy per il problema a numero limitato di titoli)
+function propSelect(S, pool, N, auto, allowed, rf) {
+  const inv = idx => { const w = idx.map(i => 1 / S.sd[i]), sw = w.reduce((a, b) => a + b, 0); return w.map(x => x / sw); };
+  const sc = idx => propDR(S, idx, inv(idx)) * (1 - 0.01 * Math.max(...idx.map(i => pool[i].ter || 0)));
+  let first = allowed[0]; allowed.forEach(i => { if ((S.M[i] - rf) / S.sd[i] > (S.M[first] - rf) / S.sd[first]) first = i; });
+  const sel = [first]; let cur = propDR(S, sel, [1]), steps = [];
+  while (sel.length < N) {
+    let bj = -1, bs = -Infinity; for (const j of allowed) if (!sel.includes(j)) { const x = sc([...sel, j]); if (x > bs) { bs = x; bj = j; } }
+    if (bj < 0) break;
+    const nd = propDR(S, [...sel, bj], inv([...sel, bj])), gain = nd / cur - 1;
+    if (auto && sel.length >= 3 && gain < 0.02) break; // il beneficio di un ETF in più è sotto il 2%
+    sel.push(bj); cur = nd; steps.push(gain);
+  }
+  return sel;
+}
+// Pesi sulla frontiera efficiente degli ETF scelti, con tetto per ETF; il profilo sceglie il punto
+function propWeights(S, idx, cap, profile, rf) {
+  const k = idx.length, rnd = rng(2024); if (k * cap < 1.2) cap = 1;
+  const ev = w => { let r = 0, v = 0; for (let a = 0; a < k; a++) { r += w[a] * S.M[idx[a]]; for (let b = 0; b < k; b++) v += w[a] * w[b] * S.C[idx[a]][idx[b]]; } return { r, v: Math.sqrt(Math.max(v, 0)), w }; };
+  const ok = w => w.every(x => x <= cap + 1e-9), pts = [];
+  for (let n = 0; n < 40000 && pts.length < 12000; n++) { const pw = [1, 1.5, 3][n % 3], w = Array.from({ length: k }, () => Math.pow(-Math.log(rnd() || 1e-9), pw)), t = w.reduce((a, b) => a + b, 0), x = w.map(v => v / t); if (ok(x)) pts.push(ev(x)); }
+  if (!pts.length) pts.push(ev(Array(k).fill(1 / k)));
+  const best = sc => pts.reduce((a, p) => (sc(p) > sc(a) ? p : a));
+  const refine = (b, sc) => { let sb = sc(b); const rr = rng(77); for (let it = 0; it < 4000; it++) { const step = it < 2000 ? 0.08 : 0.02, w = b.w.map(x => Math.max(0, x + (rr() - 0.5) * step)), t = w.reduce((a, c) => a + c, 0); if (!t) continue; const x = w.map(v => v / t); if (!ok(x)) continue; const c = ev(x), s2 = sc(c); if (s2 > sb) { b = c; sb = s2; } } return b; };
+  const sMin = p => -p.v, sSh = p => (p.r - rf) / p.v, minV = refine(best(sMin), sMin), maxS = refine(best(sSh), sSh);
+  if (profile === "prudente") return minV;
+  if (profile === "equilibrato") return maxS;
+  const lim = maxS.v * 1.3, sDin = p => p.r - 50 * Math.max(0, p.v - lim);
+  return refine(best(sDin), sDin);
+}
+const propBusy = t => { $("prop-out").innerHTML = `<p class="fc-note">${esc(t)}</p>`; };
+async function proposePf() {
+  const amt = invAmt(), profile = $("inv-prof").value, nSel = +$("inv-n").value, auto = !nSel, N = auto ? idealN(amt) : nSel, btn = $("prop-go");
+  btn.disabled = true;
+  try {
+    const eligible = ALL.filter(matches), withS = e => !!e.s || !!(window.QUOTES && window.QUOTES.q && window.QUOTES.q[e.isin]);
+    if (!eligible.length) return propBusy("Nessun ETF rispetta i criteri: allarga la ricerca");
+    let cand = eligible.filter(withS);
+    if (cand.length < 8 && window.LOCAL) { // in modalità locale si scaricano i prezzi dei più grandi
+      const need = eligible.filter(e => !withS(e) && e.cat).sort((a, b) => (b.aum || 0) - (a.aum || 0)).slice(0, 30).map(e => e.isin);
+      if (need.length) { propBusy(`Scarico i prezzi di ${need.length} ETF da Yahoo (qualche minuto)…`); await localApi("series", need); await Promise.all(need.map(i => { const e = byIsin(i); e.tried = false; return loadSeries(i, true); })); cand = eligible.filter(e => !!e.s); }
+    }
+    const pool0 = cand.sort((a, b) => (b.aum || 0) - (a.aum || 0)).slice(0, 40);
+    propBusy(`Carico i prezzi di ${pool0.length} ETF…`);
+    await Promise.all(pool0.map(e => (e.s ? Promise.resolve(true) : loadSeries(e.isin))));
+    const pool = pool0.filter(e => e.s && e.s.t[0] <= back(18) && e.s.t.length > 300);
+    if (pool.length < 3) return propBusy(`Tra gli ${eligible.length.toLocaleString("it-IT")} ETF che rispettano i criteri ${pool.length < 1 ? "nessuno ha" : "solo " + pool.length + " hanno"} almeno 18 mesi di prezzi scaricati (ne servono 3). Allarga i criteri${window.LOCAL ? "" : " o usa il server locale, che scarica i prezzi mancanti"}.`);
+    const S = propStats(pool); if (S.days < 120) return propBusy("Storico in comune troppo breve per calcolare le correlazioni");
+    // l'ETF con volatilità minima sotto il 2% (monetario) fa da tasso privo di rischio e non entra tra i candidati, salvo che la classe «Monetario» sia scelta nei criteri
+    let cash = -1; S.sd.forEach((x, i) => { if (x < 0.02 && (cash < 0 || x < S.sd[cash])) cash = i; });
+    const rf = cash >= 0 ? S.M[cash] : 0, wantCash = !!(FS.m.asset && FS.m.asset.has("Monetario"));
+    const allowed = pool.map((_, i) => i).filter(i => wantCash || S.sd[i] >= 0.02);
+    if (allowed.length < 3) return propBusy("Tra gli ETF con prezzi ne restano meno di 3 oltre a quelli monetari: allarga i criteri");
+    let idx = propSelect(S, pool, Math.min(N, allowed.length), auto, allowed, rf), W;
+    const minW = Math.min(0.15, 1000 / amt);
+    for (let it = 0; it < 4; it++) { // le posizioni sotto la soglia (circa 1.000 € o 15%) si scartano e si ricalcolano i pesi
+      W = propWeights(S, idx, Math.max(0.35, 1.5 / idx.length), profile, rf);
+      const keep = idx.filter((_, a) => W.w[a] >= minW); if (keep.length === idx.length || keep.length < 2) break; idx = keep;
+    }
+    const rows = idx.map((i, a) => { const e = pool[i], w = W.w[a], target = w * amt, q = Math.floor(target / e.live); return { e, w, target, q, cost: q * e.live }; }).sort((a, b) => b.w - a.w);
+    const spent = rows.reduce((a, r) => a + r.cost, 0), dr = propDR(S, idx, W.w), eq = Array(idx.length).fill(1 / idx.length), drEq = propDR(S, idx, eq);
+    let sc = 0, sw = 0; idx.forEach((i, a) => idx.forEach((j, b) => { if (a < b) { const x = W.w[a] * W.w[b], c = S.C[i][j] / (S.sd[i] * S.sd[j]); sc += x * c; sw += x; } }));
+    const cr = sw ? sc / sw : 1;
+    window.PROP = { rows, amt, profile, W, dr, cr, S, rf };
+    $("prop-out").innerHTML = `<div class="pout">
+      <div class="kpi hi"><div><span class="k">Rendimento storico annuo${ib("ann")}</span><span class="n ${cls(W.r)}">${pct(W.r, 1)}</span></div><div><span class="k">Volatilità${ib("vol")}</span><span class="n">${fmt(W.v * 100, 1)}%</span></div><div><span class="k">Sharpe${ib("sharpe")}</span><span class="n">${fmt((W.r - rf) / W.v)}</span></div><div><span class="k">Diversificazione${ib("div")}</span><span class="n">${fmt(dr, 2)}</span></div><div><span class="k">Correlazione media${ib("corrw")}</span><span class="n">${fmt(cr, 2)}</span></div></div>
+      <div class="scroll"><table class="eft"><thead><tr><th>ETF</th><th>Peso</th><th>Importo</th><th>Quote × prezzo</th><th>TER</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${eL(r.e)}<span class="wl nmx">${esc(r.e.name)}</span></td><td class="n">${fmt(r.w * 100, 1)}%</td><td class="n">${eur(r.target)}</td><td class="n">${fmt(r.q, 0)} × ${fmt(r.e.live, 3)}</td><td class="n">${r.e.ter == null ? "—" : fmt(r.e.ter) + "%"}</td></tr>`).join("")}</tbody></table></div>
+      <p class="fc-note">Scelti ${rows.length} ETF tra ${pool.length} analizzati (${eligible.length.toLocaleString("it-IT")} rispettano i criteri) · ${auto ? `consigliati fino a ${N} per ${eur(amt)}${rows.length < N ? ": un ETF in più avrebbe migliorato la diversificazione di meno del 2%" : ""}` : "numero scelto da te"} · diversificazione ${fmt(dr, 2)} contro ${fmt(drEq, 2)} a pesi uguali · investiti ${eur(spent)} su ${eur(amt)}, quote intere · dati ${fmt(S.yrs, 1)} anni, rendimenti a 5 giorni · Sharpe sul rendimento oltre il monetario (${fmt(rf * 100, 1)}%) · simulazione sul passato, non una previsione</p>
+      <div class="io"><button type="button" class="primary" id="prop-create">Crea portafoglio</button><button type="button" class="ghost" id="prop-close">Chiudi</button></div></div>`;
+  } catch (err) { propBusy("Proposta non riuscita: " + (err && err.message ? err.message : err)); }
+  finally { btn.disabled = false; }
+}
+$("prop-go").addEventListener("click", proposePf);
+$("prop-out").addEventListener("click", ev => {
+  if (ev.target.closest("#prop-close")) { $("prop-out").innerHTML = ""; window.PROP = null; return; }
+  if (!ev.target.closest("#prop-create") || !window.PROP) return;
+  const P = window.PROP, names = { prudente: "Prudente", equilibrato: "Equilibrato", dinamico: "Dinamico" };
+  const pf = mkPf({ id: newId(), name: `Proposta ${names[P.profile]} · ${fmt(P.amt, 0)} €`, description: `Proposta da ricerca guidata: ${P.rows.length} ETF, diversificazione ${fmt(P.dr, 2)}`, amount: Math.round(P.amt), start: defStart(P.rows.map(r => r.e.isin)), positions: P.rows.map(r => mkPos(r.e.isin, { weight: Math.round(r.w * 1000) / 10 })) });
+  if (!keepDirty()) return; ORIG = null; USER.unshift(pf); commit(pf.id); showEditor(); msg(`Creato: ${pf.name}`);
+});
+
+initGuide(); initProp(); render(); renderPf();
 showView(location.hash === "#cerca" ? "search" : location.hash === "#portafogli" ? "pfs" : "port");
 </script>
