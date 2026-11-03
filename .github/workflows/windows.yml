@@ -50,7 +50,7 @@ jobs:
           curl -sf -X POST "http://localhost:8199/api/update?kind=series&isins=LU1781541252" | tee series.json
           grep -q '"ok": true' series.json
           test -f dist/data/p/LU1781541252.js
-          curl -sf http://localhost:8199/api/pf | grep -q '"ok": true'
+          curl -sf http://localhost:8199/api/fs | grep -q '"ok": true'
           taskkill //F //IM myMoney.exe || true
           rm -rf dist/data dist/icons dist/*.js dist/index.html dist/sw.js dist/manifest.webmanifest dist/watchlist.txt
       - name: Aggiorna myMoney.exe nella root del repo
