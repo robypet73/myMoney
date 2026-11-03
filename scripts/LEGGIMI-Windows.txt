@@ -2,11 +2,14 @@ myMoney per Windows
 ===================
 
 1. Estrai TUTTA la cartella dallo zip (non lanciare myMoney.exe dentro lo zip). Funziona anche con «Code → Download ZIP» del repository su GitHub: myMoney.exe sta nella cartella principale, accanto a index.html.
-2. Doppio clic su myMoney.exe: si apre una finestra nera (il server) e dopo un secondo si apre il browser su myMoney.
-3. Per chiudere myMoney chiudi la finestra nera.
+2. Doppio clic su myMoney.exe: si apre la finestra di myMoney (come un programma, senza barra del browser).
+3. Per chiudere myMoney chiudi la finestra.
+
+Se Windows non ha WebView2 (è già presente su Windows 11 e sulla maggior parte dei Windows 10) o la finestra non si apre, myMoney si apre in una finestra di Edge/Chrome e un avviso con OK per spegnerlo, oppure in una scheda del browser. Se qualcosa non funziona guarda myMoney.log nella cartella.
 
 Opzioni (da Prompt dei comandi, nella cartella):
-  myMoney.exe --finestra     apre myMoney in una finestra senza barra (Edge o Chrome) invece che in una scheda
+  myMoney.exe --finestra     apre myMoney in una finestra di Edge o Chrome senza barra invece che nella finestra propria
+  myMoney.exe --browser      apre myMoney in una scheda del browser predefinito
   myMoney.exe --port 8080    usa un'altra porta
   myMoney.exe --host 0.0.0.0 raggiungibile anche dal telefono nella stessa rete (http://IP-del-PC:8000)
 
@@ -14,7 +17,7 @@ Primo avvio: Windows SmartScreen può dire «Windows ha protetto il PC» perché
 Clicca «Maggiori informazioni» e poi «Esegui comunque». Se l'antivirus chiede il permesso di rete, consentilo (serve per scaricare i prezzi).
 
 Prezzi e dati: myMoney li scarica da solo da Yahoo Finance e justETF (ogni minuto le quotazioni) e li salva in questa cartella.
-Portafogli: restano nel browser (anche riavviando), ma sono legati all'indirizzo http://localhost:PORTA: usa sempre la stessa porta (8000) e lo stesso browser.
-Esporta i portafogli da Portafogli → Esporta per fare un backup.
+Portafogli: restano nella finestra di myMoney (cartella dati-finestra). Per tenerli al sicuro e portarli su altri PC: Portafogli → «Cartella dei portafogli», scrivi la cartella (per esempio dentro Google Drive: G:\Il mio Drive\myMoney) e premi Collega: ogni portafoglio diventa un file JSON, sincronizzato da Google Drive per desktop.
+In alternativa Portafogli → Esporta per un backup.
 
 Aggiornare l'app: scarica di nuovo lo zip, estrailo in una nuova cartella e porta i tuoi portafogli con Esporta e Importa.

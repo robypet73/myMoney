@@ -254,7 +254,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 #v-pfs #list-sec, #v-pfs #pos-sec { --tc: var(--c2); }
 #v-pfs #perf-sec, #v-pfs #rb-sec { --tc: var(--c1); }
 #v-pfs #bm-sec2, #v-pfs #corr2-sec { --tc: var(--c4); }
-#v-pfs #dim-sec, #v-pfs #save-sec { --tc: var(--c3); }
+#v-pfs #dim-sec, #v-pfs #save-sec, #v-pfs #folder-sec { --tc: var(--c3); }
 #v-pfs #list-sec .pfs-head { border-top: 0; margin-top: 0; padding-top: 0; }
 #v-port .pf-sec { margin-top: 16px; }
 #v-port #s-live, #v-port #s-nav, #v-port #s-ef { --tc: var(--c1); }
@@ -505,7 +505,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.012</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.013</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -669,6 +669,11 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="lotform"><input id="gh-token" type="password" placeholder="Token GitHub" autocomplete="off" aria-label="Token GitHub"><button type="button" id="gh-save">Salva</button><button type="button" id="gh-clear" class="ghost">Rimuovi</button></div>
     <div class="lotform"><button type="button" id="cat-upd" class="ghost" hidden>Aggiorna catalogo ETF</button></div>
     <p class="fc-note" id="watch-msg" aria-live="polite"></p>
+  </section>
+  <section class="sec pf-sec" id="folder-sec" hidden><h3>Cartella dei portafogli<button type="button" class="i" data-g="folder" aria-label="Informazioni: cartella dei portafogli">i</button></h3>
+    <div class="lotform"><input id="folder-path" type="text" placeholder="Cartella, per esempio G:\Il mio Drive\myMoney" autocomplete="off" spellcheck="false" aria-label="Cartella dei portafogli"><button type="button" id="folder-save">Collega</button><button type="button" id="folder-clear" class="ghost">Scollega</button></div>
+    <div class="lotform" id="folder-cand"></div>
+    <p class="fc-note" id="folder-msg" aria-live="polite"></p>
   </section>
 </main>
 
@@ -1635,7 +1640,7 @@ const KI = { Valore: "val", Investito: "inv", Utile: "utile", "Rend. annuo": "an
 const FI = { TER: "ter", Patrimonio: "aum", Replica: "repl", Dividendi: "dist", Valuta: "cur", Domicilio: "dom" };
 let USER = [], PFLIST = [], pfCur = null, PF = null, pfPeriod = "1A", EF = null, EFH = null;
 function loadUser() { try { const j = JSON.parse(localStorage.getItem(LS_KEY)); if (j && Array.isArray(j.portfolios)) USER = j.portfolios.map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf); } catch {} }
-function saveUser() { setTimeout(() => pushWidget(true), 800); try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 2, portfolios: USER.map(pfBody) })); } catch {} }
+function saveUser() { setTimeout(() => pushWidget(true), 800); try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 2, portfolios: USER.map(pfBody) })); } catch {} folderPushSoon(); }
 function allPf() { const hid = hiddenSamples(), s = buildSamples().filter(x => !hid.includes(x.id)); PFLIST = [...USER, ...s.filter(x => !USER.some(u => u.id === x.id))]; }
 
 const byDate = (a, b) => a.date.localeCompare(b.date) || b.qty - a.qty;
@@ -2646,6 +2651,7 @@ const GL = {
 };
 // Spiegazioni dei criteri della ricerca guidata (g_<chiave>)
 Object.assign(GL, {
+  folder: { t: "Cartella dei portafogli", what: "Una cartella del tuo computer in cui myMoney salva ogni portafoglio come file JSON. Se la cartella è dentro Google Drive per desktop (o Dropbox, OneDrive), i portafogli si sincronizzano da soli con il cloud e con gli altri tuoi computer.", use: "Tenere i portafogli fuori dal browser (non si perdono se cambi browser o cancelli i dati) e condividerli tra più PC.", how: "Scrivi il percorso della cartella (se Drive è installato compaiono i percorsi suggeriti) e premi Collega. I portafogli già presenti nel browser vengono scritti nella cartella; quelli della cartella vengono letti. Ogni modifica si salva da sola; se cambi un file da un altro PC la pagina lo rilegge quando torni su myMoney. I portafogli eliminati in myMoney vanno nella sottocartella «_eliminati», mai cancellati. Se due PC modificano lo stesso portafoglio insieme vince l'ultimo salvataggio. Serve il programma myMoney.exe (o il server locale): non funziona dal sito.", ref: [["File", "un JSON per portafoglio, nome = titolo"], ["_impostazioni.json", "portafoglio predefinito"]] },
   g_type: { t: "Tipologia", what: "ETF è un fondo quotato; ETC è un titolo legato a una materia prima (oro, petrolio…); ETN/ETP sono note o prodotti strutturati, spesso su criptovalute, il cui valore dipende anche dall'emittente.", use: "Distingue strumenti con rischi diversi: nell'ETF il patrimonio è separato da quello della società che lo gestisce, in ETC ed ETN no.", how: "Per cominciare lascia «ETF». Scegli ETC o ETN/ETP solo se vuoi materie prime o cripto e accetti il rischio dell'emittente. Dedotta dal nome del fondo, quindi indicativa.", ref: [["ETF", "scelta di base, patrimonio separato"], ["ETC", "materie prime, rischio emittente"], ["ETN/ETP", "il più rischioso: cripto, prodotti strutturati"]] },
   g_dist: { t: "Distribuzione", what: "Accumulazione (ACC): i dividendi o le cedole restano nel fondo e fanno salire il prezzo. Distribuzione (DIST): il fondo ti paga i proventi periodicamente.", use: "Decide se vuoi far crescere il capitale o ricevere un flusso di reddito.", how: "Per accumulare nel lungo periodo scegli Accumulazione; se ti serve un reddito regolare, Distribuzione. Il rendimento totale lordo è simile: cambia il momento in cui i proventi sono tassati, da valutare sulla tua situazione fiscale.", ref: [["Accumulazione", "crescita composta, nessun incasso"], ["Distribuzione", "incassi periodici da reinvestire o spendere"]] },
   g_asset: { t: "Classe di attivo", what: "Il tipo di investimento che il fondo detiene: azioni, obbligazioni, strumenti monetari, materie prime, immobili, criptovalute.", use: "È la scelta che pesa di più su rischio e rendimento atteso del portafoglio.", how: "Parti da quanto rischio vuoi: crescita = Azionario; prudenza = Obbligazionario e Monetario; diversificazione = oro (Materie prime) e Immobiliare. Scegliendo Obbligazionario compaiono i criteri specifici per le obbligazioni.", ref: [["Azionario", "rischio e rendimento attesi più alti"], ["Obbligazionario", "più stabile, rendimento da cedole"], ["Monetario", "liquidità a breve, rischio minimo"], ["Materie prime / Immobiliare", "diversificatori"]], links: ["scelta"] },
@@ -2789,8 +2795,9 @@ const localApi = async (kind, isins) => {
 async function detectLocal() {
   if (window.NATIVE) { window.LOCAL = true; if ($("cat-upd")) $("cat-upd").hidden = false; return; }
   if (!/^https?:/.test(location.protocol)) return;
-  try { const r = await fetch("api/ping", { cache: "no-store" }); const j = r.ok ? await r.json() : null; window.LOCAL = !!(j && j.local); } catch {}
+  try { const r = await fetch("api/ping", { cache: "no-store" }); const j = r.ok ? await r.json() : null; window.LOCAL = !!(j && j.local); window.PFFOLDER = j && j.folder || null; } catch {}
   if ($("cat-upd")) $("cat-upd").hidden = !window.LOCAL;
+  if (window.LOCAL && typeof folderInit === "function") folderInit();
 }
 /* Widget Android: sintesi e andamento del portafoglio preferito (quello con la stella «Predefinito»), calcolati qui e passati al widget dal plugin MyMoneyWidget (solo nell'app) */
 let wgAt = 0;
@@ -2808,12 +2815,65 @@ function pushWidget(force) {
     wgAt = Date.now(); W.update({ data: JSON.stringify(data) }).catch(() => {});
   } catch {}
 }
+/* Cartella dei portafogli (server locale o myMoney.exe): un file JSON per portafoglio, per esempio dentro Google Drive per desktop */
+const FOLDER = { path: null, ready: false, stamp: null, known: new Set(), timer: null, busy: false };
+const folderMsg = (t, bad) => { const m = $("folder-msg"); if (m) { m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); } };
+const folderCall = async (url, body) => (await fetch(url, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" })).json();
+function folderUI() {
+  const sec = $("folder-sec"); if (!sec) return;
+  sec.hidden = !(window.LOCAL && !window.NATIVE);
+  $("folder-path").value = FOLDER.path || $("folder-path").value;
+  $("folder-clear").hidden = !FOLDER.path;
+}
+async function folderApply(j, pushExtra) { // legge i file: la cartella vince; i portafogli solo locali restano e vengono scritti
+  const fromFile = (j.portfolios || []).map(cleanPf).filter(r => r.pf && !r.err.length).map(r => r.pf), ids = new Set(fromFile.map(p => p.id));
+  const extra = USER.filter(p => !ids.has(p.id) && !FOLDER.known.has(p.id));
+  USER = [...fromFile, ...extra]; // chi era già sincronizzato e ora non c'è più nella cartella è stato eliminato da un altro PC
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ version: 2, portfolios: USER.map(pfBody) })); if (j.default) localStorage.setItem(DEF_KEY, j.default); } catch {}
+  FOLDER.known = new Set(fromFile.map(p => p.id)); FOLDER.stamp = j.stamp;
+  allPf(); const cur = pfCur && PFLIST.find(p => p.id === pfCur.id) || PFLIST.find(p => p.id === getDef()) || PFLIST[0];
+  pfCur = cur; fillSel(); updDef(); renderPf(); if (typeof renderPfs === "function") renderPfs();
+  if (extra.length || pushExtra) folderPushSoon(true);
+}
+async function folderPull(first) {
+  const j = await folderCall("api/pf"); if (!j.ok) return folderMsg(j.error || "Cartella non leggibile", true);
+  if (!first && j.stamp === FOLDER.stamp) return;
+  FOLDER.ready = true; await folderApply(j, first);
+  folderMsg(`Collegata: ${j.portfolios.length} portafogli nella cartella`);
+}
+function folderCheck() { if (FOLDER.path && FOLDER.ready && !ORIG && !FOLDER.busy) folderPull(false).catch(() => {}); }
+function folderPushSoon(now) {
+  if (!FOLDER.path || !FOLDER.ready) return;
+  clearTimeout(FOLDER.timer);
+  FOLDER.timer = setTimeout(async () => {
+    FOLDER.busy = true;
+    try {
+      const cur = new Set(USER.map(p => p.id)), removed = [...FOLDER.known].filter(i => !cur.has(i));
+      const j = await folderCall("api/pf", { portfolios: USER.map(pfBody), default: getDef(), removed });
+      if (j.ok) { FOLDER.known = cur; FOLDER.stamp = j.stamp; folderMsg(`Salvato nella cartella: ${USER.length} portafogli`); } else folderMsg(j.error || "Salvataggio non riuscito", true);
+    } catch (e) { folderMsg("Salvataggio non riuscito: " + e.message, true); }
+    FOLDER.busy = false;
+  }, now ? 50 : 700);
+}
+async function folderInit() {
+  FOLDER.path = window.PFFOLDER || null; folderUI();
+  try { const d = await folderCall("api/drive"); const box = $("folder-cand"); if (box && d.ok) box.innerHTML = (d.candidates || []).map(c => `<button type="button" class="ghost" data-cand="${esc(c)}">${esc(c)}</button>`).join(""); } catch {}
+  if (FOLDER.path) folderPull(true).catch(e => folderMsg("Cartella non leggibile: " + e.message, true));
+}
+$("folder-cand").addEventListener("click", e => { const b = e.target.closest("[data-cand]"); if (!b) return; const c = b.dataset.cand; $("folder-path").value = c + (c.includes("\\") ? "\\" : "/") + "myMoney"; });
+$("folder-save").addEventListener("click", async () => {
+  const v = $("folder-path").value.trim(); if (!v) return folderMsg("Scrivi il percorso della cartella", true);
+  try { const j = await folderCall("api/config", { folder: v }); if (!j.ok) return folderMsg(j.error || "Cartella non valida", true); FOLDER.path = j.folder; FOLDER.ready = false; folderUI(); await folderPull(true); } catch (e) { folderMsg("Non riuscito: " + e.message, true); }
+});
+$("folder-clear").addEventListener("click", async () => { try { await folderCall("api/config", { folder: "" }); } catch {} FOLDER.path = null; FOLDER.ready = false; folderUI(); folderMsg("Scollegata: i portafogli restano nel browser; i file nella cartella non vengono toccati"); });
+window.addEventListener("focus", () => folderCheck());
 let autoBusy = false;
 async function autoTick() {
   if (autoBusy || updBusy || document.hidden) return; autoBusy = true;
   try {
     window.localReady = window.localReady || detectLocal(); await window.localReady;
     if (window.LOCAL) {
+      folderCheck();
       await localApi("quotes");
       // ETF dei portafogli senza serie di prezzi: si scaricano subito (una sola volta per sessione)
       const miss = (pfCur ? pfCur.positions : []).map(x => byIsin(x.isin)).filter(e => e && e.cat && !e.s && !e.localTried);
@@ -3019,7 +3079,7 @@ $("rb-apply").addEventListener("click", () => {
   if (err) { $("rb-note").textContent = err; return; }
   msg(`Ribilanciamento applicato: ${n} operazioni`);
 });
-$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); });
+$("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); folderPushSoon(); });
 $("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; editPf(c => { c.name = v; }); });
 $("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
 $("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
