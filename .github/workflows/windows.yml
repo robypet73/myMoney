@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -37,10 +38,31 @@ jobs:
           pyinstaller --onefile --name myMoney --icon icon.ico --paths scripts \
             --hidden-import fetch_prices --hidden-import fetch_quotes --hidden-import fetch_series --hidden-import fetch_etf_data --hidden-import fetch_catalog \
             scripts/serve.py
+      - name: Aggiorna myMoney.exe nella root del repo
+        # L'exe contiene solo il server e gli script (non l'app): cambia solo se cambiano gli script. PyInstaller non è riproducibile,
+        # quindi lo si committa solo in quel caso, per non gonfiare il repo (circa 9 MB a ogni commit).
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          n=1
+          if [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BEFORE" 2>/dev/null; then
+            n=$(git diff --name-only "$BEFORE" HEAD -- scripts .github/workflows/windows.yml | wc -l)
+          fi
+          if [ "$n" -gt 0 ]; then
+            cp dist/myMoney.exe myMoney.exe
+            git config user.name "myMoney exe"
+            git config user.email "actions@users.noreply.github.com"
+            git add myMoney.exe
+            git commit -m "myMoney.exe ricostruito (script cambiati)" || true
+            git pull --rebase origin main
+            git push origin main
+          else
+            echo "Script invariati: myMoney.exe nella root resta quello di prima"
+          fi
       - name: Prepara la cartella
         run: |
           mkdir -p pkg/myMoney
-          cp dist/myMoney.exe pkg/myMoney/
+          cp dist/myMoney.exe pkg/myMoney/myMoney.exe
           cp -r index.html sw.js native.js manifest.webmanifest prices.js etfdata.js catalog.js quotes.js watchlist.txt icons data pkg/myMoney/
           cp scripts/LEGGIMI-Windows.txt pkg/myMoney/
           v=$(grep -o 'id="ver">v[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9][0-9]' index.html | head -1 | sed 's/.*>v//')

@@ -1,7 +1,7 @@
 myMoney per Windows
 ===================
 
-1. Estrai TUTTA la cartella dallo zip (non lanciare myMoney.exe dentro lo zip).
+1. Estrai TUTTA la cartella dallo zip (non lanciare myMoney.exe dentro lo zip). Funziona anche con «Code → Download ZIP» del repository su GitHub: myMoney.exe sta nella cartella principale, accanto a index.html.
 2. Doppio clic su myMoney.exe: si apre una finestra nera (il server) e dopo un secondo si apre il browser su myMoney.
 3. Per chiudere myMoney chiudi la finestra nera.
 
