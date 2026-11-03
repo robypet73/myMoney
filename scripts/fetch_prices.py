@@ -168,6 +168,13 @@ def main():
         s["last"].update(q.get(s["symbol"], {}))
     print(f"Bid/ask: {sum(1 for s in out.values() if s['last'].get('bid') and s['last'].get('ask'))} ETF su {len(out)}")
     path = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent) / "prices.js"
+    try:  # ETF senza risposta questa volta: resta l'ultima serie nota (meglio di una pagina senza quei prezzi)
+        old = json.loads(path.read_text(encoding="utf-8")[len("window.PRICES="):].rstrip().rstrip(";"))["series"]
+        for isin, v in old.items():
+            if isin in ISINS and isin not in out:
+                out[isin] = v
+    except Exception:
+        pass
     write(path, out)
     print(f"Scritto {path} ({len(out)} ETF su {len(ISINS)})")
     if watch:

@@ -160,6 +160,7 @@
       out[isin] = e;
     }
     if (!Object.keys(out).length) throw new Error("Quotazioni non disponibili");
+    for (const [i, e] of Object.entries((window.QUOTES && window.QUOTES.q) || {})) if (sy[i] && !(i in out)) out[i] = e; // senza risposta questa volta: resta l'ultima quotazione nota
     await put("quotes.js", "window.QUOTES=" + JSON.stringify({ generated: nowIso(), q: out }) + ";\n");
     return [`prezzi per ${Object.keys(out).length} ETF su ${Object.keys(sy).length}`];
   }

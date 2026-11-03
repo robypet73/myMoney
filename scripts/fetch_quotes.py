@@ -57,7 +57,7 @@ def raw_quotes(syms):
     fp.quotes([])  # prepara cookie e crumb
     op, crumb = fp._SESSION.get("op"), fp._SESSION.get("crumb")
     if not op:
-        return {}
+        raise RuntimeError("cookie e crumb di Yahoo non ottenuti")
     res = {}
     syms = list(syms)
     for i in range(0, len(syms), 40):
@@ -101,6 +101,15 @@ def main():
             e["adv"] = adv[isin]
         out[isin] = e
     path = ROOT / "quotes.js"
+    if not out:  # Yahoo non ha risposto (limite di richieste, rete): meglio tenere il file di prima che svuotarlo
+        sys.exit("Nessuna quotazione ricevuta da Yahoo: quotes.js non aggiornato")
+    try:  # ETF senza risposta questa volta: si tiene l'ultima quotazione nota (l'orario `pt` dice quanto è vecchia)
+        old = json.loads(path.read_text(encoding="utf-8")[len("window.QUOTES="):].rstrip().rstrip(";"))["q"]
+        for isin, e in old.items():
+            if isin in sy and isin not in out:
+                out[isin] = e
+    except Exception:
+        pass
     tmp = path.with_suffix(".tmp")
     tmp.write_text("window.QUOTES=" + json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "q": out}, separators=(",", ":")) + ";\n", encoding="utf-8")
     tmp.replace(path)
