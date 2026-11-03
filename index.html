@@ -270,8 +270,18 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .scroll { overflow-x: auto; }
 .chart.tall { height: 320px; }
 
-.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 128px 72px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.hrow { display: grid; grid-template-columns: minmax(0, 1fr) 64px 120px 132px; gap: 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
 .hrow:last-child { box-shadow: 0 1px 0 var(--hair); }
+.hrow .mw { display: none; }
+.hrow.tot { border-top: 1.5px solid var(--fg); font-weight: 500; }
+.hrow.tot .main b { font-weight: 500; }
+.inv { font-size: var(--fs-s); color: var(--soft); margin: 4px 0 2px; }
+.inv .n, .inv { font-family: var(--m); }
+.inv .k { font-family: inherit; }
+table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
+.bars li.tot { border-top: 1.5px solid var(--fg); padding-top: 6px; font-weight: 500; }
+.bars li.tot i { display: none; }
+.leg li.tot { border-top: 1.5px solid var(--fg); font-weight: 500; }
 .hrow .main { display: grid; gap: 3px; min-width: 0; }
 .hrow .v { white-space: nowrap; }
 .hrow.idle { align-items: start; }
@@ -483,8 +493,13 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 .srcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: var(--fs-s); color: var(--soft); }
 .srcs a { color: var(--fg); text-underline-offset: 3px; }
 @media (max-width: 600px) {
-  .hrow { grid-template-columns: minmax(0, 1fr) 52px 112px; gap: 10px; }
-  .hrow .y1 { display: none; }
+  .hrow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 10px; }
+  .hrow:not(.idle) .main { grid-column: 1 / -1; }
+  .hrow .v:last-child { text-align: right; }
+  .hrow .wcol, .hrow .pmc { display: none; }
+  .hrow .mw { display: inline; }
+  .hrow.tot { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); }
+  .hrow.tot .main { grid-column: auto; }
   .donuts { grid-template-columns: minmax(0, 1fr); }
   .chart.tall { height: 260px; }
 }
@@ -507,7 +522,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.016</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.017</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -527,7 +542,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   <p class="fc-note" id="pf-desc-ro" hidden></p>
   <section class="live sec pf-sec" id="s-live" aria-label="Valore e rendimenti">
     <h3 class="sec-t">Sintesi</h3>
-    <div class="lhead"><div class="lh-l"><div class="big" id="pf-big"></div><div class="chg n" id="pf-chg"></div><div class="strat"><span id="pf-since"></span><span class="bench" id="pf-bench"></span></div></div></div>
+    <div class="lhead"><div class="lh-l"><div class="big" id="pf-big"></div><div class="inv n" id="pf-inv"></div><div class="chg n" id="pf-chg"></div><div class="strat"><span id="pf-since"></span><span class="bench" id="pf-bench"></span></div></div></div>
   </section>
   <section class="sec pf-sec" id="s-perf"><h3>Performance<button type="button" class="i" data-g="twr" aria-label="Informazioni: rendimento a pesi temporali">i</button></h3>
     <div class="rets" id="rets"></div>
@@ -567,7 +582,6 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
   </section>
 
 
-  <section class="sec pf-sec" id="s-fc"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
   <section class="sec pf-sec" id="hist-sec"><h3>Storico<button type="button" class="i" data-g="storico" aria-label="Informazioni: storico">i</button></h3>
     <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button><button type="button" data-m="inv" aria-pressed="false">Investito</button></div></div>
     <div class="chart" id="hist-chart"></div>
@@ -576,6 +590,7 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
     <div class="scroll"><table class="eft lots" id="hist-ro"></table></div>
   </section>
   <section class="sec pf-sec" id="s-src"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
+  <section class="sec pf-sec" id="s-fc"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
 </main>
 
 <main class="wrap" id="v-pfs" hidden>
@@ -1339,7 +1354,7 @@ function openDetail(isin) {
     ["Replica", e.repl || "—"], ["Valuta", e.cur || "—"], ["Domicilio", e.dom || "—"], ["Lancio", e.inception ? dateTxt(new Date(e.inception + "T12:00:00")) : "—"],
     ["Emittente", e.provider || "—"], ["Titoli", e.n ? e.n.toLocaleString("it-IT") : "—"],
   ];
-  const bars = items => { const mx = Math.max(...items.map(i => i[1])); return `<ul class="bars">${items.map(([n, w]) => `<li><span>${esc(n)}</span><span class="n">${fmt(w, 1)}%</span><i><b style="width:${(w / mx * 100).toFixed(1)}%"></b></i></li>`).join("")}</ul>`; };
+  const bars = items => { const mx = Math.max(...items.map(i => i[1])); return `<ul class="bars">${items.map(([n, w]) => `<li><span>${esc(n)}</span><span class="n">${fmt(w, 1)}%</span><i><b style="width:${(w / mx * 100).toFixed(1)}%"></b></i></li>`).join("")}<li class="tot"><span>Totale</span><span class="n">${fmt(items.reduce((x, i) => x + i[1], 0), 1)}%</span><i></i></li></ul>`; };
 
   $("d-body").innerHTML = `
     <div class="d-top">
@@ -1375,8 +1390,6 @@ function openDetail(isin) {
 
     ${e.adv != null && e.spr != null ? liqHtml(e) : ""}
 
-    ${fcHtml(e)}
-
     <section class="sec"><h3>Dati</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}${FI[k] ? ib(FI[k]) : ""}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
       <p class="fc-note">${e.cat ? "Dati da" : window.ETFDATA ? "Scaricato da" : "Verificato su"} <a class="src" href="https://www.justetf.com/en/etf-profile.html?isin=${e.isin}" target="_blank" rel="noopener">justETF ↗</a> il ${e.cat && window.CATALOG && window.CATALOG.generated ? dateTxt(Date.parse(window.CATALOG.generated)) : VERIFIED}: TER, patrimonio, replica, lancio${e.cat ? "" : e.fromJe ? `, indice, titoli, paesi e settori${e.hdate ? " (composizione al " + e.hdate + ")" : ""}` : ". Posizioni e ripartizioni sono indicative"}.</p>
@@ -1386,7 +1399,9 @@ function openDetail(isin) {
       <section class="sec"><h3>Posizioni</h3>${bars(e.top)}</section>
       ${e.b1 ? `<section class="sec"><h3>${esc(e.b1[0])}</h3>${bars(e.b1[1])}</section>` : ""}
       ${e.b2 ? `<section class="sec"><h3>${esc(e.b2[0])}</h3>${bars(e.b2[1])}</section>` : ""}
-    </div>` : ""}`;
+    </div>` : ""}
+
+    ${fcHtml(e)}`;
 
   const dlg = $("detail");
   if (!dlg.open) dlg.showModal();
@@ -1861,7 +1876,7 @@ function renderRb() {
     const T0 = rbTarget(F), tw = T0.w.map(x => +(x * 100).toFixed(1)), tot = F.act.reduce((a, ai) => a + P.vh[ai], 0), cw0 = F.items.map((_, j) => (j < F.na ? P.vh[F.act[j]] / tot : 0));
     const a0 = F.ev(cw0), b0 = F.ev(tw.map(x => x / 100)), mm = x => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)} · divers. ${fmt(F.drOf(x.w), 2)}`;
     RB = F.items.map((e, j) => ({ isin: e.isin, w: tw[j] }));
-    tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.items.map((e, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${eL(e)}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody>`;
+    tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Variazione</th></tr></thead><tbody>${F.items.map((e, j) => { const d = tw[j] - cw0[j] * 100; return `<tr><td class="n">${eL(e)}</td><td class="n">${fmt(cw0[j] * 100, 1)}%</td><td class="n">${fmt(tw[j], 1)}%</td><td class="n ${d > 0.05 ? "buy" : d < -0.05 ? "sell" : ""}">${d > 0 ? "+" : d < 0 ? "−" : ""}${fmt(Math.abs(d), 1)} pp</td></tr>`; }).join("")}</tbody><tfoot><tr><td>Totale</td><td class="n">${fmt(cw0.reduce((x, y) => x + y, 0) * 100, 1)}%</td><td class="n">${fmt(tw.reduce((x, y) => x + y, 0), 1)}%</td><td></td></tr></tfoot>`;
     note.innerHTML = `Ora ${mm(a0)}<br>Dopo ${mm(b0)}`; btn.disabled = false; return;
   }
   const T = rbTarget(F), Vn = F.act.reduce((a, ai) => a + P.qty[ai] * P.es[ai].live, 0);
@@ -1869,7 +1884,7 @@ function renderRb() {
   const val2 = rows.map(r => r.tq * r.pr), s2 = val2.reduce((a, b) => a + b, 0), w2 = val2.map(v => v / s2);
   const a = F.ev(rows.map(r => r.cur)), b = F.ev(w2), cash = -rows.reduce((x, r) => x + r.dq * r.pr, 0);
   RB = rows.filter(r => r.dq !== 0).map(r => ({ isin: r.e.isin, dq: r.dq, pr: r.pr }));
-  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${eL(r.e)}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody>`;
+  tb.innerHTML = `<thead><tr><th>ETF</th><th>Attuale</th><th>Obiettivo</th><th>Operazione</th></tr></thead><tbody>${rows.map((r, j) => `<tr><td class="n">${eL(r.e)}</td><td class="n">${fmt(r.cur * 100, 1)}%</td><td class="n">${fmt(w2[j] * 100, 1)}%</td><td class="n ${r.dq > 0 ? "buy" : r.dq < 0 ? "sell" : ""}">${r.dq === 0 ? "—" : `${r.dq > 0 ? "Compra" : "Vendi"} ${fmt(Math.abs(r.dq), 0)} × ${fmt(r.pr)} = ${eur(Math.abs(r.dq * r.pr))}`}</td></tr>`).join("")}</tbody><tfoot><tr><td>Totale</td><td class="n">${fmt(rows.reduce((x, r) => x + r.cur, 0) * 100, 1)}%</td><td class="n">${fmt(w2.reduce((x, y) => x + y, 0) * 100, 1)}%</td><td class="n">Residuo ${eurS2(cash)}</td></tr></tfoot>`;
   const m = (x) => `${fmt(x.r * 100, 1)}% · vol ${fmt(x.v * 100, 1)}% · Sharpe ${fmt(x.r / x.v)} · divers. ${fmt(F.drOf(x.w), 2)}`;
   note.innerHTML = `Ora ${m(a)}<br>Dopo ${m(b)} · residuo ${eurS2(cash)}`;
   btn.disabled = !RB.length;
@@ -2090,7 +2105,7 @@ function renderEmpty() {
   PF = null; EF = null; EFH = null; RB = null; $("badge").textContent = ""; $("rb-note").textContent = ""; $("rb-apply").disabled = true;
   ["kpi", "rets", "rb-tbl", "pf-big", "pf-periods", "pf-chart", "hist-chart", "hist-leg", "pf-donuts", "pf-eft", "pf-ef", "pf-fc", "pf-src", "ed-kpi", "ed-bench", "pf-bench", "pf-since", "pf-stamp", "pf-corr2", "corr-idx", "corr-idx-h"].forEach(id => ($(id).innerHTML = ""));
   $("corr-note2").textContent = "";
-  $("pf-chg").textContent = "Nessuna posizione"; $("ef-note").textContent = "";
+  $("pf-chg").textContent = "Nessuna posizione"; $("pf-inv").textContent = ""; $("ef-note").textContent = "";
   window.fcAny = false; syncSections();
   $("pf-comp").innerHTML = (pfCur.positions.length ? "" : '<p class="fc-note">Aggiungi un ETF e registra un movimento (acquisto o vendita) o la quantità iniziale</p>') + idleRows(null);
 }
@@ -2118,12 +2133,14 @@ function renderPf() {
   PB = null; renderPfPeriods();
 
   const order = P.act.slice().sort((a, b) => P.vh[b] - P.vh[a]);
-  $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1;
+  const gain = i => P.vh[i] - P.costH[i], tV = order.reduce((x, i) => x + P.vh[i], 0), tC = order.reduce((x, i) => x + P.costH[i], 0), tG = tV - tC;
+  $("pf-comp").innerHTML = order.map(i => { const e = P.es[i], pmc = P.costH[i] / P.qty[i], plp = P.vh[i] / P.costH[i] - 1, g = gain(i);
     const px = (e.real && e.src ? link(e.src, "Prezzi ↗") : "NAV simulato") + (e.fx ? ` · <span title="Quotato in ${esc(e.fx)} su ${esc(e.sym || "")}: convertito in euro al cambio ${esc(e.fx)}/EUR di ogni giorno">${esc(e.fx)} → EUR</span>` : "");
     return `<div class="hrow"><span class="main"><button type="button" class="nm-btn" data-isin="${e.isin}">${esc(e.name)}</button><span class="id n">${e.ticker === e.isin ? "" : e.ticker + " · "}${e.isin} · ${link(justEtf(e.isin), "justETF ↗")} · ${px}</span></span>
-      <span class="v n">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i], 3)}</small></span><span class="v n y1 ${cls(plp)}">${pct(plp, 1)}<small>PMC ${fmt(pmc, 3)}</small></span></div>`; }).join("") + idleRows(P);
+      <span class="v n wcol">${fmt(P.cw[i] * 100, 1)}%<small>Peso</small></span><span class="v n">${eur(P.vh[i])}<small><span class="mw">${fmt(P.cw[i] * 100, 1)}% · </span>${fmt(P.qty[i], 0)} × ${fmt(P.vh[i] / P.qty[i], 3)}</small></span><span class="v n ${cls(g)}" title="Utile non realizzato: valore attuale meno costo medio di carico (PMC ${fmt(pmc, 3)}) delle quote in portafoglio">${eurS(g)}<small>${pct(plp, 1)}<span class="pmc"> · PMC ${fmt(pmc, 3)}</span></small></span></div>`; }).join("")
+    + (order.length ? `<div class="hrow tot"><span class="main"><b>Totale</b></span><span class="v n wcol">100,0%</span><span class="v n">${eur(tV)}</span><span class="v n ${cls(tG)}">${eurS(tG)}<small>${tC > 0 ? pct(tG / tC, 1) : ""}</small></span></div>` : "") + idleRows(P);
   $("pf-donuts").innerHTML = [["Asset class", "asset"], ["Area", "region"]].map(([h, k]) => { const g = groupBy(P, k);
-    return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}</ul></div></div>`; }).join("");
+    return `<div class="dn">${donut(g)}<div><h3 class="k" style="font-weight:500">${h}</h3><ul class="leg">${g.map(([n, p], i) => `<li><span class="sw" style="background:var(--c${(i % 6) + 1})"></span><span class="lt">${esc(n)}</span><span class="n">${fmt(p, 1)}%</span></li>`).join("")}<li class="tot"><span class="sw"></span><span class="lt">Totale</span><span class="n">${fmt(g.reduce((x, [, p]) => x + p, 0), 1)}%</span></li></ul></div></div>`; }).join("");
 
   computeEF(P); renderEF(P, nReal === aEs.length);
 
@@ -2321,6 +2338,7 @@ function liveUpdate(force) {
   const L = livePerf(P), inv = P.cost[P.last], pl = L.Vl - inv, sim = P.act.some(i => !P.es[i].real);
   const act = P.act.map(i => P.es[i]).filter(e => e.real), oldE = act.reduce((a, e) => (!a || liveMs(e) < liveMs(a) ? e : a), null), oldMs = oldE ? liveMs(oldE) : 0, oldTxt = oldE ? `Dato più vecchio: ${oldE.ticker} · ${ltTxt(oldMs)}` : "";
   $("pf-big").innerHTML = `${fmt(L.Vl, 2)}<small>€</small>`;
+  $("pf-inv").innerHTML = `<span class="k">Investito${ib("inv")}</span> ${eur(inv)}`;
   $("pf-chg").innerHTML = `<span class="roi ${cls(pl)}">${pct(pl / inv, 1)}</span><span class="roi-e ${cls(pl)}">${eurS(pl)}</span><span class="roi-l">sull'investito${ib("roi")}</span>`;
   $("pf-stamp").innerHTML = `<span title="${esc(oldTxt)}">${sim ? "simulato" : "live · " + ltTxt(oldMs)}</span><span title="Ultima volta che la pagina ha cercato dati nuovi: all'avvio e ogni minuto. I dati di mercato nuovi arrivano quando li pubblica il workflow (ogni 30 minuti nei giorni di borsa)."> · controllato ${chkTxt()}</span>`;
   $("rets").innerHTML = L.items.map(([k, x]) => `<div><span class="k">${k}${ib("twr")}</span><span class="n ${x ? cls(x.r) : ""}">${x ? pct(x.r) : "—"}</span><span class="sub ${x ? cls(x.e) : ""}">${x ? eurS2(x.e) : ""}</span></div>`).join("");
@@ -2446,14 +2464,14 @@ function renderPos() {
   const lots = pfLots(pf), net = x => { const e = byIsin(x.isin); return e.s ? lots.filter(l => l.isin === x.isin).reduce((a, l) => a + l.qty, 0) : (x.qty > 0 ? x.qty : 0) + x.txs.reduce((a, t) => a + t.qty, 0); };
   const nets = pf.positions.map(net), vals = pf.positions.map((x, i) => (byIsin(x.isin).s && nets[i] > 1e-9 ? nets[i] * byIsin(x.isin).live : 0)), vTot = vals.reduce((a, b) => a + b, 0);
   $("pos-tbl").innerHTML = pf.positions.length ? `<thead><tr><th>ETF</th><th>Quote${ib("qnet")}</th><th>%</th><th>Quantità iniziale${ib("pos")}</th><th>Movimenti</th><th></th></tr></thead><tbody>${pf.positions.map((x, i) => { const e = byIsin(x.isin), u = x.weight != null ? "w" : "q", v = posVal(x), q = nets[i];
-    return `<tr data-isin="${x.isin}"><td class="n">${eL(e)}<span class="wl nmx">${esc(e.name)}</span></td><td class="n">${Math.abs(q) > 1e-9 || x.txs.length ? fmt(q, Math.abs(q - Math.round(q)) < 1e-9 ? 0 : 2) : "—"}</td><td class="n">${vTot > 0 && vals[i] > 0 ? fmt(vals[i] / vTot * 100, 1) + "%" : x.txs.length && Math.abs(q) < 1e-9 ? "Chiusa" : "—"}</td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="n"><button type="button" class="ghost mvb">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " movimento" : " movimenti") : "+ Movimento"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr data-isin="${x.isin}"><td class="n">${eL(e)}<span class="wl nmx">${esc(e.name)}</span></td><td class="n">${Math.abs(q) > 1e-9 || x.txs.length ? fmt(q, Math.abs(q - Math.round(q)) < 1e-9 ? 0 : 2) : "—"}</td><td class="n">${vTot > 0 && vals[i] > 0 ? fmt(vals[i] / vTot * 100, 1) + "%" : x.txs.length && Math.abs(q) < 1e-9 ? "Chiusa" : "—"}</td><td><span class="qcell"><input class="qi" type="number" min="0" step="any" value="${v > 0 ? v : ""}" placeholder="—" aria-label="Quantità ${e.ticker}">${u === "w" ? `<select class="qu" aria-label="Unità ${e.ticker}"><option value="q">quote</option><option value="w" selected>%</option></select>` : '<span class="k">quote</span>'}</span></td><td class="n"><button type="button" class="ghost mvb">${x.txs.length ? x.txs.length + (x.txs.length === 1 ? " movimento" : " movimenti") : "+ Movimento"}</button></td><td class="act"><button type="button" class="del" aria-label="Rimuovi ${e.ticker}">${ICO_X}</button></td></tr>`; }).join("")}</tbody>${vTot > 0 ? `<tfoot><tr><td>Totale</td><td></td><td class="n">100,0%</td><td></td><td></td><td></td></tr></tfoot>` : ""}` : "";
   const noPx = pf.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s);
   const st = simStart(pf), clamp = st > dateMs(pf.start) && pf.positions.some(hasBase);
   $("dr-note").innerHTML = (W ? `Peso totale <span class="n">${fmt(W, 1)}%</span>${Math.abs(W - 100) > 0.05 ? " · riproporzionato a 100% nella simulazione" : ""}` : "") + (clamp ? `${W ? " · " : ""}simulazione dal ${dateTxt(st)}, primo prezzo disponibile` : "") + (noPx.length ? `${W || clamp ? "<br>" : ""}Senza prezzi, esclusi dal calcolo: ${noPx.map(e => esc(e.ticker)).join(", ")}${noPx.every(e => e.tried) ? ` · aggiungili a <a class="src" href="${WATCH_URL}" target="_blank" rel="noopener">watchlist.txt ↗</a>` : " · carico…"}` : "");
   const rows = pf.positions.filter(x => hasBase(x) && byIsin(x.isin).s).map(x => { const e = byIsin(x.isin), pr = e.live, amt = x.weight > 0 ? pf.amount * x.weight / W : x.qty * pr, q = x.weight > 0 ? Math.floor(amt / pr) : x.qty; return { e, w: x.weight > 0, amt, pr, q, cost: q * pr }; });
   const spent = rows.filter(r => r.w).reduce((a, r) => a + r.cost, 0), anyW = rows.some(r => r.w);
   $("dim-sec").hidden = !rows.length;
-  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${eL(r.e)}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody>${anyW ? `<tfoot><tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr></tfoot>` : ""}` : "";
+  $("dr-size").innerHTML = rows.length ? `<thead><tr><th>ETF</th><th>Importo</th><th>Prezzo</th><th>Quantità</th><th>Costo</th></tr></thead><tbody>${rows.map(r => `<tr><td class="n">${eL(r.e)}</td><td class="n">${eur(r.amt)}</td><td class="n">${fmt(r.pr)}</td><td class="n">${fmt(r.q, 0)}</td><td class="n">${eur(r.cost)}</td></tr>`).join("")}</tbody><tfoot><tr><td>Totale</td><td class="n">${eur(rows.reduce((a, r) => a + r.amt, 0))}</td><td></td><td></td><td class="n">${eur(rows.reduce((a, r) => a + r.cost, 0))}</td></tr>${anyW ? `<tr><td>Residuo</td><td></td><td></td><td></td><td class="n">${eur(pf.amount - spent)}</td></tr>` : ""}</tfoot>` : "";
   DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
   $("dr-own").disabled = !DRSIZE.length;
 }
@@ -2619,7 +2637,7 @@ const GL = {
   vol: { t: "Volatilità", what: "Quanto oscilla il prezzo: deviazione standard dei rendimenti giornalieri, riportata su base annua.", use: "È la misura più usata del rischio di oscillazione.", how: "In un anno normale il prezzo si muove di circa ±1 volta la volatilità attorno al rendimento medio (nel 68% dei casi). Scegli un livello che ti permette di non vendere nei momenti brutti.", ref: [["Obbligazioni governative a breve", "2–5%"], ["Obbligazioni aggregate", "4–8%"], ["Azioni globali", "12–18%"], ["Azioni mercati emergenti", "15–22%"], ["Oro", "12–18%"], ["Azioni di un solo settore o tema", "20–30%"]], links: ["guida"] },
   dd: { t: "Massimo calo (drawdown)", what: "La perdita più grande dal massimo precedente al minimo successivo nel periodo.", use: "Mostra quanto potresti vedere scendere il portafoglio in una fase negativa.", how: "Chiediti se sopporteresti quel calo senza vendere. Il periodo breve non include le crisi più gravi.", ref: [["Azionario globale in crisi (2008, 2020)", "da −35% a oltre −50%"], ["Obbligazionario aggregato (2022)", "circa −10% / −20%"], ["Regola pratica", "il calo massimo accettabile guida il mix azioni/obbligazioni"]], links: ["guida"] },
   sharpe: { t: "Indice di Sharpe", what: "Rendimento annuo diviso volatilità: quanto rendimento ottieni per ogni unità di rischio. Qui il tasso privo di rischio è zero.", use: "Confronta portafogli o ETF con rischi diversi.", how: "Più alto è meglio, ma su pochi anni è instabile. Con tassi privi di rischio positivi i valori reali sono più bassi di questi.", ref: [["Sotto 0,5", "basso"], ["0,5 – 1", "buono"], ["Sopra 1", "molto buono, spesso su periodi favorevoli"]] },
-  peso: { t: "Composizione, peso e prezzo medio", what: "Il peso è la quota del valore del portafoglio in quell'ETF. Il prezzo medio di carico (PMC) è il costo medio per quota di ciò che possiedi: con le vendite si usa il costo medio.", use: "Il peso mostra la diversificazione e i rischi di concentrazione. Il PMC confrontato col prezzo attuale dà l'utile per ETF.", how: "Controlla che nessun ETF pesi più di quanto vuoi. Dopo forti rialzi i pesi si spostano: valuta un ribilanciamento. Se la quotazione usata per i prezzi è in un'altra valuta (per esempio sterline), il prezzo è convertito in euro al cambio di ogni giorno e lo indica «GBP → EUR»: il valore resta in euro, ma include il movimento del cambio e può differire di pochi decimi di punto dalla quotazione in euro dello stesso ETF.", ref: [["ETF globale ampio", "può essere il nucleo, anche oltre 50%"], ["ETF tematico o settoriale (regola pratica)", "meno del 5–10%"]], links: ["scelta"] },
+  peso: { t: "Composizione, peso e prezzo medio", what: "Il peso è la quota del valore del portafoglio in quell'ETF. Il prezzo medio di carico (PMC) è il costo medio per quota di ciò che possiedi: con le vendite si usa il costo medio.", use: "Il peso mostra la diversificazione e i rischi di concentrazione. Il PMC confrontato col prezzo attuale dà l'utile per ETF.", how: "L'utile di ogni posizione (e il totale in fondo) è non realizzato: valore attuale meno il costo medio di carico (PMC) delle quote ancora in portafoglio; le vendite già fatte non entrano (il rendimento della Sintesi invece le include). Controlla che nessun ETF pesi più di quanto vuoi. Dopo forti rialzi i pesi si spostano: valuta un ribilanciamento. Se la quotazione usata per i prezzi è in un'altra valuta (per esempio sterline), il prezzo è convertito in euro al cambio di ogni giorno e lo indica «GBP → EUR»: il valore resta in euro, ma include il movimento del cambio e può differire di pochi decimi di punto dalla quotazione in euro dello stesso ETF.", ref: [["ETF globale ampio", "può essere il nucleo, anche oltre 50%"], ["ETF tematico o settoriale (regola pratica)", "meno del 5–10%"]], links: ["scelta"] },
   frontiera: { t: "Frontiera efficiente", what: "Curva dei portafogli con il massimo rendimento possibile per ogni livello di rischio, ottenuta combinando in modi diversi gli ETF che già possiedi (solo posizioni lunghe). Usa rendimenti, volatilità e correlazioni storici, calcolati su rendimenti a 5 giorni sovrapposti (riducono l'effetto di prezzi fermi e orari di chiusura diversi tra le borse).", use: "Mostra se con gli stessi ETF si poteva avere più rendimento a parità di rischio, o meno rischio a parità di rendimento.", how: "Se il punto Attuale sta sotto la curva, esiste una combinazione migliore sul passato. È un indizio, non una previsione: i dati storici cambiano e il risultato dipende molto dal periodo.", ref: [["Attuale vicino alla curva", "composizione già efficiente"], ["Attuale lontano sotto la curva", "possibile miglioramento con un ribilanciamento"]] },
   minvar: { t: "Minima varianza", what: "Il portafoglio con la volatilità più bassa ottenibile con gli ETF scelti.", use: "È il punto di partenza a sinistra della frontiera: meno rischio possibile.", how: "Utile se vuoi ridurre le oscillazioni. Spesso pesa molto sulle obbligazioni.", ref: [] },
   maxsharpe: { t: "Massimo Sharpe", what: "Il portafoglio con il miglior rendimento per unità di rischio sulla frontiera.", use: "È considerato il punto più efficiente.", how: "Tende a concentrarsi sugli ETF che sono andati meglio: usa il tetto di peso per evitare portafogli troppo concentrati.", ref: [] },
@@ -3387,7 +3405,7 @@ async function proposePf() {
     window.PROP = { props, amt, rf };
     const card = r => `<div class="pout"><h4 class="ptit">${NAMES[r.prof]} <span class="k">${SUB[r.prof]}</span></h4>
       <div class="kpi hi"><div><span class="k">Rendimento storico annuo${ib("ann")}</span><span class="n ${cls(r.W.r)}">${pct(r.W.r, 1)}</span></div><div><span class="k">Volatilità${ib("vol")}</span><span class="n">${fmt(r.W.v * 100, 1)}%</span></div><div><span class="k">Sharpe${ib("sharpe")}</span><span class="n">${fmt((r.W.r - rf) / r.W.v)}</span></div><div><span class="k">Diversificazione${ib("div")}</span><span class="n">${fmt(r.dr, 2)}</span></div><div><span class="k">Correlazione media${ib("corrw")}</span><span class="n">${fmt(r.cr, 2)}</span></div></div>
-      <div class="scroll"><table class="eft"><thead><tr><th>ETF</th><th>Peso</th><th>Importo</th><th>Quote × prezzo</th><th>TER</th></tr></thead><tbody>${r.rows.map(x => `<tr><td class="n">${eL(x.e)}<span class="wl nmx">${esc(x.e.name)}</span></td><td class="n">${fmt(x.w * 100, 1)}%</td><td class="n">${eur(x.target)}</td><td class="n">${fmt(x.q, 0)} × ${fmt(x.e.live, 3)}</td><td class="n">${x.e.ter == null ? "—" : fmt(x.e.ter) + "%"}</td></tr>`).join("")}</tbody></table></div>
+      <div class="scroll"><table class="eft"><thead><tr><th>ETF</th><th>Peso</th><th>Importo</th><th>Quote × prezzo</th><th>TER</th></tr></thead><tbody>${r.rows.map(x => `<tr><td class="n">${eL(x.e)}<span class="wl nmx">${esc(x.e.name)}</span></td><td class="n">${fmt(x.w * 100, 1)}%</td><td class="n">${eur(x.target)}</td><td class="n">${fmt(x.q, 0)} × ${fmt(x.e.live, 3)}</td><td class="n">${x.e.ter == null ? "—" : fmt(x.e.ter) + "%"}</td></tr>`).join("")}</tbody><tfoot><tr><td>Totale</td><td class="n">${fmt(r.rows.reduce((a, x) => a + x.w, 0) * 100, 1)}%</td><td class="n">${eur(r.rows.reduce((a, x) => a + x.target, 0))}</td><td></td><td class="n">${(() => { const t = r.rows.filter(x => x.e.ter != null); const w = t.reduce((a, x) => a + x.w, 0); return w > 0 ? fmt(t.reduce((a, x) => a + x.w * x.e.ter, 0) / w) + "%" : "—"; })()}</td></tr></tfoot></table></div>
       <p class="fc-note">${r.rows.length} ETF · diversificazione ${fmt(r.dr, 2)} contro ${fmt(r.drEq, 2)} a pesi uguali · investiti ${eur(r.spent)} su ${eur(amt)}, quote intere</p>
       <div class="io"><button type="button" class="primary" data-create="${r.prof}">Crea portafoglio ${NAMES[r.prof]}</button></div></div>`;
     $("prop-out").innerHTML = `${props.map(card).join("")}
