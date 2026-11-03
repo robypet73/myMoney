@@ -37,7 +37,7 @@ jobs:
         # --windowed: nessuna finestra nera; l'app si apre in una finestra propria (pywebview con WebView2)
         run: |
           pyinstaller --onefile --windowed --name myMoney --icon icon.ico --paths scripts \
-            --collect-all webview --collect-all clr_loader --collect-all pythonnet \
+            --hidden-import tkinter --hidden-import tkinter.filedialog --collect-all webview --collect-all clr_loader --collect-all pythonnet \
             --hidden-import fetch_prices --hidden-import fetch_quotes --hidden-import fetch_series --hidden-import fetch_etf_data --hidden-import fetch_catalog \
             scripts/serve.py
       - name: Prova l'eseguibile (solo server)

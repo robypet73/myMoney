@@ -110,6 +110,23 @@ def ok_name(n):
     return isinstance(n, str) and n.endswith(".json") and len(n) > 5 and not re.search(r'[\\/\x00]', n) and not n.startswith("..")
 
 
+PICK = threading.Lock()
+
+
+def pick_folder(start, title):
+    """Finestra di sistema per scegliere una cartella (tkinter), aperta davanti a tutto; parte da `start` se esiste. None se annullata."""
+    import tkinter as tk
+    from tkinter import filedialog
+    with PICK:
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        try:
+            return filedialog.askdirectory(parent=root, title=title, initialdir=start if start and os.path.isdir(start) else str(Path.home())) or None
+        finally:
+            root.destroy()
+
+
 def fs_list():
     """File JSON della cartella: la logica dei portafogli (nomi, rinomina, eliminati) sta nella pagina, uguale per PC, browser e Android."""
     files = []
@@ -221,12 +238,19 @@ class Handler(SimpleHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path == "/api/ping":
             return self.reply(200, {"ok": True, "local": True, "folder": STATE["folder"]})
-        if u.path in ("/api/fs", "/api/config", "/api/drive"):
+        if u.path in ("/api/fs", "/api/config", "/api/drive", "/api/pick"):
             if self.command == "POST" and not self.same_origin():
                 return self.reply(403, {"ok": False, "error": "origine non consentita"})
             try:
                 if u.path == "/api/drive":
                     return self.reply(200, {"ok": True, "folder": STATE["folder"], "candidates": drive_candidates()})
+                if u.path == "/api/pick":
+                    b = self.body()
+                    try:
+                        f = pick_folder(str(b.get("start") or ""), str(b.get("title") or "Scegli la cartella"))
+                    except Exception as e:  # nessun display, tkinter assente
+                        return self.reply(200, {"ok": False, "error": "finestra non disponibile (" + str(e)[:60] + ")"})
+                    return self.reply(200, {"ok": True, "folder": os.path.normpath(f) if f else None})
                 if u.path == "/api/config":
                     set_folder(str(self.body().get("folder") or "").strip())
                     return self.reply(200, {"ok": True, "folder": STATE["folder"]})
