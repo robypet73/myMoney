@@ -9,6 +9,7 @@ rendimenti (1 settimana … 5 anni, da inizio anno, in EUR), volatilità, max dr
 con gli stessi filtri dello screener. Sono i dati che justETF mostra a ogni visitatore: poche richieste a pagine da 500.
 """
 import json
+import os
 import re
 import sys
 import time
@@ -164,7 +165,7 @@ def main():
                     f(x.get("threeYearReturnCUR")), f(x.get("fiveYearReturnCUR")), f(x.get("ytdReturnCUR")), f(x.get("yearVolatilityCUR")), f(x.get("threeYearVolatilityCUR")),
                     f(x.get("fiveYearVolatilityCUR")), f(x.get("yearMaxDrawdownCUR")), f(x.get("maxDrawdownCUR")), f(x.get("yearReturnPerRiskCUR")), provider(name),
                     asset.get(isin) or ("Criptovalute" if re.search(r"bitcoin|crypto|ether|solana|\bXRP\b|blockchain|digital asset", name, re.I) else "Altro"), region.get(isin) or guess_region(name) or ("Globale" if asset.get(isin) in ("Materie prime", "Monetario") or re.search(r"bitcoin|crypto|ether|solana|\bXRP\b|digital asset", name, re.I) else "Altro")])
-    path = Path(__file__).resolve().parent.parent / "catalog.js"
+    path = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent) / "catalog.js"
     tmp = path.with_suffix(".tmp")
     tmp.write_text("window.CATALOG=" + json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "source": "justETF", "cols": cols, "rows": out},
                                                   ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")

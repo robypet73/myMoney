@@ -1,0 +1,20 @@
+myMoney per Windows
+===================
+
+1. Estrai TUTTA la cartella dallo zip (non lanciare myMoney.exe dentro lo zip).
+2. Doppio clic su myMoney.exe: si apre una finestra nera (il server) e dopo un secondo si apre il browser su myMoney.
+3. Per chiudere myMoney chiudi la finestra nera.
+
+Opzioni (da Prompt dei comandi, nella cartella):
+  myMoney.exe --finestra     apre myMoney in una finestra senza barra (Edge o Chrome) invece che in una scheda
+  myMoney.exe --port 8080    usa un'altra porta
+  myMoney.exe --host 0.0.0.0 raggiungibile anche dal telefono nella stessa rete (http://IP-del-PC:8000)
+
+Primo avvio: Windows SmartScreen può dire «Windows ha protetto il PC» perché l'eseguibile non è firmato.
+Clicca «Maggiori informazioni» e poi «Esegui comunque». Se l'antivirus chiede il permesso di rete, consentilo (serve per scaricare i prezzi).
+
+Prezzi e dati: myMoney li scarica da solo da Yahoo Finance e justETF (ogni minuto le quotazioni) e li salva in questa cartella.
+Portafogli: restano nel browser (anche riavviando), ma sono legati all'indirizzo http://localhost:PORTA: usa sempre la stessa porta (8000) e lo stesso browser.
+Esporta i portafogli da Portafogli → Esporta per fare un backup.
+
+Aggiornare l'app: scarica di nuovo lo zip, estrailo in una nuova cartella e porta i tuoi portafogli con Esporta e Importa.

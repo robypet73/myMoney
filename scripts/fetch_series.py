@@ -7,6 +7,7 @@ Scrive un file per ISIN in data/p/ISIN.js (letto dalla pagina solo quando serve)
     python scripts/fetch_series.py [--top 150] [--isins IE00B3RBWM25,...]
 """
 import json
+import os
 import re
 import sys
 import time
@@ -17,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fetch_prices as fp  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent)
 OUT = ROOT / "data" / "p"
 SYMS = ROOT / "data" / "symbols.json"
 DEADLINE = time.time() + 5 * 3600  # il job GitHub si ferma a 6 ore

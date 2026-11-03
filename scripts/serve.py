@@ -5,23 +5,37 @@ senza GitHub e senza token. Solo libreria standard.
     python3 scripts/serve.py            # poi apri http://localhost:8000
     python3 scripts/serve.py --port 8080
     python3 scripts/serve.py --host 0.0.0.0   # raggiungibile anche dal telefono nella stessa rete (chiunque in rete può aprirlo)
+    python3 scripts/serve.py --abrir          # apre subito il browser (scheda); --finestra apre una finestra senza barra (Edge o Chrome)
+
+Su Windows c'è anche myMoney.exe (costruito da .github/workflows/windows.yml con PyInstaller): è questo stesso server, con Python incluso,
+che apre da solo il browser. I file dell'app stanno nella cartella dell'eseguibile; gli scarichi girano nello stesso processo (run_inproc).
 
 La pagina rileva il server (api/ping) e passa in modalità locale: ogni minuto chiede le quotazioni (api/update?kind=quotes) e
 rilegge i file; «Aggiorna» e l'aggiunta di un ETF senza prezzi scaricano serie, indice e composizione sul momento.
 I file scritti sono gli stessi dei workflow (prices.js, quotes.js, data/p/*.js, data/d/*.js, etfdata.js, catalog.js).
 """
+import contextlib
+import importlib
+import io
 import json
+import os
 import re
 import subprocess
 import sys
 import threading
 import time
+import urllib.request
+import webbrowser
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-ROOT = Path(__file__).resolve().parent.parent
+FROZEN = bool(getattr(sys, "frozen", False))  # dentro l'eseguibile di PyInstaller
+ROOT = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parent.parent
+os.environ["MYMONEY_ROOT"] = str(ROOT)  # dove gli script fetch_*.py scrivono i file
+if FROZEN:
+    sys.path.insert(0, str(Path(getattr(sys, "_MEIPASS", ROOT))))
 PY = sys.executable
 ISIN = re.compile(r"[A-Z]{2}[A-Z0-9]{9}\d")
 LOCK = threading.Lock()
@@ -36,7 +50,39 @@ KINDS = {
 }
 
 
+# nell'eseguibile non c'è un Python a parte: gli script girano nello stesso processo
+MODS = {"quotes": ("fetch_quotes", []), "prices": ("fetch_prices", []), "series": ("fetch_series", ["--force"]), "info": ("fetch_etf_data", ["--extra"]), "catalog": ("fetch_catalog", [])}
+
+
+def run_inproc(kind, isins):
+    _, _, takes = KINDS[kind]
+    name, base = MODS[kind]
+    if takes and not isins:
+        return {"ok": False, "error": "ISIN mancanti"}
+    args = list(base) + (["--isins", ",".join(isins)] if takes else [])
+    for m in ("fetch_prices", "fetch_quotes", "fetch_series", "fetch_etf_data", "fetch_catalog"):
+        sys.modules.pop(m, None)  # stato pulito a ogni esecuzione (cookie, scadenze, cache dei cambi)
+    old, buf, t0, ok = sys.argv, io.StringIO(), time.time(), True
+    sys.argv = [name + ".py"] + args
+    try:
+        mod = importlib.import_module(name)
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            mod.main()
+    except SystemExit as e:
+        ok = e.code in (None, 0)
+        if not ok:
+            buf.write(str(e.code))
+    except Exception as e:  # rete, formato, limiti
+        ok = False
+        buf.write(repr(e))
+    finally:
+        sys.argv = old
+    return {"ok": ok, "seconds": round(time.time() - t0, 1), "log": buf.getvalue().strip().splitlines()[-6:]}
+
+
 def run(kind, isins):
+    if FROZEN:
+        return run_inproc(kind, isins)
     cmd, timeout, takes = KINDS[kind]
     cmd = list(cmd)
     if takes:
@@ -107,12 +153,50 @@ class Server(ThreadingHTTPServer):
             super().handle_error(request, client_address)
 
 
+def pinged(port):
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/ping", timeout=2) as r:
+            return bool(json.load(r).get("local"))
+    except Exception:
+        return False
+
+
+def open_window(url, app):
+    """Scheda del browser predefinito, oppure (app=True) finestra senza barra con Edge o Chrome se ci sono."""
+    if app:
+        for base in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA"):
+            for rel in (r"Microsoft\Edge\Application\msedge.exe", r"Google\Chrome\Application\chrome.exe"):
+                exe = os.path.join(os.environ.get(base, ""), rel)
+                if os.environ.get(base) and os.path.exists(exe):
+                    subprocess.Popen([exe, f"--app={url}"])
+                    return
+    webbrowser.open(url)
+
+
 def main():
     a = sys.argv[1:]
     host = a[a.index("--host") + 1] if "--host" in a else "127.0.0.1"
     port = int(a[a.index("--port") + 1]) if "--port" in a else 8000
-    srv = Server((host, port), Handler)
-    print(f"myMoney locale: http://{'localhost' if host in ('127.0.0.1', '0.0.0.0') else host}:{port}  (Ctrl+C per fermare)")
+    abrir = "--abrir" in a or "--finestra" in a or FROZEN  # l'eseguibile apre sempre il browser
+    app = "--finestra" in a
+    srv = None
+    for p in range(port, port + 11):
+        if abrir and pinged(p):  # c'è già un myMoney acceso: basta aprire la scheda
+            print(f"myMoney è già acceso su http://localhost:{p}")
+            open_window(f"http://localhost:{p}", app)
+            return
+        try:
+            srv = Server((host, p), Handler)
+            port = p
+            break
+        except OSError:
+            continue
+    if srv is None:
+        sys.exit(f"Nessuna porta libera tra {port} e {port + 10}")
+    url = f"http://localhost:{port}" if host in ("127.0.0.1", "0.0.0.0") else f"http://{host}:{port}"
+    print(f"myMoney locale: {url}  (Ctrl+C o chiudi questa finestra per fermare)")
+    if abrir:
+        threading.Timer(0.8, open_window, (url, app)).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

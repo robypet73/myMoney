@@ -6,6 +6,7 @@
 Valori non attendibili (lontani oltre il 3% dall'ultimo prezzo: fuori orario sono vecchi) si scartano; i simboli non in EUR si convertono al cambio del momento.
 """
 import json
+import os
 import re
 import sys
 import time
@@ -16,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fetch_prices as fp  # noqa: E402
 import urllib.parse  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent)
 
 
 def symbols():

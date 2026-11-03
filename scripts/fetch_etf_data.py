@@ -11,6 +11,7 @@ Se un campo non si trova resta fuori dal file e l'app usa il valore già present
 """
 import html as htmllib
 import json
+import os
 import re
 import sys
 import time
@@ -135,7 +136,7 @@ def extra_targets():
 
 def run_extra(missing_only, only=None):
     """Scrive data/d/ISIN.js (indice, titoli principali, paesi, settori) per gli ETF monitorati."""
-    out = Path(__file__).resolve().parent.parent / "data" / "d"
+    out = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent) / "data" / "d"
     out.mkdir(parents=True, exist_ok=True)
     targets = [i for i in only if i not in ISINS] if only else extra_targets()
     todo = [i for i in targets if not (missing_only and (out / f"{i}.js").exists())]
@@ -167,7 +168,7 @@ def main():
         only = [i for i in args[args.index("--isins") + 1].replace(" ", "").upper().split(",") if re.fullmatch(r"[A-Z]{2}[A-Z0-9]{9}\d", i)] if "--isins" in args else None
         return run_extra("--missing" in args, only)
     only = set(args[args.index("--isins") + 1].split(",")) if "--isins" in args else None
-    path = Path(__file__).resolve().parent.parent / "etfdata.js"
+    path = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent) / "etfdata.js"
     data = {}
     for isin in ISINS:
         if only and isin not in only:

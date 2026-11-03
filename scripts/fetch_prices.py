@@ -11,6 +11,7 @@ Per ogni ISIN cerca il simbolo su Yahoo Finance. Se la ricerca sceglie la borsa 
 indica il simbolo a mano in SYMBOLS (es. "IE00B5BMR087": "CSPX.L").
 """
 import json
+import os
 import re
 import sys
 import time
@@ -166,7 +167,7 @@ def main():
     for s in out.values():
         s["last"].update(q.get(s["symbol"], {}))
     print(f"Bid/ask: {sum(1 for s in out.values() if s['last'].get('bid') and s['last'].get('ask'))} ETF su {len(out)}")
-    path = Path(__file__).resolve().parent.parent / "prices.js"
+    path = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent) / "prices.js"
     write(path, out)
     print(f"Scritto {path} ({len(out)} ETF su {len(ISINS)})")
     if watch:
