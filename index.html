@@ -262,6 +262,12 @@ select option, select optgroup { background: var(--raised); color: var(--fg); }
 #v-port #s-live, #v-port #s-nav, #v-port #s-ef { --tc: var(--c1); }
 #v-port #s-perf, #v-port #s-comp { --tc: var(--c2); }
 #v-port #s-risk, #v-port .bm-sec, #v-port #corr-sec { --tc: var(--c4); }
+#v-port #s-cf { --tc: var(--c3); }
+table.cf .nw { white-space: nowrap; }
+table.cf td small.pos { color: var(--up); } table.cf td small.neg { color: var(--down); }
+table.cf .gm { display: none; }
+@media (max-width: 600px) { table.cf .cfs, table.cf .cfg { display: none; } table.cf .gm { display: block; } table.cf { table-layout: fixed; width: 100%; min-width: 0; } table.cf td, table.cf th { white-space: normal; } table.cf th:first-child, table.cf td:first-child { width: 31%; } table.cf td:nth-child(2), table.cf th:nth-child(2) { text-align: right; } }
+table.cf td small { display: block; color: var(--soft); font-size: var(--fs-s); margin-top: 2px; }
 #v-port #s-alloc, #v-port #s-fc { --tc: var(--c3); }
 #v-port .live h3.sec-t { border-top: 0; margin: 0 0 12px; padding-top: 0; }
 #v-pfs #head-sec { --tc: var(--c2); }
@@ -522,7 +528,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.017</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.018</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -588,6 +594,10 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
     <ul class="leg hleg" id="hist-leg"></ul>
     <h3 class="sub">Acquisti e vendite</h3>
     <div class="scroll"><table class="eft lots" id="hist-ro"></table></div>
+  </section>
+  <section class="sec pf-sec" id="s-cf"><h3>Cashflow<button type="button" class="i" data-g="cf" aria-label="Informazioni: cashflow">i</button></h3>
+    <div class="kpi" id="cf-kpi"></div>
+    <div class="scroll"><table class="eft cf" id="cf-tbl"></table></div>
   </section>
   <section class="sec pf-sec" id="s-src"><h3>Fonti</h3><ul class="srcs" id="pf-src"></ul></section>
   <section class="sec pf-sec" id="s-fc"><h3>Previsioni sull'indice · fonti ufficiali<button type="button" class="i" data-g="prev" aria-label="Informazioni: previsioni">i</button></h3><div id="pf-fc"></div></section>
@@ -2117,7 +2127,7 @@ function renderPf() {
   $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = "Dettaglio · " + pfCur.name;
   renderPfs();
   $("to-draft").hidden = dr;
-  renderPos(); renderHist();
+  renderPos(); renderHist(); renderCash();
   if (!pfLots(pfCur).length) return renderEmpty();
   PF = pfBuild(pfCur); const P = PF, S = pfStats(P), val = P.V[P.last], inv = P.cost[P.last], pl = val - inv;
   const aEs = P.act.map(i => P.es[i]), nReal = aEs.filter(e => e.real).length; // solo gli ETF ancora in portafoglio
@@ -2167,7 +2177,7 @@ function fillSel() { const o = PFLIST.map(p => `<option value="${esc(p.id)}">${e
 // Sezioni senza dati da mostrare: nascoste del tutto (prima del disegno dei grafici, che si misurano sul contenitore visibile)
 const SEC_RULES = {
   "s-perf": () => !!PF, "s-risk": () => !!PF, "s-nav": () => !!PF, "s-comp": () => !!PF || !!(pfCur && pfCur.positions.length), "s-alloc": () => !!PF, "s-ef": () => !!EFH, "corr-sec": () => !!EFH,
-  "s-fc": () => !!PF && !!window.fcAny, "hist-sec": () => !!PF, "s-src": () => !!PF,
+  "s-fc": () => !!PF && !!window.fcAny, "s-cf": () => !!(pfCur && pfCur.positions.some(x => x.txs.length)), "hist-sec": () => !!PF, "s-src": () => !!PF,
   "perf-sec": () => !!PF, "ops-sec": () => !!(pfCur && pfCur.positions.length), "corr2-sec": () => !!EFH, "rb-sec": () => !!EF,
 };
 function syncSections() { for (const [id, ok] of Object.entries(SEC_RULES)) { const el = $(id); if (el) el.hidden = !ok(); } }
@@ -2475,6 +2485,25 @@ function renderPos() {
   DRSIZE = rows.filter(r => r.q > 0).map(r => ({ isin: r.e.isin, qty: r.q, price: r.pr }));
   $("dr-own").disabled = !DRSIZE.length;
 }
+// Cashflow: acquisti = uscite, vendite = entrate; plus/minusvalenza di ogni vendita = incasso − quote vendute × costo medio di carico di quel momento (stesso metodo di PMC; non è un calcolo fiscale)
+function cashRows(pf) {
+  const lots = [...pfLots(pf).filter(l => l.base), ...pf.positions.flatMap(x => x.txs.map(t => ({ isin: x.isin, date: t.date, qty: t.qty, price: t.price })))].sort(byDate), st = {}, rows = [];
+  let cum = 0;
+  for (const l of lots) {
+    const k = st[l.isin] || (st[l.isin] = { q: 0, c: 0 }), amt = Math.abs(l.qty * l.price);
+    if (l.qty > 0) { k.q += l.qty; k.c += l.qty * l.price; cum -= amt; rows.push({ ...l, flow: -amt, cum, gain: null, gp: null }); }
+    else { const sold = -l.qty, avg = k.q > 1e-12 ? k.c / k.q : 0, basis = sold * avg; k.q -= sold; k.c -= basis; cum += amt; rows.push({ ...l, flow: amt, cum, basis, gain: amt - basis, gp: basis > 0 ? amt / basis - 1 : null }); }
+  }
+  return rows;
+}
+function renderCash() {
+  const rows = cashRows(pfCur), buys = rows.filter(r => r.flow < 0), sells = rows.filter(r => r.flow > 0);
+  const out = buys.reduce((a, r) => a - r.flow, 0), inn = sells.reduce((a, r) => a + r.flow, 0), g = sells.reduce((a, r) => a + r.gain, 0), basis = sells.reduce((a, r) => a + r.basis, 0);
+  $("cf-kpi").innerHTML = [["Uscite (acquisti)", eur(out), ""], ["Entrate (vendite)", eur(inn), ""], ["Saldo", eurS(inn - out), cls(inn - out)], ["Plus/minusvalenza realizzata", sells.length ? eurS(g) : "—", sells.length ? cls(g) : ""]]
+    .map(([k, v, c]) => `<div><span class="k">${k}</span><span class="n ${c}">${v}</span></div>`).join("");
+  $("cf-tbl").innerHTML = rows.length ? `<thead><tr><th>Data · ETF</th><th>Importo</th><th class="cfg">Plus/minusvalenza</th><th class="cfs">Saldo</th></tr></thead><tbody>${rows.slice().reverse().map(r => { const e = byIsin(r.isin), buy = r.flow < 0;
+    return `<tr><td class="n nw">${dateTxt(dateMs(r.date), { day: "2-digit", month: "short", year: "2-digit" })}${r.base ? '<span class="wl">Iniziale · simulato</span>' : ""}<small>${eL(e)}</small></td><td class="n ${buy ? "" : "pos"}">${buy ? "−" : "+"} ${eur(Math.abs(r.flow))}<small>${buy ? "Acquisto" : "Vendita"} ${fmt(Math.abs(r.qty), Math.abs(r.qty - Math.round(r.qty)) < 1e-9 ? 0 : 2)} × ${fmt(r.price, 3)}</small>${buy ? "" : `<small class="gm ${cls(r.gain)}">Plus/minus ${eurS(r.gain)}${r.gp == null ? "" : " · " + pct(r.gp, 1)}</small>`}</td><td class="n cfg ${buy ? "" : cls(r.gain)}">${buy ? "—" : eurS(r.gain)}${buy || r.gp == null ? "" : `<small>${pct(r.gp, 1)}</small>`}</td><td class="n cfs ${cls(r.cum)}">${eurS(r.cum)}</td></tr>`; }).join("")}</tbody><tfoot><tr><td>Totale</td><td class="n">${eurS(inn - out)}<small>entrate − uscite</small>${sells.length ? `<small class="gm ${cls(g)}">Plus/minus ${eurS(g)}</small>` : ""}</td><td class="n cfg ${sells.length ? cls(g) : ""}">${sells.length ? eurS(g) : "—"}${basis > 0 ? `<small>${pct(g / basis, 1)}</small>` : ""}</td><td class="n cfs ${cls(inn - out)}">${eurS(inn - out)}</td></tr></tfoot>` : "";
+}
 function renderHist() {
   const pf = pfCur;
   if (!opEtf || !byIsin(opEtf)) opEtf = (pf.positions[0] || {}).isin || ETFS[0].isin;
@@ -2671,6 +2700,7 @@ const GL = {
 };
 // Spiegazioni dei criteri della ricerca guidata (g_<chiave>)
 Object.assign(GL, {
+  cf: { t: "Cashflow", what: "Le entrate e le uscite di denaro dovute alle operazioni: ogni acquisto è un'uscita, ogni vendita un'entrata. Per le vendite c'è la plus/minusvalenza realizzata: quanto hai incassato meno quanto ti era costato ciò che hai venduto.", use: "Vedere quanto capitale hai messo e ritirato nel tempo e quanto hai già guadagnato (o perso) con le vendite, a differenza dell'utile non realizzato delle posizioni ancora in portafoglio.", how: "Il costo di ciò che vendi è il costo medio di carico (PMC) di quell'ETF al momento della vendita, lo stesso metodo della Composizione. Non è un calcolo fiscale: non considera commissioni, imposte né il criterio fiscale (per gli ETF in Italia di norma il costo medio ponderato, ma verifica con il tuo intermediario). Il saldo è entrate meno uscite, cumulato nel tempo: se è negativo, hai investito più di quanto hai ritirato. Le righe «Iniziale · simulato» sono la quantità iniziale dei portafogli di simulazione.", ref: [["Saldo", "entrate − uscite, cumulato"], ["Plus/minusvalenza", "incasso − quote vendute × PMC"]] },
   folder: { t: "Salvataggio dei portafogli", what: "Dove myMoney tiene i portafogli: oltre che nel browser, in una cartella, un file JSON per portafoglio. Due scelte: «Cartella locale» (una cartella del dispositivo) e «Google Drive» (una cartella di Drive: i portafogli si sincronizzano da soli con il cloud e con gli altri tuoi dispositivi).", use: "Non perdere i portafogli se cambi browser o cancelli i dati, e avere gli stessi portafogli su PC e telefono.", how: "Premi «Cartella locale…» o «Google Drive…»: si apre la finestra di scelta della cartella (con Google Drive parte dalla cartella di Google Drive per desktop; su Android dal selettore, dove c'è anche Drive). Il percorso scelto compare sotto e puoi anche incollarlo a mano e premere Applica (solo su PC con myMoney.exe). I portafogli già presenti vengono scritti nella cartella e quelli della cartella letti; ogni portafoglio nuovo o modificato si salva da solo, e se un file cambia da un altro dispositivo la pagina lo rilegge quando ci torni. I portafogli eliminati finiscono nella sottocartella «_eliminati», mai cancellati. Se due dispositivi modificano lo stesso portafoglio insieme vince l'ultimo salvataggio. Nel browser serve Chrome o Edge e il permesso va riconfermato a ogni sessione.", ref: [["File", "un JSON per portafoglio, nome = titolo"], ["_impostazioni.json", "portafoglio predefinito"], ["_eliminati", "portafogli tolti dall'app"]] },
   g_type: { t: "Tipologia", what: "ETF è un fondo quotato; ETC è un titolo legato a una materia prima (oro, petrolio…); ETN/ETP sono note o prodotti strutturati, spesso su criptovalute, il cui valore dipende anche dall'emittente.", use: "Distingue strumenti con rischi diversi: nell'ETF il patrimonio è separato da quello della società che lo gestisce, in ETC ed ETN no.", how: "Per cominciare lascia «ETF». Scegli ETC o ETN/ETP solo se vuoi materie prime o cripto e accetti il rischio dell'emittente. Dedotta dal nome del fondo, quindi indicativa.", ref: [["ETF", "scelta di base, patrimonio separato"], ["ETC", "materie prime, rischio emittente"], ["ETN/ETP", "il più rischioso: cripto, prodotti strutturati"]] },
   g_dist: { t: "Distribuzione", what: "Accumulazione (ACC): i dividendi o le cedole restano nel fondo e fanno salire il prezzo. Distribuzione (DIST): il fondo ti paga i proventi periodicamente.", use: "Decide se vuoi far crescere il capitale o ricevere un flusso di reddito.", how: "Per accumulare nel lungo periodo scegli Accumulazione; se ti serve un reddito regolare, Distribuzione. Il rendimento totale lordo è simile: cambia il momento in cui i proventi sono tassati, da valutare sulla tua situazione fiscale.", ref: [["Accumulazione", "crescita composta, nessun incasso"], ["Distribuzione", "incassi periodici da reinvestire o spendere"]] },
