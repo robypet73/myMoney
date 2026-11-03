@@ -17,7 +17,7 @@ Primo avvio: Windows SmartScreen può dire «Windows ha protetto il PC» perché
 Clicca «Maggiori informazioni» e poi «Esegui comunque». Se l'antivirus chiede il permesso di rete, consentilo (serve per scaricare i prezzi).
 
 Prezzi e dati: myMoney li scarica da solo da Yahoo Finance e justETF (ogni minuto le quotazioni) e li salva in questa cartella.
-Portafogli: restano nella finestra di myMoney (cartella dati-finestra). Per tenerli al sicuro e portarli su altri PC: Portafogli → «Cartella dei portafogli», scrivi la cartella (per esempio dentro Google Drive: G:\Il mio Drive\myMoney) e premi Collega: ogni portafoglio diventa un file JSON, sincronizzato da Google Drive per desktop.
+Portafogli: restano nella finestra di myMoney (cartella dati-finestra). Per tenerli al sicuro e portarli su altri PC: Portafogli → «Salvataggio dei portafogli»: scegli «Google Drive» (compare la cartella di Google Drive per desktop) oppure «Cartella locale», scrivi il percorso e premi Collega: ogni portafoglio diventa un file JSON, sincronizzato da Google Drive per desktop.
 In alternativa Portafogli → Esporta per un backup.
 
 Aggiornare l'app: scarica di nuovo lo zip, estrailo in una nuova cartella e porta i tuoi portafogli con Esporta e Importa.

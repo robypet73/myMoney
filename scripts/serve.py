@@ -17,7 +17,6 @@ rilegge i file; «Aggiorna» e l'aggiunta di un ETF senza prezzi scaricano serie
 I file scritti sono gli stessi dei workflow (prices.js, quotes.js, data/p/*.js, data/d/*.js, etfdata.js, catalog.js).
 """
 import contextlib
-import hashlib
 import importlib
 import io
 import json
@@ -97,42 +96,6 @@ def drive_candidates():
     return [str(p) for p in c if p.is_dir()]
 
 
-def pf_files():
-    """[(percorso, dati)] dei file JSON validi nella cartella (esclusi quelli che iniziano con «_»)."""
-    out = []
-    for f in sorted(Path(STATE["folder"]).glob("*.json")):
-        if f.name.startswith("_"):
-            continue
-        try:
-            out.append((f, json.loads(f.read_text(encoding="utf-8"))))
-        except Exception:
-            pass
-    return out
-
-
-def pf_read():
-    folder = STATE["folder"]
-    pfs, stamp = [], hashlib.md5()
-    for f, d in pf_files():
-        st = f.stat()
-        stamp.update(f"{f.name}{st.st_mtime_ns}{st.st_size}".encode())
-        if isinstance(d.get("portfolio"), dict):
-            pfs.append(d["portfolio"])
-        elif isinstance(d.get("portfolios"), list):
-            pfs += [x for x in d["portfolios"] if isinstance(x, dict)]
-    default = None
-    try:
-        default = json.loads((Path(folder) / "_impostazioni.json").read_text(encoding="utf-8")).get("default")
-    except Exception:
-        pass
-    return {"ok": True, "folder": folder, "portfolios": pfs, "default": default, "stamp": stamp.hexdigest()}
-
-
-def safe_name(name, pid):
-    n = re.sub(r'[\\/:*?"<>|\x00-\x1f]+', "-", str(name or "")).strip(" .-")[:60]
-    return n or re.sub(r"[^A-Za-z0-9_-]+", "-", str(pid))[:40] or "portafoglio"
-
-
 def write_if_changed(path, text):
     try:
         if path.read_text(encoding="utf-8") == text:
@@ -143,40 +106,39 @@ def write_if_changed(path, text):
     return True
 
 
-def pf_write(pfs, default, removed):
-    """Scrive i portafogli (un file ciascuno) e sposta in «_eliminati» quelli tolti dall'app: non cancella mai nulla."""
+def ok_name(n):
+    return isinstance(n, str) and n.endswith(".json") and len(n) > 5 and not re.search(r'[\\/\x00]', n) and not n.startswith("..")
+
+
+def fs_list():
+    """File JSON della cartella: la logica dei portafogli (nomi, rinomina, eliminati) sta nella pagina, uguale per PC, browser e Android."""
+    files = []
+    for f in sorted(Path(STATE["folder"]).glob("*.json")):
+        try:
+            files.append({"name": f.name, "text": f.read_text(encoding="utf-8"), "mtime": f.stat().st_mtime_ns // 1000000})
+        except Exception:
+            pass
+    return {"ok": True, "folder": STATE["folder"], "files": files}
+
+
+def fs_apply(b):
+    """write: [{name, text}] (solo se cambia); trash: [name] in «_eliminati»; remove: [name] (portafogli rinominati). Mai altro."""
     folder = Path(STATE["folder"])
-    by_id = {}
-    for f, d in pf_files():
-        for x in ([d["portfolio"]] if isinstance(d.get("portfolio"), dict) else d.get("portfolios") or []):
-            if isinstance(x, dict) and x.get("id"):
-                by_id[x["id"]] = f
-    used = {f.name for f in by_id.values()}
-    for pf in pfs:
-        pid = str(pf.get("id") or "")
-        if not pid:
-            continue
-        old = by_id.get(pid)
-        name = safe_name(pf.get("name"), pid) + ".json"
-        if old and old.name == name:
-            target = old
-        else:
-            if name in used or (folder / name).exists():
-                name = safe_name(pf.get("name"), pid) + f" ({re.sub('[^A-Za-z0-9]', '', pid)[:6]}).json"
-            target = folder / name
-        write_if_changed(target, json.dumps({"version": 2, "portfolio": pf}, indent=2, ensure_ascii=False))
-        used.add(target.name)
-        if old and old != target and old.exists():  # portafoglio rinominato: via il file col vecchio nome
-            old.unlink()
-    trash = folder / "_eliminati"
-    for pid in removed or []:
-        f = by_id.get(pid)
-        if f and f.exists() and pid not in {str(p.get("id")) for p in pfs}:
-            trash.mkdir(exist_ok=True)
-            shutil.move(str(f), str(trash / f.name))
-    if default:
-        write_if_changed(folder / "_impostazioni.json", json.dumps({"default": default}, ensure_ascii=False))
-    return pf_read()
+    for w in b.get("write") or []:
+        if ok_name(w.get("name")):
+            write_if_changed(folder / w["name"], str(w.get("text") or ""))
+    for n in b.get("trash") or []:
+        if ok_name(n) and (folder / n).exists():
+            t = folder / "_eliminati"
+            t.mkdir(exist_ok=True)
+            dest = t / n
+            if dest.exists():
+                dest = t / f"{dest.stem} ({int(time.time())}).json"
+            shutil.move(str(folder / n), str(dest))
+    for n in b.get("remove") or []:
+        if ok_name(n) and (folder / n).exists():
+            (folder / n).unlink()
+    return fs_list()
 
 
 # nell'eseguibile non c'è un Python a parte: gli script girano nello stesso processo
@@ -259,7 +221,7 @@ class Handler(SimpleHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path == "/api/ping":
             return self.reply(200, {"ok": True, "local": True, "folder": STATE["folder"]})
-        if u.path in ("/api/pf", "/api/config", "/api/drive"):
+        if u.path in ("/api/fs", "/api/config", "/api/drive"):
             if self.command == "POST" and not self.same_origin():
                 return self.reply(403, {"ok": False, "error": "origine non consentita"})
             try:
@@ -270,10 +232,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return self.reply(200, {"ok": True, "folder": STATE["folder"]})
                 if not STATE["folder"]:
                     return self.reply(200, {"ok": False, "error": "nessuna cartella scelta"})
-                if self.command == "POST":
-                    b = self.body()
-                    return self.reply(200, pf_write(b.get("portfolios") or [], b.get("default"), b.get("removed") or []))
-                return self.reply(200, pf_read())
+                return self.reply(200, fs_apply(self.body()) if self.command == "POST" else fs_list())
             except Exception as e:
                 return self.reply(200, {"ok": False, "error": str(e)})
         if u.path != "/api/update":

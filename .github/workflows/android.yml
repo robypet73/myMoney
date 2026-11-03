@@ -45,6 +45,8 @@ jobs:
           cp overlay/java/*.java $main/java/it/robypet73/mymoney/
           cp -r overlay/res/. $main/res/
           python3 overlay/patch_manifest.py $main/AndroidManifest.xml overlay/receiver.xml overlay/permissions.xml
+          sed -i '0,/^dependencies {/s//dependencies {\n    implementation "androidx.documentfile:documentfile:1.0.1"/' android/app/build.gradle
+          grep -n "documentfile" android/app/build.gradle
       - name: Icona e versione
         working-directory: app-android/android/app/src/main
         run: |
