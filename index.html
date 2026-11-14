@@ -402,7 +402,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 .gl li span.n { text-align: right; }
 .gl .lk { display: grid; gap: 6px; }
 .gl .lk a { color: var(--fg); text-underline-offset: 3px; }
-#addto, #newpf { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
+#addto, #newpf, #combpf, #renpf { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
@@ -442,6 +442,14 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 .pf-meta input { max-width: 560px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); padding: 6px 0; font-family: inherit; }
 #pf-name { font-size: var(--fs-m); font-weight: 500; }
 #pf-descr { font-size: var(--fs-s); color: var(--soft); }
+.cbl { display: grid; gap: 6px; max-height: 300px; overflow: auto; }
+.cbr { display: grid; grid-template-columns: auto minmax(0, 1fr) 64px auto; align-items: center; gap: 10px; font-size: var(--fs-s); padding: 6px 0; border-bottom: 1px solid var(--hair); }
+.cbr .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cbr .nm small { color: var(--soft); margin-left: 6px; }
+.cbr input[type="checkbox"] { accent-color: var(--fg); width: 16px; height: 16px; margin: 0; }
+.cbr input.cbw { width: 100%; box-sizing: border-box; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 10px; padding: 6px 8px; font: inherit; font-size: var(--fs-s); text-align: right; }
+.cbr input.cbw:disabled { opacity: .35; }
+.cbt { display: flex; justify-content: space-between; font-size: var(--fs-s); font-weight: 500; padding-top: 2px; }
 .at h2 { font-size: var(--fs-m); font-weight: 500; letter-spacing: -.03em; margin: 0; }
 .at select { border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 99px; padding: 8px 14px; font-size: var(--fs-m); max-width: 100%; }
 .at .lotform { margin: 0; align-items: center; }
@@ -539,7 +547,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.023</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.024</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -620,7 +628,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
     <div class="lotform"><input id="folder-path" type="text" placeholder="Nessuna cartella: scegline una o incolla il percorso" autocomplete="off" spellcheck="false" aria-label="Percorso della cartella"><button type="button" id="folder-save">Applica</button><button type="button" id="folder-clear" class="ghost">Scollega</button></div>
     <p class="fc-note" id="folder-msg" aria-live="polite"></p>
   </section>
-  <section class="sec pf-sec" id="list-sec"><section class="pfs-head"><h2>I tuoi portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></section>
+  <section class="sec pf-sec" id="list-sec"><section class="pfs-head"><h2>I tuoi portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><span class="io"><button type="button" class="ghost" id="pfs-comb">Combina portafogli</button><button type="button" class="primary" id="pfs-new">+ Nuovo portafoglio</button></span></section>
   <div id="pfs-list"></div></section>
   <div class="io"><button type="button" class="primary" id="install" hidden>Installa app</button></div>
 <div id="pf-edit">
@@ -782,6 +790,15 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
   <textarea id="np-json" placeholder="Oppure incolla un JSON per inizializzare il portafoglio" rows="3" spellcheck="false" aria-label="JSON"></textarea>
   <div class="io"><button type="button" class="ghost" id="np-pick">Carica JSON</button><input id="np-file" type="file" class="vh" tabindex="-1" aria-hidden="true"><span id="np-msg" class="fc-note" aria-live="polite"></span></div>
   <div class="io"><button type="submit" class="primary">Crea</button><button type="button" class="ghost" id="np-cancel">Annulla</button></div>
+</form></dialog>
+<dialog id="combpf" aria-labelledby="cb-title"><form id="cb-form" class="at">
+  <div class="d-top"><h2 id="cb-title">Combina portafogli<button type="button" class="i" data-g="comb" aria-label="Informazioni: combina portafogli">i</button></h2><button type="button" class="icon close" id="cb-x" aria-label="Chiudi">×</button></div>
+  <div class="cbl" id="cb-list"></div>
+  <div class="cbt"><span>Totale</span><span id="cb-tot">0%</span></div>
+  <input id="cb-name" placeholder="Titolo" maxlength="80" required autocomplete="off" aria-label="Titolo">
+  <label class="pf"><span class="gl2">Importo €</span><input id="cb-amt" type="text" inputmode="decimal" autocomplete="off" aria-label="Importo"></label>
+  <p id="cb-msg" class="fc-note" aria-live="polite"></p>
+  <div class="io"><button type="submit" class="primary">Crea portafoglio</button><button type="button" class="ghost" id="cb-cancel">Annulla</button></div>
 </form></dialog>
 <dialog id="renpf" aria-labelledby="rn-title"><form id="rn-form" class="at">
   <div class="d-top"><h2 id="rn-title">Rinomina portafoglio</h2><button type="button" class="icon close" id="rn-x" aria-label="Chiudi">×</button></div>
@@ -2701,6 +2718,7 @@ const GL = {
   retro: { t: "Storico dei titoli", what: "«Dall'acquisto» è il valore reale del tuo portafoglio da quando hai registrato i movimenti. «Storico titoli» mostra come sarebbe andato nel tempo il valore delle quote che possiedi oggi, se le avessi avute per tutta la storia disponibile dei loro prezzi (fino al lancio dell'ETF).", use: "Serve a guardare l'andamento di lungo periodo di ciò che hai in portafoglio anche se l'hai comprato da poco: 1A, 3A, 5A e Max seguono la storia dei prezzi.", how: "È una simulazione con le quote di oggi, senza acquisti e vendite passati: non è il tuo rendimento effettivo. Se un ETF ha pochi prezzi, la storia parte dal suo primo prezzo.", ref: [["Rendimento reale", "scheda «Dall\'acquisto» e indicatori in alto"]] },
   storico: { t: "Storico del portafoglio", what: "Come sono cambiati nel tempo il valore e la composizione del portafoglio, ETF per ETF, in base alle quantità possedute e ai prezzi di ogni giorno. I punti sull'asse sono gli acquisti (verdi) e le vendite (rossi).", use: "Mostra l'effetto delle tue operazioni: quando hai aumentato o ridotto un ETF e come è cambiato il peso di ciascuno.", how: "«Valore» mostra l'importo per ETF in euro con la linea tratteggiata dell'investito; «Composizione» mostra la quota percentuale; «Investito» mostra solo la linea tratteggiata del capitale netto versato, con sotto barre verdi (acquisti) e rosse (vendite) per data, in euro al prezzo pagato o incassato. Le righe «Iniziale · simulato» sono quantità senza data: si considerano aperte alla data «Da». Con prezzi simulati anche il grafico lo è.", ref: [] },
   prev: { t: "Previsioni sull'indice", what: "Obiettivi pubblicati da banche d'investimento per l'indice che l'ETF replica (non per l'ETF), con orizzonti diversi indicati su ogni riga.", use: "Danno un'idea delle aspettative degli analisti.", how: "Guarda l'intervallo tra le banche, non un singolo numero. La media sul portafoglio copre solo gli ETF con previsioni disponibili. Ogni riga rimanda alla fonte.", ref: [["Affidabilità", "le previsioni a 12 mesi sbagliano spesso di molti punti"]] },
+  comb: { t: "Combina portafogli", what: "Crea un nuovo portafoglio unendo le composizioni attuali di portafogli che hai già in app, ciascuno con il peso che scegli. Se lo stesso ETF compare in più portafogli, i pesi si sommano.", use: "Serve per vedere come si comporta un insieme di portafogli (per esempio uno prudente e uno dinamico) come se fosse uno solo: frontiera, correlazioni e benchmark si calcolano sul nuovo portafoglio.", how: "Spunta i portafogli e imposta il peso di ciascuno (i pesi si normalizzano a 100%). Il nuovo portafoglio è un draft: ETF con i pesi risultanti sull'importo indicato, a partire dalla data in cui tutti gli ETF esistono. Gli originali non cambiano.", ref: [] },
   draft: { t: "Draft e acquistato", what: "Un portafoglio con operazioni (data, quantità, prezzo) è acquistato. Senza operazioni è un draft: una simulazione con ETF, quantità o pesi e importo.", use: "Il draft serve a dimensionare un investimento e a provare come sarebbe andato dalla data scelta.", how: "Imposta importo, data e pesi. Se un ETF è nato dopo la data, la simulazione parte dal suo lancio. «Registra acquisti a oggi» trasforma le quantità in operazioni ai prezzi correnti.", ref: [] },
   dim: { t: "Dimensionamento", what: "Dall'importo e dai pesi calcola quante quote intere comprare ai prezzi correnti.", use: "Ti dice quanto spendere per ETF e quanto resta non investito.", how: "Il residuo è dovuto alle quote intere. Non include commissioni del broker.", ref: [] },
   ter: { t: "TER (costo annuo)", what: "Costo annuo di gestione in percentuale del patrimonio. È già dentro il prezzo, non si paga a parte.", use: "Permette di confrontare ETF che replicano lo stesso indice.", how: "Confronta solo ETF simili. 0,10 punti in più su 10.000 € sono 10 € l'anno, e si sommano negli anni. Il TER non include spread, commissioni di negoziazione e differenze di replica.", ref: [["ETF S&P 500 (justETF)", "0,03–0,19%"], ["ETF MSCI World (justETF)", "0,05–0,50%"], ["Obbligazioni governative", "0,05–0,20%"], ["Tematici e settoriali", "0,35–0,70%"]], links: ["ter", "scelta"] },
@@ -3362,6 +3380,47 @@ $("np-form").addEventListener("submit", ev => {
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
 $("pfs-new").addEventListener("click", openNew);
+// Combina portafogli: unisce le composizioni attuali (per valore) dei portafogli scelti, ciascuno col suo peso, in un nuovo draft
+const cbMsg = (t, bad) => { const m = $("cb-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
+function cbSync(redistribute) {
+  const rows = [...document.querySelectorAll("#cb-list .cbr")], on = rows.filter(r => r.querySelector('input[type="checkbox"]').checked);
+  rows.forEach(r => { r.querySelector(".cbw").disabled = !r.querySelector('input[type="checkbox"]').checked; });
+  if (redistribute) { const w = on.length ? Math.round(1000 / on.length) / 10 : 0; rows.forEach(r => { r.querySelector(".cbw").value = r.querySelector('input[type="checkbox"]').checked ? w : ""; }); }
+  const tot = on.reduce((a, r) => a + (+r.querySelector(".cbw").value || 0), 0);
+  $("cb-tot").textContent = fmt(tot, 1) + "%";
+  const val = on.reduce((a, r) => { const p = PFLIST.find(x => x.id === r.dataset.id), v = p && pfSummary(p).val; return a + (v || 0); }, 0);
+  if (redistribute && val > 0) $("cb-amt").value = Math.round(val);
+}
+$("pfs-comb").addEventListener("click", () => {
+  if (!keepDirty()) return;
+  $("cb-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p); return `<label class="cbr" data-id="${esc(p.id)}"><input type="checkbox"><span class="nm">${esc(p.name)}<small>${s.val != null ? eur(s.val) : s.n + " ETF"}</small></span><input class="cbw" type="number" min="0" max="100" step="1" inputmode="decimal" disabled aria-label="Peso di ${esc(p.name)} in %"><span>%</span></label>`; }).join("");
+  $("cb-name").value = `Combinazione ${USER.length + 1}`; $("cb-amt").value = 10000; cbMsg(""); cbSync(true); $("combpf").showModal();
+});
+$("cb-list").addEventListener("change", ev => { if (ev.target.type === "checkbox") cbSync(true); else cbSync(false); });
+$("cb-list").addEventListener("input", ev => { if (ev.target.classList.contains("cbw")) cbSync(false); });
+$("combpf").addEventListener("click", ev => { if (ev.target.id === "cb-cancel" || ev.target.closest("#cb-x") || ev.target === $("combpf")) $("combpf").close(); });
+$("cb-form").addEventListener("submit", async ev => {
+  ev.preventDefault(); const nm = $("cb-name").value.trim(), amt = parseFloat($("cb-amt").value.replace(/\./g, "").replace(",", "."));
+  const sel = [...document.querySelectorAll("#cb-list .cbr")].filter(r => r.querySelector('input[type="checkbox"]').checked).map(r => ({ p: PFLIST.find(x => x.id === r.dataset.id), w: +r.querySelector(".cbw").value || 0 })).filter(x => x.p && x.w > 0);
+  if (sel.length < 2) return cbMsg("Scegli almeno due portafogli, con un peso maggiore di zero", true);
+  if (!nm || !(amt > 0)) return cbMsg("Servono titolo e importo", true);
+  const sw = sel.reduce((a, x) => a + x.w, 0), btn = $("cb-form").querySelector(".primary"); btn.disabled = true; cbMsg("Carico i prezzi…");
+  try {
+    const isins = [...new Set(sel.flatMap(x => x.p.positions.map(q => q.isin)))];
+    await Promise.all(isins.map(i => byIsin(i) && !byIsin(i).s ? loadSeries(i, !!byIsin(i).tried) : null));
+    const W = new Map(), noPx = [];
+    for (const { p, w } of sel) {
+      let part = []; // [isin, quota del portafoglio]
+      try { if (pfLots(p).length) { const P = pfBuild(p), v = P.act.map(i => P.qty[i] * P.es[i].live), t = v.reduce((a, b) => a + b, 0); if (t > 0) part = P.act.map((i, k) => [P.es[i].isin, v[k] / t]); } } catch {}
+      if (!part.length) { const live = p.positions.filter(q => !(q.txs.length && !pfLots(p).some(l => l.isin === q.isin))); if (!live.length) continue; noPx.push(p.name); part = live.map(q => [q.isin, 1 / live.length]); }
+      part.forEach(([i, f]) => W.set(i, (W.get(i) || 0) + (w / sw) * f * 100));
+    }
+    if (!W.size) return cbMsg("I portafogli scelti non hanno posizioni", true);
+    const pf = mkPf({ id: newId(), name: nm, description: "Combinazione: " + sel.map(x => `${x.p.name.replace("Prova · ", "")} ${fmt(x.w / sw * 100, 0)}%`).join(" + "), amount: Math.round(amt), start: defStart([...W.keys()]), positions: [...W].sort((a, b) => b[1] - a[1]).map(([i, w]) => mkPos(i, { weight: Math.round(w * 100) / 100 })) });
+    $("combpf").close(); ORIG = null; USER.unshift(pf); commit(pf.id); showEditor(); msg(`Creato: ${pf.name}${noPx.length ? ` · senza prezzi (pesi uguali): ${noPx.join(", ")}` : ""}`);
+  } catch (e) { cbMsg("Non riuscito: " + (e && e.message || e), true); }
+  finally { btn.disabled = false; }
+});
 $("pf-descr").addEventListener("change", ev => { if (pfCur.sample) return; const v = ev.target.value.trim().slice(0, 500); editPf(c => { c.description = v; }); });
 let rt2; window.addEventListener("resize", () => { clearTimeout(rt2); rt2 = setTimeout(() => { if (!$("v-port").hidden) { drawPfNav(); drawEF(); drawHist(); drawBm(); } else if (!$("v-pfs").hidden) { drawEF(); drawBm(); } }, 120); });
 
