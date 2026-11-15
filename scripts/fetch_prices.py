@@ -79,7 +79,14 @@ def candidates(isin, ticker=None):
     data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 10, "newsCount": 0}))
     out = [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
     ticker = ticker or ISINS.get(isin)
-    out += EXTRA.get(isin, []) + ([ticker + s for s in SUFFIXES] if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker) else [])
+    by_ticker = []
+    if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker):  # ETF quotati solo altrove (es. CJPU.L a Londra): la ricerca per ticker trova il simbolo con lo stesso ticker
+        try:
+            d2 = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": ticker, "quotesCount": 10, "newsCount": 0}))
+            by_ticker = [q["symbol"] for q in d2.get("quotes", []) if q.get("quoteType") == "ETF" and q.get("symbol") and q["symbol"].split(".")[0].upper() == ticker.upper()]
+        except Exception:
+            pass
+    out += EXTRA.get(isin, []) + by_ticker + ([ticker + s for s in SUFFIXES] if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker) else [])
     return list(dict.fromkeys(out))
 
 

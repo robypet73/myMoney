@@ -115,7 +115,11 @@
     const j = await getJson(Q1 + "/v1/finance/search?" + new URLSearchParams({ q: isin, quotesCount: 10, newsCount: 0 }));
     const out = (j.quotes || []).filter(q => ["ETF", "MUTUALFUND", "EQUITY"].includes(q.quoteType) && q.symbol).map(q => q.symbol);
     ticker = ticker || ISINS[isin];
-    return [...new Set(out.concat(EXTRA[isin] || [], ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker) ? SUFFIXES.map(s => ticker + s) : []))];
+    let byT = []; // ETF quotati solo altrove (es. CJPU.L a Londra): la ricerca per ticker trova il simbolo con lo stesso ticker
+    if (ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker)) {
+      try { const j2 = await getJson(Q1 + "/v1/finance/search?" + new URLSearchParams({ q: ticker, quotesCount: 10, newsCount: 0 })); byT = (j2.quotes || []).filter(q => q.quoteType === "ETF" && q.symbol && q.symbol.split(".")[0].toUpperCase() === ticker.toUpperCase()).map(q => q.symbol); } catch {}
+    }
+    return [...new Set(out.concat(EXTRA[isin] || [], byT, ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker) ? SUFFIXES.map(s => ticker + s) : []))];
   }
   const chartUrl = (sym, qs) => `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?${qs}&interval=1d`;
   const maxQs = () => "period1=0&period2=" + Math.floor(Date.now() / 1000);
