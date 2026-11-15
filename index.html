@@ -443,9 +443,10 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 .bm-leg i + i { margin-left: 8px; }
 .bm-sec[hidden] { display: none; }
 .chk2 { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); color: var(--soft); }
+#ops-sec > h3 { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#ops-sec > h3 button { font-size: var(--fs-s); padding: 6px 12px; }
 .pf-meta { display: grid; gap: 4px; padding-top: 12px; }
 .pf-meta input { max-width: 560px; border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); padding: 6px 0; font-family: inherit; }
-#pf-name { font-size: var(--fs-m); font-weight: 500; }
 #pf-descr { font-size: var(--fs-s); color: var(--soft); }
 .cbl { display: grid; gap: 6px; max-height: 300px; overflow: auto; }
 .cbr { display: grid; grid-template-columns: auto minmax(0, 1fr) 64px auto; align-items: center; gap: 10px; font-size: var(--fs-s); padding: 6px 0; border-bottom: 1px solid var(--hair); }
@@ -514,7 +515,6 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 .lotform button { border: 0; background: var(--fg); color: var(--bg); border-radius: 99px; padding: 7px 18px; font-size: var(--fs-s); cursor: pointer; }
 .fc-note.err { color: var(--down); }
 .rn { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
-#pf-name { border: 0; border-bottom: 1px solid var(--hair); background: transparent; color: var(--fg); font-size: var(--fs-m); padding: 4px 0; min-width: 0; flex: 1; max-width: 320px; }
 .del { border: 0; background: none; color: var(--soft); cursor: pointer; padding: 0 2px; font-size: var(--fs-m); line-height: 1; }
 .del:hover { color: var(--down); }
 #io-msg { font-size: var(--fs-s); color: var(--soft); }
@@ -552,7 +552,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.041</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.042</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -615,7 +615,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
     <div class="price"><span></span><div class="periods" role="group" aria-label="Grafico" id="hist-mode"><button type="button" data-m="val" aria-pressed="true">Valore</button><button type="button" data-m="pct" aria-pressed="false">Composizione</button><button type="button" data-m="inv" aria-pressed="false">Investito</button></div></div>
     <div class="chart" id="hist-chart"></div>
     <ul class="leg hleg" id="hist-leg"></ul>
-    <h3 class="sub">Acquisti e vendite</h3>
+    <h3 class="sub">Movimenti</h3>
     <div class="scroll"><table class="eft lots" id="hist-ro"></table></div>
   </section>
   <section class="sec pf-sec" id="s-cf"><h3>Cashflow<button type="button" class="i" data-g="cf" aria-label="Informazioni: cashflow">i</button></h3>
@@ -672,9 +672,8 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
   <div class="io"><button type="button" class="primary" id="install" hidden>Installa app</button></div>
 <div id="pf-edit">
   <section class="sec pf-sec" id="head-sec">
-    <div class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="ed-open">Monitoraggio</button><button type="button" class="ghost" id="ed-exp">Esporta</button><button type="button" class="ghost" id="ed-ren">Rinomina</button><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></div>
+    <div class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="ed-open">Monitoraggio</button><button type="button" class="ghost" id="ed-exp">Esporta</button><button type="button" class="ghost" id="to-draft">Duplica</button></div></div>
     <div class="pf-meta" id="pf-meta">
-      <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
       <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
     </div>
   </section>
@@ -698,15 +697,15 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
     <div class="scroll"><table class="eft" id="dr-size"></table></div>
     <div class="io"><button type="button" id="dr-own">Registra acquisti a oggi</button></div>
   </section>
-  <section class="sec pf-sec" id="ops-sec">    <h3>Acquisti e vendite</h3>
-    <form class="lotform" id="op-form">
+  <section class="sec pf-sec" id="ops-sec"><h3>Movimenti<button type="button" class="primary" id="op-new">Nuovo movimento</button></h3>
+    <form class="lotform" id="op-form" hidden>
       <select id="op-op" aria-label="Operazione"><option value="1">Acquisto</option><option value="-1">Vendita</option></select>
       <input id="op-etf" list="etf-dl" placeholder="ETF (nome o ISIN)" autocomplete="off" aria-label="ETF">
       <input id="op-date" type="date" aria-label="Data" required>
       <input id="op-qty" type="number" min="0" step="any" placeholder="Quote" aria-label="Numero di quote" required>
       <select id="op-mode" aria-label="Tipo di prezzo"><option value="u">Prezzo medio</option><option value="t">Prezzo totale</option></select>
-      <input id="op-price" type="number" min="0" step="0.001" placeholder="€ medio per quota" aria-label="Prezzo" required>
-      <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel" hidden>Annulla</button>
+      <input id="op-price" type="number" min="0" step="0.001" placeholder="€ medio per quota" aria-label="Prezzo">
+      <button type="submit" id="op-submit">Aggiungi</button><button type="button" id="op-cancel">Annulla</button>
     </form>
     <p class="fc-note" id="op-name"></p>
     <p class="fc-note" id="hist-msg" aria-live="polite"></p>
@@ -2184,8 +2183,8 @@ function renderPf() {
   const need = pfCur.positions.map(x => byIsin(x.isin)).filter(e => e && !e.s && !e.tried);
   if (need.length) { const id = pfCur.id; Promise.all(need.map(e => loadSeries(e.isin))).then(() => { if (pfCur && pfCur.id === id) renderPf(); }); }
   const dr = isDraft(pfCur);
-  const own = !pfCur.sample; $("pf-name").hidden = !own; $("pf-descr").hidden = !own; $("pf-name").value = pfCur.name; $("pf-descr").value = pfCur.description || "";
-  $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = "Dettaglio · " + pfCur.name;
+  const own = !pfCur.sample; $("pf-descr").hidden = !own; $("pf-descr").value = pfCur.description || "";
+  $("pf-desc-ro").hidden = !pfCur.description; $("pf-desc-ro").textContent = pfCur.description || ""; $("ed-title").textContent = pfCur.name;
   renderPfs();
   $("to-draft").hidden = dr;
   renderPos(); renderHist(); renderCash();
@@ -2569,10 +2568,8 @@ function renderCash() {
 }
 function renderHist() {
   const pf = pfCur;
-  if (!opEtf || !byIsin(opEtf)) opEtf = (pf.positions[0] || {}).isin || ETFS[0].isin;
-  if (document.activeElement !== $("op-etf")) $("op-etf").value = opEtf; { const e = byIsin(resolveEtf($("op-etf").value)); $("op-name").textContent = e ? e.name + (e.s ? "" : " · prezzi non scaricati") : ""; }
-  $("op-date").max = ymd(Date.now()); if (!$("op-date").value) $("op-date").value = ymd(Date.now());
-  if (!$("op-price").value) opSuggest();
+  { const e = byIsin(resolveEtf($("op-etf").value)); $("op-name").textContent = e ? e.name + (e.s ? "" : " · prezzi non scaricati") : ""; }
+  $("op-date").max = ymd(Date.now());
   const lots = pfLots(pf).reverse();
   // Home: stessi movimenti in sola lettura (senza modifica né eliminazione)
   $("hist-ro").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
@@ -3217,10 +3214,10 @@ const msg = (t, bad) => { const m = $("lot-msg"); m.textContent = t; m.className
 function resetForm() { editOp = null; if ($("op-submit")) resetOp(); }
 function opSuggest() {
   const e = byIsin(resolveEtf($("op-etf").value)), d = $("op-date").value, p = $("op-price"), tot = $("op-mode").value === "t";
-  p.placeholder = tot ? "€ totale" : "€ medio per quota"; p.step = "0.001";
-  if (!e || !e.s || !d || isNaN(dateMs(d)) || p.dataset.touched) return;
-  const u = priceAt(e, dateMs(d)), q = +$("op-qty").value;
-  p.value = tot ? (q > 0 ? (u * q).toFixed(3) : "") : u.toFixed(3);
+  p.placeholder = tot ? "€ totale (vuoto = mercato)" : "€ per quota (vuoto = mercato)"; p.step = "0.001";
+  if (!e || !e.s || !d || isNaN(dateMs(d))) return;
+  const u = priceAt(e, dateMs(d)), q = +$("op-qty").value; // il prezzo di mercato del giorno si mostra solo come suggerimento: il campo resta vuoto
+  p.placeholder = tot ? (q > 0 ? "mercato € " + (u * q).toFixed(3) : "€ totale (vuoto = mercato)") : "mercato € " + u.toFixed(3);
 }
 $("op-mode").addEventListener("change", () => { delete $("op-price").dataset.touched; $("op-price").value = ""; opSuggest(); });
 $("op-qty").addEventListener("input", () => { if ($("op-mode").value === "t") opSuggest(); });
@@ -3245,7 +3242,9 @@ $("pos-tbl").addEventListener("click", ev => {
 });
 /* Storico: modulo e tabella delle operazioni */
 const hmsg = (t, bad) => { const m = $("hist-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
-function resetOp() { editOp = null; $("op-mode").value = "u"; $("op-submit").textContent = "Aggiungi"; $("op-cancel").hidden = true; $("op-qty").value = ""; $("op-op").value = "1"; $("op-date").value = ymd(Date.now()); delete $("op-price").dataset.touched; opSuggest(); }
+function resetOp() { editOp = null; opEtf = null; $("op-op").value = "1"; $("op-etf").value = ""; $("op-date").value = ""; $("op-qty").value = ""; $("op-mode").value = "u"; $("op-price").value = ""; $("op-submit").textContent = "Aggiungi"; $("op-name").textContent = ""; $("op-form").hidden = true; $("op-new").hidden = false; opSuggest(); }
+function openOp() { $("op-form").hidden = false; $("op-new").hidden = true; }
+$("op-new").addEventListener("click", () => { resetOp(); openOp(); hmsg(""); $("op-etf").focus(); });
 $("op-cancel").addEventListener("click", () => { resetOp(); hmsg(""); });
 // Toglie la quantità/peso iniziale di una posizione; le quantità iniziali calcolate dai pesi degli altri ETF restano quelle di prima (si fissano in quote)
 function dropBase(c, pi) {
@@ -3254,12 +3253,12 @@ function dropBase(c, pi) {
 }
 $("op-form").addEventListener("submit", ev => {
   ev.preventDefault();
-  const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, raw = +$("op-price").value, price = qty > 0 ? +($("op-mode").value === "t" ? raw / qty : raw).toFixed(6) : 0;
+  const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, raw = +$("op-price").value, mkt = e && e.s && date && !isNaN(dateMs(date)) ? priceAt(e, dateMs(date)) : 0, price = qty > 0 ? +($("op-price").value === "" ? mkt : $("op-mode").value === "t" ? raw / qty : raw).toFixed(6) : 0;
   if (!e) return hmsg("Scegli un ETF dall'elenco", true);
   if (!date || isNaN(dateMs(date))) return hmsg("Data non valida", true);
   if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
   if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
-  if (!(qty > 0) || !(price > 0)) return hmsg("Quantità e prezzo devono essere maggiori di zero", true);
+  if (!(qty > 0) || !(price > 0)) return hmsg(price > 0 ? "La quantità deve essere maggiore di zero" : "Indica il prezzo: per questo ETF non ho il prezzo di mercato", true);
   const ed = editOp, err = editPf(c => { if (ed && ed.base) dropBase(c, ed.pi); else if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
   if (err) return hmsg(err, true);
   resetOp(); hmsg(ed ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
@@ -3271,14 +3270,14 @@ $("hist-tbl").addEventListener("click", ev => {
     const l = pfLots(pfCur).find(z => z.base && z.pi === pi); if (!x || !l) return;
     if (b.classList.contains("ed")) {
       $("op-etf").value = opEtf = x.isin; $("op-date").value = l.date; $("op-op").value = "1"; $("op-qty").value = +l.qty.toFixed(4); $("op-mode").value = "u"; $("op-price").value = l.price.toFixed(3); $("op-price").dataset.touched = "1";
-      editOp = { pi, base: true }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
+      editOp = { pi, base: true }; $("op-submit").textContent = "Salva"; openOp(); hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
     } else { const err = editPf(c => dropBase(c, pi)); resetOp(); err ? hmsg("Non puoi eliminarlo: " + err, true) : hmsg("Movimento iniziale eliminato"); }
     return;
   }
   const t = x && x.txs[ti]; if (!t) return;
   if (b.classList.contains("ed")) {
     $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-mode").value = "u"; $("op-price").value = t.price.toFixed(3); $("op-price").dataset.touched = "1";
-    editOp = { pi, ti }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
+    editOp = { pi, ti }; $("op-submit").textContent = "Salva"; openOp(); hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
   } else { const err = editPf(c => c.positions[pi].txs.splice(ti, 1)); resetOp(); err ? hmsg("Non puoi eliminarla: " + err, true) : hmsg("Operazione eliminata"); }
 });
 $("hist-mode").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; histMode = b.dataset.m; document.querySelectorAll("#hist-mode button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawHist(); });
@@ -3305,7 +3304,7 @@ $("rb-apply").addEventListener("click", () => {
 });
 $("pf-def").addEventListener("click", () => { try { localStorage.setItem(DEF_KEY, pfCur.id); } catch {} updDef(); folderPushSoon(); });
 // Rinomina: senza modifiche in sospeso salva subito il nuovo titolo; con modifiche in sospeso lo mette nella copia (si salva con «Salva»)
-$("ed-ren").addEventListener("click", () => { $("rn-name").value = pfCur.name.replace("Prova · ", ""); $("renpf").showModal(); $("rn-name").select(); });
+const openRen = () => { $("rn-name").value = pfCur.name.replace("Prova · ", ""); $("renpf").showModal(); $("rn-name").select(); };
 const closeRen = () => $("renpf").close();
 $("rn-x").addEventListener("click", closeRen); $("rn-cancel").addEventListener("click", closeRen);
 $("rn-form").addEventListener("submit", ev => {
@@ -3314,7 +3313,6 @@ $("rn-form").addEventListener("submit", ev => {
   closeRen(); if (err) return msg(err, true);
   msg(pending ? "Nuovo titolo nella copia: premi Salva per confermare" : "Titolo aggiornato");
 });
-$("pf-name").addEventListener("change", ev => { const v = ev.target.value.trim(); if (!v || pfCur.sample) return; editPf(c => { c.name = v; }); });
 $("list").addEventListener("change", ev => { const c = ev.target.closest(".chk input"); if (!c) return; if (c.checked) SEL.add(c.dataset.isin); else SEL.delete(c.dataset.isin); updSel(); });
 $("sel-clear").addEventListener("click", () => { SEL.clear(); render(); updSel(); });
 $("sel-add").addEventListener("click", () => openAddTo([...SEL]));
@@ -3360,7 +3358,7 @@ function renderPfs() {
     return `<div class="pfrow${window.pfsOpen && pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
       <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF${s.nm ? ` · ${s.nm} senza prezzi` : ""}</small></span>
       <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>${s.d == null ? "" : semLights(s.d) + " "}a pesi temporali</small></span>
-      ${window.pfsOpen && pfCur && p.id === pfCur.id ? '<div class="pfact"><button type="button" class="ghost" data-a="edit">Modifica</button><button type="button" class="ghost" data-a="ext">Estendi</button><button type="button" class="ghost" data-a="ren">Rinomina</button><button type="button" class="ghost" data-a="del">Elimina</button></div>' : ""}</div>`; }).join("");
+      ${window.pfsOpen && pfCur && p.id === pfCur.id ? '<div class="pfact"><button type="button" class="ghost" data-a="edit">Modifica</button><button type="button" class="ghost" data-a="ren">Rinomina</button><button type="button" class="ghost" data-a="del">Elimina</button></div>' : ""}</div>`; }).join("");
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
 }
@@ -3373,7 +3371,6 @@ function selectPf(id) {
 }
 $("ed-open").addEventListener("click", () => openPf(pfCur.id));
 $("ed-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.id || "portafoglio") + ".json"));
-$("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); updSave(); }));
 function openPf(id) {
   if (!keepDirty()) return; ORIG = null; updSave();
   pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); fillSel(); renderPf(); showView("port");
@@ -3383,8 +3380,7 @@ $("pfs-list").addEventListener("click", ev => {
   const b = ev.target.closest("button[data-a]"), id = row.dataset.id, p = PFLIST.find(x => x.id === id), a = b ? b.dataset.a : "sel";
   if (a === "sel") selectPf(id);
   else if (a === "edit") $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" });
-  else if (a === "ren") $("ed-ren").click();
-  else if (a === "ext") openExtend();
+  else if (a === "ren") openRen();
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
 function openNew() { if (!keepDirty()) return; $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("np-json").value = ""; npMsg(""); $("newpf").showModal(); $("np-name").select(); }
