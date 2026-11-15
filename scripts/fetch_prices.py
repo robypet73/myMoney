@@ -90,6 +90,17 @@ def candidates(isin, ticker=None):
     return list(dict.fromkeys(out))
 
 
+def justetf_rics(isin):
+    """Simboli Yahoo (RIC di Reuters) delle quotazioni in EUR elencate da justETF per l'ISIN: servono quando Yahoo non le trova per ISIN né per ticker (es. CSJP.MI e SXR5.DE per CJPU)."""
+    try:
+        req = urllib.request.Request(f"https://www.justetf.com/en/etf-profile.html?isin={isin}", headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=30) as r:
+            html = r.read().decode("utf-8", "ignore")
+    except Exception:
+        return []
+    return list(dict.fromkeys(m for m in re.findall(r'_reuters">([A-Z0-9]{2,6}\.(?:MI|AS|PA|DE))<', html)))
+
+
 def best_listing(isin, ticker=None, rng=None):
     """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
     found, ref = [], None
@@ -107,6 +118,18 @@ def best_listing(isin, ticker=None, rng=None):
             ref = ref if ref is not None else key
             found.append((sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]}")
             if cur == "EUR":
+                break
+    if not any(f[1] == "EUR" for f in found):  # nessuna quotazione in EUR trovata: si provano quelle in EUR indicate da justETF (preferite a una in valuta estera convertita)
+        for sym in justetf_rics(isin):
+            if any(f[0] == sym for f in found):
+                continue
+            try:
+                cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?{qs}&interval=1d"))
+            except Exception:
+                continue
+            time.sleep(0.3)
+            if len(t) >= 50 and cur == "EUR":
+                found.insert(0, (sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]} (da justETF)")
                 break
     return found
 

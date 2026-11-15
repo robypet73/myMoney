@@ -123,6 +123,10 @@
   }
   const chartUrl = (sym, qs) => `${Q1}/v8/finance/chart/${encodeURIComponent(sym)}?${qs}&interval=1d`;
   const maxQs = () => "period1=0&period2=" + Math.floor(Date.now() / 1000);
+  // Simboli Yahoo (RIC di Reuters) delle quotazioni in EUR elencate da justETF (come justetf_rics in scripts/fetch_prices.py)
+  async function justetfRics(isin) {
+    try { const html = body(await http("https://www.justetf.com/en/etf-profile.html?isin=" + isin)); return [...new Set([...html.matchAll(/_reuters">([A-Z0-9]{2,6}\.(?:MI|AS|PA|DE))</g)].map(m => m[1]))]; } catch { return []; }
+  }
   async function bestListing(isin, ticker, qs) {
     const found = []; let ref = null;
     for (const sym of await candidates(isin, ticker)) {
@@ -131,6 +135,14 @@
       const key = (p[3].name || "").toLowerCase().split("ucits")[0].trim(); // stesso fondo = stesso nome fino a «UCITS»
       if (ref !== null && key !== ref) continue;
       if (p[1].length >= 50) { if (ref === null) ref = key; found.push([sym, p[0], p[1], p[2], p[3]]); if (p[0] === "EUR") break; }
+    }
+    if (!found.some(f => f[1] === "EUR")) { // nessuna quotazione in EUR trovata: si provano quelle in EUR indicate da justETF (preferite a una in valuta estera convertita)
+      for (const sym of await justetfRics(isin)) {
+        if (found.some(f => f[0] === sym)) continue;
+        let p; try { p = parseChart(await getJson(chartUrl(sym, qs))); } catch { continue; }
+        await sleep(300);
+        if (p[1].length >= 50 && p[0] === "EUR") { found.unshift([sym, p[0], p[1], p[2], p[3]]); break; }
+      }
     }
     return found;
   }
