@@ -55,6 +55,23 @@
   const SUFFIXES = [".MI", ".AS", ".PA", ".DE"];
   const EXTRA = { IE00B4L5Y983: ["EUNL.DE"], IE00BKM4GZ66: ["IS3N.DE"], IE00B5BMR087: ["SXR8.DE"], IE00BYZK4552: ["2B76.DE"], IE00B1FZS350: ["IQQ6.DE"], IE00B4WXJJ64: ["EUNH.DE"], IE00B579F325: ["8PSG.DE"], IE00BK5BQT80: ["VWCE.DE"] };
   const Q1 = "https://query1.finance.yahoo.com";
+  // simboli Yahoo dei 14 ETF principali, in ordine di preferenza: prima Borsa Italiana (.MI, in EUR), poi le altre borse (come SYMBOLS in scripts/fetch_prices.py)
+  const SYMBOLS = {
+    IE00B4L5Y983: ["SWDA.MI", "EUNL.DE"],
+    IE00BK5BQT80: ["VWCE.MI", "VWCE.DE"],
+    IE00B5BMR087: ["CSSPX.MI", "SXR8.DE"],
+    IE00BTJRMP35: ["XMME.MI", "XMME.MI"],
+    IE00BKM4GZ66: ["EIMI.MI", "IS3N.DE"],
+    IE00B4K48X80: ["SMEA.MI", "IMAE.AS"],
+    FR0010010827: ["ETFMIB.MI", "MIB.PA"],
+    LU0274209740: ["XMJP.MI", "DBXJ.DE"],
+    IE00BYZK4552: ["RBOT.MI", "2B76.DE"],
+    IE00B1FZS350: ["IWDP.MI", "IQQ6.DE"],
+    IE00B4WXJJ64: ["SEGA.MI", "EUNH.DE"],
+    IE00B1FZS798: ["IBTM.MI", "IBTM.MI"],
+    IE00BDBRDM35: ["AGGH.MI", "0GGH.L"],
+    IE00B579F325: ["SGLD.MI", "8PSG.DE"],
+  };
 
   // errori di Yahoo: ultima chiusura fuori scala (es. barra in yen di LCUJ.DE) → prezzo di mercato; punti isolati che saltano oltre il doppio → eliminati (come clean() in scripts/fetch_prices.py)
   function cleanSeries(t, v, price) {
@@ -112,12 +129,13 @@
     return out;
   }
   async function candidates(isin, ticker) {
+    if (SYMBOLS[isin]) return [...new Set(SYMBOLS[isin])];
     const j = await getJson(Q1 + "/v1/finance/search?" + new URLSearchParams({ q: isin, quotesCount: 10, newsCount: 0 }));
-    const out = (j.quotes || []).filter(q => ["ETF", "MUTUALFUND", "EQUITY"].includes(q.quoteType) && q.symbol).map(q => q.symbol);
+    const out = (j.quotes || []).filter(q => ["ETF", "MUTUALFUND", "EQUITY"].includes(q.quoteType) && q.symbol).map(q => q.symbol).sort((a, b) => (b.endsWith(".MI") ? 1 : 0) - (a.endsWith(".MI") ? 1 : 0)); // Borsa Italiana per prima
     ticker = ticker || ISINS[isin];
     let byT = []; // ETF quotati solo altrove (es. CJPU.L a Londra): la ricerca per ticker trova il simbolo con lo stesso ticker
     if (ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker)) {
-      try { const j2 = await getJson(Q1 + "/v1/finance/search?" + new URLSearchParams({ q: ticker, quotesCount: 10, newsCount: 0 })); byT = (j2.quotes || []).filter(q => q.quoteType === "ETF" && q.symbol && q.symbol.split(".")[0].toUpperCase() === ticker.toUpperCase()).map(q => q.symbol); } catch {}
+      try { const j2 = await getJson(Q1 + "/v1/finance/search?" + new URLSearchParams({ q: ticker, quotesCount: 10, newsCount: 0 })); byT = (j2.quotes || []).filter(q => q.quoteType === "ETF" && q.symbol && q.symbol.split(".")[0].toUpperCase() === ticker.toUpperCase()).map(q => q.symbol).sort((a, b) => (b.endsWith(".MI") ? 1 : 0) - (a.endsWith(".MI") ? 1 : 0)); } catch {}
     }
     return [...new Set(out.concat(EXTRA[isin] || [], byT, ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker) ? SUFFIXES.map(s => ticker + s) : []))];
   }
@@ -127,21 +145,38 @@
   async function justetfRics(isin) {
     try { const html = body(await http("https://www.justetf.com/en/etf-profile.html?isin=" + isin)); return [...new Set([...html.matchAll(/_reuters">([A-Z0-9]{2,6}\.(?:MI|AS|PA|DE))</g)].map(m => m[1]))]; } catch { return []; }
   }
+  // Simbolo Yahoo della quotazione di Borsa Italiana (RIC .MI) indicato da justETF (come justetf_milan in scripts/fetch_prices.py)
+  async function justetfMilan(isin) {
+    try { const m = /_reuters">([A-Z0-9]{2,8}\.MI)</.exec(body(await http("https://www.justetf.com/en/etf-profile.html?isin=" + isin))); return m ? m[1] : null; } catch { return null; }
+  }
+  // Borsa Italiana va bene se è in EUR, ha abbastanza storia e scambi recenti (un ETF poco scambiato a Milano ha prezzi fermi: meglio un'altra borsa in EUR)
+  const milanOk = p => p[0] === "EUR" && p[1].length >= 50 && (p[3].time ? p[3].time * 1000 : p[1][p[1].length - 1]) >= Date.now() - 5 * 864e5; // conta l'ultimo scambio, non le barre riempite da Yahoo
   async function bestListing(isin, ticker, qs) {
-    const found = []; let ref = null;
+    const found = []; let ref = null; ticker = ticker || ISINS[isin];
+    if (!SYMBOLS[isin]) { // il controvalore in EUR si prende da Borsa Italiana, se c'è
+      const mil = await justetfMilan(isin);
+      if (mil) { try { const p = parseChart(await getJson(chartUrl(mil, qs))); if (milanOk(p)) return [[mil, p[0], p[1], p[2], p[3]]]; } catch {} }
+    }
+    const tried = new Set();
     for (const sym of await candidates(isin, ticker)) {
+      tried.add(sym);
       let p; try { p = parseChart(await getJson(chartUrl(sym, qs))); } catch { continue; }
       await sleep(300);
       const key = (p[3].name || "").toLowerCase().split("ucits")[0].trim(); // stesso fondo = stesso nome fino a «UCITS»
       if (ref !== null && key !== ref) continue;
+      if (sym.endsWith(".MI") && p[0] === "EUR" && !milanOk(p)) continue; // poco scambiata a Milano
       if (p[1].length >= 50) { if (ref === null) ref = key; found.push([sym, p[0], p[1], p[2], p[3]]); if (p[0] === "EUR") break; }
+    }
+    const eur = found.find(f => f[1] === "EUR");
+    if (eur && !eur[0].endsWith(".MI") && ticker && /^[A-Za-z0-9]{2,8}$/.test(ticker) && !tried.has(ticker + ".MI") && !SYMBOLS[isin]) { // stesso ticker su Borsa Italiana, accettato solo se è lo stesso fondo
+      try { const p = parseChart(await getJson(chartUrl(ticker + ".MI", qs))), key = (p[3].name || "").toLowerCase().split("ucits")[0].trim(); if (key === ref && milanOk(p)) found.unshift([ticker + ".MI", p[0], p[1], p[2], p[3]]); } catch {}
     }
     if (!found.some(f => f[1] === "EUR")) { // nessuna quotazione in EUR trovata: si provano quelle in EUR indicate da justETF (preferite a una in valuta estera convertita)
       for (const sym of await justetfRics(isin)) {
         if (found.some(f => f[0] === sym)) continue;
         let p; try { p = parseChart(await getJson(chartUrl(sym, qs))); } catch { continue; }
         await sleep(300);
-        if (p[1].length >= 50 && p[0] === "EUR") { found.unshift([sym, p[0], p[1], p[2], p[3]]); break; }
+        if (p[1].length >= 50 && p[0] === "EUR" && (!sym.endsWith(".MI") || milanOk(p))) { found.unshift([sym, p[0], p[1], p[2], p[3]]); break; } // Milano solo se scambiata di recente
       }
     }
     return found;
@@ -187,7 +222,7 @@
     for (const [isin, ticker] of Object.entries(ISINS)) {
       try {
         let pick = null;
-        const known = PR[isin] && PR[isin].symbol; // il simbolo già scelto evita la ricerca
+        const known = SYMBOLS[isin] ? SYMBOLS[isin][0] : PR[isin] && PR[isin].symbol; // Borsa Italiana per i 14 principali; altrimenti il simbolo già scelto evita la ricerca
         if (known) { try { const p = parseChart(await getJson(chartUrl(known, "range=10y"))); if (p[1].length >= 50) pick = [known, p[0], p[1], p[2], p[3]]; } catch {} await sleep(300); }
         if (!pick) { const f = await bestListing(isin, undefined, "range=10y"); pick = f.find(x => x[1] === "EUR") || f[0]; }
         if (!pick) continue;

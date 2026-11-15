@@ -18,7 +18,7 @@
 "symbol": "CHSPI.SW"
 },
 "DE0002635307": {
-"symbol": "EXSA.DE"
+"symbol": "EXSA.MI"
 },
 "DE0005933931": {
 "symbol": "EXS1.MI"
@@ -40,7 +40,7 @@
 "symbol": null
 },
 "DE000A2T0VU5": {
-"symbol": "XGDU.DE"
+"symbol": "XGDU.MI"
 },
 "DE000ETFL508": {
 "symbol": "ELFW.DE"
@@ -49,13 +49,13 @@
 "symbol": "EWG2.SG"
 },
 "FR0007054358": {
-"symbol": "MSE.PA"
+"symbol": "MSE.MI"
 },
 "FR0010315770": {
-"symbol": "WLD.PA"
+"symbol": "WLD.MI"
 },
 "FR0013416716": {
-"symbol": "GOLD.AS"
+"symbol": "GOLD.MI"
 },
 "IE0002H3JQ66": {
 "symbol": "USC5.L"
@@ -64,10 +64,10 @@
 "symbol": "MUSD.AS"
 },
 "IE0002Y8CX98": {
-"symbol": "EUDF.DE"
+"symbol": "WDEF.MI"
 },
 "IE0005042456": {
-"symbol": "ISF.L"
+"symbol": "ISF.MI"
 },
 "IE0006GNB732": {
 "symbol": "XZHE.DE"
@@ -79,7 +79,7 @@
 "symbol": "FWRA.MI"
 },
 "IE0008471009": {
-"symbol": "EUEA.AS"
+"symbol": "EUE.MI"
 },
 "IE0009HF1MK9": {
 "symbol": "WEBG.DE"
@@ -94,52 +94,52 @@
 "symbol": "X500.MI"
 },
 "IE000I8KRLL9": {
-"symbol": "SEMI.AS"
+"symbol": "SEME.MI"
 },
 "IE000JHYO4T6": {
-"symbol": "AW1Q.DE"
+"symbol": "JPE.MI"
 },
 "IE000KXCEXR3": {
-"symbol": "S500.PA"
+"symbol": "S500.MI"
 },
 "IE000MLMNYS0": {
 "symbol": "EWSP.MI"
 },
 "IE000XZSV718": {
-"symbol": "SPYL.AS"
+"symbol": "SP5A.MI"
 },
 "IE000YYE6WK5": {
 "symbol": "DFNS.MI"
 },
 "IE0031442068": {
-"symbol": "IDUS.L"
+"symbol": "IUSA.MI"
 },
 "IE0032077012": {
 "symbol": "EQQQ.MI"
 },
 "IE00B02KXH56": {
-"symbol": "IJPU.L"
+"symbol": "IJPN.MI"
 },
 "IE00B0M62Q58": {
-"symbol": "IDWR.L"
+"symbol": "IWRD.MI"
 },
 "IE00B0M62X26": {
-"symbol": "IBCI.AS"
+"symbol": "IBCI.MI"
 },
 "IE00B0M63177": {
-"symbol": "IEEM.SW"
+"symbol": "IEEM.MI"
 },
 "IE00B14X4M10": {
-"symbol": "INAA.SW"
+"symbol": "INAA.MI"
 },
 "IE00B1FZSB30": {
 "symbol": "IGLT.MI"
 },
 "IE00B1YZSC51": {
-"symbol": "IMEU.AS"
+"symbol": "IMEU.MI"
 },
 "IE00B3F81R35": {
-"symbol": "IEAC.L"
+"symbol": "IEAC.MI"
 },
 "IE00B3RBWM25": {
 "symbol": "VWRD.L"
@@ -160,28 +160,28 @@
 "symbol": "SPXS.MI"
 },
 "IE00B3YLTY66": {
-"symbol": "SPYI.DE"
+"symbol": "IMIE.MI"
 },
 "IE00B3ZW0K18": {
-"symbol": "IUSE.L"
+"symbol": "IUSE.MI"
 },
 "IE00B441G979": {
-"symbol": "IWDE.L"
+"symbol": "IWDE.MI"
 },
 "IE00B44Z5B48": {
-"symbol": "SPYY.DE"
+"symbol": "ACWE.MI"
 },
 "IE00B4L5YC18": {
-"symbol": "IEMA.AS"
+"symbol": "SEMA.MI"
 },
 "IE00B4L5YX21": {
-"symbol": "IJPA.AS"
+"symbol": "SJPA.MI"
 },
 "IE00B4ND3602": {
 "symbol": "IGLN.L"
 },
 "IE00B4X9L533": {
-"symbol": "HMWD.L"
+"symbol": "HMWD.MI"
 },
 "IE00B4YBJ215": {
 "symbol": "SPY4.MI"
@@ -206,7 +206,7 @@
 "symbol": null
 },
 "IE00B5KQNG97": {
-"symbol": "HSPD.L"
+"symbol": "HSPD.MI"
 },
 "IE00B5L8K969": {
 "symbol": "CSEMAS.MI"
@@ -218,13 +218,13 @@
 "symbol": "HMEM.MI"
 },
 "IE00B60SX170": {
-"symbol": "SC0H.DE"
+"symbol": "MXUS.MI"
 },
 "IE00B60SX394": {
-"symbol": "SC0J.DE"
+"symbol": "SMSWLD.MI"
 },
 "IE00B66F4759": {
-"symbol": "IHYG.L"
+"symbol": "IHYG.MI"
 },
 "IE00B6R52259": {
 "symbol": "ISAC.MI"
@@ -239,13 +239,13 @@
 "symbol": "VHYD.L"
 },
 "IE00B945VV12": {
-"symbol": "VEUR.AS"
+"symbol": "VEUR.MI"
 },
 "IE00BD4TXV59": {
-"symbol": "UETW.DE"
+"symbol": "WRDA.MI"
 },
 "IE00BF11F565": {
-"symbol": "IEAA.L"
+"symbol": "IEAA.MI"
 },
 "IE00BF4G6Y48": {
 "symbol": "JREG.MI"
@@ -275,7 +275,7 @@
 "symbol": "AYEM.DE"
 },
 "IE00BFY0GT14": {
-"symbol": "SPPW.DE"
+"symbol": "SWRD.MI"
 },
 "IE00BFZXGZ54": {
 "symbol": "EQAC.MI"
@@ -293,13 +293,13 @@
 "symbol": "VGEA.MI"
 },
 "IE00BH4GPZ28": {
-"symbol": "500X.AS"
+"symbol": "500X.MI"
 },
 "IE00BHZPJ239": {
-"symbol": "EDM2.DE"
+"symbol": "EMEG.MI"
 },
 "IE00BHZPJ569": {
-"symbol": "EDMW.DE"
+"symbol": "ENWD.MI"
 },
 "IE00BHZPJ676": {
 "symbol": "EMNU.DE"
@@ -320,7 +320,7 @@
 "symbol": "XD9U.MI"
 },
 "IE00BJ38QD84": {
-"symbol": "ZPRR.DE"
+"symbol": "R2US.MI"
 },
 "IE00BK1PV551": {
 "symbol": "XDWL.DE"
@@ -335,10 +335,10 @@
 "symbol": "XDEW.MI"
 },
 "IE00BM67HK77": {
-"symbol": "XDWH.L"
+"symbol": "XDWH.MI"
 },
 "IE00BM67HT60": {
-"symbol": "XDWT.L"
+"symbol": "XDWT.MI"
 },
 "IE00BMC38736": {
 "symbol": "SMH.MI"
@@ -362,7 +362,7 @@
 "symbol": "SPXD.MI"
 },
 "IE00BYX2JD69": {
-"symbol": "SUSW.L"
+"symbol": "SUSW.MI"
 },
 "IE00BYXPSP02": {
 "symbol": "IBTA.L"
@@ -386,46 +386,46 @@
 "symbol": "SGBX.L"
 },
 "LU0274208692": {
-"symbol": "DBXW.DE"
+"symbol": "XMWO.MI"
 },
 "LU0274209237": {
 "symbol": "XMEU.MI"
 },
 "LU0274210672": {
-"symbol": "XMUD.L"
+"symbol": "XMUS.MI"
 },
 "LU0274211217": {
-"symbol": "XESX.DE"
+"symbol": "XESX.MI"
 },
 "LU0274211480": {
-"symbol": "DBXD.DE"
+"symbol": "XDAX.MI"
 },
 "LU0290358497": {
-"symbol": "XEON.DE"
+"symbol": "XEON.MI"
 },
 "LU0328475792": {
-"symbol": "XSX6.DE"
+"symbol": "XSX6.MI"
 },
 "LU0380865021": {
-"symbol": "XESC.DE"
+"symbol": "XESC.MI"
 },
 "LU0446734104": {
 "symbol": "EUREUA.MI"
 },
 "LU0446734526": {
-"symbol": "PACUSA.SW"
+"symbol": "PACEUA.MI"
 },
 "LU0478205379": {
-"symbol": "D5BG.DE"
+"symbol": "XBLC.MI"
 },
 "LU0496786657": {
 "symbol": "LSPU.L"
 },
 "LU0629459743": {
-"symbol": "UIMM.DE"
+"symbol": "WSREUA.MI"
 },
 "LU0908500753": {
-"symbol": "MEUD.PA"
+"symbol": "MEUD.MI"
 },
 "LU0950671825": {
 "symbol": "JPNA.MI"
@@ -446,31 +446,31 @@
 "symbol": "AEME.PA"
 },
 "LU1437018168": {
-"symbol": "ECRP.PA"
+"symbol": "ECRP.MI"
 },
 "LU1681043599": {
-"symbol": "CW8.PA"
+"symbol": "CW8.MI"
 },
 "LU1681045370": {
-"symbol": "AEEM.PA"
+"symbol": "AEEM.MI"
 },
 "LU1681047236": {
-"symbol": "C50.PA"
+"symbol": "C50.MI"
 },
 "LU1781541252": {
-"symbol": "LCUJ.DE"
+"symbol": "LCJP.MI"
 },
 "LU1829219390": {
-"symbol": "BNKE.PA"
+"symbol": "BNKE.MI"
 },
 "LU1829221024": {
-"symbol": "UST.PA"
+"symbol": "UST.MI"
 },
 "LU1931975079": {
-"symbol": "PR1C.DE"
+"symbol": "ETFCOR.MI"
 },
 "LU1931975152": {
-"symbol": "PR1R.DE"
+"symbol": "ETFGOV.MI"
 },
 "LU2009202107": {
 "symbol": "EMXC.MI"
@@ -482,7 +482,7 @@
 "symbol": "AHYQ.DE"
 },
 "LU2573966905": {
-"symbol": "AE5A.DE"
+"symbol": "E127.MI"
 },
 "LU2573967036": {
 "symbol": "LEMA.MI"
@@ -491,6 +491,6 @@
 "symbol": "EBBU.PA"
 },
 "NL0011683594": {
-"symbol": "TDIV.AS"
+"symbol": "TDIV.MI"
 }
 }

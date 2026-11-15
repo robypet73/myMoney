@@ -26,7 +26,22 @@ ISINS = {
     "IE00BYZK4552": "RBOT", "IE00B1FZS350": "IWDP", "IE00B4WXJJ64": "IEGA", "IE00B1FZS798": "IBTM",
     "IE00BDBRDM35": "AGGH", "IE00B579F325": "SGLD",
 }
-SYMBOLS = {}  # ISIN -> simbolo Yahoo (o elenco di simboli), per forzare la borsa
+SYMBOLS = {  # ISIN -> simboli Yahoo in ordine di preferenza: prima Borsa Italiana (.MI, in EUR), poi le altre borse
+    "IE00B4L5Y983": ["SWDA.MI", "EUNL.DE"],
+    "IE00BK5BQT80": ["VWCE.MI", "VWCE.DE"],
+    "IE00B5BMR087": ["CSSPX.MI", "SXR8.DE"],
+    "IE00BTJRMP35": ["XMME.MI", "XMME.MI"],
+    "IE00BKM4GZ66": ["EIMI.MI", "IS3N.DE"],
+    "IE00B4K48X80": ["SMEA.MI", "IMAE.AS"],
+    "FR0010010827": ["ETFMIB.MI", "MIB.PA"],
+    "LU0274209740": ["XMJP.MI", "DBXJ.DE"],
+    "IE00BYZK4552": ["RBOT.MI", "2B76.DE"],
+    "IE00B1FZS350": ["IWDP.MI", "IQQ6.DE"],
+    "IE00B4WXJJ64": ["SEGA.MI", "EUNH.DE"],
+    "IE00B1FZS798": ["IBTM.MI", "IBTM.MI"],
+    "IE00BDBRDM35": ["AGGH.MI", "0GGH.L"],
+    "IE00B579F325": ["SGLD.MI", "8PSG.DE"],
+}
 # Quotazioni in EUR da provare dopo il risultato della ricerca: il ticker con i suffissi Yahoo di Borsa Italiana, Amsterdam, Parigi e Xetra, più alcuni ticker propri di Xetra.
 SUFFIXES = (".MI", ".AS", ".PA", ".DE")
 EXTRA = {"IE00B4L5Y983": ["EUNL.DE"], "IE00BKM4GZ66": ["IS3N.DE"], "IE00B5BMR087": ["SXR8.DE"], "IE00BYZK4552": ["2B76.DE"], "IE00B1FZS350": ["IQQ6.DE"],
@@ -78,12 +93,14 @@ def candidates(isin, ticker=None):
         return [s] if isinstance(s, str) else list(s)
     data = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": isin, "quotesCount": 10, "newsCount": 0}))
     out = [q["symbol"] for q in data.get("quotes", []) if q.get("quoteType") in ("ETF", "MUTUALFUND", "EQUITY") and q.get("symbol")]
+    out.sort(key=lambda x: 0 if x.endswith(".MI") else 1)  # Borsa Italiana per prima
     ticker = ticker or ISINS.get(isin)
     by_ticker = []
     if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker):  # ETF quotati solo altrove (es. CJPU.L a Londra): la ricerca per ticker trova il simbolo con lo stesso ticker
         try:
             d2 = get_json("https://query1.finance.yahoo.com/v1/finance/search?" + urllib.parse.urlencode({"q": ticker, "quotesCount": 10, "newsCount": 0}))
             by_ticker = [q["symbol"] for q in d2.get("quotes", []) if q.get("quoteType") == "ETF" and q.get("symbol") and q["symbol"].split(".")[0].upper() == ticker.upper()]
+            by_ticker.sort(key=lambda x: 0 if x.endswith(".MI") else 1)
         except Exception:
             pass
     out += EXTRA.get(isin, []) + by_ticker + ([ticker + s for s in SUFFIXES] if ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker) else [])
@@ -101,11 +118,41 @@ def justetf_rics(isin):
     return list(dict.fromkeys(m for m in re.findall(r'_reuters">([A-Z0-9]{2,6}\.(?:MI|AS|PA|DE))<', html)))
 
 
+def justetf_milan(isin):
+    """Simbolo Yahoo della quotazione di Borsa Italiana (RIC di Reuters con suffisso .MI) indicato da justETF per l'ISIN, o None."""
+    try:
+        req = urllib.request.Request(f"https://www.justetf.com/en/etf-profile.html?isin={isin}", headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=30) as r:
+            html = r.read().decode("utf-8", "ignore")
+    except Exception:
+        return None
+    m = re.search(r'_reuters">([A-Z0-9]{2,8}\.MI)<', html)  # la chiave della borsa è xmil o mtaa
+    return m.group(1) if m else None
+
+
+def milan_ok(cur, t, last=None):
+    """La quotazione di Borsa Italiana va bene se è in EUR, ha abbastanza storia e ha scambi recenti: l'orario dell'ultimo scambio (non quello delle barre, che Yahoo riempie coi prezzi fermi) non deve avere più di 5 giorni; un ETF poco scambiato a Milano ha prezzi fermi, meglio un'altra borsa in EUR."""
+    when = ((last or {}).get("time") or (t[-1] / 1000 if t else 0))
+    return cur == "EUR" and len(t) >= 50 and when >= time.time() - 5 * 86400
+
+
 def best_listing(isin, ticker=None, rng=None):
     """Scarica le serie dei simboli candidati e sceglie la quotazione in EUR con dati sufficienti (altrimenti la prima valida)."""
     found, ref = [], None
     qs = "period1=0&period2=" + str(int(time.time())) if rng == "max" else "range=" + (rng or RANGE)
+    ticker = ticker or ISINS.get(isin)
+    if isin not in SYMBOLS:  # il controvalore in EUR si prende da Borsa Italiana, se c'è
+        mil = justetf_milan(isin)
+        if mil:
+            try:
+                cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(mil)}?{qs}&interval=1d"))
+                if milan_ok(cur, t, last):
+                    print(f"  {mil} {cur}: {last.get('name')} · ultimo {v[-1]} (Borsa Italiana da justETF)"); return [(mil, cur, t, v, last)]
+            except Exception:
+                pass
+    tried = set()
     for sym in candidates(isin, ticker):
+        tried.add(sym)
         try:
             cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?{qs}&interval=1d"))
         except Exception:
@@ -114,11 +161,22 @@ def best_listing(isin, ticker=None, rng=None):
         key = (last.get("name") or "").lower().split("ucits")[0].strip()  # stesso fondo = stesso nome fino a «UCITS»
         if ref is not None and key != ref:
             print(f"  {sym}: fondo diverso ({last.get('name')}), scartato"); continue
+        if sym.endswith(".MI") and cur == "EUR" and not milan_ok(cur, t, last):
+            print(f"  {sym}: poco scambiata a Milano, scartata"); continue
         if len(t) >= 50:
             ref = ref if ref is not None else key
             found.append((sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]}")
             if cur == "EUR":
                 break
+    eur = next((f for f in found if f[1] == "EUR"), None)
+    if eur and not eur[0].endswith(".MI") and ticker and re.fullmatch(r"[A-Za-z0-9]{2,8}", ticker) and (ticker + ".MI") not in tried and isin not in SYMBOLS:
+        try:  # stesso ticker su Borsa Italiana, accettato solo se è lo stesso fondo
+            cur, t, v, last = parse_chart(get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(ticker + '.MI')}?{qs}&interval=1d"))
+            key = (last.get("name") or "").lower().split("ucits")[0].strip()
+            if key == ref and milan_ok(cur, t, last):
+                found.insert(0, (ticker + ".MI", cur, t, v, last)); print(f"  {ticker}.MI {cur}: {last.get('name')} · ultimo {v[-1]} (Borsa Italiana)")
+        except Exception:
+            pass
     if not any(f[1] == "EUR" for f in found):  # nessuna quotazione in EUR trovata: si provano quelle in EUR indicate da justETF (preferite a una in valuta estera convertita)
         for sym in justetf_rics(isin):
             if any(f[0] == sym for f in found):
@@ -128,7 +186,7 @@ def best_listing(isin, ticker=None, rng=None):
             except Exception:
                 continue
             time.sleep(0.3)
-            if len(t) >= 50 and cur == "EUR":
+            if len(t) >= 50 and cur == "EUR" and (not sym.endswith(".MI") or milan_ok(cur, t, last)):  # Milano solo se scambiata di recente
                 found.insert(0, (sym, cur, t, v, last)); print(f"  {sym} {cur}: {last.get('name')} · ultimo {v[-1]} (da justETF)")
                 break
     return found
