@@ -402,7 +402,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 .gl li span.n { text-align: right; }
 .gl .lk { display: grid; gap: 6px; }
 .gl .lk a { color: var(--fg); text-underline-offset: 3px; }
-#addto, #newpf, #combpf, #renpf, #editpf { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
+#addto, #newpf, #combpf, #renpf { margin: auto; height: fit-content; width: min(520px, calc(100% - 32px)); max-height: 90%; border: 1px solid var(--hair); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: none; }
 .at { display: grid; gap: 14px; }
 .at input:not([type]), .at input[type="text"], .at textarea { box-sizing: border-box; width: 100%; border: 1px solid var(--hair); background: var(--raised); color: var(--fg); border-radius: 12px; padding: 10px 14px; font: inherit; font-size: var(--fs-m); resize: vertical; }
 .newf { display: grid; gap: 8px; }
@@ -416,6 +416,8 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 #v-pfs.list-only #pf-edit, #v-pfs.list-only #corr2-sec, #v-pfs.list-only #rb-sec, #v-pfs.list-only #save-sec { display: none; }
 .pfrow .main { display: grid; gap: 3px; min-width: 0; }
 .pfrow .desc { color: var(--soft); font-size: var(--fs-s); line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crbar { position: sticky; top: 0; z-index: 6; display: flex; justify-content: flex-end; padding: 10px 0; background: var(--bg); }
+@media (max-width: 480px) { .crbar .primary { width: 100%; } }
 .pfact { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 700px) { .pfrow { grid-template-columns: minmax(0, 1fr) auto; } .pfrow .v:nth-of-type(1) { grid-column: 2; grid-row: 1; } .pfrow .v:nth-of-type(2) { grid-column: 2; grid-row: 2; } .pfact { grid-column: 1 / -1; justify-content: flex-start; } }
 .pfrow.sel { background: var(--fill); box-shadow: -10px 0 0 var(--fill), 10px 0 0 var(--fill); }
@@ -547,7 +549,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.025</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.026</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -622,6 +624,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </main>
 
 <main class="wrap" id="v-pfs" hidden>
+  <div class="crbar" id="pfs-bar"><button type="button" class="primary" id="pfs-create">Crea nuovo portafoglio</button></div>
   <section class="sec pf-sec" id="folder-sec" hidden><h3>Salvataggio dei portafogli<button type="button" class="i" data-g="folder" aria-label="Informazioni: salvataggio dei portafogli">i</button></h3>
     <div class="periods" role="group" aria-label="Scegli dove salvare i portafogli" id="folder-kind"><button type="button" data-k="local"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Cartella locale…</button><button type="button" data-k="drive"><svg class="ico" viewBox="0 0 87.3 78" aria-hidden="true"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>Google Drive…</button></div>
     <div class="lotform"><input id="folder-path" type="text" placeholder="Nessuna cartella: scegline una o incolla il percorso" autocomplete="off" spellcheck="false" aria-label="Percorso della cartella"><button type="button" id="folder-save">Applica</button><button type="button" id="folder-clear" class="ghost">Scollega</button></div>
@@ -651,12 +654,12 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
       <div id="prop-out" aria-live="polite"></div>
     </div>
   </section>
-  <section class="sec pf-sec" id="list-sec"><section class="pfs-head"><h2>I tuoi portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2><span class="io"><button type="button" class="ghost" id="pfs-edit">Modifica esistente</button><button type="button" class="primary" id="pfs-create">Crea nuovo portafoglio</button></span></section>
+  <section class="sec pf-sec" id="list-sec"><section class="pfs-head"><h2>I tuoi portafogli<button type="button" class="i" data-g="draft" aria-label="Informazioni: draft e acquistato">i</button></h2></section>
   <div id="pfs-list"></div></section>
   <div class="io"><button type="button" class="primary" id="install" hidden>Installa app</button></div>
 <div id="pf-edit">
   <section class="sec pf-sec" id="head-sec">
-    <div class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="ed-ren">Rinomina</button><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></div>
+    <div class="edhead"><h2 id="ed-title"></h2><div class="io"><button type="button" class="ghost" id="ed-open">Monitoraggio</button><button type="button" class="ghost" id="ed-exp">Esporta</button><button type="button" class="ghost" id="ed-ren">Rinomina</button><button type="button" class="ghost" id="to-draft">Duplica</button><button type="button" class="ghost" id="ed-del">Elimina</button></div></div>
     <div class="pf-meta" id="pf-meta">
       <input id="pf-name" placeholder="Titolo" maxlength="80" autocomplete="off" aria-label="Titolo del portafoglio">
       <input id="pf-descr" placeholder="Descrizione (facoltativa)" maxlength="500" autocomplete="off" aria-label="Descrizione del portafoglio">
@@ -798,11 +801,6 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
   <label class="pf"><span class="gl2">Importo €</span><input id="cb-amt" type="text" inputmode="decimal" autocomplete="off" aria-label="Importo"></label>
   <p id="cb-msg" class="fc-note" aria-live="polite"></p>
   <div class="io"><button type="submit" class="primary">Crea portafoglio</button><button type="button" class="ghost" id="cb-cancel">Annulla</button></div>
-</form></dialog>
-<dialog id="editpf" aria-labelledby="ep-title"><form id="ep-form" class="at">
-  <div class="d-top"><h2 id="ep-title">Modifica esistente</h2><button type="button" class="icon close" id="ep-x" aria-label="Chiudi">×</button></div>
-  <select id="ep-sel" aria-label="Portafoglio da modificare"></select>
-  <div class="io"><button type="submit" class="primary">Apri</button><button type="button" class="ghost" id="ep-cancel">Annulla</button></div>
 </form></dialog>
 <dialog id="renpf" aria-labelledby="rn-title"><form id="rn-form" class="at">
   <div class="d-top"><h2 id="rn-title">Rinomina portafoglio</h2><button type="button" class="icon close" id="rn-x" aria-label="Chiudi">×</button></div>
@@ -3060,8 +3058,8 @@ async function autoTick(force) {
       const r = await localApi("quotes");
       window.updSt = r && r.ok ? "" : "aggiornamento non riuscito" + (r && r.error ? ": " + String(r.error).slice(0, 50) : "");
       // ETF dei portafogli senza serie di prezzi: si scaricano subito (una sola volta per sessione)
-      const miss = (pfCur ? pfCur.positions : []).map(x => byIsin(x.isin)).filter(e => e && e.cat && !e.s && !e.localTried);
-      if (miss.length) { miss.forEach(e => (e.localTried = true)); const ids = miss.map(e => e.isin); await localApi("series", ids); await localApi("info", ids); await Promise.all(miss.map(e => { e.tried = false; return loadSeries(e.isin, true); })); if (pfCur && !ORIG) renderPf(); }
+      const miss = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].map(byIsin).filter(e => e && e.cat && !e.s && !e.localTried); // tutti i portafogli, non solo quello aperto
+      if (miss.length) { miss.forEach(e => (e.localTried = true)); const ids = miss.map(e => e.isin); await localApi("series", ids); await localApi("info", ids); await Promise.all(miss.map(e => { e.tried = false; return loadSeries(e.isin, true); })); if (pfCur && !ORIG) renderPf(); else renderPfs(); }
     }
     const sig = () => (PF ? PF.es.map(e => e.live + "/" + e.bid + "/" + e.ask).join() : "");
     const before = sig();
@@ -3310,7 +3308,7 @@ function deletePf(p) {
   fillSel(); renderPf();
 }
 function pfSummary(p) {
-  const out = { n: p.positions.length, val: null, d: null };
+  const out = { n: p.positions.length, val: null, d: null, nm: p.positions.filter(x => { const e = byIsin(x.isin); return e && !e.s && e.tried; }).length };
   if (p.positions.some(x => { const e = byIsin(x.isin); return e && !e.s && !e.tried; })) return out; // prezzi ancora in caricamento: niente conteggio parziale
   try { if (pfLots(p).length) { const P = pfBuild(p); out.n = P.act.length; out.val = P.es.reduce((a, e, i) => a + P.qty[i] * e.live, 0); const it = livePerf(P).items[5][1]; out.ret = it ? it.r : null; const inv = P.cost[P.last]; out.roi = inv > 0 ? out.val / inv - 1 : null; const bi = benchInfo(P); if (bi) out.d = (bi.pf - bi.bm) * 100; } } catch {}
   return out;
@@ -3318,9 +3316,9 @@ function pfSummary(p) {
 function renderPfs() {
   $("pfs-list").innerHTML = PFLIST.map(p => { const s = pfSummary(p), d = isDraft(p);
     return `<div class="pfrow${window.pfsOpen && pfCur && p.id === pfCur.id ? " sel" : ""}" data-id="${esc(p.id)}"><div class="main"><button type="button" class="nm-btn" data-a="sel">${esc(p.name)}</button><span class="desc">${esc(p.description || (p.sample ? "Portafoglio di prova" : "Nessuna descrizione"))}</span></div>
-      <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF</small></span>
+      <span class="v n">${s.val == null ? "—" : eur(s.val)}<small>${s.n} ETF${s.nm ? ` · ${s.nm} senza prezzi` : ""}</small></span>
       <span class="v n ${cls(s.ret)}" title="Rendimento a pesi temporali dal primo acquisto: non dipende da quando hai versato o venduto. Sull'investito (utile ÷ capitale netto investito): ${s.roi == null ? "—" : pct(s.roi, 1)}">${s.ret == null ? "—" : pct(s.ret, 1)}<small>${s.d == null ? "" : semLights(s.d) + " "}a pesi temporali</small></span>
-      <div class="pfact"><button type="button" class="ghost" data-a="open">Monitoraggio</button><button type="button" class="ghost" data-a="exp">Esporta</button><button type="button" class="ghost" data-a="del">Elimina</button></div></div>`; }).join("");
+      ${window.pfsOpen && pfCur && p.id === pfCur.id ? '<div class="pfact"><button type="button" class="ghost" data-a="edit">Modifica</button><button type="button" class="ghost" data-a="ren">Rinomina</button><button type="button" class="ghost" data-a="del">Elimina</button></div>' : ""}</div>`; }).join("");
   const need = [...new Set(PFLIST.flatMap(p => p.positions.map(x => x.isin)))].filter(i => { const e = byIsin(i); return e && !e.s && !e.tried; });
   if (need.length) Promise.all(need.map(i => loadSeries(i))).then(() => renderPfs());
 }
@@ -3331,6 +3329,8 @@ function selectPf(id) {
   if (!keepDirty()) return; ORIG = null; pfCur = PFLIST.find(p => p.id === id) || pfCur; resetForm(); msg(""); window.pfsOpen = true; applyPfsOpen(); fillSel(); renderPf(); updSave();
   requestAnimationFrame(() => { drawEF(); drawBm(); $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" }); });
 }
+$("ed-open").addEventListener("click", () => openPf(pfCur.id));
+$("ed-exp").addEventListener("click", () => exportJson([pfCur], (pfCur.id || "portafoglio") + ".json"));
 $("ed-del").addEventListener("click", ev => twoStep(ev.currentTarget, () => { deletePf(pfCur); updSave(); }));
 function openPf(id) {
   if (!keepDirty()) return; ORIG = null; updSave();
@@ -3339,8 +3339,9 @@ function openPf(id) {
 $("pfs-list").addEventListener("click", ev => {
   const row = ev.target.closest(".pfrow"); if (!row) return;
   const b = ev.target.closest("button[data-a]"), id = row.dataset.id, p = PFLIST.find(x => x.id === id), a = b ? b.dataset.a : "sel";
-  if (a === "sel") selectPf(id); else if (a === "open") openPf(id);
-  else if (a === "exp") exportJson([p], (p.id || "portafoglio") + ".json");
+  if (a === "sel") selectPf(id);
+  else if (a === "edit") $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" });
+  else if (a === "ren") $("ed-ren").click();
   else if (a === "del") twoStep(b, () => deletePf(p));
 });
 function openNew() { if (!keepDirty()) return; $("np-name").value = `Portafoglio ${USER.length + 1}`; $("np-descr").value = ""; $("np-json").value = ""; npMsg(""); $("newpf").showModal(); $("np-name").select(); }
@@ -3367,17 +3368,9 @@ $("np-form").addEventListener("submit", ev => {
 });
 $("newpf").addEventListener("click", ev => { if (ev.target.id === "np-cancel" || ev.target.closest("#np-x") || ev.target === $("newpf")) $("newpf").close(); });
 $("pfs-new").addEventListener("click", openNew);
-// Crea nuovo portafoglio: apre la scheda con proposta, lista di ISIN, portafoglio vuoto/JSON e combinazione; Modifica esistente: sceglie un portafoglio e apre il dettaglio
+// Crea nuovo portafoglio: apre la scheda con proposta, lista di ISIN, portafoglio vuoto/JSON e combinazione
 $("pfs-create").addEventListener("click", () => { const c = $("prop-sec"); c.hidden = !c.hidden; if (!c.hidden) requestAnimationFrame(() => c.scrollIntoView({ behavior: "smooth", block: "start" })); });
 $("prop-x").addEventListener("click", () => { $("prop-sec").hidden = true; });
-$("pfs-edit").addEventListener("click", () => {
-  $("ep-sel").innerHTML = PFLIST.map(p => `<option value="${esc(p.id)}"${pfCur && p.id === pfCur.id ? " selected" : ""}>${esc(p.name)}</option>`).join(""); $("editpf").showModal();
-});
-$("editpf").addEventListener("click", ev => { if (ev.target.id === "ep-cancel" || ev.target.closest("#ep-x") || ev.target === $("editpf")) $("editpf").close(); });
-$("ep-form").addEventListener("submit", ev => {
-  ev.preventDefault(); const id = $("ep-sel").value; $("editpf").close(); $("prop-sec").hidden = true;
-  if (!(window.pfsOpen && pfCur && pfCur.id === id)) selectPf(id); else $("pf-edit").scrollIntoView({ behavior: "smooth", block: "start" });
-});
 // Combina portafogli: unisce le composizioni attuali (per valore) dei portafogli scelti, ciascuno col suo peso, in un nuovo draft
 const cbMsg = (t, bad) => { const m = $("cb-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
 function cbSync(redistribute) {
