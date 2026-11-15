@@ -274,6 +274,7 @@ table.cf td small { display: block; color: var(--soft); font-size: var(--fs-s); 
 #v-pfs #head-sec { --tc: var(--c2); }
 #v-search #prop-sec, #v-pfs #prop-sec { --tc: var(--c1); } #v-search #q-sec { --tc: var(--c2); } #v-search #guide { --tc: var(--c4); } #v-search #res-sec { --tc: var(--c3); }
 #v-search { padding-top: 8px; padding-bottom: 72px; }
+@media (max-width: 480px) { #hist-tbl th:nth-child(5), #hist-tbl td:nth-child(5), #hist-tbl th:nth-child(6), #hist-tbl td:nth-child(6) { display: none; } #hist-tbl td.act { white-space: nowrap; } #hist-tbl th, #hist-tbl td { padding-left: 8px; } #hist-tbl th:first-child, #hist-tbl td:first-child { padding-left: 0; white-space: normal; } #hist-tbl .wl { white-space: normal; max-width: 90px; } #hist-tbl { min-width: 0; width: 100%; } #hist-tbl th { white-space: normal; } } /* sul telefono Modifica ed Elimina restano raggiungibili senza scorrere */
 #v-search .pf-sec[hidden], #v-pfs .pf-sec[hidden] { display: none; }
 #prop-sec .prop { padding: 6px 0 0; }
 #q-sec .gh { margin-bottom: 4px; }
@@ -549,7 +550,7 @@ table.eft tfoot td { font-weight: 500; border-top: 1.5px solid var(--fg); }
 </style>
 
 <header><div class="wrap bar2">
-  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.029</span></span></span>
+  <span class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxnYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxNDNBMzMiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzBDMUYxQiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA3MTAwRSIvPjwvbGluZWFyR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibGdnbCIgY3g9Ii44IiBjeT0iLjE4IiByPSIuNjIiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNGQzZBNSIgc3RvcC1vcGFjaXR5PSIuMzIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzRkM2QTUiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0ibGdnciIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxMTAiIHkxPSI0MDAiIHgyPSI0MzAiIHkyPSI5MCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMUZBMzg0Ii8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiM0RkQ4QjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOEZCRTYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNsZ2JnKSIvPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIiBmaWxsPSJ1cmwoI2xnZ2wpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2IDI1Nikgc2NhbGUoMC44MzAyKSB0cmFuc2xhdGUoLTI3Mi41IC0yNDIuNSkiPgo8cGF0aCBkPSJNMzAwLjAgMzY3LjggQTExMiAxMTIgMCAxIDEgMjI4IDE3MCBDIDMwOCAxNzAsIDM1NiAxNTAsIDQzMCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2xnZ3IpIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIC8+CjxwYXRoIGQ9Ik0zNjYuMCA5NC4zIEw0MzAgOTIgTDQxMi41IDE1My41IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbGdncikiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgLz48cmVjdCB4PSIxNzAiIHk9IjI4MiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjU0IiByeD0iOSIgZmlsbD0idXJsKCNsZ2dyKSIvPjxyZWN0IHg9IjIxNCIgeT0iMjQ0IiB3aWR0aD0iMjgiIGhlaWdodD0iOTIiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PHJlY3QgeD0iMjU4IiB5PSIyMDIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMzQiIHJ4PSI5IiBmaWxsPSJ1cmwoI2xnZ3IpIi8+PC9nPjwvc3ZnPg==" alt="" width="28" height="28"><span class="lt"><span>my<i>Money</i></span><span class="ver" id="ver">v01.06.030</span></span></span>
   <nav class="tabs" aria-label="Sezioni">
     <button type="button" data-v="port" aria-pressed="true">Monitoraggio</button>
     <button type="button" data-v="pfs" aria-pressed="false">Portafogli</button>
@@ -1675,7 +1676,7 @@ function pfLots(pf) {
   pf.positions.forEach((x, pi) => {
     if (!byIsin(x.isin).s) return; // senza prezzi scaricati l'ETF resta fuori dal calcolo
     const p = priceAt(byIsin(x.isin), st), q = x.weight > 0 ? pf.amount * x.weight / W / p : x.qty > 0 ? x.qty : 0;
-    if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p, base: true });
+    if (q > 0) out.push({ isin: x.isin, date: ymd(st), qty: q, price: p, base: true, pi });
     x.txs.forEach((t, ti) => out.push({ isin: x.isin, date: t.date, qty: t.qty, price: t.price, pi, ti }));
   });
   return out.sort(byDate);
@@ -2558,7 +2559,7 @@ function renderHist() {
   $("hist-ro").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
     return `<tr><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${eL(e)}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td></tr>`; }).join("")}</tbody>` : "";
   $("hist-tbl").innerHTML = lots.length ? `<thead><tr><th>Data</th><th>ETF</th><th>Quote</th><th>Prezzo/quota</th><th>Totale</th><th>Oggi</th><th></th></tr></thead><tbody>${lots.map(l => { const e = byIsin(l.isin), g = l.qty > 0 ? e.live / l.price - 1 : null;
-    return `<tr${l.base ? "" : ` data-pi="${l.pi}" data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${eL(e)}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act">${l.base ? "" : `<button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button>`}</td></tr>`; }).join("")}</tbody>` : "";
+    return `<tr data-pi="${l.pi}"${l.base ? ' data-base="1"' : ` data-ti="${l.ti}"`}><td class="n">${dateTxt(dateMs(l.date))}${l.base ? '<span class="wl">Iniziale · simulato</span>' : ""}</td><td class="n">${eL(e)}</td><td class="n ${l.qty < 0 ? "sell" : ""}">${l.qty < 0 ? "−" : ""}${fmt(Math.abs(l.qty), 0)}</td><td class="n">${fmt(l.price, 3)}</td><td class="n">${l.qty < 0 ? "+ " : ""}${eur(Math.abs(l.qty * l.price))}</td><td class="n ${cls(g)}">${g == null ? "—" : pct(g, 1)}</td><td class="act"><button type="button" class="del ed" aria-label="Modifica" title="Modifica">${ICO_ED}</button><button type="button" class="del" aria-label="Elimina" title="Elimina">${ICO_X}</button></td></tr>`; }).join("")}</tbody>` : "";
 }
 // Composizione nel tempo: aree impilate per ETF (in € o in %), con i punti di acquisto e vendita sull'asse.
 function histOrder(P) {
@@ -3232,6 +3233,11 @@ $("pos-tbl").addEventListener("click", ev => {
 const hmsg = (t, bad) => { const m = $("hist-msg"); m.textContent = t; m.className = "fc-note" + (bad ? " err" : ""); };
 function resetOp() { editOp = null; $("op-mode").value = "u"; $("op-submit").textContent = "Aggiungi"; $("op-cancel").hidden = true; $("op-qty").value = ""; $("op-op").value = "1"; $("op-date").value = ymd(Date.now()); delete $("op-price").dataset.touched; opSuggest(); }
 $("op-cancel").addEventListener("click", () => { resetOp(); hmsg(""); });
+// Toglie la quantità/peso iniziale di una posizione; le quantità iniziali calcolate dai pesi degli altri ETF restano quelle di prima (si fissano in quote)
+function dropBase(c, pi) {
+  pfLots(c).filter(l => l.base && l.pi !== pi).forEach(l => { const o = c.positions[l.pi]; if (o.weight > 0) { o.qty = +l.qty.toFixed(6); o.weight = null; } });
+  c.positions[pi].qty = null; c.positions[pi].weight = null;
+}
 $("op-form").addEventListener("submit", ev => {
   ev.preventDefault();
   const isin = resolveEtf($("op-etf").value), e = byIsin(isin), date = $("op-date").value, sgn = +$("op-op").value, qty = +$("op-qty").value, raw = +$("op-price").value, price = qty > 0 ? +($("op-mode").value === "t" ? raw / qty : raw).toFixed(6) : 0;
@@ -3240,13 +3246,22 @@ $("op-form").addEventListener("submit", ev => {
   if (dateMs(date) > Date.now() + DAY) return hmsg("La data è nel futuro", true);
   if (date < e.inception) return hmsg(`${e.ticker} è stato lanciato il ${dateTxt(dateMs(e.inception))}`, true);
   if (!(qty > 0) || !(price > 0)) return hmsg("Quantità e prezzo devono essere maggiori di zero", true);
-  const ed = editOp, err = editPf(c => { if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
+  const ed = editOp, err = editPf(c => { if (ed && ed.base) dropBase(c, ed.pi); else if (ed) c.positions[ed.pi].txs.splice(ed.ti, 1); let x = c.positions.find(p => p.isin === isin); if (!x) c.positions.push((x = mkPos(isin))); x.txs.push({ date, price, qty: sgn * qty }); x.txs.sort(byDate); });
   if (err) return hmsg(err, true);
   resetOp(); hmsg(ed ? "Operazione modificata" : sgn > 0 ? "Acquisto aggiunto" : "Vendita aggiunta");
 });
 $("hist-tbl").addEventListener("click", ev => {
   const b = ev.target.closest(".del"), tr = b && b.closest("tr[data-pi]"); if (!tr) return;
-  const pi = +tr.dataset.pi, ti = +tr.dataset.ti, x = pfCur.positions[pi], t = x && x.txs[ti]; if (!t) return;
+  const pi = +tr.dataset.pi, ti = +tr.dataset.ti, x = pfCur.positions[pi];
+  if (tr.dataset.base) { // movimento iniziale (quantità o peso a inizio simulazione): si può modificare (diventa un acquisto vero) o eliminare, senza cambiare le quantità iniziali degli altri ETF
+    const l = pfLots(pfCur).find(z => z.base && z.pi === pi); if (!x || !l) return;
+    if (b.classList.contains("ed")) {
+      $("op-etf").value = opEtf = x.isin; $("op-date").value = l.date; $("op-op").value = "1"; $("op-qty").value = +l.qty.toFixed(4); $("op-mode").value = "u"; $("op-price").value = l.price.toFixed(3); $("op-price").dataset.touched = "1";
+      editOp = { pi, base: true }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
+    } else { const err = editPf(c => dropBase(c, pi)); resetOp(); err ? hmsg("Non puoi eliminarlo: " + err, true) : hmsg("Movimento iniziale eliminato"); }
+    return;
+  }
+  const t = x && x.txs[ti]; if (!t) return;
   if (b.classList.contains("ed")) {
     $("op-etf").value = opEtf = x.isin; $("op-date").value = t.date; $("op-op").value = t.qty < 0 ? "-1" : "1"; $("op-qty").value = Math.abs(t.qty); $("op-mode").value = "u"; $("op-price").value = t.price.toFixed(3); $("op-price").dataset.touched = "1";
     editOp = { pi, ti }; $("op-submit").textContent = "Salva"; $("op-cancel").hidden = false; hmsg(""); $("op-form").scrollIntoView({ block: "center", behavior: "smooth" });
