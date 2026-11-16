@@ -270,11 +270,17 @@
     const log = [];
     for (const isin of isins.filter(i => !ISINS[i])) {
       try {
-        const known = syms[isin]; let sym, cur, t, v, last;
+        let known = syms[isin], seeded = false, sym, cur, t, v, last;
+        const an = window.ANAG && window.ANAG.d && window.ANAG.d[isin]; // simbolo già noto dall'anagrafica (anagrafica.js): niente ricerca su Yahoo
+        if (!(known && known.symbol) && an && an.length) { known = { symbol: an[0][0] }; seeded = true; }
         if (known && known.symbol) {
-          [cur, t, v, last] = parseChart(await getJson(chartUrl(known.symbol, maxQs()))); sym = known.symbol;
-          if (t.length < 50) throw new Error("pochi dati");
-        } else {
+          try {
+            [cur, t, v, last] = parseChart(await getJson(chartUrl(known.symbol, maxQs()))); sym = known.symbol;
+            if (t.length < 50) throw new Error("pochi dati");
+            if (seeded) syms[isin] = { symbol: sym };
+          } catch (e) { if (!seeded) throw e; known = null; } // il simbolo dell'anagrafica non ha dati: si cerca come prima
+        }
+        if (!(known && known.symbol)) {
           const tk = catInfo(isin).ticker, found = await bestListing(isin, tk === "-" || tk === isin ? undefined : tk, maxQs());
           if (!found.length) { syms[isin] = { symbol: null, failed: Math.floor(Date.now() / 1000) }; log.push(isin + ": nessuna quotazione"); continue; }
           [sym, cur, t, v, last] = found.find(f => f[1] === "EUR") || found[0]; syms[isin] = { symbol: sym };

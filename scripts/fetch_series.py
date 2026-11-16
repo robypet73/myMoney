@@ -21,7 +21,17 @@ import fetch_prices as fp  # noqa: E402
 ROOT = Path(os.environ.get("MYMONEY_ROOT") or Path(__file__).resolve().parent.parent)
 OUT = ROOT / "data" / "p"
 SYMS = ROOT / "data" / "symbols.json"
+ANAG = ROOT / "anagrafica.js"
 DEADLINE = time.time() + 5 * 3600  # il job GitHub si ferma a 6 ore
+
+
+def anagrafica():
+    """ISIN → simboli Yahoo già noti da anagrafica.js (scripts/fetch_anagrafica.py), il preferito per primo."""
+    try:
+        t = ANAG.read_text(encoding="utf-8")
+        return {i: [x[0] for x in v] for i, v in json.loads(t[t.index("{"): t.rindex("}") + 1]).get("d", {}).items()}
+    except Exception:
+        return {}
 
 
 def catalog():
@@ -76,6 +86,7 @@ def main():
     chosen = only or list(dict.fromkeys(watchlist() + [i for i, _ in sorted(cat.items(), key=lambda kv: -kv[1]["aum"]) if i not in fp.ISINS][:top]))
     chosen = [i for i in chosen if i not in fp.ISINS]
     syms = json.loads(SYMS.read_text(encoding="utf-8")) if SYMS.exists() else {}
+    anag = anagrafica()
     print(f"ETF da scaricare: {len(chosen)} (watchlist {len(watchlist())}, primi {top} per patrimonio)")
     ok = 0
     batch = {}
@@ -100,12 +111,20 @@ def main():
         info = cat.get(isin, {})
         try:
             known = syms.get(isin)
+            seeded = False
+            if not (known and known.get("symbol")) and anag.get(isin):  # simbolo già noto dall'anagrafica: niente ricerca su Yahoo
+                known, seeded = {"symbol": anag[isin][0]}, True
             if known and known.get("symbol"):
-                cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?period1=0&period2={int(time.time())}&interval=1d"))
-                sym = known["symbol"]
-                if len(t) < 50:
-                    raise ValueError("pochi dati")
-            else:
+                try:
+                    cur, t, v, last = fp.parse_chart(fp.get_json(f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(known['symbol'])}?period1=0&period2={int(time.time())}&interval=1d"))
+                    sym = known["symbol"]
+                    if len(t) < 50:
+                        raise ValueError("pochi dati")
+                except Exception:
+                    if not seeded:
+                        raise
+                    known = None  # il simbolo dell'anagrafica non ha dati: si cerca come prima
+            if not (known and known.get("symbol")):
                 if not force and known and known.get("failed") and time.time() - known["failed"] < 30 * 86400:
                     continue  # già provato di recente senza successo
                 tk = info.get("ticker")
@@ -115,6 +134,8 @@ def main():
                     print(f"[{n}/{len(chosen)}] {isin} {info.get('name', '')[:40]}: nessuna quotazione")
                     continue
                 sym, cur, t, v, last = next((f for f in found if f[1] == "EUR"), found[0])
+                syms[isin] = {"symbol": sym}
+            if seeded and known and known.get("symbol") == sym:
                 syms[isin] = {"symbol": sym}
             t, v, orig = to_eur(cur, t, v)
             batch[isin] = (sym, "EUR", last.pop("name", None), t, v, last, orig, cur)

@@ -34,7 +34,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           mkdir -p www
-          cp -r ../index.html ../sw.js ../native.js ../manifest.webmanifest ../prices.js ../etfdata.js ../catalog.js ../quotes.js ../watchlist.txt ../icons ../data www/
+          cp -r ../index.html ../sw.js ../native.js ../manifest.webmanifest ../prices.js ../etfdata.js ../catalog.js ../anagrafica.js ../quotes.js ../watchlist.txt ../icons ../data www/
           npx cap add android
           npx cap sync android
       - name: Widget della schermata Home
