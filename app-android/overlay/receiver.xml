@@ -8,3 +8,4 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+        <service android:name=".MyMoneyKeepAliveService" android:exported="false" android:foregroundServiceType="dataSync" />

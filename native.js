@@ -13,7 +13,9 @@
   const STORE = "mm-data";
   const UA = "Mozilla/5.0 (compatible; myMoney/1.0)";
   const UAB = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // Attesa nativa (plugin MyMoneyKeepAlive): con la pagina in secondo piano i timer JS vengono rallentati da Chromium, quella nativa no
+  const KA = () => (window.Capacitor.Plugins && window.Capacitor.Plugins.MyMoneyKeepAlive) || window.Capacitor.registerPlugin("MyMoneyKeepAlive");
+  const sleep = async ms => { if (window.__KA) { try { await KA().delay({ ms }); return; } catch {} } await new Promise(r => setTimeout(r, ms)); };
   const r4 = x => Math.round(x * 1e4) / 1e4, r2 = x => Math.round(x * 100) / 100;
   const nowIso = () => new Date().toISOString().slice(0, 19) + "+00:00";
 
