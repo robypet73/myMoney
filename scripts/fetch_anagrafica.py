@@ -3,6 +3,7 @@
 
     python scripts/fetch_anagrafica.py            # scarica dallo screener di Yahoo (≈ 70 richieste) e scrive anagrafica.js
     python scripts/fetch_anagrafica.py --raw F    # salva/riusa i dati grezzi in F (per le prove)
+    python scripts/fetch_anagrafica.py --live     # solo Borsa Italiana (≈10 richieste, mezzo minuto): aggiorna prezzo, volume e spread e aggiunge i nuovi titoli, senza ricerca per ISIN
 
 Lo screener di Yahoo elenca, per ogni borsa, tutti i titoli ETF con simbolo, nome, valuta, prezzo, volume medio, bid e ask. Non c'è l'ISIN: si abbina al catalogo
 (`catalog.js`, justETF) dal nome del fondo. Per ogni ISIN si tengono le quotazioni (simbolo, borsa, valuta, volume medio giornaliero in Mln €, spread %), la
@@ -179,12 +180,30 @@ def expand_listings(S, mapping):
                     claimed[other] = isin
 
 
-def write_out(S, rates, mapping):
+def previous_full():
+    """Elenco completo di quotazioni dell'anagrafica precedente (per aggiornare una sola borsa senza perdere le altre)."""
+    try:
+        t = OUT.read_text(encoding="utf-8")
+        return json.loads(t[t.index("{"): t.rindex("}") + 1]).get("d", {})
+    except Exception:
+        return {}
+
+
+def write_out(S, rates, mapping, keep=None, only_exch=None):
+    """keep/only_exch: con una sola borsa aggiornata (--live) le quotazioni delle altre borse restano quelle dell'anagrafica precedente."""
     out = {}
     for isin, syms in mapping.items():
         ls = listings(S, rates, syms)
         if ls:
             out[isin] = ls
+    if keep is not None and only_exch:
+        for isin, old in keep.items():
+            others = [x for x in old if x[1] != only_exch]
+            if not others and isin not in out:
+                continue
+            merged = (out.get(isin) or []) + others
+            merged.sort(key=lambda x: (0 if (x[1] == "MIL" and x[2] == "EUR") else 1 if x[2] == "EUR" else 2, -(x[3] or 0)))
+            out[isin] = merged[:8]
     payload = {"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "source": "Yahoo Finance (screener e ricerca per ISIN)", "x": EXCHANGES, "d": out}
     OUT.write_text("window.ANAG=" + json.dumps(payload, separators=(",", ":"), ensure_ascii=False) + ";\n", encoding="utf-8")
     return out
@@ -197,14 +216,15 @@ def save_miss(miss):
 
 def main():
     rawf = Path(sys.argv[sys.argv.index("--raw") + 1]) if "--raw" in sys.argv else None
-    max_search = int(sys.argv[sys.argv.index("--max-search") + 1]) if "--max-search" in sys.argv else 4000
+    live = "--live" in sys.argv
+    max_search = 0 if live else int(sys.argv[sys.argv.index("--max-search") + 1]) if "--max-search" in sys.argv else 4000
     op = crumb = None
     if rawf and rawf.exists():
         raw = json.loads(rawf.read_text(encoding="utf-8"))
     else:
         op, crumb = session()
         raw = {}
-        for ex in EXCHANGES:
+        for ex in (["MIL"] if live else EXCHANGES):
             print(f"Borsa {ex} ({EXCHANGES[ex]})", flush=True)
             raw[ex] = screen(op, crumb, ex)
         if rawf:
@@ -249,9 +269,11 @@ def main():
             out = write_out(S, rates, mapping)
             save_miss(miss)
             print(f"  ricerca {n} di {len(todo)}: trovati {found}; ISIN con quotazione: {len(out)}", flush=True)
-    expand_listings(S, mapping)
-    out = write_out(S, rates, mapping)
-    save_miss(miss)
+    if not live:
+        expand_listings(S, mapping)
+    out = write_out(S, rates, mapping, previous_full() if live else None, "MIL" if live else None)
+    if not live:
+        save_miss(miss)
     print(f"Titoli su Yahoo: {len(S)}; ISIN del catalogo con almeno una quotazione: {len(out)} su {len(cat)}")
     print(f"Scritto {OUT} ({OUT.stat().st_size // 1024} kB)")
 

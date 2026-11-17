@@ -394,8 +394,57 @@
     return [`${out.length} ETF`];
   }
 
+  /* ---------- Anagrafica delle quotazioni di Borsa Italiana: come scripts/fetch_anagrafica.py --live (screener di Yahoo, ≈10 richieste) ---------- */
+  const normN = s => String(s || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+  const STOPW = new Set(["ucits", "etf", "ucit", "fund", "the", "of", "and", "plc", "ucits-etf", "etc", "etn", "etp", "ex"]);
+  const coreN = s => normN(s).split(" ").filter(w => !STOPW.has(w)).join(" ");
+  async function screenMil() {
+    const out = []; let off = 0;
+    for (;;) {
+      let res = null;
+      for (let k = 0; k < 4; k++) {
+        const c = await yahooCrumb();
+        try {
+          const j = JSON.parse(body(await http(Q1 + "/v1/finance/screener?" + new URLSearchParams({ crumb: c, lang: "en-US", region: "US", formatted: "false", corsDomain: "finance.yahoo.com" }),
+            { method: "POST", headers: { "Content-Type": "application/json" }, data: { size: 250, offset: off, sortField: "dayvolume", sortType: "DESC", quoteType: "ETF", userId: "", userIdType: "guid", query: { operator: "eq", operands: ["exchange", "MIL"] } } })));
+          res = j.finance.result[0]; break;
+        } catch (e) { crumb = null; if (k === 3) throw e; await sleep(4000 * (k + 1)); }
+      }
+      const q = res.quotes || []; out.push(...q); off += q.length;
+      if (!q.length || off >= (res.total || 0)) return out;
+      await sleep(1000);
+    }
+  }
+  async function doAnag() {
+    const CAT = window.CATALOG; if (!CAT || !CAT.rows) throw new Error("catalogo non caricato");
+    const iI = CAT.cols.indexOf("isin"), nI = CAT.cols.indexOf("name");
+    const A = window.ANAG && window.ANAG.d ? window.ANAG : { x: {}, d: {} };
+    const S = {}; (await screenMil()).forEach(q => { if (q.symbol && q.regularMarketPrice) S[q.symbol] = q; });
+    const curs = [...new Set(Object.values(S).map(q => q.currency).filter(c => c && c !== "EUR"))], rate = { EUR: 1 };
+    if (curs.length) { const fx = await quoteRaw(curs.map(c => `EUR${c === "GBp" ? "GBP" : c}=X`), "regularMarketPrice"); for (const r of Object.values(fx)) if (r.regularMarketPrice) rate[r.symbol.slice(3, 6)] = 1 / r.regularMarketPrice; if (rate.GBP) rate.GBp = rate.GBP / 100; }
+    const byNorm = new Map(), byCore = new Map(), push = (m, k, v) => { if (!m.has(k)) m.set(k, []); m.get(k).push(v); };
+    for (const r of CAT.rows) { push(byNorm, normN(r[nI]), r[iI]); push(byCore, coreN(r[nI]), r[iI]); }
+    const map = {};
+    for (const [sym, q] of Object.entries(S)) { const nm = q.longName || q.shortName || "", c = byNorm.get(normN(nm)) || byCore.get(coreN(nm)); if (c && c.length === 1) (map[c[0]] = map[c[0]] || []).push(sym); }
+    for (const [isin, ls] of Object.entries(A.d)) for (const l of ls) if (l[1] === "MIL" && S[l[0]] && !(map[isin] || []).includes(l[0])) (map[isin] = map[isin] || []).push(l[0]);
+    const d = {}, pref = x => [x[2] === "EUR" ? 0 : 1, -(x[3] || 0)];
+    for (const [isin, syms] of Object.entries(map)) {
+      d[isin] = [...new Set(syms)].map(sym => {
+        const q = S[sym], price = q.regularMarketPrice, vol = q.averageDailyVolume3Month || q.regularMarketVolume, rt = rate[q.currency], bid = q.bid, ask = q.ask;
+        const spr = bid && ask && bid > 0 && ask >= bid && Math.abs((bid + ask) / 2 / price - 1) < 0.05 ? Math.round((ask - bid) / ((ask + bid) / 2) * 1e5) / 1e3 : null;
+        return [sym, "MIL", q.currency, vol && rt ? Math.round(vol * price * rt / 1e6 * 1e3) / 1e3 : null, spr];
+      });
+    }
+    for (const [isin, old] of Object.entries(A.d)) {  // le quotazioni delle altre borse restano quelle dell'anagrafica precedente
+      const others = old.filter(x => x[1] !== "MIL"); if (!others.length && !d[isin]) continue;
+      d[isin] = [...(d[isin] || []), ...others].sort((a, b) => { const x = pref(a), y = pref(b); return x[0] - y[0] || x[1] - y[1]; }).slice(0, 8);
+    }
+    await put("anagrafica.js", "window.ANAG=" + JSON.stringify({ generated: nowIso(), source: "Yahoo Finance (screener)", x: A.x && Object.keys(A.x).length ? A.x : { MIL: "Borsa Italiana" }, d }) + ";\n");
+    return [`${Object.keys(S).length} titoli su Borsa Italiana, ${Object.keys(d).length} ISIN`];
+  }
+
   /* ---------- Interfaccia usata dalla pagina al posto del server locale (localApi) ---------- */
-  const KINDS = { quotes: () => doQuotes(), prices: () => doPrices(), series: i => doSeries(i), info: i => doInfo(i), catalog: () => doCatalog() };
+  const KINDS = { quotes: () => doQuotes(), prices: () => doPrices(), series: i => doSeries(i), info: i => doInfo(i), catalog: () => doCatalog(), anag: () => doAnag() };
   let chain = Promise.resolve();
   window.nativeApi = (kind, isins) => {
     const run = chain.then(async () => {

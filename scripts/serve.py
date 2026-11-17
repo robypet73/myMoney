@@ -57,6 +57,7 @@ KINDS = {
     "series": ([PY, "scripts/fetch_series.py", "--force"], 900, True),          # 5 anni di prezzi degli ISIN indicati
     "info": ([PY, "scripts/fetch_etf_data.py", "--extra"], 600, True),          # indice, titoli, paesi, settori da justETF
     "catalog": ([PY, "scripts/fetch_catalog.py"], 900, False),  # elenco di tutti gli ETF (screener justETF)
+    "anag": ([PY, "scripts/fetch_anagrafica.py", "--live"], 300, False),  # anagrafica delle quotazioni di Borsa Italiana (screener Yahoo)
 }
 
 
@@ -159,7 +160,7 @@ def fs_apply(b):
 
 
 # nell'eseguibile non c'è un Python a parte: gli script girano nello stesso processo
-MODS = {"quotes": ("fetch_quotes", []), "prices": ("fetch_prices", []), "series": ("fetch_series", ["--force"]), "info": ("fetch_etf_data", ["--extra"]), "catalog": ("fetch_catalog", [])}
+MODS = {"quotes": ("fetch_quotes", []), "prices": ("fetch_prices", []), "series": ("fetch_series", ["--force"]), "info": ("fetch_etf_data", ["--extra"]), "catalog": ("fetch_catalog", []), "anag": ("fetch_anagrafica", ["--live"])}
 
 
 def run_inproc(kind, isins):
@@ -168,7 +169,7 @@ def run_inproc(kind, isins):
     if takes and not isins:
         return {"ok": False, "error": "ISIN mancanti"}
     args = list(base) + (["--isins", ",".join(isins)] if takes else [])
-    for m in ("fetch_prices", "fetch_quotes", "fetch_series", "fetch_etf_data", "fetch_catalog"):
+    for m in ("fetch_prices", "fetch_quotes", "fetch_series", "fetch_etf_data", "fetch_catalog", "fetch_anagrafica"):
         sys.modules.pop(m, None)  # stato pulito a ogni esecuzione (cookie, scadenze, cache dei cambi)
     old, buf, t0, ok = sys.argv, io.StringIO(), time.time(), True
     sys.argv = [name + ".py"] + args

@@ -38,7 +38,7 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name myMoney --icon icon.ico --paths scripts \
             --hidden-import tkinter --hidden-import tkinter.filedialog --collect-all webview --collect-all clr_loader --collect-all pythonnet \
-            --hidden-import fetch_prices --hidden-import fetch_quotes --hidden-import fetch_series --hidden-import fetch_etf_data --hidden-import fetch_catalog \
+            --hidden-import fetch_prices --hidden-import fetch_quotes --hidden-import fetch_series --hidden-import fetch_etf_data --hidden-import fetch_catalog --hidden-import fetch_anagrafica \
             scripts/serve.py
       - name: Prova l'eseguibile (solo server)
         run: |
