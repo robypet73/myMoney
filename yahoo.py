@@ -32,8 +32,9 @@ def num(x):
 
 
 class Yahoo:
-    def __init__(self, pause=0.4, cancel=None, log=None):
+    def __init__(self, pause=0.4, cancel=None, log=None, warn=None):
         self.pause, self.cancel, self.log = pause, cancel or (lambda: False), log or (lambda m: None)
+        self.warn = warn or (lambda m: None)  # avvisi di scaricamento da mostrare all'utente
         self.crumb = None
         self.opener = None
         self.k = 0  # alterna i server
@@ -206,4 +207,5 @@ def parse_summary(r):
             "family": ks.get("fundFamily") or fp.get("family"), "category": ks.get("category") or fp.get("categoryName"),
             "inception": datetime.fromtimestamp(inc, timezone.utc).strftime("%Y-%m-%d") if inc else None,
             "stock": num(th.get("stockPosition")), "bond": num(th.get("bondPosition")), "cash": num(th.get("cashPosition")), "other": num(th.get("otherPosition")),
-            "yield": (num(sd.get("yield")) or num(ks.get("yield"))), "sectors": json.dumps(sect) if sect else None}
+            "yield": (num(sd.get("yield")) or num(ks.get("yield"))), "sectors": json.dumps(sect) if sect else None,
+            "holdings": json.dumps([[h.get("holdingName") or h.get("symbol"), round(num(h.get("holdingPercent")) * 100, 2)] for h in (th.get("holdings") or []) if num(h.get("holdingPercent")) is not None][:10], ensure_ascii=False) or None}

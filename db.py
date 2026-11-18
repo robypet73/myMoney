@@ -16,13 +16,13 @@ CREATE TABLE IF NOT EXISTS etf (
   avg_volume REAL, adv_eur_m REAL,
   assets REAL, assets_eur_m REAL, ret_1y REAL, ter REAL, family TEXT, category TEXT, inception TEXT,
   stock REAL, bond REAL, cash REAL, other REAL, yield REAL, sectors TEXT,
-  class_src TEXT, replication TEXT, domicile TEXT, index_name TEXT, n_holdings INTEGER, sustainable INTEGER, div_yield REAL, ret_3y REAL, ret_5y REAL,
-  vol_1y REAL, vol_3y REAL, max_dd REAL, holdings TEXT, countries TEXT,
+  class_src TEXT, replication TEXT, domicile TEXT, n_holdings INTEGER, sustainable INTEGER, div_yield REAL, ret_3y REAL, ret_5y REAL,
+  vol_1y REAL, vol_3y REAL, max_dd REAL, holdings TEXT,
   listed_at TEXT, quote_at TEXT, detail_at TEXT, hist_at TEXT, hist_from TEXT, hist_to TEXT, hist_n INTEGER
 );
 CREATE TABLE IF NOT EXISTS jetf (
   isin TEXT PRIMARY KEY, name TEXT, ticker TEXT, cur TEXT, aum REAL, ter REAL, dist TEXT, repl TEXT, dom TEXT, inc TEXT, n INTEGER, sust INTEGER, div REAL,
-  r1 REAL, r3 REAL, r5 REAL, vol1 REAL, vol3 REAL, dd REAL, asset TEXT, region TEXT, index_name TEXT, holdings TEXT, countries TEXT, sectors TEXT, list_at TEXT, profile_at TEXT
+  r1 REAL, r3 REAL, r5 REAL, vol1 REAL, vol3 REAL, dd REAL, asset TEXT, region TEXT, list_at TEXT
 );
 CREATE TABLE IF NOT EXISTS isin_ref (isin TEXT, symbol TEXT, src TEXT, PRIMARY KEY (isin, symbol, src)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS firds (isin TEXT, mic TEXT, PRIMARY KEY (isin, mic)) WITHOUT ROWID;
@@ -30,6 +30,22 @@ CREATE TABLE IF NOT EXISTS figi_done (isin TEXT PRIMARY KEY, at TEXT);
 CREATE TABLE IF NOT EXISTS prezzi (symbol TEXT, date TEXT, close_eur REAL, PRIMARY KEY (symbol, date)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS fx (cur TEXT, date TEXT, eur_per_unit REAL, PRIMARY KEY (cur, date)) WITHOUT ROWID;
 """
+# Scheda unica per fondo: una riga per ISIN verificato (o per simbolo, se l'ISIN manca) con i dati di tutte le fonti e la quotazione preferita
+# (EUR, poi Borsa Italiana, Xetra, Parigi, Amsterdam, Londra, poi il volume); `quotazioni` elenca tutti i simboli dello stesso fondo.
+_KEY = "COALESCE(isin, 'sym:' || symbol)"
+VIEW = f"""CREATE VIEW fondo AS
+WITH k AS (SELECT *, {_KEY} AS fund_id,
+  ROW_NUMBER() OVER (PARTITION BY {_KEY} ORDER BY (currency='EUR') DESC, CASE exchange WHEN 'MIL' THEN 0 WHEN 'GER' THEN 1 WHEN 'PAR' THEN 2 WHEN 'AMS' THEN 3 WHEN 'LSE' THEN 4 ELSE 5 END,
+    adv_eur_m IS NULL, adv_eur_m DESC) AS rk,
+  COUNT(*) OVER (PARTITION BY {_KEY}) AS n_quotazioni,
+  GROUP_CONCAT(symbol, ' ') OVER (PARTITION BY {_KEY}) AS quotazioni FROM etf)
+SELECT fund_id, isin, isin_src, symbol, name, type, asset_class, region, distribution, hedged, replication, domicile, family, category, inception,
+  ter, assets_eur_m, ret_1y, ret_3y, ret_5y, vol_1y, vol_3y, max_dd, div_yield, n_holdings, sustainable, holdings, sectors,
+  exchange_name, currency, price_eur, bid, ask, spread_pct, adv_eur_m, quote_at, hist_from, hist_to, hist_n, n_quotazioni, quotazioni,
+  'yahoo' || CASE WHEN class_src='justetf' THEN '+justetf' ELSE '' END || CASE WHEN isin_src LIKE '%figi%' THEN '+openfigi' ELSE '' END
+    || CASE WHEN isin_src LIKE '%firds%' THEN '+esma' ELSE '' END AS fonti
+FROM k WHERE rk=1"""
+
 COLS = [r.split()[0] for r in SCHEMA.split("CREATE TABLE IF NOT EXISTS etf (")[1].split(");")[0].replace("\n", " ").split(",") if r.strip() and not r.strip().startswith("PRIMARY")]
 now = lambda: time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -44,6 +60,8 @@ class DB:
         for col in COLS:  # database creato da una versione precedente: aggiunge le colonne nuove
             if col not in have:
                 self.c.execute(f"ALTER TABLE etf ADD COLUMN {col}")
+        self.c.execute("DROP VIEW IF EXISTS fondo")
+        self.c.execute(VIEW)
         self.c.execute("CREATE INDEX IF NOT EXISTS etf_group ON etf(group_key)")
         self.c.execute("CREATE INDEX IF NOT EXISTS etf_isin ON etf(isin)")
 
@@ -76,17 +94,12 @@ class DB:
     JCOLS = ["name", "ticker", "cur", "aum", "ter", "dist", "repl", "dom", "inc", "n", "sust", "div", "r1", "r3", "r5", "vol1", "vol3", "dd", "asset", "region"]
     MAP = [("ter", "ter"), ("assets_eur_m", "aum"), ("ret_1y", "r1"), ("ret_3y", "r3"), ("ret_5y", "r5"), ("vol_1y", "vol1"), ("vol_3y", "vol3"), ("max_dd", "dd"),
            ("replication", "repl"), ("domicile", "dom"), ("inception", "inc"), ("n_holdings", "n"), ("sustainable", "sust"), ("div_yield", "div"), ("distribution", "dist"),
-           ("index_name", "index_name"), ("holdings", "holdings"), ("countries", "countries"), ("sectors", "sectors"), ("region", "region")]
+           ("region", "region")]
 
     def save_jetf(self, items):
         for x in items:
             self.c.execute("INSERT OR IGNORE INTO jetf(isin) VALUES (?)", (x["isin"],))
             self.c.execute(f"UPDATE jetf SET {', '.join('[' + k + ']=?' for k in self.JCOLS)}, list_at=? WHERE isin=?", [*(x.get(k) for k in self.JCOLS), now(), x["isin"]])
-
-    def set_profile(self, isin, d):
-        self.c.execute("UPDATE jetf SET index_name=?, holdings=?, countries=?, sectors=?, profile_at=? WHERE isin=?",
-                       (d.get("index"), json.dumps(d["holdings"], ensure_ascii=False) if d.get("holdings") else None, json.dumps(d["countries"], ensure_ascii=False) if d.get("countries") else None,
-                        json.dumps(d["sectors"], ensure_ascii=False) if d.get("sectors") else None, now(), isin))
 
     def guess_by_name(self):
         """Ipotesi (NON verificata): l'ISIN justETF il cui nome normalizzato coincide in modo univoco. Va in `isin_guess`, mai in `isin`."""
@@ -165,7 +178,7 @@ class DB:
 
     def stats(self):
         q = lambda s: self.c.execute(s).fetchone()[0]
-        return {"titoli": q("SELECT COUNT(*) FROM etf"), "fondi": q("SELECT COUNT(DISTINCT group_key) FROM etf"),
+        return {"titoli": q("SELECT COUNT(*) FROM etf"), "fondi": q("SELECT COUNT(*) FROM fondo"),
                 "con_dettagli": q("SELECT COUNT(*) FROM etf WHERE detail_at IS NOT NULL"), "con_isin": q("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL"), "con_storico": q("SELECT COUNT(*) FROM etf WHERE hist_n > 0"),
                 "ultimo": self.c.execute("SELECT MAX(listed_at) FROM etf").fetchone()[0]}
 
@@ -192,10 +205,13 @@ class DB:
 
     # ---- esportazione ----
     def export_csv(self, path):
-        rows = self.all("1 ORDER BY assets_eur_m IS NULL, assets_eur_m DESC, adv_eur_m DESC")
+        """Una riga per fondo (vista `fondo`): tutti i dati di tutte le fonti in un'unica scheda."""
+        cur = self.c.execute("SELECT * FROM fondo ORDER BY assets_eur_m IS NULL, assets_eur_m DESC, adv_eur_m DESC")
+        rows = cur.fetchall()
+        cols = [x[0] for x in cur.description]
         with open(path, "w", newline="", encoding="utf-8-sig") as f:  # utf-8-sig: si apre bene in Excel
             w = csv.writer(f, delimiter=";")
-            w.writerow(COLS)
+            w.writerow(cols)
             for r in rows:
-                w.writerow(["" if r[c] is None else r[c] for c in COLS])
+                w.writerow(["" if v is None else v for v in r])
         return len(rows)

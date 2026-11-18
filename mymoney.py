@@ -4,7 +4,7 @@
     python mymoney.py                       apre la pagina nel browser (http://127.0.0.1:8765)
     python mymoney.py --db DATI.db          usa un altro file di database
     python mymoney.py scarica [--borse MIL GER ...] [--schede] [--max-schede N]
-    python mymoney.py justetf [--max-figi N] [--profili]   justETF e ISIN verificati
+    python mymoney.py justetf [--max-figi N]   justETF e ISIN verificati
     python mymoney.py aggiorna              prezzi attuali, bid, ask
     python mymoney.py esporta [file.csv]    tutto il database in CSV
     python mymoney.py info
@@ -33,7 +33,6 @@ def cli(argv):
     j = sub.add_parser("justetf", help="justETF + ISIN verificati (Xetra, OpenFIGI) e dati abbinati ai titoli")
     j.add_argument("--chiave-figi", default=os.environ.get("OPENFIGI_KEY"), help="chiave gratuita OpenFIGI (con la chiave: 100 ISIN per richiesta e molte più richieste)")
     j.add_argument("--max-figi", type=int, help="al massimo N ISIN verificati (i fondi più grandi per primi)")
-    j.add_argument("--profili", action="store_true", help="scarica anche indice, primi titoli, paesi e settori di ogni fondo (1 richiesta ciascuno)")
     sub.add_parser("aggiorna", help="prezzi attuali, bid, ask")
     e = sub.add_parser("esporta", help="CSV di tutto il database")
     e.add_argument("file", nargs="?", default="etf.csv")
@@ -44,13 +43,13 @@ def cli(argv):
         return server.run(a.db, a.porta, not a.no_browser)
     db = DB(a.db)
     show = lambda t, d=0, n=0: print("\r" + t.ljust(70), end="", flush=True)
-    y = Yahoo(log=lambda m: print("\n" + m))
+    y = Yahoo(log=lambda m: print("\n" + m), warn=lambda m: print("\n⚠ " + m))
     try:
         if a.cmd == "scarica":
             jobs.download_catalog(db, y, a.borse, a.schede, a.max_schede, show)
         elif a.cmd == "justetf":
             from justetf import JustETF
-            jobs.download_justetf(db, y, JustETF(log=lambda m_: print("\n" + m_)), a.chiave_figi, a.profili, a.max_figi, None, show, None, lambda m_: print("\n" + m_))
+            jobs.download_justetf(db, y, JustETF(log=lambda m_: print("\n" + m_)), a.chiave_figi, a.max_figi, show, None, lambda m_: print("\n" + m_))
         elif a.cmd == "aggiorna":
             jobs.update_quotes(db, y, progress=show)
         elif a.cmd == "esporta":

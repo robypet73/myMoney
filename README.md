@@ -15,16 +15,29 @@ Si apre il browser su `http://127.0.0.1:8765`. Il programma Python resta acceso 
 
 ## Dove sono i dati
 
-- **`etf.db`** (SQLite) nella cartella del programma: anagrafica dei titoli (tabella `etf`), prezzi giornalieri in EUR (`prezzi`) e cambi (`fx`). Per metterlo altrove: `python mymoney.py --db /percorso/etf.db` o la variabile `MYMONEY_DB`. Per salvarlo su Drive o altro, basta puntare la cartella lì. Per fare una copia, copia il file; per ripartire da zero, cancellalo.
-- Le **impostazioni** della pagina (criteri, importo…) stanno nel browser (`localStorage`).
-- I **CSV** (archivio e proposte) li scarica il browser nella cartella dei download.
+- **`etf.db`** (SQLite) nella cartella del programma. Per metterlo altrove: `python mymoney.py --db /percorso/etf.db` o la variabile `MYMONEY_DB`. Per salvarlo su Drive o altro, basta puntare la cartella lì. Per fare una copia, copia il file; per ripartire da zero, cancellalo.
+- Le **impostazioni** della pagina (criteri, importo…) stanno nel browser (`localStorage`). I **CSV** li scarica il browser nella cartella dei download.
+
+### Come si uniscono le fonti: una scheda per fondo
+
+Ogni fonte scrive nel suo posto e poi si uniscono con una chiave comune:
+
+| Fonte | Dove arriva | Chiave |
+|---|---|---|
+| Yahoo (elenco, prezzi, schede, storico) | tabella `etf` (una riga per quotazione) e `prezzi` | simbolo, es. `SWDA.MI` |
+| justETF (TER, replica, domicilio, rendimenti…) | tabella `jetf` | ISIN |
+| OpenFIGI + registro ESMA | tabelle `isin_ref`, `firds` | ISIN ↔ ticker + borsa |
+| BCE (cambi) | tabella `fx` | valuta e data |
+
+Il collegamento ISIN ↔ simbolo è quello **verificato** descritto sotto; solo allora i dati justETF si copiano nella riga `etf`. La **vista `fondo`** mostra poi **una sola scheda per fondo** (una riga per ISIN; una per simbolo se l'ISIN manca) con i dati di tutte le fonti, la quotazione preferita (EUR, poi Borsa Italiana, Xetra, Parigi, Amsterdam, Londra, poi il volume), l'elenco di tutti i simboli dello stesso fondo (`quotazioni`) e le fonti usate (`fonti`). È quella che esporta «Scarica il CSV».
 
 ## Uso
 
 1. **Scarica elenco titoli**: tutti gli ETF/ETC/ETN delle borse scelte (Milano, Xetra, Parigi, Amsterdam, Londra, SIX) con nome, tipo, valuta, prezzo, bid, ask, spread, volume medio, TER e patrimonio quando Yahoo li dà, rendimento a 1 anno e data di primo scambio. Circa 2.300 titoli per Milano in meno di un minuto.
    *Facoltativo*: «Scarica anche le schede dei fondi» aggiunge la composizione (azioni, obbligazioni, liquidità) e completa TER e patrimonio. Una richiesta per fondo: può durare ore, ma si può interrompere e riprendere.
 2. **Aggiorna prezzi attuali**: ultimo prezzo, bid, ask, volume.
-3. **Scarica il CSV**: tutto il database, una riga per titolo (apribile in Excel).
+3. **Scarica il CSV**: una riga per fondo con i dati di tutte le fonti (apribile in Excel).
+Durante ogni scaricamento compare una **clessidra** con l'avanzamento e «Annulla»; a lavoro finito, un avviso elenca **errori e dati mancanti** (titoli senza prezzo o storico, fonti non raggiungibili, ISIN dubbi). Quanto scaricato resta salvato e si può riprendere.
 4. **Crea portafoglio**: scegli importo, numero di ETF (minimo e massimo), peso massimo per ETF, massimi per classe (azionario, obbligazionario, materie prime…) e i criteri di ricerca. «Quanti titoli passano?» mostra il risultato dei criteri. «Calcola le proposte» scarica lo storico dei prezzi (5 anni, in EUR) dei soli titoli che passano i criteri e mostra le tre proposte con pesi, importi e quote intere; ognuna si salva in CSV.
 
 Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica --borse MIL GER --schede`, `aggiorna`, `esporta etf.csv`, `info`.
@@ -46,7 +59,7 @@ Il pulsante «Scarica dati justETF» (o `python mymoney.py justetf`) legge l'ele
 - rendimenti a 1, 3 e 5 anni (3 e 5 anni annui), volatilità a 1 e 3 anni, perdita massima;
 - **classe di attivo e area** ufficiali (al posto di quelle dedotte dal nome).
 
-Facoltativo, lento e riprendibile: «scarica anche indice, primi 10 titoli, paesi e settori» (legge la pagina di ogni fondo su justETF, che non ha un'interfaccia per questi dati: è l'unica parte che legge pagine web; l'elenco con TER, replica e domicilio è invece una chiamata dati). Per i titoli senza ISIN verificato, o che justETF non elenca (molti ETN/ETP e prodotti a leva), restano i dati di Yahoo; rendimenti, volatilità e perdita massima si calcolano dallo storico quando lo scarichi. Il database dice la fonte dell'ISIN (`isin_src`: `figi` o `figi+firds`).
+Non si legge nessuna pagina web: tutte le fonti danno i dati direttamente (JSON o CSV). Per i titoli senza ISIN verificato, o che justETF non elenca (molti ETN/ETP e prodotti a leva), restano i dati di Yahoo; rendimenti, volatilità e perdita massima si calcolano dallo storico quando lo scarichi. Il database dice la fonte dell'ISIN (`isin_src`: `figi` o `figi+firds`). I primi 10 titoli e i settori, quando ci sono, vengono dalla scheda del fondo di Yahoo (facoltativa, «schede dei fondi»).
 
 ## Come si calcolano le proposte
 

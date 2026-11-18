@@ -41,6 +41,21 @@ td.n, th.n { text-align:right; }
 .kpis b { display:block; font-size:var(--fs-l); }
 .kpis span { color:var(--soft); font-size:var(--fs-s); }
 .sticky { position:sticky; top:0; z-index:2; }
+.overlay { position:fixed; inset:0; z-index:10; background:color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:16px; }
+.overlay[hidden] { display:none; }
+.dlg { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px; width:min(520px,100%); box-shadow:0 10px 40px rgba(0,0,0,.25); text-align:center; }
+.hg { width:56px; height:56px; color:var(--acc); animation:flip 2.4s ease-in-out infinite; }
+@keyframes flip { 0%,45% { transform:rotate(0) } 60%,100% { transform:rotate(180deg) } }
+.hg .top { transform-origin:50% 22px; animation:drain 2.4s linear infinite; }
+.hg .bot { transform-origin:50% 54px; animation:fill 2.4s linear infinite; }
+@keyframes drain { 0% { transform:scaleY(1) } 45%,100% { transform:scaleY(.05) } }
+@keyframes fill { 0% { transform:scaleY(.05) } 45%,100% { transform:scaleY(1) } }
+#wtext { font-weight:600; margin:10px 0 2px; }
+#wlog { text-align:left; max-height:110px; overflow:auto; font:var(--fs-s)/1.4 ui-monospace,monospace; color:var(--soft); white-space:pre-wrap; margin:8px 0; }
+.notice h2 { margin:0 0 8px; }
+.notice ul { text-align:left; max-height:50vh; overflow:auto; padding-left:20px; margin:8px 0 14px; font-size:var(--fs-s); }
+.notice.bad { border-color:var(--down); } .notice.warn { border-color:#d29922; }
+.last { font-size:var(--fs-s); }
 @media (max-width:600px) { main { padding:10px; } th, td { padding:5px 5px; } }
 </style>
 </head>
@@ -48,12 +63,30 @@ td.n, th.n { text-align:right; }
 <main>
   <h1>myMoney</h1>
   <div class="sub" id="info">…</div>
+  <div class="last" id="last"></div>
 
-  <section class="card sticky" id="prog" hidden>
-    <div class="row" style="justify-content:space-between"><b id="ptext">…</b><button id="stop">Annulla</button></div>
-    <div class="bar" id="pbar"><i></i></div>
-    <div id="log"></div>
-  </section>
+  <div class="overlay" id="wait" hidden role="alertdialog" aria-live="polite" aria-label="Operazione in corso">
+    <div class="dlg">
+      <svg class="hg" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M14 6h36M14 58h36M18 6c0 18 14 20 14 26S18 40 18 58M46 6c0 18-14 20-14 26s14 8 14 26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path class="top" d="M22 10h20c-1 8-10 12-10 14s-9-6-10-14z" fill="currentColor"/>
+        <path class="bot" d="M32 38c4 0 11 6 12 16H20c1-10 8-16 12-16z" fill="currentColor"/>
+      </svg>
+      <div id="wtext">Attendi…</div>
+      <div class="bar" id="pbar"><i></i></div>
+      <div class="note" id="wsub"></div>
+      <div id="wlog"></div>
+      <button id="stop">Annulla</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="notice" hidden role="alertdialog">
+    <div class="dlg notice" id="noticebox">
+      <h2 id="ntitle"></h2>
+      <div id="nbody"></div>
+      <button class="primary" id="nclose">Chiudi</button>
+    </div>
+  </div>
 
   <section class="card">
     <h2>Archivio titoli (Yahoo Finance)</h2>
@@ -66,7 +99,6 @@ td.n, th.n { text-align:right; }
     </div>
     <h2 style="margin-top:16px">Dati justETF</h2>
     <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
-    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jprof"> Scarica anche indice, primi 10 titoli, paesi e settori di ogni fondo (legge la pagina di ogni fondo su justETF: molto lento, riprendibile)</label></p>
     <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
   </section>
 
@@ -123,7 +155,7 @@ const FIELDS = ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr", "text", "ter_
 let INFO = null, wasBusy = false;
 
 function save() {
-  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, jjprof: $("jprof").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
+  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
   FIELDS.forEach(k => s.f[k] = $(k).value);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
   document.querySelectorAll("#cls input").forEach(x => s.cls[x.dataset.c] = x.value);
@@ -139,7 +171,7 @@ async function init() {
   const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
   $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note" style="min-width:170px">${lab}</span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}</div>`).join("");
   FIELDS.forEach(k => { if (s.f && s.f[k] != null) $(k).value = s.f[k]; });
-  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable; $("jprof").checked = !!s.jprof;
+  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable;
   document.body.addEventListener("change", save); document.body.addEventListener("input", save);
   showInfo(); poll();
 }
@@ -158,25 +190,41 @@ function form() {
 async function poll() {
   let s;
   try { s = await (await fetch("/api/status")).json(); } catch (e) { return setTimeout(poll, 2000); }
-  $("prog").hidden = !s.busy && !s.error && !s.log.length;
-  $("ptext").textContent = s.error || s.text; $("ptext").className = s.error ? "err" : "";
-  $("pbar").classList.toggle("ind", s.busy && !s.total);
-  $("pbar").firstElementChild.style.width = s.total ? Math.round(100 * s.done / s.total) + "%" : (s.busy ? "" : "0");
-  $("log").textContent = s.log.join("\n");
-  ["bdl", "bq", "bj", "bcalc"].forEach(i => $(i).disabled = s.busy); $("stop").disabled = !s.busy;
+  $("wait").hidden = !s.busy;
+  if (s.busy) {
+    $("wtext").textContent = s.text;
+    $("pbar").classList.toggle("ind", !s.total);
+    $("pbar").firstElementChild.style.width = s.total ? Math.round(100 * s.done / s.total) + "%" : "";
+    $("wsub").textContent = s.total ? `${s.done} di ${s.total}` : "";
+    $("wlog").textContent = s.log.slice(-6).join("\n");
+    $("wlog").hidden = !s.log.length;
+  }
+  ["bdl", "bq", "bj", "bcalc"].forEach(i => $(i).disabled = s.busy);
   if (wasBusy && !s.busy) {
     INFO.stats = (await (await fetch("/api/info")).json()).stats; showInfo();
+    outcome(s);
     if (s.kind === "propose" && !s.error && s.result) render(s.result);
   }
   wasBusy = s.busy;
-  setTimeout(poll, s.busy ? 700 : 2000);
+  setTimeout(poll, s.busy ? 600 : 2000);
 }
+function outcome(s) {
+  const n = s.warnings.length;
+  $("last").innerHTML = s.finished ? (s.error ? `<span class="err">Ultimo scaricamento non riuscito (${esc(s.finished)})</span>` : `Ultimo scaricamento ${esc(s.finished)}` + (n ? ` · <b>${n} avvisi</b>` : " · nessun errore")) : "";
+  if (!s.error && !n) return;
+  $("noticebox").className = "dlg notice " + (s.error ? "bad" : "warn");
+  $("ntitle").textContent = s.error ? "Scaricamento non riuscito" : `Completato con ${n} ${n === 1 ? "avviso" : "avvisi"}`;
+  $("nbody").innerHTML = (s.error ? `<p class="err">${esc(s.error)}</p>${s.error.startsWith("Interrotto") ? "" : "<p class=note>Quanto scaricato fino a qui è salvato: rilancia per riprendere.</p>"}` : "") +
+    (n ? `<ul>${s.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "");
+  $("notice").hidden = false;
+}
+$("nclose").onclick = () => { $("notice").hidden = true; };
 $("bdl").onclick = async () => {
   const ex = [...document.querySelectorAll("#ex input:checked")].map(x => x.value);
   if (!ex.length) return alert("Scegli almeno una borsa");
   wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
 };
-$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", { profiles: $("jprof").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
+$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", {}); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
 $("stop").onclick = () => post("/api/cancel");
 $("bcount").onclick = async () => {
@@ -205,13 +253,13 @@ function render(R) {
       <div class="kpis"><div><b>${it(p.ret * 100, 1)}%</b><span>rendimento storico</span></div><div><b>${it(p.vol * 100, 1)}%</b><span>volatilità</span></div><div><b>${it(p.sharpe)}</b><span>Sharpe</span></div><div><b>${it(p.dr)}</b><span>diversificazione</span></div><div><b>${it(p.corr)}</b><span>correlazione media</span></div><div><b>${p.ter == null ? "—" : it(p.ter) + "%"}</b><span>TER</span></div></div>
       <div class="note">${comp}</div>
       <div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
-      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}${x.index ? `<div class="note">indice ${esc(x.index)}</div>` : ""}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
+      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
       </tbody></table></div>
       ${R.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
       <button id="csv">Scarica CSV</button>`;
     $("csv").onclick = () => {
       const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-      const rows = [["simbolo", "isin", "nome", "indice", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.isin, x.name, x.index, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
+      const rows = [["simbolo", "isin", "nome", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.isin, x.name, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
       const a = document.createElement("a"); a.download = `portafoglio-${p.name.toLowerCase()}.csv`;
       a.href = URL.createObjectURL(new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
     };

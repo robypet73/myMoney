@@ -250,7 +250,7 @@ def build(ds, idx, w, amount, rf, name, desc, note=""):
         amt = w[k] * amount
         qty = int(amt // price) if amount and price else 0
         spent += qty * price
-        items.append({"symbol": r["symbol"], "isin": r["isin"], "replication": r["replication"], "domicile": r["domicile"], "index": r["index_name"], "name": r["name"], "class": ds.cls[idx[k]], "exchange": r["exchange_name"], "weight": float(w[k]), "amount": amt, "qty": qty,
+        items.append({"symbol": r["symbol"], "isin": r["isin"], "replication": r["replication"], "domicile": r["domicile"], "name": r["name"], "class": ds.cls[idx[k]], "exchange": r["exchange_name"], "weight": float(w[k]), "amount": amt, "qty": qty,
                       "price": price, "cost": qty * price, "ter": r["ter"], "assets": r["assets_eur_m"]})
     comp = {}
     for k in range(len(idx)):

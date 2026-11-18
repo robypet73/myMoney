@@ -71,6 +71,14 @@ def main():
         db.c.execute("UPDATE etf SET isin=NULL, isin_src=NULL WHERE symbol='T2.MI'")
         assert db.link_verified()[1] == 1  # ora entrambi nel registro: conteso, nessuno
         assert db.get("T3.MI")["isin"] is None and db.get("T2.MI")["isin"] is None
+        # scheda unica per fondo: lo stesso ISIN su due borse = una riga, con la quotazione preferita (EUR, Milano) e l'elenco di tutte
+        db.upsert("T1.DE", name="Fondo 1 USA Equity UCITS ETF (Acc)", exchange="GER", exchange_name="Xetra", currency="EUR", price_eur=50.0, isin="IE0000000001", isin_src="figi", adv_eur_m=99.0)
+        db.upsert("T1.L", name="Fondo 1 USA Equity UCITS ETF (Acc)", exchange="LSE", exchange_name="Londra", currency="GBp", price_eur=0.5, isin="IE0000000001", isin_src="figi")
+        db.commit()
+        f = db.c.execute("SELECT * FROM fondo WHERE isin='IE0000000001'").fetchall()
+        assert len(f) == 1 and f[0]["symbol"] == "T1.MI" and f[0]["n_quotazioni"] == 3 and set(f[0]["quotazioni"].split()) == {"T1.MI", "T1.DE", "T1.L"}, [dict(x) for x in f]
+        assert f[0]["ter"] == 0.1 and f[0]["replication"] == "Fisica completa" and "justetf" in f[0]["fonti"] and "openfigi" in f[0]["fonti"]
+        assert db.export_csv(os.path.join(d, "fondi.csv")) == db.c.execute("SELECT COUNT(*) FROM fondo").fetchone()[0]
         print("OK")
 
 

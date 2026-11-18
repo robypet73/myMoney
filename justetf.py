@@ -1,5 +1,4 @@
-"""Client di justETF (solo urllib): elenco di tutti gli ETF con ISIN e caratteristiche (screener) e scheda del singolo fondo (indice, titoli, paesi, settori)."""
-import html as htmllib
+"""Client di justETF (solo urllib): elenco di tutti gli ETF con ISIN e caratteristiche (screener, chiamata dati JSON). Non legge pagine web."""
 import http.cookiejar
 import json
 import re
@@ -25,7 +24,6 @@ COUNTRY = {"Ireland": "Irlanda", "Luxembourg": "Lussemburgo", "France": "Francia
            "United Kingdom": "Regno Unito", "Sweden": "Svezia", "Italy": "Italia", "Spain": "Spagna", "Denmark": "Danimarca", "Finland": "Finlandia", "Belgium": "Belgio",
            "Norway": "Norvegia", "Austria": "Austria", "Jersey": "Jersey", "Liechtenstein": "Liechtenstein", "Cayman Islands": "Isole Cayman", "Canada": "Canada",
            "United States": "Stati Uniti", "Poland": "Polonia", "Hungary": "Ungheria", "Greece": "Grecia", "Portugal": "Portogallo"}
-MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 
 def f(s):
@@ -54,26 +52,6 @@ def date(s):
 def repl(s):
     s = (s or "").lower()
     return "Sintetica" if "swap" in s or "synth" in s else "Fisica a campione" if "sampl" in s else "Fisica completa" if "full" in s else "Fisica" if s else None
-
-
-def clean(s):
-    return re.sub(r"\s+", " ", htmllib.unescape(re.sub(r"<[^>]+>", " ", s))).strip()
-
-
-def tid(h, name):
-    m = re.search(r'data-testid="%s"[^>]*>(.*?)</' % re.escape(name), h, re.S)
-    return clean(m.group(1)) if m else None
-
-
-def rows(h, table_id, name_id, pct_id):
-    """Righe nome/percentuale di una tabella (titoli, paesi o settori), senza duplicati."""
-    out, seen = [], set()
-    for block in re.findall(r'data-testid="%s".*?</tr>' % re.escape(table_id), h, re.S):
-        n, p = tid(block, name_id), f(tid(block, pct_id))
-        if n and p is not None and n not in seen:
-            seen.add(n)
-            out.append([n, round(p, 2)])
-    return out
 
 
 class JustETF:
@@ -156,37 +134,4 @@ class JustETF:
                         "n": int(f(x.get("numberOfHoldings"))) if f(x.get("numberOfHoldings")) else None, "sust": 1 if x.get("sustainable") == "Yes" else 0, "div": f(x.get("currentDividendYield")),
                         "r1": f(x.get("yearReturnCUR")), "r3": ann(f(x.get("threeYearReturnCUR")), 3), "r5": ann(f(x.get("fiveYearReturnCUR")), 5), "vol1": f(x.get("yearVolatilityCUR")),
                         "vol3": f(x.get("threeYearVolatilityCUR")), "dd": f(x.get("maxDrawdownCUR")), "asset": asset.get(isin), "region": region.get(isin)})
-        return out
-
-    def profile(self, isin):
-        """Scheda del fondo: indice, numero di titoli, primi 10 titoli, paesi, settori. Vuoto se la pagina non c'è."""
-        url = f"https://www.justetf.com/en/etf-profile.html?isin={isin}"
-        h = None
-        for k in range(4):
-            if self.cancel():
-                raise Cancelled()
-            try:
-                h = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en"}), timeout=40).read().decode("utf-8", "replace")
-                break
-            except urllib.error.HTTPError as e:
-                if e.code == 404:
-                    return {}
-                self.sleep(5 * (k + 1))
-            except (urllib.error.URLError, TimeoutError):
-                self.sleep(5 * (k + 1))
-        if h is None:
-            raise RuntimeError("justETF non risponde")
-        out = {}
-        idx = tid(h, "tl_etf-basics_value_index-name")
-        if idx:
-            out["index"] = idx.replace("®", "").strip()
-        top = rows(h, "etf-holdings_top-holdings_row", "tl_etf-holdings_top-holdings_link_name", "tl_etf-holdings_top-holdings_value_percentage")
-        if top:
-            out["holdings"] = top[:10]
-        c = rows(h, "etf-holdings_countries_row", "tl_etf-holdings_countries_value_name", "tl_etf-holdings_countries_value_percentage")
-        s = rows(h, "etf-holdings_sectors_row", "tl_etf-holdings_sectors_value_name", "tl_etf-holdings_sectors_value_percentage")
-        if c:
-            out["countries"] = c[:15]
-        if s:
-            out["sectors"] = s
         return out

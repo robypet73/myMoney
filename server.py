@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
@@ -22,11 +23,11 @@ class Job:
 
     def __init__(self, path):
         self.path, self.lock, self.cancel = path, threading.Lock(), threading.Event()
-        self.s = {"busy": False, "text": "", "done": 0, "total": 0, "log": [], "error": None, "result": None, "kind": None}
+        self.s = {"busy": False, "text": "", "done": 0, "total": 0, "log": [], "warnings": [], "error": None, "result": None, "kind": None, "finished": None}
 
     def status(self):
         with self.lock:
-            return dict(self.s, log=self.s["log"][-60:])
+            return dict(self.s, log=self.s["log"][-40:], warnings=self.s["warnings"][:200])
 
     def _set(self, **kw):
         with self.lock:
@@ -36,11 +37,17 @@ class Job:
         with self.lock:
             self.s["log"].append(m)
 
+    def _warn(self, m):
+        """Avviso di scaricamento: resta in elenco e si mostra all'utente a lavoro finito."""
+        with self.lock:
+            self.s["warnings"].append(m)
+            self.s["log"].append("⚠ " + m)
+
     def start(self, kind, fn):
         with self.lock:
             if self.s["busy"]:
                 return False
-            self.s.update(busy=True, kind=kind, text="Avvio…", done=0, total=0, error=None, result=None, log=[])
+            self.s.update(busy=True, kind=kind, text="Avvio…", done=0, total=0, error=None, result=None, log=[], warnings=[], finished=None)
         self.cancel.clear()
 
         def prog(t, d=0, n=0):
@@ -49,7 +56,7 @@ class Job:
         def work():
             db = DB(self.path)
             try:
-                y = Yahoo(cancel=self.cancel.is_set, log=self._log)
+                y = Yahoo(cancel=self.cancel.is_set, log=self._log, warn=self._warn)
                 res = fn(db, y, prog)
                 db.commit()
                 self._set(result=res, text="Fatto", done=1, total=1)
@@ -61,7 +68,7 @@ class Job:
                 self._set(error=f"Errore: {e}")
             finally:
                 db.close()
-                self._set(busy=False)
+                self._set(busy=False, finished=time.strftime("%Y-%m-%d %H:%M:%S"))
 
         threading.Thread(target=work, daemon=True).start()
         return True
@@ -174,11 +181,10 @@ def make_handler(path, job):
                 ok = job.start("quotes", lambda db, y, p: jobs.update_quotes(db, y, None, p))
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/justetf":
-                prof = bool(d.get("profiles"))
                 key = os.environ.get("OPENFIGI_KEY") or None
 
                 def run(db, y, prog):
-                    jobs.download_justetf(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), key, prof, None, None, prog, job.cancel.is_set, job._log)
+                    jobs.download_justetf(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), key, None, prog, job.cancel.is_set, job._log)
 
                 ok = job.start("justetf", run)
                 return self.send(200 if ok else 409, {"ok": ok})
