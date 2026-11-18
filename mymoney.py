@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """myMoney: scarica da Yahoo Finance l'anagrafica e i prezzi di ETF, ETC ed ETN in un database SQLite e propone portafogli.
 
-    python mymoney.py                       finestra grafica
+    python mymoney.py                       apre la pagina nel browser (http://127.0.0.1:8765)
+    python mymoney.py --db DATI.db          usa un altro file di database
     python mymoney.py scarica [--borse MIL GER ...] [--schede] [--max-schede N]
     python mymoney.py aggiorna              prezzi attuali, bid, ask
     python mymoney.py esporta [file.csv]    tutto il database in CSV
@@ -20,6 +21,9 @@ DB_PATH = os.environ.get("MYMONEY_DB") or os.path.join(os.path.dirname(os.path.a
 
 def cli(argv):
     p = argparse.ArgumentParser(prog="mymoney.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--db", default=DB_PATH, help="file del database SQLite (predefinito: etf.db accanto al programma, o la variabile MYMONEY_DB)")
+    p.add_argument("--porta", type=int, default=8765)
+    p.add_argument("--no-browser", action="store_true", help="non aprire il browser")
     sub = p.add_subparsers(dest="cmd")
     s = sub.add_parser("scarica", help="elenco di tutti i titoli delle borse scelte")
     s.add_argument("--borse", nargs="+", default=list(EXCHANGES), choices=list(EXCHANGES), metavar="BORSA", help="codici Yahoo: " + " ".join(EXCHANGES))
@@ -31,9 +35,9 @@ def cli(argv):
     sub.add_parser("info", help="contenuto del database")
     a = p.parse_args(argv)
     if not a.cmd:
-        from app import run
-        return run(DB_PATH)
-    db = DB(DB_PATH)
+        import server
+        return server.run(a.db, a.porta, not a.no_browser)
+    db = DB(a.db)
     show = lambda t, d=0, n=0: print("\r" + t.ljust(70), end="", flush=True)
     y = Yahoo(log=lambda m: print("\n" + m))
     try:

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>myMoney</title>
+<style>
+:root { --bg:#f6f7f9; --card:#fff; --fg:#1b1f24; --soft:#6a737d; --line:#e1e4e8; --acc:#1f6feb; --up:#1a7f37; --down:#cf222e; --fs-l:1.25rem; --fs-m:.95rem; --fs-s:.8rem; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --soft:#8b949e; --line:#30363d; --acc:#58a6ff; --up:#3fb950; --down:#f85149; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-m)/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+main { max-width:1000px; margin:0 auto; padding:16px; }
+h1 { font-size:var(--fs-l); margin:8px 0 2px; }
+h2 { font-size:var(--fs-m); margin:0 0 10px; }
+.sub, .note { color:var(--soft); font-size:var(--fs-s); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin:12px 0; }
+.row { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; }
+label { display:inline-flex; gap:6px; align-items:center; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px 14px; }
+.grid label { display:flex; flex-direction:column; align-items:stretch; gap:2px; font-size:var(--fs-s); color:var(--soft); }
+input[type=text], input:not([type]) { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); font:inherit; }
+button, .btn { padding:7px 14px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); font:inherit; cursor:pointer; text-decoration:none; display:inline-block; }
+button.primary { background:var(--acc); color:#fff; border-color:var(--acc); }
+button:disabled { opacity:.5; cursor:default; }
+fieldset { border:1px solid var(--line); border-radius:8px; margin:10px 0; padding:8px 12px; }
+legend { color:var(--soft); font-size:var(--fs-s); padding:0 6px; }
+.bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin:8px 0 4px; }
+.bar i { display:block; height:100%; width:0; background:var(--acc); transition:width .3s; }
+.bar.ind i { width:35%; animation:mv 1.2s linear infinite; }
+@keyframes mv { from { margin-left:-35% } to { margin-left:100% } }
+#log { max-height:140px; overflow:auto; font:var(--fs-s)/1.4 ui-monospace,monospace; color:var(--soft); white-space:pre-wrap; margin-top:6px; }
+.err { color:var(--down); }
+.tabs { display:flex; gap:4px; margin-bottom:8px; flex-wrap:wrap; }
+.tabs button.on { background:var(--acc); color:#fff; border-color:var(--acc); }
+.tbl { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; }
+th, td { padding:5px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+th { color:var(--soft); font-weight:600; font-size:var(--fs-s); }
+td.n, th.n { text-align:right; }
+.kpis { display:flex; flex-wrap:wrap; gap:10px 22px; margin:6px 0 10px; }
+.kpis b { display:block; font-size:var(--fs-l); }
+.kpis span { color:var(--soft); font-size:var(--fs-s); }
+.sticky { position:sticky; top:0; z-index:2; }
+@media (max-width:600px) { main { padding:10px; } th, td { padding:5px 5px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>myMoney</h1>
+  <div class="sub" id="info">…</div>
+
+  <section class="card sticky" id="prog" hidden>
+    <div class="row" style="justify-content:space-between"><b id="ptext">…</b><button id="stop">Annulla</button></div>
+    <div class="bar" id="pbar"><i></i></div>
+    <div id="log"></div>
+  </section>
+
+  <section class="card">
+    <h2>Archivio titoli (Yahoo Finance)</h2>
+    <div class="row" id="ex"></div>
+    <p class="row"><label><input type="checkbox" id="det"> Scarica anche le schede dei fondi (TER, patrimonio, composizione): molto più lento, si può interrompere e riprendere</label></p>
+    <div class="row">
+      <button class="primary" id="bdl">Scarica elenco titoli</button>
+      <button id="bq">Aggiorna prezzi attuali</button>
+      <a class="btn" href="/api/export">Scarica il CSV</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Crea portafoglio</h2>
+    <fieldset><legend>Portafoglio</legend>
+      <div class="grid">
+        <label>Importo (€)<input id="amount" value="10000"></label>
+        <label>ETF minimo<input id="kmin" value="3"></label>
+        <label>ETF massimo<input id="kmax" value="8"></label>
+        <label>Peso max per ETF (%)<input id="cap" value="35"></label>
+        <label>Tasso privo di rischio (%)<input id="rf" value="2"></label>
+        <label>Volatilità max aggressivo (%)<input id="vol_aggr" value="20"></label>
+      </div>
+    </fieldset>
+    <fieldset><legend>Composizione: massimo per classe (%) — 100 = libero, 0 = esclusa</legend>
+      <div class="grid" id="cls"></div>
+    </fieldset>
+    <fieldset><legend>Criteri di ricerca (vuoto = nessun limite)</legend>
+      <div class="grid"><label>Nome contiene<input id="text"></label></div>
+      <div id="multi"></div>
+      <div class="grid" style="margin-top:8px">
+        <label>TER max %<input id="ter_max"></label>
+        <label>Patrimonio min (M€)<input id="assets_min"></label>
+        <label>Volume medio min (M€/giorno)<input id="adv_min"></label>
+        <label>Spread max %<input id="spread_max"></label>
+        <label>Rendimento 1 anno min %<input id="ret1y_min"></label>
+        <label>Volatilità max %<input id="vol_max"></label>
+        <label>Storia minima (anni)<input id="min_years" value="1,5"></label>
+        <label>Titoli analizzati (max)<input id="pool" value="150"></label>
+      </div>
+      <p class="row"><label><input type="checkbox" id="unknown"> Includi i titoli senza il dato richiesto (TER, patrimonio, spread… non scaricati)</label></p>
+    </fieldset>
+    <div class="row">
+      <button class="primary" id="bcalc">Calcola le proposte</button>
+      <button id="bcount">Quanti titoli passano?</button>
+      <span class="note" id="count"></span>
+    </div>
+    <p class="note">Il calcolo scarica prima lo storico di 5 anni dei soli titoli che passano i criteri (può richiedere qualche minuto).</p>
+  </section>
+
+  <section id="res" hidden></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const num = s => { s = (s == null ? "" : String(s)).trim(); if (!s) return null; if (s.includes(",")) s = s.replace(/\./g, "").replace(",", "."); const v = parseFloat(s); return isNaN(v) ? null : v; };
+const it = (x, d = 2) => x == null ? "—" : x.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const post = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }).then(r => r.json().then(j => ({ ok: r.ok, j })));
+const MULTI = { exchanges: "Borse (preferenza nell'ordine)", types: "Tipo", currencies: "Valuta di negoziazione", distributions: "Distribuzione", regions: "Area" };
+const OPTS = { types: ["ETF", "ETC", "ETN/ETP"], currencies: ["EUR", "USD", "GBP", "CHF"], distributions: ["Accumulazione", "Distribuzione"] };
+const FIELDS = ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr", "text", "ter_max", "assets_min", "adv_min", "spread_max", "ret1y_min", "vol_max", "min_years", "pool"];
+let INFO = null, wasBusy = false;
+
+function save() {
+  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
+  FIELDS.forEach(k => s.f[k] = $(k).value);
+  Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
+  document.querySelectorAll("#cls input").forEach(x => s.cls[x.dataset.c] = x.value);
+  try { localStorage.setItem("mm", JSON.stringify(s)); } catch (e) { }
+}
+function load() { try { return JSON.parse(localStorage.getItem("mm")) || {}; } catch (e) { return {}; } }
+
+async function init() {
+  INFO = await (await fetch("/api/info")).json();
+  const s = load();
+  $("ex").innerHTML = Object.entries(INFO.exchanges).map(([c, n]) => `<label><input type="checkbox" value="${c}" ${!s.ex || s.ex.includes(c) ? "checked" : ""}> ${esc(n)}</label>`).join("");
+  $("cls").innerHTML = INFO.classes.map(c => `<label>${esc(c)}<input data-c="${esc(c)}" value="${esc((s.cls || {})[c] ?? 100)}"></label>`).join("");
+  const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions };
+  $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note" style="min-width:170px">${lab}</span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}</div>`).join("");
+  FIELDS.forEach(k => { if (s.f && s.f[k] != null) $(k).value = s.f[k]; });
+  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det;
+  document.body.addEventListener("change", save); document.body.addEventListener("input", save);
+  showInfo(); poll();
+}
+function showInfo() {
+  const t = INFO.stats;
+  $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
+}
+function form() {
+  const d = { unknown: $("unknown").checked, class_caps: {} };
+  FIELDS.forEach(k => d[k] = $(k).value);
+  document.querySelectorAll("#cls input").forEach(x => d.class_caps[x.dataset.c] = num(x.value));
+  Object.keys(MULTI).forEach(k => d[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
+  FIELDS.filter(k => k !== "text").forEach(k => d[k] = num(d[k]));
+  return d;
+}
+async function poll() {
+  let s;
+  try { s = await (await fetch("/api/status")).json(); } catch (e) { return setTimeout(poll, 2000); }
+  $("prog").hidden = !s.busy && !s.error && !s.log.length;
+  $("ptext").textContent = s.error || s.text; $("ptext").className = s.error ? "err" : "";
+  $("pbar").classList.toggle("ind", s.busy && !s.total);
+  $("pbar").firstElementChild.style.width = s.total ? Math.round(100 * s.done / s.total) + "%" : (s.busy ? "" : "0");
+  $("log").textContent = s.log.join("\n");
+  ["bdl", "bq", "bcalc"].forEach(i => $(i).disabled = s.busy); $("stop").disabled = !s.busy;
+  if (wasBusy && !s.busy) {
+    INFO.stats = (await (await fetch("/api/info")).json()).stats; showInfo();
+    if (s.kind === "propose" && !s.error && s.result) render(s.result);
+  }
+  wasBusy = s.busy;
+  setTimeout(poll, s.busy ? 700 : 2000);
+}
+$("bdl").onclick = async () => {
+  const ex = [...document.querySelectorAll("#ex input:checked")].map(x => x.value);
+  if (!ex.length) return alert("Scegli almeno una borsa");
+  wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
+};
+$("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
+$("stop").onclick = () => post("/api/cancel");
+$("bcount").onclick = async () => {
+  const r = await post("/api/count", form());
+  $("count").textContent = `${r.j.n} fondi passano i criteri (un titolo per fondo, al massimo ${r.j.pool}); ${r.j.with_history} hanno già lo storico dei prezzi.`;
+};
+$("bcalc").onclick = async () => {
+  if (!INFO.stats.titoli) return alert("L'archivio è vuoto: prima premi «Scarica elenco titoli».");
+  wasBusy = true; $("res").hidden = true;
+  const r = await post("/api/propose", form());
+  if (!r.ok) { wasBusy = false; alert(r.j.error || "Un altro lavoro è in corso"); }
+};
+
+function render(R) {
+  const box = $("res"); box.hidden = false;
+  if (R.message) { box.innerHTML = `<div class="card err">${esc(R.message)}</div>`; return; }
+  const P = R.proposals;
+  box.innerHTML = `<div class="card"><h2>Proposte di portafoglio</h2>
+    <div class="note">${R.n} fondi analizzati · periodo ${R.from} → ${R.to} (${it(R.years, 1)} anni) · rendimenti a 5 giorni, in EUR, dividendi inclusi · simulazione sul passato, non una previsione né una consulenza</div>
+    ${R.fail.length ? `<p class="err">Proposta non calcolabile con questi vincoli: ${esc(R.fail.join(", "))}</p>` : ""}
+    <div class="tabs">${P.map((p, i) => `<button data-i="${i}">${esc(p.name)}</button>`).join("")}</div><div id="prop"></div></div>`;
+  const show = i => {
+    box.querySelectorAll(".tabs button").forEach((b, k) => b.classList.toggle("on", k === i));
+    const p = P[i], comp = Object.entries(p.classes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${it(v * 100, 0)}%`).join(" · ");
+    $("prop").innerHTML = `<p>${esc(p.desc)} ${esc(p.note || "")}</p>
+      <div class="kpis"><div><b>${it(p.ret * 100, 1)}%</b><span>rendimento storico</span></div><div><b>${it(p.vol * 100, 1)}%</b><span>volatilità</span></div><div><b>${it(p.sharpe)}</b><span>Sharpe</span></div><div><b>${it(p.dr)}</b><span>diversificazione</span></div><div><b>${it(p.corr)}</b><span>correlazione media</span></div><div><b>${p.ter == null ? "—" : it(p.ter) + "%"}</b><span>TER</span></div></div>
+      <div class="note">${comp}</div>
+      <div class="tbl"><table><thead><tr><th>Simbolo</th><th>Nome</th><th>Classe</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
+      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
+      </tbody></table></div>
+      ${R.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
+      <button id="csv">Scarica CSV</button>`;
+    $("csv").onclick = () => {
+      const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+      const rows = [["simbolo", "nome", "classe", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.name, x.class, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
+      const a = document.createElement("a"); a.download = `portafoglio-${p.name.toLowerCase()}.csv`;
+      a.href = URL.createObjectURL(new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
+    };
+  };
+  box.querySelectorAll(".tabs button").forEach((b, i) => b.onclick = () => show(i));
+  show(0); box.scrollIntoView({ behavior: "smooth" });
+}
+init();
+</script>
+</body>
+</html>

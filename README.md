@@ -1,22 +1,30 @@
 # myMoney
 
-App Python (finestra Tkinter) che scarica da Yahoo Finance l'anagrafica e i prezzi di ETF, ETC ed ETN, li salva in un database SQLite (`etf.db`) e propone tre portafogli: **Sharpe**, **bilanciato** e **aggressivo**.
+App Python con interfaccia nel browser che scarica da Yahoo Finance l'anagrafica e i prezzi di ETF, ETC ed ETN, li salva in un database SQLite (`etf.db`) e propone tre portafogli: **Sharpe**, **bilanciato** e **aggressivo**.
 
 ## Installazione
 
-Serve Python 3.9 o successivo (su Windows quello di python.org include Tkinter; su Linux `sudo apt install python3-tk`).
+Serve Python 3.9 o successivo.
 
 ```
 pip install -r requirements.txt
 python mymoney.py
 ```
 
+Si apre il browser su `http://127.0.0.1:8765`. Il programma Python resta acceso nel terminale (Ctrl+C per chiuderlo): fa da ponte verso Yahoo, che non si può interrogare direttamente da una pagina web, e verso il database. Il server ascolta solo sul tuo computer. Opzioni: `--db FILE`, `--porta N`, `--no-browser`.
+
+## Dove sono i dati
+
+- **`etf.db`** (SQLite) nella cartella del programma: anagrafica dei titoli (tabella `etf`), prezzi giornalieri in EUR (`prezzi`) e cambi (`fx`). Per metterlo altrove: `python mymoney.py --db /percorso/etf.db` o la variabile `MYMONEY_DB`. Per salvarlo su Drive o altro, basta puntare la cartella lì. Per fare una copia, copia il file; per ripartire da zero, cancellalo.
+- Le **impostazioni** della pagina (criteri, importo…) stanno nel browser (`localStorage`).
+- I **CSV** (archivio e proposte) li scarica il browser nella cartella dei download.
+
 ## Uso
 
 1. **Scarica elenco titoli**: tutti gli ETF/ETC/ETN delle borse scelte (Milano, Xetra, Parigi, Amsterdam, Londra, SIX) con nome, tipo, valuta, prezzo, bid, ask, spread, volume medio, TER e patrimonio quando Yahoo li dà, rendimento a 1 anno e data di primo scambio. Circa 2.300 titoli per Milano in meno di un minuto.
    *Facoltativo*: «Scarica anche le schede dei fondi» aggiunge la composizione (azioni, obbligazioni, liquidità) e completa TER e patrimonio. Una richiesta per fondo: può durare ore, ma si può interrompere e riprendere.
 2. **Aggiorna prezzi attuali**: ultimo prezzo, bid, ask, volume.
-3. **Esporta CSV**: tutto il database, una riga per titolo (apribile in Excel).
+3. **Scarica il CSV**: tutto il database, una riga per titolo (apribile in Excel).
 4. **Crea portafoglio**: scegli importo, numero di ETF (minimo e massimo), peso massimo per ETF, massimi per classe (azionario, obbligazionario, materie prime…) e i criteri di ricerca. «Quanti titoli passano?» mostra il risultato dei criteri. «Calcola le proposte» scarica lo storico dei prezzi (5 anni, in EUR) dei soli titoli che passano i criteri e mostra le tre proposte con pesi, importi e quote intere; ognuna si salva in CSV.
 
 Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica --borse MIL GER --schede`, `aggiorna`, `esporta etf.csv`, `info`.
