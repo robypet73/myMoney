@@ -1,13 +1,15 @@
 """Server locale (solo 127.0.0.1): serve la pagina web e fa da ponte verso Yahoo Finance e il database SQLite."""
 import json
 import os
+import re
 import sys
 import tempfile
+import unicodedata
 import threading
 import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 import classify as C
 import jobs
@@ -105,6 +107,53 @@ def check(p):
     return None
 
 
+# ---------------------------------------------------------------- portafogli salvati (file JSON in «portafogli/» accanto al database)
+def pf_slug(name):
+    n = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", "-", n).strip("-")[:60] or "portafoglio"
+
+
+def pf_save(folder, doc, overwrite=False):
+    """Scrive portafogli/<nome>.json. Ritorna (id, esiste_già). Senza `overwrite` non sostituisce un file con lo stesso nome."""
+    pf = doc.get("portfolio") or {}
+    name = str(pf.get("name") or "").strip()
+    if not name or not isinstance(pf.get("positions"), list) or not pf["positions"]:
+        raise ValueError("Servono un nome e almeno una posizione")
+    pid = pf_slug(name)
+    path = os.path.join(folder, pid + ".json")
+    if os.path.exists(path) and not overwrite:
+        return pid, True
+    os.makedirs(folder, exist_ok=True)
+    pf["id"] = pid
+    out = {"version": 1, "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "portfolio": pf}
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
+    return pid, False
+
+
+def pf_path(folder, pid):
+    if not re.fullmatch(r"[a-z0-9-]{1,60}", pid or ""):
+        raise ValueError("Identificativo non valido")
+    return os.path.join(folder, pid + ".json")
+
+
+def pf_list(folder):
+    out = []
+    for fn in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
+        if not fn.endswith(".json"):
+            continue
+        try:
+            d = json.load(open(os.path.join(folder, fn), encoding="utf-8"))
+            pf = d["portfolio"]
+            out.append({"id": fn[:-5], "name": pf.get("name"), "saved_at": d.get("saved_at"), "source": pf.get("source"), "amount": pf.get("amount"), "n": len(pf.get("positions", [])),
+                        "metrics": pf.get("metrics"), "description": pf.get("description")})
+        except (OSError, ValueError, KeyError):
+            continue
+    return sorted(out, key=lambda x: x.get("saved_at") or "", reverse=True)
+
+
 def jsonable(o):
     if isinstance(o, dict):
         return {k: jsonable(v) for k, v in o.items()}
@@ -116,6 +165,8 @@ def jsonable(o):
 
 
 def make_handler(path, job):
+    folder = os.path.join(os.path.dirname(os.path.abspath(path)), "portafogli")
+
     class H(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
 
@@ -146,6 +197,16 @@ def make_handler(path, job):
                     db.close()
             if u == "/api/status":
                 return self.send(200, job.status())
+            if u == "/api/pf/list":
+                return self.send(200, {"folder": folder, "items": pf_list(folder)})
+            if u == "/api/pf/get":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    fp = pf_path(folder, (q.get("id") or [""])[0])
+                    data = open(fp, "rb").read()
+                except (ValueError, OSError):
+                    return self.send(404, {"error": "portafoglio non trovato"})
+                return self.send(200, data, "application/json", {"Content-Disposition": f'attachment; filename="{os.path.basename(fp)}"'} if q.get("dl") else None)
             if u == "/api/export":
                 db = DB(path)
                 try:
@@ -168,6 +229,20 @@ def make_handler(path, job):
             except ValueError:
                 return self.send(400, {"error": "JSON non valido"})
             u = urlparse(self.path).path
+            if u == "/api/pf/save":
+                try:
+                    pid, exists = pf_save(folder, d.get("doc") or {}, bool(d.get("overwrite")))
+                except ValueError as e:
+                    return self.send(400, {"error": str(e)})
+                except OSError as e:
+                    return self.send(500, {"error": f"Salvataggio non riuscito: {e}"})
+                return self.send(409 if exists else 200, {"ok": not exists, "exists": exists, "id": pid, "file": os.path.join(folder, pid + ".json")})
+            if u == "/api/pf/delete":
+                try:
+                    os.remove(pf_path(folder, d.get("id")))
+                except (ValueError, OSError):
+                    return self.send(404, {"error": "portafoglio non trovato"})
+                return self.send(200, {"ok": True})
             if u == "/api/cancel":
                 job.cancel.set()
                 return self.send(200, {"ok": True})
@@ -231,7 +306,21 @@ def make_handler(path, job):
                             return {"message": f"I {len(ds.rows)} fondi analizzati sono di classi ({have}) che i massimi per classe limitano al {room * 100:.0f}% del portafoglio: "
                                                "alza i massimi o allarga i criteri (per esempio togli il limite di patrimonio o volume) così entrano fondi delle altre classi."}
                         return {"message": "Nessuna proposta calcolabile con questi vincoli (" + ", ".join(fail) + "): prova ad alzare il peso massimo per ETF o il numero massimo di ETF."}
-                    return {"proposals": out, "fail": fail, "n": len(ds.rows), "from": ds.dates[0], "to": ds.dates[-1], "years": ds.years, "amount": p["amount"]}
+                    # frontiera efficiente sui fondi delle tre proposte
+                    order = {r["symbol"]: i for i, r in enumerate(ds.rows)}
+                    fsyms = []
+                    for pr in out:
+                        fsyms += [x["symbol"] for x in pr["items"] if x["symbol"] not in fsyms]
+                    fr = PF.frontier(ds, [order[s_] for s_ in fsyms], p["cap"], p["caps"], p["rf"])
+                    front = None
+                    if fr and len(fr["points"]) >= 2:
+                        funds = []
+                        for i in fr["idx"]:
+                            r = ds.rows[i]
+                            funds.append({"symbol": r["symbol"], "isin": r["isin"], "name": r["name"], "class": ds.cls[i], "exchange": r["exchange_name"], "price": r["price_eur"], "ter": r["ter"],
+                                          "replication": r["replication"], "domicile": r["domicile"], "vol": float(ds.sd[i]), "ret": float(ds.mu[i])})
+                        front = {"funds": funds, "points": fr["points"], "rf": p["rf"]}
+                    return {"proposals": out, "frontier": front, "fail": fail, "n": len(ds.rows), "from": ds.dates[0], "to": ds.dates[-1], "years": ds.years, "amount": p["amount"], "criteria": d}
 
                 ok = job.start("propose", run)
                 return self.send(200 if ok else 409, {"ok": ok, "n": len(rows)})

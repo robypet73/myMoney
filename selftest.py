@@ -85,6 +85,40 @@ def main():
         cls = {r["asset_class"] for r in stra}
         assert {"Azionario", "Obbligazionario", "Materie prime"} <= cls, cls
         assert len(PF.pick_pool(rows, {"pool": 6})) == 6  # nessun limite di classe: i più grandi e basta
+        # frontiera efficiente sui fondi delle proposte
+        syms = []
+        for pr in out:
+            syms += [x["symbol"] for x in pr["items"] if x["symbol"] not in syms]
+        order = {r["symbol"]: i for i, r in enumerate(ds.rows)}
+        fr = PF.frontier(ds, [order[x] for x in syms], 0.30, {"Azionario": 0.6, "Obbligazionario": 1.0}, 0.02)
+        pts = fr["points"]
+        assert len(pts) >= 5 and all(b["vol"] >= a["vol"] - 1e-9 and b["ret"] > a["ret"] for a, b in zip(pts, pts[1:])), [(x["vol"], x["ret"]) for x in pts]
+        for q in pts:
+            w = np.array(q["w"])
+            assert abs(w.sum() - 1) < 1e-6 and w.max() <= 0.30 * 1.02  # tolleranza: lo scarto dei pesi sotto l1% e la rinormalizzazione
+            ac = sum(w[i] for i, j in enumerate(fr["idx"]) if ds.cls[j] == "Azionario")
+            assert ac <= 0.6 + 1e-2, ac
+        # portafogli salvati: file JSON, nome unico, elenco, cancellazione
+        import server
+        folder = os.path.join(d, "portafogli")
+        doc = {"portfolio": {"name": "Proposta Sharpe è così", "amount": 1000, "positions": [{"isin": "X", "weight": 1}], "metrics": {"ret": 0.05}}}
+        pid, exists = server.pf_save(folder, doc)
+        assert pid == "proposta-sharpe-e-cosi" and not exists and os.path.exists(os.path.join(folder, pid + ".json"))
+        assert server.pf_save(folder, doc)[1] is True and server.pf_save(folder, doc, overwrite=True)[1] is False
+        assert [x["id"] for x in server.pf_list(folder)] == [pid]
+        for bad in ("../x", "A b", ""):
+            try:
+                server.pf_path(folder, bad)
+                raise AssertionError(bad)
+            except ValueError:
+                pass
+        try:
+            server.pf_save(folder, {"portfolio": {"name": "x", "positions": []}})
+            raise AssertionError("vuoto")
+        except ValueError:
+            pass
+        os.remove(server.pf_path(folder, pid))
+        assert server.pf_list(folder) == []
         print("OK")
 
 

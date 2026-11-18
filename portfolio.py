@@ -338,3 +338,33 @@ def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20
     else:
         fail.append("Aggressivo")
     return out, fail
+
+
+# ------------------------------------------------------------------ frontiera efficiente
+def frontier(ds, idx, cap, caps, rf, n=36):
+    """Frontiera efficiente (solo posizioni lunghe, tetto per ETF e massimi per classe) sui titoli `idx` del dataset, con rendimenti e rischio storici reali.
+    Ritorna {"funds": [...], "points": [{vol, ret, sharpe, dr, corr, w}, ...]} dal punto di minima volatilità a quello di massimo rendimento; `w` è allineato a `funds`."""
+    caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
+    idx = list(idx)
+    mu, cov = ds.mu[idx], ds.cov[np.ix_(idx, idx)]
+    cls = [ds.cls[i] for i in idx]
+    vol = lambda w: math.sqrt(max(float(w @ cov @ w), 0.0))
+    wmin = solve("minvar", mu, cov, cap, cls, caps, rf)
+    wmax = solve("aggr", mu, cov, cap, cls, caps, rf, vol_cap=10.0)
+    if wmin is None or wmax is None:
+        return None
+    pts, prev = [], wmin
+    for v in np.linspace(vol(wmin), vol(wmax), n):
+        w = wmin if not pts else (wmax if abs(v - vol(wmax)) < 1e-12 else solve("aggr", mu, cov, cap, cls, caps, rf, vol_cap=v * 1.0005, w0=prev))
+        if w is None:
+            continue
+        prev = w
+        w = np.where(w < 0.01, 0.0, w)  # pesi sotto l'1% si scartano
+        if w.sum() <= 0:
+            continue
+        w = w / w.sum()
+        m = metrics(ds, [idx[i] for i in range(len(idx)) if w[i] > 0], w[w > 0], rf)
+        if pts and m["ret"] <= pts[-1]["ret"] + 1e-6:
+            continue  # tiene solo la parte efficiente (rendimento che cresce con il rischio)
+        pts.append({"vol": m["vol"], "ret": m["ret"], "sharpe": m["sharpe"], "dr": m["dr"], "corr": m["corr"], "w": [float(x) for x in w]})
+    return {"idx": idx, "points": pts}

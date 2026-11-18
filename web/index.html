@@ -8,6 +8,8 @@
 <style>
 :root { --bg:#f6f7f9; --card:#fff; --fg:#1b1f24; --soft:#6a737d; --line:#e1e4e8; --acc:#1f6feb; --up:#1a7f37; --down:#cf222e; --fs-l:1.25rem; --fs-m:.95rem; --fs-s:.8rem; }
 /* tema: scuro per impostazione predefinita, si cambia con il pulsante in alto (scelta ricordata) */
+:root { --p1:#8250df; --p2:#1a7f37; --p3:#d1620b; }
+:root[data-theme=dark] { --p1:#d2a8ff; --p2:#56d364; --p3:#ffa657; }
 :root[data-theme=light] { color-scheme:light; }
 :root[data-theme=dark] { color-scheme:dark; --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --soft:#8b949e; --line:#30363d; --acc:#58a6ff; --up:#3fb950; --down:#f85149; }
 :root[data-theme=dark] button.primary { color:#0d1117; }
@@ -76,6 +78,18 @@ button.i { width:18px; height:18px; padding:0; margin-left:5px; border-radius:50
 #infobox .dlg { text-align:left; max-height:85vh; overflow:auto; }
 #infobox h2 { margin:0 0 8px; } #infobox h3 { font-size:var(--fs-s); text-transform:uppercase; letter-spacing:.04em; color:var(--soft); margin:12px 0 2px; }
 #infobox p { margin:2px 0; } #infobox .ref { background:var(--bg); border-radius:8px; padding:6px 10px; margin:4px 0; font-size:var(--fs-s); }
+#fchart { width:100%; touch-action:none; user-select:none; margin:6px 0 0; }
+#fchart svg { width:100%; display:block; cursor:crosshair; }
+#fchart .gl { stroke:var(--line); stroke-width:1; } #fchart .ax { fill:var(--soft); font-size:11px; }
+.fslider { display:flex; align-items:center; gap:10px; margin:6px 0 10px; flex-wrap:wrap; }
+.fslider input[type=range] { flex:1 1 220px; accent-color:var(--acc); }
+.actions { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 2px; }
+button.danger { color:var(--down); border-color:var(--down); }
+.pfcard { border:1px solid var(--line); border-radius:10px; padding:12px; margin:10px 0; }
+.pfcard h3 { margin:0 0 2px; font-size:var(--fs-m); }
+.pill { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:middle; }
+.formrow { display:flex; flex-direction:column; gap:4px; text-align:left; margin:8px 0; }
+.formrow textarea { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); font:inherit; min-height:60px; }
 th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
 #cands { max-height:480px; overflow:auto; }
 .cta { position:sticky; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 14px; margin:12px -14px -14px; border-radius:0 0 10px 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
@@ -87,7 +101,7 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
   <h1>myMoney</h1>
   <div class="sub" id="info">…</div>
   <div class="last" id="last"></div>
-  <nav class="main" aria-label="Schermate"><button data-t="arch">Archivio</button><button data-t="crea">Crea portafoglio</button></nav>
+  <nav class="main" aria-label="Schermate"><button data-t="arch">Archivio</button><button data-t="crea">Crea portafoglio</button><button data-t="pf">Portafogli salvati</button></nav>
 
   <div class="overlay" id="wait" hidden role="alertdialog" aria-live="polite" aria-label="Operazione in corso">
     <div class="dlg">
@@ -105,6 +119,16 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
   </div>
   <div class="overlay" id="notice" hidden role="alertdialog">
     <div class="dlg notice" id="noticebox"><h2 id="ntitle"></h2><div id="nbody"></div><button class="primary" id="nclose">Chiudi</button></div>
+  </div>
+  <div class="overlay" id="savebox" hidden role="dialog" aria-modal="true">
+    <form class="dlg" id="saveform" style="text-align:left">
+      <h2 style="margin:0 0 6px">Salva il portafoglio</h2>
+      <p class="note" style="margin:0">Si salva come file JSON nella cartella «portafogli» accanto al database.</p>
+      <label class="formrow"><span>Nome</span><input id="sname" maxlength="80" required autocomplete="off"></label>
+      <label class="formrow"><span>Descrizione (facoltativa)</span><textarea id="sdesc" maxlength="400"></textarea></label>
+      <p class="err" id="serr" hidden></p>
+      <p style="text-align:center;margin:12px 0 0"><button class="primary" type="submit">Salva</button> <button type="button" id="scancel">Annulla</button></p>
+    </form>
   </div>
   <div class="overlay" id="infobox" hidden role="dialog" aria-modal="true">
     <div class="dlg"><h2 id="itit"></h2><div id="ibody"></div><p style="text-align:center;margin-top:14px"><button class="primary" id="iclose">Chiudi</button></p></div>
@@ -172,6 +196,15 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
     </section>
     <section id="res" hidden></section>
   </div>
+
+  <!-- ============ PORTAFOGLI SALVATI ============ -->
+  <div id="t-pf" hidden>
+    <section class="card">
+      <h2>Portafogli salvati</h2>
+      <p class="hint" id="pffolder"></p>
+      <div id="pflist"></div>
+    </section>
+  </div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
@@ -222,6 +255,9 @@ const TEXTS = () => ({
     <h3>6. Aggressivo</h3><p>Massimo rendimento atteso con volatilità non oltre il limite scelto.</p>
     <h3>7. Acquisto</h3><p>Importi e quote intere al prezzo attuale in euro; avanza un piccolo resto.</p>
     <div class="ref">Sono simulazioni sul passato, non previsioni né consulenza finanziaria.</div>` },
+  frontier: { t: "Frontiera efficiente: come usarla", h: `<h3>Cos'è</h3><p>Per ogni livello di <b>incertezza</b> (volatilità annua, asse orizzontale) la curva mostra il <b>massimo rendimento storico</b> (asse verticale) ottenibile con i fondi delle tre proposte, con gli stessi vincoli: solo posizioni lunghe, peso massimo per ETF e massimi per classe. I puntini grigi sono i singoli fondi; i rombi sono le tre proposte.</p>
+    <h3>Come si usa</h3><p>Muovi il cursore «Incertezza», oppure clicca o trascina sul grafico: i pesi, gli importi e le quote cambiano subito. Più a sinistra = portafoglio più stabile e rendimento storico minore; più a destra = più oscillazioni e rendimento storico maggiore. Clicca un rombo, o il pulsante «Torna alla proposta», per tornare a una delle proposte.</p>
+    <h3>Da sapere</h3><p>La curva usa i rendimenti storici reali; le proposte sono scelte con stime prudenti (rendimenti portati al ${it(R().shrink * 100, 0)}% verso la media) e per questo possono stare un po' sotto la curva. I punti della frontiera possono avere più ETF del massimo scelto (si scartano i pesi sotto l'1%). Il rendimento è del passato, non una previsione.</p>` },
   results: I("Come leggere i risultati", "Le cifre storiche del portafoglio sul periodo analizzato.", "Servono a confrontare le tre proposte, non a prevedere il futuro.", ref("<b>Rendimento</b>: annuo storico, in euro, dividendi inclusi.", "<b>Volatilità</b>: oscillazione annua; più bassa = più stabile.", "<b>Sharpe</b>: rendimento oltre il tasso privo di rischio per unità di rischio. Sotto 0,5 debole · 0,5–1 discreto · oltre 1 buono (storico, non garantito).", "<b>Diversificazione</b>: 1 = nessun beneficio; oltre 1,3 buona; oltre 1,6 molto buona.", "<b>Correlazione media</b>: quanto si muovono insieme i fondi; sotto 0,5 buona, vicino a 1 poca protezione.", "<b>TER</b>: costo annuo medio ponderato."))
 });
 let TX = null;
@@ -246,9 +282,10 @@ function save() {
 }
 function load() { try { return JSON.parse(localStorage.getItem("mm")) || {}; } catch (e) { return {}; } }
 function tab(t) {
-  ["arch", "crea"].forEach(k => { $("t-" + k).hidden = k !== t; document.querySelector(`nav.main [data-t=${k}]`).classList.toggle("on", k === t); });
+  ["arch", "crea", "pf"].forEach(k => { $("t-" + k).hidden = k !== t; document.querySelector(`nav.main [data-t=${k}]`).classList.toggle("on", k === t); });
   try { localStorage.setItem("mm-tab", t); } catch (e) { }
   if (t === "crea") search();
+  if (t === "pf") loadPf();
 }
 document.querySelector("nav.main").onclick = e => { const b = e.target.closest("button[data-t]"); if (b) tab(b.dataset.t); };
 
@@ -355,36 +392,131 @@ $("bcalc").onclick = async () => {
   if (!r.ok) { wasBusy = false; alert(r.j.error || "Un altro lavoro è in corso"); }
 };
 
+/* ---------- proposta sulla frontiera efficiente, salvataggio ---------- */
+const PC = ["var(--p1)", "var(--p2)", "var(--p3)"];
+let RES = null, SEL = null;
+const pctn = x => it(x * 100, 1) + "%";
+function fundsPort(k) {   // portafoglio di un punto della frontiera
+  const F = RES.frontier, pt = F.points[k], items = []; let ter = 0, known = 0;
+  F.funds.forEach((f, i) => { const w = pt.w[i]; if (w <= 0) return; const amt = w * (RES.amount || 0), qty = RES.amount && f.price ? Math.floor(amt / f.price) : 0;
+    items.push({ symbol: f.symbol, isin: f.isin, name: f.name, class: f.class, exchange: f.exchange, replication: f.replication, domicile: f.domicile, weight: w, amount: amt, qty, price: f.price, cost: qty * f.price, ter: f.ter });
+    if (f.ter != null) { ter += w * f.ter; known += w; } });
+  items.sort((a, b) => b.weight - a.weight);
+  const classes = {}; items.forEach(x => classes[x.class] = (classes[x.class] || 0) + x.weight);
+  const spent = items.reduce((s, x) => s + x.cost, 0);
+  return { label: `Frontiera efficiente · volatilità ${pctn(pt.vol)}`, name: "Frontiera", desc: "Punto scelto sulla frontiera efficiente.", items, classes, ret: pt.ret, vol: pt.vol, sharpe: pt.sharpe, dr: pt.dr, corr: pt.corr, ter: known > .5 ? ter / known : null, spent, cash: (RES.amount || 0) - spent };
+}
+function cur() { if (SEL.kind === "prop") { const p = RES.proposals[SEL.i]; return { ...p, label: "Proposta " + p.name }; } return fundsPort(SEL.k); }
+function nearestK(v) { const P = RES.frontier.points; let b = 0; P.forEach((q, k) => { if (Math.abs(q.vol - v) < Math.abs(P[b].vol - v)) b = k; }); return b; }
+
 function render(R_) {
   const box = $("res"); box.hidden = false;
   if (R_.message) { box.innerHTML = `<div class="card err">${esc(R_.message)}</div>`; return; }
-  const P = R_.proposals;
-  if (!P || !P.length) { box.innerHTML = `<div class="card err">Nessuna proposta calcolabile.</div>`; return; }
+  if (!R_.proposals || !R_.proposals.length) { box.innerHTML = `<div class="card err">Nessuna proposta calcolabile.</div>`; return; }
+  RES = R_; SEL = { kind: "prop", i: 0 };
+  const F = R_.frontier;
   box.innerHTML = `<div class="card"><h2>Proposte di portafoglio <button class="i" data-i="results" type="button">i</button> <button class="i" data-i="rules" type="button">i</button></h2>
     <div class="note">${R_.n} fondi analizzati · periodo ${R_.from} → ${R_.to} (${it(R_.years, 1)} anni) · rendimenti a 5 giorni, in EUR, dividendi inclusi · simulazione sul passato, non una previsione né una consulenza</div>
     ${R_.fail.length ? `<p class="err">Proposta non calcolabile con questi vincoli: ${esc(R_.fail.join(", "))}</p>` : ""}
-    <div class="tabs">${P.map((p, i) => `<button data-i2="${i}">${esc(p.name)}</button>`).join("")}</div><div id="prop"></div></div>`;
-  const show = i => {
-    box.querySelectorAll(".tabs button").forEach((b, k) => b.classList.toggle("on", k === i));
-    const p = P[i], comp = Object.entries(p.classes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${it(v * 100, 0)}%`).join(" · ");
-    $("prop").innerHTML = `<p>${esc(p.desc)} ${esc(p.note || "")}</p>
-      <div class="kpis"><div><b>${it(p.ret * 100, 1)}%</b><span>rendimento storico</span></div><div><b>${it(p.vol * 100, 1)}%</b><span>volatilità</span></div><div><b>${it(p.sharpe)}</b><span>Sharpe</span></div><div><b>${it(p.dr)}</b><span>diversificazione</span></div><div><b>${it(p.corr)}</b><span>correlazione media</span></div><div><b>${p.ter == null ? "—" : it(p.ter) + "%"}</b><span>TER</span></div></div>
-      <div class="note">${comp}</div>
-      <div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
-      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
-      </tbody></table></div>
-      ${R_.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R_.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
-      <button id="csv">Scarica CSV</button>`;
-    $("csv").onclick = () => {
-      const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-      const rows = [["simbolo", "isin", "nome", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.isin, x.name, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
-      const a = document.createElement("a"); a.download = `portafoglio-${p.name.toLowerCase()}.csv`;
-      a.href = URL.createObjectURL(new Blob(["\ufeff" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
+    <div class="tabs">${R_.proposals.map((p, i) => `<button data-i2="${i}"><span class="pill" style="background:${PC[i % 3]}"></span>${esc(p.name)}</button>`).join("")}</div>
+    ${F ? `<h2 style="margin-top:8px">Frontiera efficiente <button class="i" data-i="frontier" type="button">i</button></h2><div id="fchart"></div>
+    <div class="fslider"><label for="fsl"><b>Incertezza</b> (volatilità)</label><span class="hint">stabile</span><input type="range" id="fsl" min="0" max="${F.points.length - 1}" step="1" value="0" aria-label="Incertezza (volatilità)"><span class="hint">più rendimento</span></div>` : '<p class="hint">Frontiera non calcolabile con questi fondi.</p>'}
+    <div id="prop"></div></div>`;
+  box.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { SEL = { kind: "prop", i: +b.dataset.i2 }; update(); });
+  if (F) {
+    $("fsl").oninput = e => { SEL = { kind: "front", k: +e.target.value }; update(); };
+    const pick = ev => {
+      const svg = $("fchart").querySelector("svg"), r = svg.getBoundingClientRect(), g = svg.__g, x = (ev.clientX - r.left) * (g.W / r.width), y = (ev.clientY - r.top) * (g.W / r.width);
+      if (ev.type === "pointerdown") for (let i = 0; i < RES.proposals.length; i++) { const p = RES.proposals[i]; if (Math.hypot(g.X(p.vol) - x, g.Y(p.ret) - y) < 14) { SEL = { kind: "prop", i }; return update(); } }
+      SEL = { kind: "front", k: nearestK(g.vx(x)) }; update();
     };
-  };
-  box.querySelectorAll(".tabs button").forEach((b, i) => b.onclick = () => show(i));
-  show(0); box.scrollIntoView({ behavior: "smooth" });
+    let drag = false; const fc = $("fchart");
+    fc.addEventListener("pointerdown", ev => { drag = true; fc.setPointerCapture(ev.pointerId); pick(ev); });
+    fc.addEventListener("pointermove", ev => { if (drag) pick(ev); });
+    fc.addEventListener("pointerup", () => { drag = false; });
+    window.addEventListener("resize", () => { if (RES && !$("res").hidden) drawFrontier(); });
+  }
+  update(); box.scrollIntoView({ behavior: "smooth" });
 }
+function niceStep(span, n) { const raw = span / n, m = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / m; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * m; }
+function drawFrontier() {
+  const F = RES.frontier, box = $("fchart"); if (!F || !box) return;
+  const W = Math.max(280, box.clientWidth), H = W < 500 ? 290 : 350, L = 46, Rg = 16, T = 14, B = 38;
+  const vs = [...F.funds.map(f => f.vol), ...F.points.map(p => p.vol), ...RES.proposals.map(p => p.vol)], rs = [...F.funds.map(f => f.ret), ...F.points.map(p => p.ret), ...RES.proposals.map(p => p.ret)];
+  let x0 = Math.min(...vs), x1 = Math.max(...vs), y0 = Math.min(...rs), y1 = Math.max(...rs); const px = (x1 - x0) * .06 || .01, py = (y1 - y0) * .1 || .01;
+  x0 = Math.max(0, x0 - px); x1 += px; y0 -= py; y1 += py;
+  const X = v => L + (v - x0) / (x1 - x0) * (W - L - Rg), Y = v => T + (y1 - v) / (y1 - y0) * (H - T - B), vx = x => x0 + (x - L) / (W - L - Rg) * (x1 - x0);
+  const sx = niceStep((x1 - x0) * 100, 5) / 100, sy = niceStep((y1 - y0) * 100, 5) / 100;
+  let grid = "";
+  for (let v = Math.ceil(x0 / sx) * sx; v <= x1; v += sx) grid += `<line class="gl" x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H - B}"/><text class="ax" x="${X(v)}" y="${H - B + 14}" text-anchor="middle">${it(v * 100, 0)}%</text>`;
+  for (let v = Math.ceil(y0 / sy) * sy; v <= y1; v += sy) grid += `<line class="gl" x1="${L}" x2="${W - Rg}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${it(v * 100, 0)}%</text>`;
+  const path = F.points.map((p, k) => (k ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join("");
+  const dots = F.funds.map(f => `<circle cx="${X(f.vol)}" cy="${Y(f.ret)}" r="3.5" fill="var(--soft)" opacity=".7"><title>${esc(f.symbol)} · rend. ${pctn(f.ret)} · vol. ${pctn(f.vol)}</title></circle>`).join("");
+  const dia = RES.proposals.map((p, i) => `<g><path d="M${X(p.vol)} ${Y(p.ret) - 8}l8 8-8 8-8-8z" fill="${PC[i % 3]}" stroke="var(--card)" stroke-width="1.5"/><text class="ax" x="${X(p.vol) + 11}" y="${Y(p.ret) + [-9, 21, 4][i % 3]}" style="fill:${PC[i % 3]};font-weight:600">${esc(p.name)}</text></g>`).join("");
+  const c = cur(), cx = X(c.vol), cy = Y(c.ret);
+  const sel = `<line x1="${cx}" x2="${cx}" y1="${cy}" y2="${H - B}" stroke="var(--acc)" stroke-dasharray="3 3"/><line x1="${L}" x2="${cx}" y1="${cy}" y2="${cy}" stroke="var(--acc)" stroke-dasharray="3 3"/><circle cx="${cx}" cy="${cy}" r="8" fill="none" stroke="var(--acc)" stroke-width="2.5"/>`;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente"><text class="ax" x="${(L + W - Rg) / 2}" y="${H - 4}" text-anchor="middle">Incertezza: volatilità annua</text><text class="ax" transform="translate(11 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">Rendimento storico annuo</text>${grid}<path d="${path}" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round"/>${dots}${sel}${dia}</svg>`;
+  box.firstElementChild.__g = { W, X, Y, vx };
+}
+function update() {
+  const box = $("res"), c = cur();
+  box.querySelectorAll(".tabs button").forEach((b, i) => b.classList.toggle("on", SEL.kind === "prop" && SEL.i === i));
+  if (RES.frontier) { drawFrontier(); $("fsl").value = SEL.kind === "front" ? SEL.k : nearestK(c.vol); }
+  const comp = Object.entries(c.classes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${it(v * 100, 0)}%`).join(" · ");
+  $("prop").innerHTML = `<p><b>${esc(c.label)}</b> — ${esc(c.desc || "")} ${esc(c.note || "")}</p>
+    <div class="kpis"><div><b>${pctn(c.ret)}</b><span>rendimento storico</span></div><div><b>${pctn(c.vol)}</b><span>volatilità (incertezza)</span></div><div><b>${it(c.sharpe)}</b><span>Sharpe</span></div><div><b>${it(c.dr)}</b><span>diversificazione</span></div><div><b>${it(c.corr)}</b><span>correlazione media</span></div><div><b>${c.ter == null ? "—" : it(c.ter) + "%"}</b><span>TER</span></div></div>
+    <div class="note">${comp}</div>
+    ${posTable(c.items)}
+    ${RES.amount ? `<p class="note">Con quote intere: investiti ${it(c.spent)} € su ${it(RES.amount)} €, avanzano ${it(c.cash)} €.</p>` : ""}
+    <div class="actions"><button class="primary" id="bsave">Salva con nome…</button><button class="danger" id="bdrop">Elimina la proposta</button>${SEL.kind === "front" ? `<button id="bback">↩ Torna alla proposta ${esc(RES.proposals[0].name)}</button>` : ""}<button id="csv">Scarica CSV</button></div>`;
+  $("bsave").onclick = openSave; $("bdrop").onclick = dropProposal; $("csv").onclick = () => csvOut(c);
+  if ($("bback")) $("bback").onclick = () => { SEL = { kind: "prop", i: 0 }; update(); };
+}
+const posTable = items => `<div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
+  ${items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}</tbody></table></div>`;
+function csvOut(c) {
+  const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const rows = [["simbolo", "isin", "nome", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(c.items.map(x => [x.symbol, x.isin, x.name, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
+  const a = document.createElement("a"); a.download = "portafoglio.csv"; a.href = URL.createObjectURL(new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
+}
+function dropProposal() {
+  if (!confirm("Eliminare questa proposta? Non è stata salvata e andrà persa.")) return;
+  RES = null; SEL = null; $("res").hidden = true; $("res").innerHTML = "";
+}
+function openSave() {
+  const c = cur(), d = new Date(), pad = n => String(n).padStart(2, "0");
+  $("sname").value = `${c.label.replace(/ · volatilità.*/, "")} ${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`; $("sdesc").value = ""; $("serr").hidden = true;
+  $("savebox").hidden = false; $("sname").focus(); $("sname").select();
+}
+$("scancel").onclick = () => { $("savebox").hidden = true; };
+$("saveform").onsubmit = async e => {
+  e.preventDefault(); const c = cur(), name = $("sname").value.trim(); if (!name) return;
+  const pf = { name, description: $("sdesc").value.trim(), created: new Date().toISOString(), currency: "EUR", amount: RES.amount || 0, source: c.label, rf: RES.frontier ? RES.frontier.rf : null,
+    data_period: { from: RES.from, to: RES.to, years: RES.years }, criteria: RES.criteria, metrics: { ret: c.ret, vol: c.vol, sharpe: c.sharpe, diversification: c.dr, avg_correlation: c.corr, ter: c.ter }, classes: c.classes, cash: c.cash,
+    positions: c.items.map(x => ({ isin: x.isin, symbol: x.symbol, name: x.name, class: x.class, exchange: x.exchange, replication: x.replication, domicile: x.domicile, weight: x.weight, amount: x.amount, quantity: x.qty, price_eur: x.price, cost_eur: x.cost, ter: x.ter })) };
+  let r = await post("/api/pf/save", { doc: { portfolio: pf } });
+  if (r.j.exists && confirm(`Esiste già un portafoglio con questo nome («${name}»). Sostituirlo?`)) r = await post("/api/pf/save", { doc: { portfolio: pf }, overwrite: true });
+  if (!r.ok) { if (!r.j.exists) { $("serr").textContent = r.j.error || "Salvataggio non riuscito"; $("serr").hidden = false; } return; }
+  $("savebox").hidden = true; $("noticebox").className = "dlg notice"; $("ntitle").textContent = "Portafoglio salvato";
+  $("nbody").innerHTML = `<p>«${esc(name)}» è salvato in:</p><p class="note" style="word-break:break-all">${esc(r.j.file)}</p><p class="note">Lo ritrovi nella schermata «Portafogli salvati».</p>`; $("notice").hidden = false;
+};
+
+/* ---------- portafogli salvati ---------- */
+async function loadPf() {
+  const j = await (await fetch("/api/pf/list")).json();
+  $("pffolder").textContent = `Cartella: ${j.folder}`;
+  $("pflist").innerHTML = j.items.length ? j.items.map(x => `<div class="pfcard" data-id="${esc(x.id)}"><h3>${esc(x.name)}</h3>
+    <div class="hint">${esc((x.saved_at || "").replace("T", " "))} · ${esc(x.source || "")} · ${x.n} ETF · ${it(x.amount, 0)} €${x.metrics ? ` · rend. ${pctn(x.metrics.ret)} · vol. ${pctn(x.metrics.vol)}` : ""}</div>
+    ${x.description ? `<p style="margin:4px 0">${esc(x.description)}</p>` : ""}
+    <div class="actions"><button data-a="show">Mostra</button><a class="btn" href="/api/pf/get?id=${encodeURIComponent(x.id)}&dl=1">Scarica JSON</a><button class="danger" data-a="del">Elimina</button></div><div class="detail"></div></div>`).join("") : '<p class="hint">Nessun portafoglio salvato. Calcola una proposta e usa «Salva con nome».</p>';
+}
+$("pflist").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-a]"); if (!b) return; const card = b.closest(".pfcard"), id = card.dataset.id;
+  if (b.dataset.a === "del") { if (!confirm("Eliminare definitivamente questo portafoglio salvato?")) return; await post("/api/pf/delete", { id }); return loadPf(); }
+  const dv = card.querySelector(".detail"); if (dv.innerHTML) { dv.innerHTML = ""; return; }
+  const d = (await (await fetch("/api/pf/get?id=" + encodeURIComponent(id))).json()).portfolio;
+  dv.innerHTML = `<div class="note">Periodo dei dati ${esc(d.data_period && d.data_period.from)} → ${esc(d.data_period && d.data_period.to)} · rendimenti storici, non previsioni</div>` + posTable(d.positions.map(p => ({ ...p, qty: p.quantity, price: p.price_eur, ter: p.ter })));
+});
 init();
 </script>
 </body>

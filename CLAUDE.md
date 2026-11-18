@@ -31,6 +31,11 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 - **Ogni criterio ha la «i»** (`TEXTS` in `web/index.html`: cos'è, come si usa, soglie di riferimento). Un nuovo criterio o parametro deve avere il suo testo, e le soglie usate dal codice (`MINW`, `SHRINK`, `DR_GAIN`, `WINDOW_YEARS` di `portfolio.py`) arrivano alla pagina da `/api/info` (`rules`): non scriverle a mano nei testi. Le soglie «di riferimento» generiche (TER, spread, volume…) sono indicative e vanno dichiarate tali.
 - Un solo titolo per fondo: chiave = ISIN verificato (le quotazioni senza ISIN dello stesso nome si uniscono solo se il nome ha un solo ISIN); due ISIN con lo stesso nome restano fondi diversi.
 
+## Frontiera e portafogli salvati
+
+- `PF.frontier` calcola la frontiera efficiente (rendimenti storici reali, stessi vincoli) sui fondi delle tre proposte; il risultato di `/api/propose` include `frontier` (fondi, punti con pesi `w`) e `criteria`. La pagina disegna il grafico in SVG (`drawFrontier`), il cursore e il clic selezionano un punto (`SEL`), importi e quote si ricalcolano nel browser (`fundsPort`).
+- Portafogli salvati: file JSON `{version, saved_at, portfolio:{name, description, amount, source, data_period, criteria, metrics, classes, cash, positions[]}}` in `portafogli/` accanto al database (`pf_save`, `pf_list`, `pf_path`; nome unico, `id` = slug, nessun percorso arbitrario). Se cambi il formato, alza `version` e leggi anche i vecchi.
+
 ## Verifica
 
 - `python selftest.py` (serve numpy e scipy). La pagina si prova avviando `python mymoney.py --db PROVA.db --no-browser --porta 8799` (database con `selftest.make_db`) e Playwright a 1100 e 390 px: nessun errore di pagina né scroll orizzontale.

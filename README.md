@@ -63,6 +63,7 @@ I lavori lunghi si possono **annullare** e **riprendere**: quanto già scaricato
 
 ## Dove sono i dati
 
+- **`portafogli/`** (accanto al database): un file `.json` per ogni portafoglio salvato.
 - **`etf.db`** (SQLite) nella cartella del programma. Per metterlo altrove: `python mymoney.py --db /percorso/etf.db` o la variabile `MYMONEY_DB`. Per salvarlo su Drive o altro, basta puntare la cartella lì. Per fare una copia, copia il file; per ripartire da zero, cancellalo.
 - Le **impostazioni** della pagina (criteri, importo…) stanno nel browser (`localStorage`). I **CSV** li scarica il browser nella cartella dei download.
 
@@ -87,6 +88,8 @@ Il collegamento ISIN ↔ simbolo è quello **verificato** descritto sotto; solo 
 3. **Scarica il CSV**: una riga per fondo con i dati di tutte le fonti (apribile in Excel).
 Durante ogni scaricamento compare una **clessidra** con l'avanzamento e «Annulla»; a lavoro finito, un avviso elenca **errori e dati mancanti** (titoli senza prezzo o storico, fonti non raggiungibili, ISIN dubbi). Quanto scaricato resta salvato e si può riprendere.
 4. **Crea portafoglio** (seconda schermata): la pagina interroga il database **mentre cambi i criteri** e mostra subito quanti fondi passano, il conteggio per classe di attivo e la tabella dei fondi (simbolo, ISIN, nome, classe, area, borsa, TER, patrimonio, volume, spread, rendimento e volatilità a 1 anno, replica, domicilio, storico già scaricato), ordinabile cliccando sulle intestazioni. Imposta importo, numero di ETF (minimo e massimo), peso massimo per ETF, massimi per classe e i criteri di ricerca. «Calcola le proposte» scarica lo storico dei prezzi (5 anni, in EUR) dei soli fondi analizzati che mancano e mostra le tre proposte con pesi, importi e quote intere; ognuna si salva in CSV. **Ogni criterio ha la sua «i»** con cos'è, come si usa e le soglie di riferimento; la «i» accanto a «Portafoglio» spiega **come si scelgono i portafogli** (criteri e soglie usati dal programma) e quella delle proposte come leggere i risultati.
+5. **Proposta sulla frontiera efficiente**: dopo il calcolo, le tre proposte (rombi colorati) appaiono sul grafico della **frontiera efficiente** dei loro fondi (rischio sull'asse orizzontale, rendimento storico sul verticale). Muovi il cursore **«Incertezza»** (volatilità), oppure clicca o trascina sul grafico: pesi, importi e quote cambiano subito; clicca un rombo o «Torna alla proposta» per tornare a una proposta. La «i» accanto al titolo spiega come leggerla.
+6. **Salva o elimina**: «Salva con nome…» scrive un file **JSON** nella cartella `portafogli/` accanto al database (nome, descrizione, importo, fonte del punto scelto, periodo dei dati, criteri usati, metriche, posizioni con ISIN, peso, importo, quote e prezzo). «Elimina la proposta» la scarta senza salvare. La schermata **Portafogli salvati** elenca i file, mostra le posizioni, li scarica o li elimina.
 
 Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica --borse MIL GER --schede`, `aggiorna`, `esporta etf.csv`, `info`.
 
