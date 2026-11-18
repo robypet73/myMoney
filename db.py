@@ -5,6 +5,7 @@ import sqlite3
 import time
 
 from classify import group_key
+from refdata import SUFFIX_MIC
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS etf (
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS jetf (
   r1 REAL, r3 REAL, r5 REAL, vol1 REAL, vol3 REAL, dd REAL, asset TEXT, region TEXT, index_name TEXT, holdings TEXT, countries TEXT, sectors TEXT, list_at TEXT, profile_at TEXT
 );
 CREATE TABLE IF NOT EXISTS isin_ref (isin TEXT, symbol TEXT, src TEXT, PRIMARY KEY (isin, symbol, src)) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS firds (isin TEXT, mic TEXT, PRIMARY KEY (isin, mic)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS figi_done (isin TEXT PRIMARY KEY, at TEXT);
 CREATE TABLE IF NOT EXISTS prezzi (symbol TEXT, date TEXT, close_eur REAL, PRIMARY KEY (symbol, date)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS fx (cur TEXT, date TEXT, eur_per_unit REAL, PRIMARY KEY (cur, date)) WITHOUT ROWID;
@@ -111,24 +113,34 @@ class DB:
     def save_isin_refs(self, refs):
         self.c.executemany("INSERT OR REPLACE INTO isin_ref VALUES (?,?,?)", refs)
 
+    def save_firds(self, rows):
+        self.c.executemany("INSERT OR REPLACE INTO firds VALUES (?,?)", [(i, m) for i, m, _ in rows])
+
     def link_verified(self):
-        """Assegna `isin` solo dove una fonte ufficiale (elenco Xetra, OpenFIGI) lega quell'ISIN a quel simbolo. Se due ISIN contendono lo stesso simbolo vale
-        quello che coincide con l'ipotesi, altrimenti nessuno; se il nome justETF dell'ISIN non somiglia a quello del titolo, nessuno. Ritorna (verificati, scartati)."""
+        """Assegna `isin` solo dove una fonte ufficiale lega quell'ISIN a quel simbolo: OpenFIGI (ISIN -> ticker sulla borsa del simbolo), rafforzato dal registro
+        ESMA (l'ISIN risulta attivo su quella borsa). Se due ISIN si contendono lo stesso simbolo vale quello presente nel registro ESMA o, in mancanza, l'ipotesi
+        dal nome; altrimenti nessuno. Se il nome justETF dell'ISIN non somiglia a quello del titolo, nessuno. Ritorna (verificati, scartati)."""
         # database di versioni precedenti: gli ISIN non verificati diventano ipotesi
         self.c.execute("UPDATE etf SET isin_guess=COALESCE(isin_guess, isin) WHERE isin IS NOT NULL AND isin_src IS NULL")
         self.c.execute("UPDATE etf SET isin=NULL WHERE isin_src IS NULL")
+        firds = {(r[0], r[1]) for r in self.c.execute("SELECT isin, mic FROM firds")}
+        mic_of = lambda sym: next((m for s, m in SUFFIX_MIC.items() if sym.endswith(s)), None)
         cand = {}
         for r in self.c.execute("SELECT r.symbol, r.isin, r.src FROM isin_ref r JOIN etf e ON e.symbol=r.symbol"):
             cand.setdefault(r["symbol"], {}).setdefault(r["isin"], set()).add(r["src"])
         amb = 0
         for sym, d in cand.items():
+            mic = mic_of(sym)
             if len(d) > 1:
                 g = self.c.execute("SELECT isin_guess FROM etf WHERE symbol=?", (sym,)).fetchone()[0]
-                if g not in d:
+                inf = [i for i in d if mic and (i, mic) in firds]
+                pick = inf[0] if len(inf) == 1 else g if g in d and not inf else None
+                if pick is None:
                     amb += 1
                     continue
-                d = {g: d[g]}
+                d = {pick: d[pick]}
             (isin, srcs), = d.items()
+            srcs = set(srcs) | ({"firds"} if mic and (isin, mic) in firds else set())
             j = self.c.execute("SELECT name FROM jetf WHERE isin=?", (isin,)).fetchone()
             if j and j[0]:  # controllo di coerenza: il nome justETF di quell'ISIN deve somigliare a quello del titolo
                 w1, w2 = set(group_key(j[0]).split()), set(group_key(self.c.execute("SELECT name FROM etf WHERE symbol=?", (sym,)).fetchone()[0]).split())

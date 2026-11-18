@@ -31,12 +31,13 @@ Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica 
 
 ## ISIN e dati justETF
 
-Yahoo non fornisce l'ISIN, quindi arriva da fonti ufficiali e **si assegna a un titolo solo se una di esse lo lega al suo simbolo** (ticker + borsa):
+Yahoo non fornisce l'ISIN, quindi arriva da fonti dirette e **si assegna a un titolo solo se una fonte ufficiale lo lega al suo simbolo** (ticker + borsa):
 
-- **Elenco ufficiale di Xetra** (Deutsche Börse): ISIN e ticker di ETF, ETC ed ETN.
-- **OpenFIGI** (gratuito): per ogni ISIN, i ticker su Milano, Xetra, Parigi, Amsterdam, Londra e SIX. Senza chiave sono 25 richieste al minuto e 10 ISIN per richiesta (circa 25 minuti la prima volta per ~5.800 ISIN, poi solo i nuovi); con una chiave gratuita (variabile d'ambiente `OPENFIGI_KEY`, registrazione su openfigi.com) bastano pochi minuti.
-- Controllo di coerenza: se il nome justETF di quell'ISIN non somiglia a quello del titolo, non si assegna. Se due ISIN si contendono lo stesso simbolo, non si assegna.
+- **OpenFIGI** (interfaccia gratuita): per ogni ISIN, i ticker su Milano, Xetra, Parigi, Amsterdam, Londra e SIX. Senza chiave sono 25 richieste al minuto e 10 ISIN per richiesta (10–30 minuti la prima volta secondo le borse scaricate, poi solo i fondi nuovi); con una chiave gratuita (variabile d'ambiente `OPENFIGI_KEY`, registrazione su openfigi.com) bastano pochi minuti.
+- **Registro ufficiale ESMA (FIRDS)**, in JSON: gli ISIN attivi su Borsa Italiana (ETFplus: ETF, ETC, ETN, ETP), Xetra, Parigi e Amsterdam. Conferma che l'ISIN è davvero negoziato su quella borsa e risolve i simboli contesi. Londra e SIX non sono nel registro UE: lì vale solo OpenFIGI.
+- Controllo di coerenza: se il nome justETF di quell'ISIN non somiglia a quello del titolo, non si assegna. Se due ISIN si contendono lo stesso simbolo e il registro non ne indica uno solo, non si assegna.
 - L'abbinamento dal nome o dal ticker resta solo come **ipotesi** (`isin_guess`, visibile nel CSV) e non serve per attribuire dati: in una prova sul 4% dei casi era sbagliato (stesso nome, ISIN diversi).
+- **Cambi**: dalla BCE (dati ufficiali, interfaccia SDMX); Yahoo solo per le valute che la BCE non pubblica.
 
 Il pulsante «Scarica dati justETF» (o `python mymoney.py justetf`) legge l'elenco justETF (~5.000 ETF, circa 70 secondi), verifica gli ISIN e **solo ai titoli con ISIN verificato** aggiunge, con precedenza sui dati di Yahoo:
 
@@ -45,7 +46,7 @@ Il pulsante «Scarica dati justETF» (o `python mymoney.py justetf`) legge l'ele
 - rendimenti a 1, 3 e 5 anni (3 e 5 anni annui), volatilità a 1 e 3 anni, perdita massima;
 - **classe di attivo e area** ufficiali (al posto di quelle dedotte dal nome).
 
-Facoltativo, lento e riprendibile: «scarica anche indice, primi 10 titoli, paesi e settori» (una richiesta per fondo). Per i titoli senza ISIN verificato, o che justETF non elenca (molti ETN/ETP e prodotti a leva), restano i dati di Yahoo; rendimenti, volatilità e perdita massima si calcolano dallo storico quando lo scarichi. Il database dice la fonte dell'ISIN (`isin_src`: `figi`, `xetra` o `figi+xetra`).
+Facoltativo, lento e riprendibile: «scarica anche indice, primi 10 titoli, paesi e settori» (legge la pagina di ogni fondo su justETF, che non ha un'interfaccia per questi dati: è l'unica parte che legge pagine web; l'elenco con TER, replica e domicilio è invece una chiamata dati). Per i titoli senza ISIN verificato, o che justETF non elenca (molti ETN/ETP e prodotti a leva), restano i dati di Yahoo; rendimenti, volatilità e perdita massima si calcolano dallo storico quando lo scarichi. Il database dice la fonte dell'ISIN (`isin_src`: `figi` o `figi+firds`).
 
 ## Come si calcolano le proposte
 

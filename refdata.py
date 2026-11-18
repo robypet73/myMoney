@@ -1,16 +1,16 @@
-"""Fonti ufficiali per collegare ISIN e simbolo: elenco degli strumenti di Xetra (Deutsche Börse) e OpenFIGI (mappa ISIN -> ticker per ogni borsa)."""
+"""Fonti dirette (JSON, CSV) per ISIN e cambi: registro ufficiale ESMA (FIRDS), OpenFIGI (ISIN -> ticker per borsa), cambi della BCE."""
 import csv
 import io
 import json
 import re
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from yahoo import Cancelled
 
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
-XETRA_PAGE = "https://www.cashmarket.deutsche-boerse.com/cash-en/trading/Tradable-Instruments-Xetra"
 # codice borsa OpenFIGI -> suffisso del simbolo Yahoo
 FIGI_SUFFIX = {"IM": ".MI", "GY": ".DE", "GR": ".DE", "FP": ".PA", "NA": ".AS", "LN": ".L", "SW": ".SW"}
 
@@ -23,27 +23,62 @@ def _sleep(sec, cancel):
         time.sleep(min(0.2, max(0, end - time.time())))
 
 
-def xetra_list(cancel=None, log=None):
-    """ETF, ETC ed ETN negoziati su Xetra: lista di {isin, name, mnemonic, type}. Il file CSV ufficiale cambia indirizzo a ogni aggiornamento: si legge dalla pagina."""
+# borsa (codice Yahoo) -> MIC del registro ESMA (FIRDS). Londra e SIX non sono nel registro UE: lì conta solo OpenFIGI.
+FIRDS_MIC = {"MIL": "etfp", "GER": "xeta", "PAR": "xpar", "AMS": "xams"}
+SUFFIX_MIC = {".MI": "etfp", ".DE": "xeta", ".PA": "xpar", ".AS": "xams"}
+FIRDS = "https://registers.esma.europa.eu/solr/esma_registers_firds/select"
+
+
+def firds_list(mics, cancel=None, log=None):
+    """Registro ufficiale ESMA (FIRDS), interfaccia JSON: ISIN degli strumenti ancora attivi su ciascuna borsa. Su Borsa Italiana (ETFplus) tutti gli strumenti
+    (ETF, ETC, ETN, ETP); sulle altre solo gli ETF (CFI «CE…»). Ritorna [(isin, mic, nome)]."""
     cancel = cancel or (lambda: False)
-    h = urllib.request.urlopen(urllib.request.Request(XETRA_PAGE, headers={"User-Agent": UA}), timeout=60).read().decode("utf-8", "replace")
-    m = re.search(r'href="([^"]*t7-xetr-allTradableInstruments\.csv)"', h)
-    if not m:
-        raise RuntimeError("Elenco Xetra: link al file non trovato (la pagina è cambiata?)")
-    url = m.group(1) if m.group(1).startswith("http") else "https://www.cashmarket.deutsche-boerse.com" + m.group(1)
-    raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=120).read().decode("utf-8-sig", "replace")
-    rows = list(csv.reader(io.StringIO(raw), delimiter=";"))
-    hi = next(i for i, r in enumerate(rows) if "ISIN" in r and "Mnemonic" in r)
-    ix = {k: i for i, k in enumerate(rows[hi])}
     out = []
-    for r in rows[hi + 1:]:
-        if len(r) <= ix["Instrument Type"] or r[ix["Instrument Type"]] not in ("ETF", "ETC", "ETN"):
+    for mic in mics:
+        start, total = 0, None
+        while total is None or start < total:
+            if cancel():
+                raise Cancelled()
+            q = [("q", "*:*"), ("fq", f"mic:{mic}"), ("fq", "latest_received_flag:1"), ("fq", "-status:term"), ("fq", "-status:canc"), ("fl", "isin,mic,gnr_full_name"),
+                 ("sort", "isin asc"), ("start", start), ("rows", 1000), ("wt", "json")]
+            if mic != "etfp":
+                q.append(("fq", "gnr_cfi_code:ce*"))
+            for k in range(5):
+                try:
+                    j = json.load(urllib.request.urlopen(urllib.request.Request(FIRDS + "?" + urllib.parse.urlencode(q), headers={"User-Agent": UA}), timeout=120))["response"]
+                    break
+                except (urllib.error.URLError, TimeoutError, ValueError, KeyError):
+                    if k == 4:
+                        raise RuntimeError("Registro ESMA non raggiungibile")
+                    _sleep(5 * (k + 1), cancel)
+            total = j["numFound"]
+            out += [(d["isin"], mic, d.get("gnr_full_name")) for d in j["docs"] if re.fullmatch(r"[A-Z]{2}[A-Z0-9]{9}\d", d.get("isin") or "")]
+            start += 1000
+        if log:
+            log(f"Registro ESMA {mic.upper()}: {total} strumenti attivi")
+    return out
+
+
+def ecb_fx(curs, start, cancel=None):
+    """Cambi ufficiali BCE (interfaccia SDMX, CSV): {valuta: {data: EUR per 1 unità}}. Le valute che la BCE non pubblica mancano dal risultato."""
+    curs = sorted({("GBP" if c == "GBp" else c) for c in curs if c and c != "EUR"})
+    if not curs:
+        return {}
+    url = f"https://data-api.ecb.europa.eu/service/data/EXR/D.{'+'.join(curs)}.EUR.SP00.A?" + urllib.parse.urlencode({"startPeriod": start, "format": "csvdata"})
+    try:
+        raw = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=60).read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {}
+        raise
+    out = {}
+    for r in csv.DictReader(io.StringIO(raw)):
+        try:
+            v = float(r["OBS_VALUE"])
+        except (KeyError, ValueError):
             continue
-        if not re.fullmatch(r"[A-Z]{2}[A-Z0-9]{9}\d", r[ix["ISIN"]] or "") or not r[ix["Mnemonic"]]:
-            continue
-        out.append({"isin": r[ix["ISIN"]], "name": r[ix["Instrument"]], "mnemonic": r[ix["Mnemonic"]], "type": r[ix["Instrument Type"]]})
-    if log:
-        log(f"Elenco Xetra: {len(out)} strumenti ({rows[1][1] if len(rows) > 1 and len(rows[1]) > 1 else ''})")
+        if v > 0:
+            out.setdefault(r["CURRENCY"], {})[r["TIME_PERIOD"]] = 1 / v
     return out
 
 

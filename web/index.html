@@ -65,8 +65,8 @@ td.n, th.n { text-align:right; }
       <a class="btn" href="/api/export">Scarica il CSV</a>
     </div>
     <h2 style="margin-top:16px">Dati justETF</h2>
-    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se lo confermano l'elenco ufficiale di Xetra o OpenFIGI (ticker e borsa); senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono circa 25 minuti, poi solo i nuovi.</p>
-    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jprof"> Scarica anche indice, primi 10 titoli, paesi e settori di ogni fondo (molto lento, una richiesta per fondo, riprendibile)</label></p>
+    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
+    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jprof"> Scarica anche indice, primi 10 titoli, paesi e settori di ogni fondo (legge la pagina di ogni fondo su justETF: molto lento, riprendibile)</label></p>
     <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
   </section>
 

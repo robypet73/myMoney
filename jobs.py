@@ -19,10 +19,24 @@ def _spread(bid, ask):
 
 
 def _rates(db, y, curs, rng="1mo"):
-    """Aggiorna i cambi mancanti o vecchi di oltre 3 giorni."""
+    """Cambi mancanti o vecchi di oltre 3 giorni: dalla BCE (dati ufficiali), per le valute che non pubblica da Yahoo."""
+    need = []
     for c in sorted({c for c in curs if c and c != "EUR"}):
         h = db.fx(c)
-        if h and max(h) >= (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d") and (rng == "1mo" or len(h) > 800):
+        if not (h and max(h) >= (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d") and (rng == "1mo" or len(h) > 800)):
+            need.append(c)
+    if not need:
+        return
+    start = (datetime.now() - timedelta(days=45 if rng == "1mo" else 365 * 5 + 10)).strftime("%Y-%m-%d")
+    try:
+        ecb = refdata.ecb_fx(need, start, y.cancel)
+    except Exception as e:  # noqa: BLE001
+        y.log(f"Cambi BCE non disponibili ({e}): uso Yahoo")
+        ecb = {}
+    for c in need:
+        e = ecb.get("GBP" if c == "GBp" else c)
+        if e:
+            db.save_fx(c, {d: v * (0.01 if c == "GBp" else 1.0) for d, v in e.items()})
             continue
         try:
             db.save_fx(c, y.fx(c, rng))
@@ -189,24 +203,28 @@ def download_history(db, y, symbols, progress=nop, max_age_days=3):
 
 def download_justetf(db, y, jt, figi_key=None, profiles=False, max_figi=None, max_profiles=None, progress=nop, cancel=None, log=nop):
     """Dati justETF e ISIN verificati.
-    1) elenco justETF (caratteristiche per ISIN); 2) elenco ufficiale di Xetra (ISIN e ticker di ETF, ETC, ETN); 3) OpenFIGI: per ogni ISIN, ticker su Milano, Xetra, Parigi,
-    Amsterdam, Londra, SIX; 4) un titolo riceve l'ISIN solo se una di queste fonti lo lega al suo simbolo (ticker + suffisso di borsa); 5) i dati justETF si copiano solo
-    sui titoli con ISIN verificato; 6) facoltativo: scheda di ogni fondo (indice, titoli, paesi, settori)."""
+    1) elenco justETF (caratteristiche per ISIN); 2) registro ufficiale ESMA (ISIN attivi per borsa); 3) OpenFIGI: per ogni ISIN, ticker su Milano, Xetra, Parigi,
+    Amsterdam, Londra, SIX; 4) un titolo riceve l'ISIN solo se OpenFIGI lo lega al suo simbolo (ticker + suffisso di borsa), con il registro ESMA come conferma;
+    5) i dati justETF si copiano solo sui titoli con ISIN verificato; 6) facoltativo: scheda di ogni fondo (indice, titoli, paesi, settori)."""
     progress("Elenco justETF…", 0, 0)
     items = jt.catalog(lambda a, b: progress(f"Elenco justETF: {a} di {b}", a, b))
     db.save_jetf(items)
     db.guess_by_name()
     db.guess_by_ticker()
     db.commit()
-    # Xetra: ISIN e mnemonico (= simbolo Yahoo senza .DE)
-    progress("Elenco ufficiale Xetra…", 0, 0)
-    xl = refdata.xetra_list(cancel, log)
-    db.save_isin_refs([(x["isin"], x["mnemonic"] + ".DE", "xetra") for x in xl])
+    # registro ufficiale ESMA: ISIN attivi sulle borse presenti nell'archivio
+    have = {r[0] for r in db.c.execute("SELECT DISTINCT exchange FROM etf")}
+    mics = [m for e, m in refdata.FIRDS_MIC.items() if e in have]
+    progress("Registro ufficiale ESMA…", 0, 0)
+    fl = refdata.firds_list(mics, cancel, log)
+    db.save_firds(fl)
     db.commit()
-    # OpenFIGI: tutti gli ISIN (prima i fondi più grandi), riprendibile
-    universe = [r[0] for r in db.c.execute("SELECT isin FROM jetf ORDER BY aum IS NULL, aum DESC")]
+    # OpenFIGI: gli ISIN di quelle borse (e quelli justETF se ci sono Londra o SIX, fuori dal registro UE), prima i fondi più grandi; riprendibile
+    universe = [r[0] for r in db.c.execute("SELECT isin FROM jetf ORDER BY aum IS NULL, aum DESC")] if have & {"LSE", "EBS"} else []
     seen = set(universe)
-    universe += [x["isin"] for x in xl if x["isin"] not in seen and not seen.add(x["isin"])]
+    big = {r[0]: (r[1] or 0) for r in db.c.execute("SELECT isin, aum FROM jetf")}
+    rest = sorted({i for i, _, _ in fl if i not in seen}, key=lambda i: -big.get(i, 0))
+    universe += rest
     cut = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
     done = {r[0] for r in db.c.execute("SELECT isin FROM figi_done WHERE at > ?", (cut,))}
     todo = [i for i in universe if i not in done]
