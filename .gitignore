@@ -4,3 +4,6 @@ etf.db
 etf.db-journal
 impostazioni.json
 *.csv
+build/
+dist/
+*.spec

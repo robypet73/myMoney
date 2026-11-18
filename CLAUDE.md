@@ -10,7 +10,7 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 
 ## Struttura
 
-- `mymoney.py` ingresso (server e pagina nel browser, o riga di comando), `server.py` server HTTP su 127.0.0.1 con API JSON e un solo lavoro alla volta (`Job`), `web/index.html` pagina (HTML, CSS e JS senza librerie), `jobs.py` scarichi (Yahoo e justETF), `refdata.py` fonti dirette (registro ESMA, OpenFIGI, cambi BCE), `justetf.py` client justETF (solo lo screener, ~5.000 ETF con ISIN e caratteristiche), `yahoo.py` client Yahoo (solo `urllib`), `db.py` SQLite, `classify.py` classi dal nome, `portfolio.py` selezione e ottimizzazione (numpy + scipy), `selftest.py` prova senza rete.
+- `mymoney.py` ingresso (server e pagina nel browser, o riga di comando), `build.py` programma unico con PyInstaller (in `dist/`, il database va accanto all'eseguibile: `BASE`/`sys._MEIPASS`; provato solo su Linux), `server.py` server HTTP su 127.0.0.1 con API JSON e un solo lavoro alla volta (`Job`), `web/index.html` pagina (HTML, CSS e JS senza librerie), `jobs.py` scarichi (Yahoo e justETF), `refdata.py` fonti dirette (registro ESMA, OpenFIGI, cambi BCE), `justetf.py` client justETF (solo lo screener, ~5.000 ETF con ISIN e caratteristiche), `yahoo.py` client Yahoo (solo `urllib`), `db.py` SQLite, `classify.py` classi dal nome, `portfolio.py` selezione e ottimizzazione (numpy + scipy), `selftest.py` prova senza rete.
 - Yahoo: cookie da `fc.yahoo.com`, crumb da `getcrumb`, screener `POST /v1/finance/screener` (per borsa, 250 per pagina), `v7/finance/quote`, `v10/finance/quoteSummary`, `v8/finance/chart`. Risponde spesso 429 dall'ambiente cloud: `Yahoo.request` ritenta con attese crescenti e alterna `query1`/`query2`.
 
 ## ISIN e justETF

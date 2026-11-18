@@ -1,6 +1,7 @@
 """Server locale (solo 127.0.0.1): serve la pagina web e fa da ponte verso Yahoo Finance e il database SQLite."""
 import json
 import os
+import sys
 import tempfile
 import threading
 import time
@@ -15,7 +16,7 @@ import portfolio as PF
 from db import DB
 from yahoo import EXCHANGES, Cancelled, Yahoo
 
-WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
+WEB = os.path.join(getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__))), "web")
 
 
 class Job:

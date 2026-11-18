@@ -17,7 +17,9 @@ import jobs
 from db import DB
 from yahoo import EXCHANGES, Yahoo, Cancelled
 
-DB_PATH = os.environ.get("MYMONEY_DB") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "etf.db")
+# programma impacchettato (PyInstaller): il database sta accanto all'eseguibile, non nella cartella temporanea
+BASE = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.environ.get("MYMONEY_DB") or os.path.join(BASE, "etf.db")
 
 
 def cli(argv):

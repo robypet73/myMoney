@@ -2,16 +2,64 @@
 
 App Python con interfaccia nel browser che scarica da Yahoo Finance l'anagrafica e i prezzi di ETF, ETC ed ETN, li salva in un database SQLite (`etf.db`) e propone tre portafogli: **Sharpe**, **bilanciato** e **aggressivo**.
 
-## Installazione
+## Requisiti
 
-Serve Python 3.9 o successivo.
+- **Python 3.9 o successivo** (python.org; su Windows spunta «Add Python to PATH» durante l'installazione). Non serve altro: la pagina usa il browser che hai già.
+- Connessione a internet (Yahoo Finance, justETF, OpenFIGI, ESMA, BCE).
+- Circa 100–300 MB di spazio per il database, secondo quanti storici scarichi.
 
+## Installazione e avvio (nessuna build)
+
+Scarica o clona il repository, apri un terminale nella sua cartella ed esegui:
+
+**Windows** (PowerShell o Prompt dei comandi)
 ```
+py -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 python mymoney.py
 ```
 
-Si apre il browser su `http://127.0.0.1:8765`. Il programma Python resta acceso nel terminale (Ctrl+C per chiuderlo): fa da ponte verso Yahoo, che non si può interrogare direttamente da una pagina web, e verso il database. Il server ascolta solo sul tuo computer. Opzioni: `--db FILE`, `--porta N`, `--no-browser`.
+**Mac e Linux**
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python mymoney.py
+```
+
+Si apre il browser su `http://127.0.0.1:8765` (se non si apre, copia l'indirizzo che il programma stampa). **Il programma resta acceso nel terminale**: fa da ponte verso Yahoo, che non si può interrogare direttamente da una pagina web, e verso il database. Per chiuderlo: Ctrl+C. Il server ascolta solo sul tuo computer.
+
+Le volte successive basta riattivare l'ambiente (`.venv\Scripts\activate` o `source .venv/bin/activate`) e lanciare `python mymoney.py`.
+
+Opzioni: `--db FILE` (altro file di database), `--porta N` (se 8765 è occupata ne cerca una libera da sola), `--no-browser`.
+
+## Build: programma unico senza Python (facoltativo)
+
+Per avere un solo file da copiare e avviare con un doppio clic (`myMoney.exe` su Windows, `myMoney` su Mac e Linux), anche su computer senza Python:
+
+```
+pip install -r requirements.txt pyinstaller
+python build.py
+```
+
+Il risultato è in `dist/myMoney` (circa 60 MB; la build richiede 1–2 minuti). **Va costruito su ogni sistema operativo per cui serve**: un `.exe` si crea solo su Windows. Il database `etf.db` viene creato **accanto al programma**, quindi copia o sposta il file insieme al database. Gli stessi comandi della riga di comando valgono senza `python mymoney.py`: `myMoney justetf`, `myMoney esporta`, ecc. Windows e macOS possono avvisare che il programma non è firmato («SmartScreen», «sviluppatore non identificato»): è normale per un programma fatto in casa. Ho provato la build e l'avvio solo su Linux; su Windows e Mac non l'ho provata.
+
+## Prima volta: l'ordine giusto
+
+1. **Scarica elenco titoli**: scegli le borse (a Milano, circa 2.300 titoli in meno di un minuto) e premi il pulsante. Compare una clessidra con l'avanzamento.
+2. **Scarica dati justETF** (consigliato): aggiunge ISIN verificati, replica, domicilio, rendimenti, classe e area ufficiali. La prima volta 10–30 minuti per le verifiche OpenFIGI; con una chiave gratuita di openfigi.com bastano pochi minuti. Windows (PowerShell): `$env:OPENFIGI_KEY="la-tua-chiave"`; Windows (Prompt): `set OPENFIGI_KEY=la-tua-chiave`; Mac/Linux: `export OPENFIGI_KEY=la-tua-chiave`, **prima** di lanciare il programma.
+3. **Crea portafoglio**: imposta importo, numero di ETF, massimi per classe e criteri, poi «Calcola le proposte». Il calcolo scarica da solo lo storico dei prezzi dei titoli che passano i criteri (qualche minuto la prima volta).
+
+I lavori lunghi si possono **annullare** e **riprendere**: quanto già scaricato resta nel database. Per scaricare di notte senza il browser: `python mymoney.py scarica --schede` (tutte le borse e le schede dei fondi, può durare ore) e `python mymoney.py justetf`.
+
+## Problemi comuni
+
+- **«Yahoo non risponde» o errori 429**: Yahoo limita le richieste. Il programma aspetta e riprova da solo; se persiste, riprova più tardi. Quanto scaricato è salvato.
+- **Titoli «senza storico» o «senza quotazione»** nell'avviso finale: non più negoziati o senza dati su Yahoo; restano fuori dal calcolo.
+- **`pip` o `python` non trovato**: su Windows usa `py` al posto di `python`; su Mac e Linux `python3` e `pip3`.
+- **Errore all'installazione di scipy**: aggiorna pip (`python -m pip install --upgrade pip`) e riprova; con Python troppo vecchio (< 3.9) installa una versione più recente.
+- **Cancellare tutto e ripartire**: chiudi il programma e cancella `etf.db`.
 
 ## Dove sono i dati
 
