@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 import classify as C
 import jobs
+from justetf import JustETF
 import portfolio as PF
 from db import DB
 from yahoo import EXCHANGES, Cancelled, Yahoo
@@ -80,8 +81,9 @@ def parse_create(d):
     f = {"text": d.get("text") or "", "unknown": bool(d.get("unknown")), "ter_max": num(d.get("ter_max")), "assets_min": num(d.get("assets_min")),
          "adv_min": num(d.get("adv_min")), "spread_max": num(d.get("spread_max")), "ret1y_min": num(d.get("ret1y_min")), "vol_max": num(d.get("vol_max")),
          "min_years": num(d.get("min_years")) or 0, "pool": int(num(d.get("pool")) or 150), "class_caps": caps}
-    for k in ("exchanges", "types", "currencies", "distributions", "regions"):
+    for k in ("exchanges", "types", "currencies", "distributions", "regions", "replications", "domiciles"):
         f[k] = list(d.get(k) or [])
+    f["sustainable"] = bool(d.get("sustainable"))
     p = {"amount": num(d.get("amount")) or 0.0, "kmin": int(num(d.get("kmin")) or 3), "kmax": int(num(d.get("kmax")) or 8), "cap": (num(d.get("cap")) or 35) / 100,
          "rf": (num(d.get("rf")) if num(d.get("rf")) is not None else 2) / 100, "vol_aggr": (num(d.get("vol_aggr")) or 20) / 100, "caps": {c: v / 100 for c, v in caps.items()}}
     return f, p
@@ -130,7 +132,8 @@ def make_handler(path, job):
             if u == "/api/info":
                 db = DB(path)
                 try:
-                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS]})
+                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS],
+                                     "domiciles": [x[0] for x in db.c.execute("SELECT DISTINCT domicile FROM etf WHERE domicile IS NOT NULL ORDER BY 1")]})
                 finally:
                     db.close()
             if u == "/api/status":
@@ -169,6 +172,14 @@ def make_handler(path, job):
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/quotes":
                 ok = job.start("quotes", lambda db, y, p: jobs.update_quotes(db, y, None, p))
+                return self.send(200 if ok else 409, {"ok": ok})
+            if u == "/api/justetf":
+                search, prof = bool(d.get("search")), bool(d.get("profiles"))
+
+                def run(db, y, prog):
+                    jobs.download_justetf(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), search, prof, int(d.get("max_search") or 1500), None, prog)
+
+                ok = job.start("justetf", run)
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/count":
                 f, _ = parse_create(d)

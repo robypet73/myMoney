@@ -4,6 +4,7 @@
     python mymoney.py                       apre la pagina nel browser (http://127.0.0.1:8765)
     python mymoney.py --db DATI.db          usa un altro file di database
     python mymoney.py scarica [--borse MIL GER ...] [--schede] [--max-schede N]
+    python mymoney.py justetf [--cerca-isin] [--profili]   ISIN, replica, domicilio, rendimenti, indice, titoli, paesi
     python mymoney.py aggiorna              prezzi attuali, bid, ask
     python mymoney.py esporta [file.csv]    tutto il database in CSV
     python mymoney.py info
@@ -29,6 +30,10 @@ def cli(argv):
     s.add_argument("--borse", nargs="+", default=list(EXCHANGES), choices=list(EXCHANGES), metavar="BORSA", help="codici Yahoo: " + " ".join(EXCHANGES))
     s.add_argument("--schede", action="store_true", help="scarica anche la scheda di ogni fondo (TER, patrimonio, composizione): lento, riprendibile")
     s.add_argument("--max-schede", type=int, help="al massimo N schede (i fondi più scambiati)")
+    j = sub.add_parser("justetf", help="ISIN, replica, domicilio, rendimenti e volatilità da justETF, abbinati ai titoli")
+    j.add_argument("--cerca-isin", action="store_true", help="per gli ISIN non abbinati dal nome, li cerca su Yahoo (≈0,5 s ciascuno, riprendibile)")
+    j.add_argument("--max-cerca", type=int, default=1500)
+    j.add_argument("--profili", action="store_true", help="scarica anche indice, primi titoli, paesi e settori di ogni fondo (1 richiesta ciascuno)")
     sub.add_parser("aggiorna", help="prezzi attuali, bid, ask")
     e = sub.add_parser("esporta", help="CSV di tutto il database")
     e.add_argument("file", nargs="?", default="etf.csv")
@@ -43,6 +48,9 @@ def cli(argv):
     try:
         if a.cmd == "scarica":
             jobs.download_catalog(db, y, a.borse, a.schede, a.max_schede, show)
+        elif a.cmd == "justetf":
+            from justetf import JustETF
+            jobs.download_justetf(db, y, JustETF(log=lambda m_: print("\n" + m_)), a.cerca_isin, a.profili, a.max_cerca, None, show)
         elif a.cmd == "aggiorna":
             jobs.update_quotes(db, y, progress=show)
         elif a.cmd == "esporta":

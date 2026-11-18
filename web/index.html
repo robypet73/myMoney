@@ -64,6 +64,11 @@ td.n, th.n { text-align:right; }
       <button id="bq">Aggiorna prezzi attuali</button>
       <a class="btn" href="/api/export">Scarica il CSV</a>
     </div>
+    <h2 style="margin-top:16px">Dati justETF</h2>
+    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area ufficiali. Abbinati ai titoli di Yahoo dal nome e dal ticker.</p>
+    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jsearch"> Cerca anche gli ISIN rimasti, uno per uno su Yahoo (lento, circa mezzo secondo l'uno, riprendibile)</label></p>
+    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jprof"> Scarica anche indice, primi 10 titoli, paesi e settori di ogni fondo (molto lento, una richiesta per fondo, riprendibile)</label></p>
+    <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
   </section>
 
   <section class="card">
@@ -94,6 +99,7 @@ td.n, th.n { text-align:right; }
         <label>Storia minima (anni)<input id="min_years" value="1,5"></label>
         <label>Titoli analizzati (max)<input id="pool" value="150"></label>
       </div>
+      <p class="row" style="margin:4px 0"><label><input type="checkbox" id="sustainable"> Solo fondi sostenibili (ESG, dati justETF)</label></p>
       <p class="row"><label><input type="checkbox" id="unknown"> Includi i titoli senza il dato richiesto (TER, patrimonio, spread… non scaricati)</label></p>
     </fieldset>
     <div class="row">
@@ -112,13 +118,13 @@ const num = s => { s = (s == null ? "" : String(s)).trim(); if (!s) return null;
 const it = (x, d = 2) => x == null ? "—" : x.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const post = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) }).then(r => r.json().then(j => ({ ok: r.ok, j })));
-const MULTI = { exchanges: "Borse (preferenza nell'ordine)", types: "Tipo", currencies: "Valuta di negoziazione", distributions: "Distribuzione", regions: "Area" };
-const OPTS = { types: ["ETF", "ETC", "ETN/ETP"], currencies: ["EUR", "USD", "GBP", "CHF"], distributions: ["Accumulazione", "Distribuzione"] };
+const MULTI = { exchanges: "Borse (preferenza nell'ordine)", types: "Tipo", currencies: "Valuta di negoziazione", distributions: "Distribuzione", regions: "Area", replications: "Replica", domiciles: "Domicilio" };
+const OPTS = { types: ["ETF", "ETC", "ETN/ETP"], currencies: ["EUR", "USD", "GBP", "CHF"], distributions: ["Accumulazione", "Distribuzione"], replications: ["Fisica", "Sintetica"] };
 const FIELDS = ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr", "text", "ter_max", "assets_min", "adv_min", "spread_max", "ret1y_min", "vol_max", "min_years", "pool"];
 let INFO = null, wasBusy = false;
 
 function save() {
-  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
+  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, jsearch: $("jsearch").checked, jprof: $("jprof").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
   FIELDS.forEach(k => s.f[k] = $(k).value);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
   document.querySelectorAll("#cls input").forEach(x => s.cls[x.dataset.c] = x.value);
@@ -131,19 +137,19 @@ async function init() {
   const s = load();
   $("ex").innerHTML = Object.entries(INFO.exchanges).map(([c, n]) => `<label><input type="checkbox" value="${c}" ${!s.ex || s.ex.includes(c) ? "checked" : ""}> ${esc(n)}</label>`).join("");
   $("cls").innerHTML = INFO.classes.map(c => `<label>${esc(c)}<input data-c="${esc(c)}" value="${esc((s.cls || {})[c] ?? 100)}"></label>`).join("");
-  const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions };
+  const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
   $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note" style="min-width:170px">${lab}</span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}</div>`).join("");
   FIELDS.forEach(k => { if (s.f && s.f[k] != null) $(k).value = s.f[k]; });
-  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det;
+  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable; $("jsearch").checked = !!s.jsearch; $("jprof").checked = !!s.jprof;
   document.body.addEventListener("change", save); document.body.addEventListener("input", save);
   showInfo(); poll();
 }
 function showInfo() {
   const t = INFO.stats;
-  $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
+  $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
 function form() {
-  const d = { unknown: $("unknown").checked, class_caps: {} };
+  const d = { unknown: $("unknown").checked, sustainable: $("sustainable").checked, class_caps: {} };
   FIELDS.forEach(k => d[k] = $(k).value);
   document.querySelectorAll("#cls input").forEach(x => d.class_caps[x.dataset.c] = num(x.value));
   Object.keys(MULTI).forEach(k => d[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
@@ -158,7 +164,7 @@ async function poll() {
   $("pbar").classList.toggle("ind", s.busy && !s.total);
   $("pbar").firstElementChild.style.width = s.total ? Math.round(100 * s.done / s.total) + "%" : (s.busy ? "" : "0");
   $("log").textContent = s.log.join("\n");
-  ["bdl", "bq", "bcalc"].forEach(i => $(i).disabled = s.busy); $("stop").disabled = !s.busy;
+  ["bdl", "bq", "bj", "bcalc"].forEach(i => $(i).disabled = s.busy); $("stop").disabled = !s.busy;
   if (wasBusy && !s.busy) {
     INFO.stats = (await (await fetch("/api/info")).json()).stats; showInfo();
     if (s.kind === "propose" && !s.error && s.result) render(s.result);
@@ -171,6 +177,7 @@ $("bdl").onclick = async () => {
   if (!ex.length) return alert("Scegli almeno una borsa");
   wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
 };
+$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", { search: $("jsearch").checked, profiles: $("jprof").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
 $("stop").onclick = () => post("/api/cancel");
 $("bcount").onclick = async () => {
@@ -198,14 +205,14 @@ function render(R) {
     $("prop").innerHTML = `<p>${esc(p.desc)} ${esc(p.note || "")}</p>
       <div class="kpis"><div><b>${it(p.ret * 100, 1)}%</b><span>rendimento storico</span></div><div><b>${it(p.vol * 100, 1)}%</b><span>volatilità</span></div><div><b>${it(p.sharpe)}</b><span>Sharpe</span></div><div><b>${it(p.dr)}</b><span>diversificazione</span></div><div><b>${it(p.corr)}</b><span>correlazione media</span></div><div><b>${p.ter == null ? "—" : it(p.ter) + "%"}</b><span>TER</span></div></div>
       <div class="note">${comp}</div>
-      <div class="tbl"><table><thead><tr><th>Simbolo</th><th>Nome</th><th>Classe</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
-      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
+      <div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
+      ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}${x.index ? `<div class="note">indice ${esc(x.index)}</div>` : ""}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
       </tbody></table></div>
       ${R.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
       <button id="csv">Scarica CSV</button>`;
     $("csv").onclick = () => {
       const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-      const rows = [["simbolo", "nome", "classe", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.name, x.class, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
+      const rows = [["simbolo", "isin", "nome", "indice", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.isin, x.name, x.index, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
       const a = document.createElement("a"); a.download = `portafoglio-${p.name.toLowerCase()}.csv`;
       a.href = URL.createObjectURL(new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
     };

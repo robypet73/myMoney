@@ -61,7 +61,8 @@ REGIONS = [("Mercati emergenti", _R(r"emerging|\bem\b|\bbrics?\b")),
            ("USA", _R(r"\busa?\b|s&p ?500|s&p|nasdaq|russell|america|united states|dow jones")),
            ("Europa", _R(r"europe|\beuro\b|stoxx|\bdax\b|\bmib\b|\bcac\b|eurozone|\bemu\b|\buk\b|ftse 100")),
            ("Giappone", _R(r"japan|nikkei|topix")),
-           ("Asia-Pacifico", _R(r"asia|pacific|china|india|korea|taiwan|hong kong|australia|vietnam"))]
+           ("Asia-Pacifico", _R(r"asia|pacific|china|india|korea|taiwan|hong kong|australia|vietnam")),
+           ("America Latina", _R(r"latin america|brazil|mexico|latam")), ("Africa", _R(r"africa"))]
 
 
 def region_of(name):

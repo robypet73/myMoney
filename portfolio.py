@@ -13,7 +13,7 @@ MINW = 0.03            # peso minimo di un titolo scelto (sotto, si scarta)
 
 
 # ------------------------------------------------------------------ criteri di ricerca
-DEFAULT_FILTERS = {"text": "", "exchanges": [], "types": [], "currencies": [], "distributions": [], "regions": [], "class_caps": {},
+DEFAULT_FILTERS = {"text": "", "exchanges": [], "types": [], "currencies": [], "distributions": [], "regions": [], "replications": [], "domiciles": [], "sustainable": False, "class_caps": {},
                    "ter_max": None, "assets_min": None, "adv_min": None, "spread_max": None, "ret1y_min": None, "vol_max": None,
                    "min_years": 1.5, "pool": 150, "unknown": False}
 
@@ -44,6 +44,12 @@ def select(db, f, today=None):
         if f["distributions"] and not ok(r["distribution"] or None, lambda v: v in f["distributions"]):
             continue
         if f["regions"] and not ok(r["region"] or None, lambda v: v in f["regions"]):
+            continue
+        if f["replications"] and not ok(r["replication"], lambda v: any(v.startswith(x) for x in f["replications"])):
+            continue
+        if f["domiciles"] and not ok(r["domicile"], lambda v: v in f["domiciles"]):
+            continue
+        if f["sustainable"] and not ok(r["sustainable"], lambda v: v == 1):
             continue
         if caps and caps.get(r["asset_class"] or "Altro", 100) <= 0:
             continue
@@ -244,7 +250,7 @@ def build(ds, idx, w, amount, rf, name, desc, note=""):
         amt = w[k] * amount
         qty = int(amt // price) if amount and price else 0
         spent += qty * price
-        items.append({"symbol": r["symbol"], "name": r["name"], "class": ds.cls[idx[k]], "exchange": r["exchange_name"], "weight": float(w[k]), "amount": amt, "qty": qty,
+        items.append({"symbol": r["symbol"], "isin": r["isin"], "replication": r["replication"], "domicile": r["domicile"], "index": r["index_name"], "name": r["name"], "class": ds.cls[idx[k]], "exchange": r["exchange_name"], "weight": float(w[k]), "amount": amt, "qty": qty,
                       "price": price, "cost": qty * price, "ter": r["ter"], "assets": r["assets_eur_m"]})
     comp = {}
     for k in range(len(idx)):

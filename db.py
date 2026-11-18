@@ -1,20 +1,29 @@
 """Database SQLite (etf.db): anagrafica dei titoli, prezzi giornalieri in EUR e cambi."""
 import csv
+import json
 import sqlite3
 import time
 
+from classify import group_key
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS etf (
-  symbol TEXT PRIMARY KEY, name TEXT, short_name TEXT, group_key TEXT,
+  symbol TEXT PRIMARY KEY, isin TEXT, name TEXT, short_name TEXT, group_key TEXT,
   type TEXT, asset_class TEXT, region TEXT, distribution TEXT, hedged INTEGER,
   exchange TEXT, exchange_name TEXT, currency TEXT,
   price REAL, price_eur REAL, bid REAL, ask REAL, spread_pct REAL,
   avg_volume REAL, adv_eur_m REAL,
   assets REAL, assets_eur_m REAL, ret_1y REAL, ter REAL, family TEXT, category TEXT, inception TEXT,
   stock REAL, bond REAL, cash REAL, other REAL, yield REAL, sectors TEXT,
+  class_src TEXT, replication TEXT, domicile TEXT, index_name TEXT, n_holdings INTEGER, sustainable INTEGER, div_yield REAL, ret_3y REAL, ret_5y REAL,
+  vol_1y REAL, vol_3y REAL, max_dd REAL, holdings TEXT, countries TEXT,
   listed_at TEXT, quote_at TEXT, detail_at TEXT, hist_at TEXT, hist_from TEXT, hist_to TEXT, hist_n INTEGER
 );
-CREATE INDEX IF NOT EXISTS etf_group ON etf(group_key);
+CREATE TABLE IF NOT EXISTS jetf (
+  isin TEXT PRIMARY KEY, name TEXT, ticker TEXT, cur TEXT, aum REAL, ter REAL, dist TEXT, repl TEXT, dom TEXT, inc TEXT, n INTEGER, sust INTEGER, div REAL,
+  r1 REAL, r3 REAL, r5 REAL, vol1 REAL, vol3 REAL, dd REAL, asset TEXT, region TEXT, index_name TEXT, holdings TEXT, countries TEXT, sectors TEXT, list_at TEXT, profile_at TEXT
+);
+CREATE TABLE IF NOT EXISTS isin_tried (isin TEXT PRIMARY KEY, tried_at TEXT, found INTEGER);
 CREATE TABLE IF NOT EXISTS prezzi (symbol TEXT, date TEXT, close_eur REAL, PRIMARY KEY (symbol, date)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS fx (cur TEXT, date TEXT, eur_per_unit REAL, PRIMARY KEY (cur, date)) WITHOUT ROWID;
 """
@@ -32,6 +41,8 @@ class DB:
         for col in COLS:  # database creato da una versione precedente: aggiunge le colonne nuove
             if col not in have:
                 self.c.execute(f"ALTER TABLE etf ADD COLUMN {col}")
+        self.c.execute("CREATE INDEX IF NOT EXISTS etf_group ON etf(group_key)")
+        self.c.execute("CREATE INDEX IF NOT EXISTS etf_isin ON etf(isin)")
 
     def close(self):
         self.c.close()
@@ -58,6 +69,66 @@ class DB:
         if kw and group_key:
             self.c.execute(f"UPDATE etf SET {', '.join(k + '=?' for k in kw)} WHERE group_key=?", [*kw.values(), group_key])
 
+    # ---- justETF ----
+    JCOLS = ["name", "ticker", "cur", "aum", "ter", "dist", "repl", "dom", "inc", "n", "sust", "div", "r1", "r3", "r5", "vol1", "vol3", "dd", "asset", "region"]
+    MAP = [("ter", "ter"), ("assets_eur_m", "aum"), ("ret_1y", "r1"), ("ret_3y", "r3"), ("ret_5y", "r5"), ("vol_1y", "vol1"), ("vol_3y", "vol3"), ("max_dd", "dd"),
+           ("replication", "repl"), ("domicile", "dom"), ("inception", "inc"), ("n_holdings", "n"), ("sustainable", "sust"), ("div_yield", "div"), ("distribution", "dist"),
+           ("index_name", "index_name"), ("holdings", "holdings"), ("countries", "countries"), ("sectors", "sectors"), ("region", "region")]
+
+    def save_jetf(self, items):
+        for x in items:
+            self.c.execute("INSERT OR IGNORE INTO jetf(isin) VALUES (?)", (x["isin"],))
+            self.c.execute(f"UPDATE jetf SET {', '.join('[' + k + ']=?' for k in self.JCOLS)}, list_at=? WHERE isin=?", [*(x.get(k) for k in self.JCOLS), now(), x["isin"]])
+
+    def set_profile(self, isin, d):
+        self.c.execute("UPDATE jetf SET index_name=?, holdings=?, countries=?, sectors=?, profile_at=? WHERE isin=?",
+                       (d.get("index"), json.dumps(d["holdings"], ensure_ascii=False) if d.get("holdings") else None, json.dumps(d["countries"], ensure_ascii=False) if d.get("countries") else None,
+                        json.dumps(d["sectors"], ensure_ascii=False) if d.get("sectors") else None, now(), isin))
+
+    def link_by_name(self):
+        """Abbina l'ISIN dal nome del fondo (solo se univoco): ritorna quanti titoli hanno ora un ISIN."""
+        by = {}
+        for r in self.c.execute("SELECT isin, name FROM jetf"):
+            by.setdefault(group_key(r["name"]), []).append(r["isin"])
+        for r in self.c.execute("SELECT DISTINCT group_key FROM etf WHERE isin IS NULL AND group_key IS NOT NULL AND group_key<>''").fetchall():
+            c = by.get(r["group_key"])
+            if c and len(c) == 1:
+                self.c.execute("UPDATE etf SET isin=? WHERE group_key=? AND isin IS NULL", (c[0], r["group_key"]))
+        return self.c.execute("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL").fetchone()[0]
+
+    def link_by_ticker(self):
+        """Secondo abbinamento: il ticker justETF coincide con quello del simbolo Yahoo (senza suffisso di borsa) e i nomi si somigliano (almeno metà delle parole)."""
+        by = {}
+        for r in self.c.execute("SELECT isin, name, ticker FROM jetf WHERE ticker IS NOT NULL"):
+            by.setdefault(r["ticker"].upper(), []).append((r["isin"], set(group_key(r["name"]).split())))
+        n = 0
+        for r in self.c.execute("SELECT symbol, group_key FROM etf WHERE isin IS NULL").fetchall():
+            c = by.get(r["symbol"].split(".")[0].upper())
+            if not c:
+                continue
+            w = set((r["group_key"] or "").split())
+            ok = [i for i, t in c if w and t and len(w & t) / len(w | t) >= 0.5]
+            if len(ok) == 1:
+                self.set_isin(ok[0], [r["symbol"]])
+                n += 1
+        return n
+
+    def set_isin(self, isin, symbols):
+        """ISIN trovato con la ricerca di Yahoo: vale per i simboli indicati e per le altre quotazioni dello stesso fondo."""
+        for s in symbols:
+            self.c.execute("UPDATE etf SET isin=? WHERE symbol=?", (isin, s))
+            g = self.c.execute("SELECT group_key FROM etf WHERE symbol=?", (s,)).fetchone()
+            if g and g[0]:
+                self.c.execute("UPDATE etf SET isin=? WHERE group_key=? AND isin IS NULL", (isin, g[0]))
+
+    def apply_jetf(self):
+        """Copia le caratteristiche justETF (ufficiali) nei titoli con quell'ISIN: hanno la precedenza sui dati di Yahoo e sul nome."""
+        for e, j in self.MAP:
+            sub = f"(SELECT [{j}] FROM jetf WHERE jetf.isin=etf.isin)"
+            self.c.execute(f"UPDATE etf SET [{e}]={sub} WHERE isin IS NOT NULL AND {sub} IS NOT NULL")
+        sub = "(SELECT asset FROM jetf WHERE jetf.isin=etf.isin)"
+        self.c.execute(f"UPDATE etf SET asset_class={sub}, class_src='justetf' WHERE isin IS NOT NULL AND {sub} IS NOT NULL")
+
     def fill_groups(self):
         """TER, patrimonio e data di lancio, noti per una quotazione, valgono per tutte le quotazioni dello stesso fondo."""
         for col, agg in (("ter", "MAX(t.ter)"), ("assets_eur_m", "MAX(t.assets_eur_m)"), ("inception", "MIN(t.inception)")):
@@ -66,7 +137,7 @@ class DB:
     def stats(self):
         q = lambda s: self.c.execute(s).fetchone()[0]
         return {"titoli": q("SELECT COUNT(*) FROM etf"), "fondi": q("SELECT COUNT(DISTINCT group_key) FROM etf"),
-                "con_dettagli": q("SELECT COUNT(*) FROM etf WHERE detail_at IS NOT NULL"), "con_storico": q("SELECT COUNT(*) FROM etf WHERE hist_n > 0"),
+                "con_dettagli": q("SELECT COUNT(*) FROM etf WHERE detail_at IS NOT NULL"), "con_isin": q("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL"), "con_storico": q("SELECT COUNT(*) FROM etf WHERE hist_n > 0"),
                 "ultimo": self.c.execute("SELECT MAX(listed_at) FROM etf").fetchone()[0]}
 
     # ---- prezzi e cambi ----
