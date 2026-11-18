@@ -65,8 +65,7 @@ td.n, th.n { text-align:right; }
       <a class="btn" href="/api/export">Scarica il CSV</a>
     </div>
     <h2 style="margin-top:16px">Dati justETF</h2>
-    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area ufficiali. Abbinati ai titoli di Yahoo dal nome e dal ticker.</p>
-    <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jsearch"> Cerca anche gli ISIN rimasti, uno per uno su Yahoo (lento, circa mezzo secondo l'uno, riprendibile)</label></p>
+    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se lo confermano l'elenco ufficiale di Xetra o OpenFIGI (ticker e borsa); senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono circa 25 minuti, poi solo i nuovi.</p>
     <p class="row" style="margin:4px 0"><label><input type="checkbox" id="jprof"> Scarica anche indice, primi 10 titoli, paesi e settori di ogni fondo (molto lento, una richiesta per fondo, riprendibile)</label></p>
     <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
   </section>
@@ -124,7 +123,7 @@ const FIELDS = ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr", "text", "ter_
 let INFO = null, wasBusy = false;
 
 function save() {
-  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, jsearch: $("jsearch").checked, jprof: $("jprof").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
+  const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, jjprof: $("jprof").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
   FIELDS.forEach(k => s.f[k] = $(k).value);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
   document.querySelectorAll("#cls input").forEach(x => s.cls[x.dataset.c] = x.value);
@@ -140,13 +139,13 @@ async function init() {
   const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
   $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note" style="min-width:170px">${lab}</span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}</div>`).join("");
   FIELDS.forEach(k => { if (s.f && s.f[k] != null) $(k).value = s.f[k]; });
-  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable; $("jsearch").checked = !!s.jsearch; $("jprof").checked = !!s.jprof;
+  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable; $("jprof").checked = !!s.jprof;
   document.body.addEventListener("change", save); document.body.addEventListener("input", save);
   showInfo(); poll();
 }
 function showInfo() {
   const t = INFO.stats;
-  $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
+  $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN verificato · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
 function form() {
   const d = { unknown: $("unknown").checked, sustainable: $("sustainable").checked, class_caps: {} };
@@ -177,7 +176,7 @@ $("bdl").onclick = async () => {
   if (!ex.length) return alert("Scegli almeno una borsa");
   wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
 };
-$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", { search: $("jsearch").checked, profiles: $("jprof").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
+$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", { profiles: $("jprof").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
 $("stop").onclick = () => post("/api/cancel");
 $("bcount").onclick = async () => {

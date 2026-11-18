@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 import classify as C
 from db import DB, now
+import refdata
 from justetf import JustETF
 from yahoo import Cancelled, NotFound, Yahoo, EXCHANGES, num
 
@@ -186,41 +187,45 @@ def download_history(db, y, symbols, progress=nop, max_age_days=3):
     return ok
 
 
-def download_justetf(db, y, jt, search=False, profiles=False, max_search=1500, max_profiles=None, progress=nop):
-    """Dati justETF (ISIN, replica, domicilio, rendimenti, volatilità, classe e area ufficiali) e abbinamento agli ISIN dei titoli di Yahoo:
-    1) elenco justETF; 2) abbinamento dal nome; 3) facoltativo: ricerca per ISIN di Yahoo per gli altri (lento, riprendibile); 4) facoltativo: scheda di ogni fondo
-    (indice, primi 10 titoli, paesi, settori)."""
+def download_justetf(db, y, jt, figi_key=None, profiles=False, max_figi=None, max_profiles=None, progress=nop, cancel=None, log=nop):
+    """Dati justETF e ISIN verificati.
+    1) elenco justETF (caratteristiche per ISIN); 2) elenco ufficiale di Xetra (ISIN e ticker di ETF, ETC, ETN); 3) OpenFIGI: per ogni ISIN, ticker su Milano, Xetra, Parigi,
+    Amsterdam, Londra, SIX; 4) un titolo riceve l'ISIN solo se una di queste fonti lo lega al suo simbolo (ticker + suffisso di borsa); 5) i dati justETF si copiano solo
+    sui titoli con ISIN verificato; 6) facoltativo: scheda di ogni fondo (indice, titoli, paesi, settori)."""
     progress("Elenco justETF…", 0, 0)
     items = jt.catalog(lambda a, b: progress(f"Elenco justETF: {a} di {b}", a, b))
     db.save_jetf(items)
+    db.guess_by_name()
+    db.guess_by_ticker()
     db.commit()
-    n = db.link_by_name()
-    n2 = db.link_by_ticker()
+    # Xetra: ISIN e mnemonico (= simbolo Yahoo senza .DE)
+    progress("Elenco ufficiale Xetra…", 0, 0)
+    xl = refdata.xetra_list(cancel, log)
+    db.save_isin_refs([(x["isin"], x["mnemonic"] + ".DE", "xetra") for x in xl])
+    db.commit()
+    # OpenFIGI: tutti gli ISIN (prima i fondi più grandi), riprendibile
+    universe = [r[0] for r in db.c.execute("SELECT isin FROM jetf ORDER BY aum IS NULL, aum DESC")]
+    seen = set(universe)
+    universe += [x["isin"] for x in xl if x["isin"] not in seen and not seen.add(x["isin"])]
+    cut = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+    done = {r[0] for r in db.c.execute("SELECT isin FROM figi_done WHERE at > ?", (cut,))}
+    todo = [i for i in universe if i not in done]
+    if max_figi:
+        todo = todo[:max_figi]
+    fg = refdata.Figi(figi_key, cancel, log)
+    for i in range(0, len(todo), fg.batch):
+        part = todo[i:i + fg.batch]
+        left = (len(todo) - i) / fg.batch * fg.pause / 60
+        progress(f"Verifica degli ISIN su OpenFIGI: {i} di {len(todo)}" + (f" (circa {left:.0f} min)" if left >= 2 else ""), i, len(todo))
+        res = fg.map(part)
+        db.save_isin_refs([(isin, t + refdata.FIGI_SUFFIX[ex], "figi") for isin, lst in res.items() for ex, t in lst])
+        db.c.executemany("INSERT OR REPLACE INTO figi_done VALUES (?,?)", [(isin, now()) for isin in part])
+        db.commit()
+    ok, amb = db.link_verified()
     db.apply_jetf()
     db.commit()
-    progress(f"justETF: {len(items)} fondi; {n + n2} titoli abbinati (dal nome e dal ticker)", 0, 0)
-    if search:
-        cut = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d %H:%M:%S")
-        todo = [r[0] for r in db.c.execute(
-            "SELECT isin FROM jetf WHERE isin NOT IN (SELECT isin FROM etf WHERE isin IS NOT NULL) AND isin NOT IN (SELECT isin FROM isin_tried WHERE tried_at > ?) ORDER BY aum IS NULL, aum DESC", (cut,))]
-        todo = todo[:max_search]
-        found = 0
-        for i, isin in enumerate(todo):
-            progress(f"Ricerca degli ISIN su Yahoo: {i} di {len(todo)} ({found} trovati)", i, len(todo))
-            try:
-                syms = y.search(isin)
-            except NotFound:
-                syms = []
-            have = [r["symbol"] for r in db.all(f"symbol IN ({','.join('?' * len(syms))})", syms)] if syms else []
-            if have:
-                db.set_isin(isin, have)
-                found += 1
-            db.c.execute("INSERT OR REPLACE INTO isin_tried VALUES (?,?,?)", (isin, now(), 1 if have else 0))
-            if i % 20 == 19:
-                db.apply_jetf()
-                db.commit()
-        db.apply_jetf()
-        db.commit()
+    tot = db.c.execute("SELECT COUNT(*) FROM etf").fetchone()[0]
+    progress(f"ISIN verificati: {ok} titoli su {tot}" + (f" ({amb} dubbi lasciati senza ISIN: simbolo conteso o nome incoerente)" if amb else ""), 1, 1)
     if profiles:
         todo = [r[0] for r in db.c.execute(
             "SELECT j.isin FROM jetf j JOIN etf e ON e.isin=j.isin WHERE j.profile_at IS NULL GROUP BY j.isin ORDER BY MAX(e.assets_eur_m) IS NULL, MAX(e.assets_eur_m) DESC")]
@@ -235,4 +240,4 @@ def download_justetf(db, y, jt, search=False, profiles=False, max_search=1500, m
                 db.commit()
         db.apply_jetf()
         db.commit()
-    progress("justETF: fatto", 1, 1)
+    progress("Fatto", 1, 1)

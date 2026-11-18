@@ -8,7 +8,7 @@ from classify import group_key
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS etf (
-  symbol TEXT PRIMARY KEY, isin TEXT, name TEXT, short_name TEXT, group_key TEXT,
+  symbol TEXT PRIMARY KEY, isin TEXT, isin_src TEXT, isin_guess TEXT, name TEXT, short_name TEXT, group_key TEXT,
   type TEXT, asset_class TEXT, region TEXT, distribution TEXT, hedged INTEGER,
   exchange TEXT, exchange_name TEXT, currency TEXT,
   price REAL, price_eur REAL, bid REAL, ask REAL, spread_pct REAL,
@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS jetf (
   isin TEXT PRIMARY KEY, name TEXT, ticker TEXT, cur TEXT, aum REAL, ter REAL, dist TEXT, repl TEXT, dom TEXT, inc TEXT, n INTEGER, sust INTEGER, div REAL,
   r1 REAL, r3 REAL, r5 REAL, vol1 REAL, vol3 REAL, dd REAL, asset TEXT, region TEXT, index_name TEXT, holdings TEXT, countries TEXT, sectors TEXT, list_at TEXT, profile_at TEXT
 );
-CREATE TABLE IF NOT EXISTS isin_tried (isin TEXT PRIMARY KEY, tried_at TEXT, found INTEGER);
+CREATE TABLE IF NOT EXISTS isin_ref (isin TEXT, symbol TEXT, src TEXT, PRIMARY KEY (isin, symbol, src)) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS figi_done (isin TEXT PRIMARY KEY, at TEXT);
 CREATE TABLE IF NOT EXISTS prezzi (symbol TEXT, date TEXT, close_eur REAL, PRIMARY KEY (symbol, date)) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS fx (cur TEXT, date TEXT, eur_per_unit REAL, PRIMARY KEY (cur, date)) WITHOUT ROWID;
 """
@@ -85,41 +86,57 @@ class DB:
                        (d.get("index"), json.dumps(d["holdings"], ensure_ascii=False) if d.get("holdings") else None, json.dumps(d["countries"], ensure_ascii=False) if d.get("countries") else None,
                         json.dumps(d["sectors"], ensure_ascii=False) if d.get("sectors") else None, now(), isin))
 
-    def link_by_name(self):
-        """Abbina l'ISIN dal nome del fondo (solo se univoco): ritorna quanti titoli hanno ora un ISIN."""
+    def guess_by_name(self):
+        """Ipotesi (NON verificata): l'ISIN justETF il cui nome normalizzato coincide in modo univoco. Va in `isin_guess`, mai in `isin`."""
         by = {}
         for r in self.c.execute("SELECT isin, name FROM jetf"):
             by.setdefault(group_key(r["name"]), []).append(r["isin"])
-        for r in self.c.execute("SELECT DISTINCT group_key FROM etf WHERE isin IS NULL AND group_key IS NOT NULL AND group_key<>''").fetchall():
+        for r in self.c.execute("SELECT DISTINCT group_key FROM etf WHERE isin_guess IS NULL AND group_key IS NOT NULL AND group_key<>''").fetchall():
             c = by.get(r["group_key"])
             if c and len(c) == 1:
-                self.c.execute("UPDATE etf SET isin=? WHERE group_key=? AND isin IS NULL", (c[0], r["group_key"]))
-        return self.c.execute("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL").fetchone()[0]
+                self.c.execute("UPDATE etf SET isin_guess=? WHERE group_key=? AND isin_guess IS NULL", (c[0], r["group_key"]))
 
-    def link_by_ticker(self):
-        """Secondo abbinamento: il ticker justETF coincide con quello del simbolo Yahoo (senza suffisso di borsa) e i nomi si somigliano (almeno metà delle parole)."""
+    def guess_by_ticker(self):
+        """Ipotesi (NON verificata): ticker justETF uguale a quello del simbolo e nomi simili."""
         by = {}
         for r in self.c.execute("SELECT isin, name, ticker FROM jetf WHERE ticker IS NOT NULL"):
             by.setdefault(r["ticker"].upper(), []).append((r["isin"], set(group_key(r["name"]).split())))
-        n = 0
-        for r in self.c.execute("SELECT symbol, group_key FROM etf WHERE isin IS NULL").fetchall():
+        for r in self.c.execute("SELECT symbol, group_key FROM etf WHERE isin_guess IS NULL").fetchall():
             c = by.get(r["symbol"].split(".")[0].upper())
-            if not c:
-                continue
             w = set((r["group_key"] or "").split())
-            ok = [i for i, t in c if w and t and len(w & t) / len(w | t) >= 0.5]
+            ok = [i for i, t in (c or []) if w and t and len(w & t) / len(w | t) >= 0.5]
             if len(ok) == 1:
-                self.set_isin(ok[0], [r["symbol"]])
-                n += 1
-        return n
+                self.c.execute("UPDATE etf SET isin_guess=? WHERE symbol=?", (ok[0], r["symbol"]))
 
-    def set_isin(self, isin, symbols):
-        """ISIN trovato con la ricerca di Yahoo: vale per i simboli indicati e per le altre quotazioni dello stesso fondo."""
-        for s in symbols:
-            self.c.execute("UPDATE etf SET isin=? WHERE symbol=?", (isin, s))
-            g = self.c.execute("SELECT group_key FROM etf WHERE symbol=?", (s,)).fetchone()
-            if g and g[0]:
-                self.c.execute("UPDATE etf SET isin=? WHERE group_key=? AND isin IS NULL", (isin, g[0]))
+    def save_isin_refs(self, refs):
+        self.c.executemany("INSERT OR REPLACE INTO isin_ref VALUES (?,?,?)", refs)
+
+    def link_verified(self):
+        """Assegna `isin` solo dove una fonte ufficiale (elenco Xetra, OpenFIGI) lega quell'ISIN a quel simbolo. Se due ISIN contendono lo stesso simbolo vale
+        quello che coincide con l'ipotesi, altrimenti nessuno; se il nome justETF dell'ISIN non somiglia a quello del titolo, nessuno. Ritorna (verificati, scartati)."""
+        # database di versioni precedenti: gli ISIN non verificati diventano ipotesi
+        self.c.execute("UPDATE etf SET isin_guess=COALESCE(isin_guess, isin) WHERE isin IS NOT NULL AND isin_src IS NULL")
+        self.c.execute("UPDATE etf SET isin=NULL WHERE isin_src IS NULL")
+        cand = {}
+        for r in self.c.execute("SELECT r.symbol, r.isin, r.src FROM isin_ref r JOIN etf e ON e.symbol=r.symbol"):
+            cand.setdefault(r["symbol"], {}).setdefault(r["isin"], set()).add(r["src"])
+        amb = 0
+        for sym, d in cand.items():
+            if len(d) > 1:
+                g = self.c.execute("SELECT isin_guess FROM etf WHERE symbol=?", (sym,)).fetchone()[0]
+                if g not in d:
+                    amb += 1
+                    continue
+                d = {g: d[g]}
+            (isin, srcs), = d.items()
+            j = self.c.execute("SELECT name FROM jetf WHERE isin=?", (isin,)).fetchone()
+            if j and j[0]:  # controllo di coerenza: il nome justETF di quell'ISIN deve somigliare a quello del titolo
+                w1, w2 = set(group_key(j[0]).split()), set(group_key(self.c.execute("SELECT name FROM etf WHERE symbol=?", (sym,)).fetchone()[0]).split())
+                if w1 and w2 and len(w1 & w2) / len(w1 | w2) < 0.25:
+                    amb += 1
+                    continue
+            self.c.execute("UPDATE etf SET isin=?, isin_src=? WHERE symbol=?", (isin, "+".join(sorted(srcs)), sym))
+        return self.c.execute("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL").fetchone()[0], amb
 
     def apply_jetf(self):
         """Copia le caratteristiche justETF (ufficiali) nei titoli con quell'ISIN: hanno la precedenza sui dati di Yahoo e sul nome."""

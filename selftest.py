@@ -54,6 +54,18 @@ def main():
             print(f"{p['name']:<11} n={len(w)} rend={p['ret']*100:5.1f}% vol={p['vol']*100:5.1f}% sharpe={p['sharpe']:.2f} DR={p['dr']:.2f} classi={ {k: round(v, 2) for k, v in p['classes'].items()} }")
         s, b, a = out
         assert a["vol"] >= b["vol"] - 1e-6 and a["ret"] >= s["ret"] - 0.02
+        # ISIN: solo se una fonte ufficiale lega ISIN e simbolo; i simboli contesi restano senza
+        db.save_jetf([{"isin": "IE0000000001", "name": "Fondo 1 USA Equity UCITS ETF (Acc)", "ter": 0.1, "repl": "Fisica completa", "dom": "Irlanda", "asset": "Azionario"},
+                      {"isin": "IE0000000002", "name": "Fondo 2 qualunque", "repl": "Sintetica"}])
+        db.guess_by_name()
+        db.save_isin_refs([("IE0000000001", "T1.MI", "figi"), ("IE0000000001", "T1.MI", "xetra"), ("IE0000000002", "T2.MI", "figi"), ("IE0000000009", "T2.MI", "figi"), ("IE0000000003", "NOSYM.MI", "figi")])
+        ok, amb = db.link_verified()
+        db.apply_jetf()
+        assert (ok, amb) == (1, 1), (ok, amb)
+        r = db.get("T1.MI")
+        assert r["isin"] == "IE0000000001" and r["isin_src"] == "figi+xetra" and r["replication"] == "Fisica completa" and r["ter"] == 0.1
+        assert db.get("T2.MI")["isin"] is None and db.get("T2.MI")["replication"] is None  # conteso: nessun ISIN, nessun dato applicato
+        assert db.get("T3.MI")["isin"] is None
         print("OK")
 
 

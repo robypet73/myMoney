@@ -174,10 +174,11 @@ def make_handler(path, job):
                 ok = job.start("quotes", lambda db, y, p: jobs.update_quotes(db, y, None, p))
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/justetf":
-                search, prof = bool(d.get("search")), bool(d.get("profiles"))
+                prof = bool(d.get("profiles"))
+                key = os.environ.get("OPENFIGI_KEY") or None
 
                 def run(db, y, prog):
-                    jobs.download_justetf(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), search, prof, int(d.get("max_search") or 1500), None, prog)
+                    jobs.download_justetf(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), key, prof, None, None, prog, job.cancel.is_set, job._log)
 
                 ok = job.start("justetf", run)
                 return self.send(200 if ok else 409, {"ok": ok})

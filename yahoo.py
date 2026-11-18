@@ -152,11 +152,6 @@ class Yahoo:
             return {}
         return parse_summary(r[0]) if r else {}
 
-    def search(self, q):
-        """Simboli che Yahoo associa a un testo: la ricerca accetta anche l'ISIN."""
-        r = self.request("/v1/finance/search", {"q": q, "quotesCount": 15, "newsCount": 0})
-        return [x["symbol"] for x in r.get("quotes", []) if x.get("symbol")]
-
     # ---- storico e cambi ----
     def history(self, symbol, rng="5y"):
         """(valuta, [(data ISO, chiusura aggiustata)]) dello storico giornaliero. La chiusura aggiustata include i dividendi."""

@@ -29,16 +29,23 @@ Si apre il browser su `http://127.0.0.1:8765`. Il programma Python resta acceso 
 
 Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica --borse MIL GER --schede`, `aggiorna`, `esporta etf.csv`, `info`.
 
-## Dati justETF (ISIN, replica, domicilio…)
+## ISIN e dati justETF
 
-«Scarica dati justETF» (o `python mymoney.py justetf`) legge l'elenco di tutti gli ETF di justETF (~5.000, circa 70 secondi) e li abbina ai titoli di Yahoo **dal nome e dal ticker** (circa il 60% dei titoli di Borsa Italiana; il resto sono soprattutto ETN/ETP e prodotti a leva, che justETF non elenca). Per ogni titolo abbinato aggiunge, con precedenza sui dati di Yahoo:
+Yahoo non fornisce l'ISIN, quindi arriva da fonti ufficiali e **si assegna a un titolo solo se una di esse lo lega al suo simbolo** (ticker + borsa):
 
-- ISIN, TER, patrimonio, data di lancio, distribuzione, numero di titoli, fondo sostenibile (ESG), rendimento da dividendi;
+- **Elenco ufficiale di Xetra** (Deutsche Börse): ISIN e ticker di ETF, ETC ed ETN.
+- **OpenFIGI** (gratuito): per ogni ISIN, i ticker su Milano, Xetra, Parigi, Amsterdam, Londra e SIX. Senza chiave sono 25 richieste al minuto e 10 ISIN per richiesta (circa 25 minuti la prima volta per ~5.800 ISIN, poi solo i nuovi); con una chiave gratuita (variabile d'ambiente `OPENFIGI_KEY`, registrazione su openfigi.com) bastano pochi minuti.
+- Controllo di coerenza: se il nome justETF di quell'ISIN non somiglia a quello del titolo, non si assegna. Se due ISIN si contendono lo stesso simbolo, non si assegna.
+- L'abbinamento dal nome o dal ticker resta solo come **ipotesi** (`isin_guess`, visibile nel CSV) e non serve per attribuire dati: in una prova sul 4% dei casi era sbagliato (stesso nome, ISIN diversi).
+
+Il pulsante «Scarica dati justETF» (o `python mymoney.py justetf`) legge l'elenco justETF (~5.000 ETF, circa 70 secondi), verifica gli ISIN e **solo ai titoli con ISIN verificato** aggiunge, con precedenza sui dati di Yahoo:
+
+- TER, patrimonio, data di lancio, distribuzione, numero di titoli, fondo sostenibile (ESG), rendimento da dividendi;
 - **replica** (fisica completa, a campione, sintetica) e **domicilio**;
 - rendimenti a 1, 3 e 5 anni (3 e 5 anni annui), volatilità a 1 e 3 anni, perdita massima;
 - **classe di attivo e area** ufficiali (al posto di quelle dedotte dal nome).
 
-Facoltativi, lenti e riprendibili: «cerca anche gli ISIN rimasti» (una ricerca su Yahoo per ISIN, ~0,5 s ciascuna, serve per i fondi quotati su altre borse già scaricate) e «scarica anche indice, primi 10 titoli, paesi e settori» (una richiesta per fondo). Per i titoli che justETF non ha, rendimenti, volatilità e perdita massima si calcolano dallo storico dei prezzi quando lo scarichi.
+Facoltativo, lento e riprendibile: «scarica anche indice, primi 10 titoli, paesi e settori» (una richiesta per fondo). Per i titoli senza ISIN verificato, o che justETF non elenca (molti ETN/ETP e prodotti a leva), restano i dati di Yahoo; rendimenti, volatilità e perdita massima si calcolano dallo storico quando lo scarichi. Il database dice la fonte dell'ISIN (`isin_src`: `figi`, `xetra` o `figi+xetra`).
 
 ## Come si calcolano le proposte
 
@@ -52,7 +59,7 @@ Facoltativi, lenti e riprendibili: «cerca anche gli ISIN rimasti» (una ricerca
 
 ## Limiti
 
-- Yahoo non ha l'ISIN: i titoli si identificano dal simbolo (es. `SWDA.MI`); l'ISIN arriva da justETF, abbinato dal nome e dal ticker (può mancare, e un abbinamento per ticker potrebbe in rari casi scegliere un'altra classe di azioni dello stesso fondo).
+- Yahoo non ha l'ISIN: i titoli si identificano dal simbolo (es. `SWDA.MI`); l'ISIN arriva da fonti ufficiali (vedi sopra) e può mancare: meglio nessun ISIN che uno sbagliato.
 - Classe di attivo, area e distribuzione sono dedotte dal nome (e, con le schede, dalla composizione): possono sbagliare.
 - Patrimonio e TER mancano per una parte dei titoli: un criterio su un dato mancante esclude il titolo, salvo la spunta «Includi i titoli senza il dato».
 - Yahoo limita le richieste: se risponde 429 il programma aspetta e riprova da solo.
