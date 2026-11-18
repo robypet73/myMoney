@@ -140,7 +140,7 @@ def make_handler(path, job):
             if u == "/api/info":
                 db = DB(path)
                 try:
-                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS],
+                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS], "rules": {"minw": PF.MINW, "shrink": PF.SHRINK, "dr_gain": PF.DR_GAIN, "window": PF.WINDOW_YEARS},
                                      "domiciles": [x[0] for x in db.c.execute("SELECT DISTINCT domicile FROM etf WHERE domicile IS NOT NULL ORDER BY 1")]})
                 finally:
                     db.close()
@@ -189,12 +189,15 @@ def make_handler(path, job):
 
                 ok = job.start("justetf", run)
                 return self.send(200 if ok else 409, {"ok": ok})
-            if u == "/api/count":
+            if u == "/api/search":
                 f, _ = parse_create(d)
                 db = DB(path)
                 try:
-                    rows = PF.select(db, f)
-                    return self.send(200, {"n": len(rows), "with_history": sum(1 for r in rows if r["hist_n"]), "pool": f["pool"]})
+                    allr, pool, by = PF.search_summary(db, f)
+                    cols = ("symbol", "isin", "name", "asset_class", "region", "exchange_name", "currency", "ter", "assets_eur_m", "adv_eur_m", "spread_pct", "ret_1y", "ret_3y", "vol_1y",
+                            "replication", "domicile", "sustainable", "hist_n")
+                    return self.send(200, {"n_all": len(allr), "n_pool": len(pool), "with_history": sum(1 for r in pool if r["hist_n"]), "by_class": by, "titoli": db.stats()["titoli"],
+                                           "rows": [{k: r[k] for k in cols} for r in pool[:300]]})
                 finally:
                     db.close()
             if u == "/api/propose":
@@ -216,7 +219,7 @@ def make_handler(path, job):
                     prog("Calcolo le proposte…", 0, 0)
                     order = {s: i for i, s in enumerate(syms)}
                     fresh = sorted(db.all(f"symbol IN ({','.join('?' * len(syms))})", syms), key=lambda r: order[r["symbol"]])
-                    ds = PF.load_dataset(db, fresh, 3.0, f["min_years"], f["vol_max"], f["ret1y_min"])
+                    ds = PF.load_dataset(db, fresh, PF.WINDOW_YEARS, f["min_years"], f["vol_max"], f["ret1y_min"])
                     if ds is None:
                         return {"message": "Servono almeno 2 titoli con storico sufficiente: abbassa «Storia minima» o allarga i criteri."}
                     out, fail = PF.propose(ds, **p)

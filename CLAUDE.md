@@ -25,6 +25,12 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 - `etf` = una riga per quotazione (simbolo Yahoo); la vista `fondo` (`db.VIEW`) è la **scheda unica per fondo** (chiave `COALESCE(isin, 'sym:'||symbol)`, quotazione preferita, `quotazioni`, `fonti`); l'esportazione CSV legge da lì. Se aggiungi colonne a `etf`, aggiungile alla vista.
 - Ogni scaricamento mostra la clessidra (`#wait`) e, a fine lavoro, l'avviso (`#notice`) con `warnings` ed `error` di `Job`. **Ogni errore o dato mancante va segnalato con `y.warn(...)`** (raggruppato con `_examples`, non uno per titolo); gli errori che impediscono il lavoro sono eccezioni (`RuntimeError`) e `Streak` ferma dopo 5 errori di fila. Quanto scaricato si salva sempre (`commit`) prima di fallire.
 
+## Schermata Crea portafoglio
+
+- Due schermate (`nav.main`): Archivio e Crea portafoglio. Quest'ultima interroga il database a ogni modifica (`/api/search` → `PF.search_summary`, con attesa di 350 ms) e mostra conteggi, classi e tabella; i criteri applicati dalla ricerca sono quelli di `PF.select`.
+- **Ogni criterio ha la «i»** (`TEXTS` in `web/index.html`: cos'è, come si usa, soglie di riferimento). Un nuovo criterio o parametro deve avere il suo testo, e le soglie usate dal codice (`MINW`, `SHRINK`, `DR_GAIN`, `WINDOW_YEARS` di `portfolio.py`) arrivano alla pagina da `/api/info` (`rules`): non scriverle a mano nei testi. Le soglie «di riferimento» generiche (TER, spread, volume…) sono indicative e vanno dichiarate tali.
+- Un solo titolo per fondo: chiave = ISIN verificato (le quotazioni senza ISIN dello stesso nome si uniscono solo se il nome ha un solo ISIN); due ISIN con lo stesso nome restano fondi diversi.
+
 ## Verifica
 
 - `python selftest.py` (serve numpy e scipy). La pagina si prova avviando `python mymoney.py --db PROVA.db --no-browser --porta 8799` (database con `selftest.make_db`) e Playwright a 1100 e 390 px: nessun errore di pagina né scroll orizzontale.

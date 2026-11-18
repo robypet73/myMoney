@@ -10,6 +10,8 @@ import classify as C
 AGG = 252 / 5          # rendimenti a 5 giorni sovrapposti, annualizzati
 SHRINK = 0.5           # i rendimenti storici sono rumorosi: per scegliere i pesi si portano a metà strada verso la media dei titoli
 MINW = 0.03            # peso minimo di un titolo scelto (sotto, si scarta)
+DR_GAIN = 1.02         # nella scelta per diversificazione si smette di aggiungere titoli se il rapporto di diversificazione migliora meno del 2%
+WINDOW_YEARS = 3.0     # finestra massima dei rendimenti: gli ultimi 3 anni (o meno, se i titoli hanno meno storia in comune)
 
 
 # ------------------------------------------------------------------ criteri di ricerca
@@ -63,20 +65,36 @@ def select(db, f, today=None):
             continue
         if f["ret1y_min"] is not None and not ok(r["ret_1y"], lambda v: v >= f["ret1y_min"]):
             continue
+        if f["vol_max"] is not None and not ok(r["vol_1y"], lambda v: v <= f["vol_max"]):
+            continue
         if r["inception"] and f["min_years"] and r["inception"] > (today - timedelta(days=365 * f["min_years"])).strftime("%Y-%m-%d"):
             continue
         out.append(r)
     # un solo titolo per fondo: EUR, poi la borsa preferita (ordine scelto dall'utente), poi il volume
     order = {e: i for i, e in enumerate(f["exchanges"])}
     best = {}
+    by_group = {}  # un gruppo di nomi con un solo ISIN verificato: le quotazioni senza ISIN dello stesso gruppo sono lo stesso fondo
+    for r in db.all("isin IS NOT NULL"):
+        by_group.setdefault(r["group_key"], set()).add(r["isin"])
     for r in out:
-        k = r["group_key"] or r["symbol"]
+        g = by_group.get(r["group_key"])
+        k = r["isin"] or (next(iter(g)) if g and len(g) == 1 else None) or r["group_key"] or r["symbol"]
         score = (r["currency"] == "EUR", -order.get(r["exchange"], 99), r["adv_eur_m"] or 0)
         if k not in best or score > best[k][0]:
             best[k] = (score, r)
     rows = [v[1] for v in best.values()]
     rows.sort(key=lambda r: (r["assets_eur_m"] or 0, r["adv_eur_m"] or 0), reverse=True)
     return rows[: int(f["pool"])] if f["pool"] else rows
+
+
+def search_summary(db, f):
+    """Per la schermata di creazione: tutti i fondi che passano i criteri (senza il limite `pool`), quelli analizzati (primi `pool`) e il conteggio per classe."""
+    allr = select(db, {**f, "pool": 0})
+    pool = int(f.get("pool") or DEFAULT_FILTERS["pool"])
+    by = {}
+    for r in allr:
+        by[r["asset_class"] or "Altro"] = by.get(r["asset_class"] or "Altro", 0) + 1
+    return allr, allr[:pool], by
 
 
 # ------------------------------------------------------------------ dati per il calcolo
@@ -225,7 +243,7 @@ def greedy_dr(ds, mu, kmin, kmax, cap, caps, rf):
         if capacity(sel, ds.cls, caps, cap) < 1:  # servono altre classi: si sceglie solo tra quelle che aumentano la capacità
             cand = [c for c in cand if capacity(sel + [c[1]], ds.cls, caps, cap) > capacity(sel, ds.cls, caps, cap) + 1e-9] or cand
         d, j = max(cand)
-        if len(sel) >= kmin and capacity(sel, ds.cls, caps, cap) >= 1 and d < cur * 1.02:
+        if len(sel) >= kmin and capacity(sel, ds.cls, caps, cap) >= 1 and d < cur * DR_GAIN:
             break
         sel.append(j)
         cur = d

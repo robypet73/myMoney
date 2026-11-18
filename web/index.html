@@ -57,6 +57,21 @@ td.n, th.n { text-align:right; }
 .notice.bad { border-color:var(--down); } .notice.warn { border-color:#d29922; }
 .last { font-size:var(--fs-s); }
 @media (max-width:600px) { main { padding:10px; } th, td { padding:5px 5px; } }
+
+nav.main { display:flex; gap:6px; margin:14px 0 4px; border-bottom:1px solid var(--line); }
+nav.main button { border:0; border-bottom:3px solid transparent; border-radius:0; background:none; padding:8px 14px; font-weight:600; color:var(--soft); }
+nav.main button.on { color:var(--fg); border-bottom-color:var(--acc); }
+button.i { width:18px; height:18px; padding:0; margin-left:5px; border-radius:50%; font:italic 700 11px/16px Georgia,serif; color:var(--acc); border:1px solid var(--acc); background:none; vertical-align:middle; cursor:pointer; }
+.lt { display:inline-flex; align-items:center; }
+.hint { color:var(--soft); font-size:var(--fs-s); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+.chip { background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:var(--fs-s); }
+#infobox .dlg { text-align:left; max-height:85vh; overflow:auto; }
+#infobox h2 { margin:0 0 8px; } #infobox h3 { font-size:var(--fs-s); text-transform:uppercase; letter-spacing:.04em; color:var(--soft); margin:12px 0 2px; }
+#infobox p { margin:2px 0; } #infobox .ref { background:var(--bg); border-radius:8px; padding:6px 10px; margin:4px 0; font-size:var(--fs-s); }
+th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
+#cands { max-height:480px; overflow:auto; }
+.cta { position:sticky; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 14px; margin:12px -14px -14px; border-radius:0 0 10px 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 </style>
 </head>
 <body>
@@ -64,6 +79,7 @@ td.n, th.n { text-align:right; }
   <h1>myMoney</h1>
   <div class="sub" id="info">…</div>
   <div class="last" id="last"></div>
+  <nav class="main" aria-label="Schermate"><button data-t="arch">Archivio</button><button data-t="crea">Crea portafoglio</button></nav>
 
   <div class="overlay" id="wait" hidden role="alertdialog" aria-live="polite" aria-label="Operazione in corso">
     <div class="dlg">
@@ -79,69 +95,75 @@ td.n, th.n { text-align:right; }
       <button id="stop">Annulla</button>
     </div>
   </div>
-
   <div class="overlay" id="notice" hidden role="alertdialog">
-    <div class="dlg notice" id="noticebox">
-      <h2 id="ntitle"></h2>
-      <div id="nbody"></div>
-      <button class="primary" id="nclose">Chiudi</button>
-    </div>
+    <div class="dlg notice" id="noticebox"><h2 id="ntitle"></h2><div id="nbody"></div><button class="primary" id="nclose">Chiudi</button></div>
+  </div>
+  <div class="overlay" id="infobox" hidden role="dialog" aria-modal="true">
+    <div class="dlg"><h2 id="itit"></h2><div id="ibody"></div><p style="text-align:center;margin-top:14px"><button class="primary" id="iclose">Chiudi</button></p></div>
   </div>
 
-  <section class="card">
-    <h2>Archivio titoli (Yahoo Finance)</h2>
-    <div class="row" id="ex"></div>
-    <p class="row"><label><input type="checkbox" id="det"> Scarica anche le schede dei fondi (TER, patrimonio, composizione): molto più lento, si può interrompere e riprendere</label></p>
-    <div class="row">
-      <button class="primary" id="bdl">Scarica elenco titoli</button>
-      <button id="bq">Aggiorna prezzi attuali</button>
-      <a class="btn" href="/api/export">Scarica il CSV</a>
-    </div>
-    <h2 style="margin-top:16px">Dati justETF</h2>
-    <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
-    <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
-  </section>
-
-  <section class="card">
-    <h2>Crea portafoglio</h2>
-    <fieldset><legend>Portafoglio</legend>
-      <div class="grid">
-        <label>Importo (€)<input id="amount" value="10000"></label>
-        <label>ETF minimo<input id="kmin" value="3"></label>
-        <label>ETF massimo<input id="kmax" value="8"></label>
-        <label>Peso max per ETF (%)<input id="cap" value="35"></label>
-        <label>Tasso privo di rischio (%)<input id="rf" value="2"></label>
-        <label>Volatilità max aggressivo (%)<input id="vol_aggr" value="20"></label>
+  <!-- ============ ARCHIVIO ============ -->
+  <div id="t-arch">
+    <section class="card">
+      <h2>Archivio titoli (Yahoo Finance)</h2>
+      <div class="row" id="ex"></div>
+      <p class="row"><label><input type="checkbox" id="det"> Scarica anche le schede dei fondi (TER, patrimonio, composizione): molto più lento, si può interrompere e riprendere</label></p>
+      <div class="row">
+        <button class="primary" id="bdl">Scarica elenco titoli</button>
+        <button id="bq">Aggiorna prezzi attuali</button>
+        <a class="btn" href="/api/export">Scarica il CSV</a>
       </div>
-    </fieldset>
-    <fieldset><legend>Composizione: massimo per classe (%) — 100 = libero, 0 = esclusa</legend>
-      <div class="grid" id="cls"></div>
-    </fieldset>
-    <fieldset><legend>Criteri di ricerca (vuoto = nessun limite)</legend>
-      <div class="grid"><label>Nome contiene<input id="text"></label></div>
+      <h2 style="margin-top:16px">Dati justETF</h2>
+      <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
+      <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
+    </section>
+  </div>
+
+  <!-- ============ CREA PORTAFOGLIO ============ -->
+  <div id="t-crea" hidden>
+    <div class="card" id="empty" hidden>L'archivio è vuoto: vai su <b>Archivio</b> e scarica prima l'elenco titoli.</div>
+    <section class="card">
+      <h2>Portafoglio <button class="i" data-i="rules" aria-label="Come si scelgono i portafogli">i</button></h2>
+      <div class="grid">
+        <label><span class="lt">Importo (€)<button class="i" data-i="amount" type="button">i</button></span><input id="amount" value="10000"></label>
+        <label><span class="lt">ETF minimo<button class="i" data-i="kmin" type="button">i</button></span><input id="kmin" value="3"></label>
+        <label><span class="lt">ETF massimo<button class="i" data-i="kmax" type="button">i</button></span><input id="kmax" value="8"></label>
+        <label><span class="lt">Peso max per ETF (%)<button class="i" data-i="cap" type="button">i</button></span><input id="cap" value="35"></label>
+        <label><span class="lt">Tasso privo di rischio (%)<button class="i" data-i="rf" type="button">i</button></span><input id="rf" value="2"></label>
+        <label><span class="lt">Volatilità max aggressivo (%)<button class="i" data-i="vol_aggr" type="button">i</button></span><input id="vol_aggr" value="20"></label>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Composizione: massimo per classe (%) <button class="i" data-i="class_caps" type="button">i</button></h2>
+      <div class="hint">100 = libero · 0 = classe esclusa</div>
+      <div class="grid" id="cls" style="margin-top:6px"></div>
+    </section>
+    <section class="card">
+      <h2>Criteri di ricerca <span class="hint">(vuoto = nessun limite)</span></h2>
+      <div class="grid"><label><span class="lt">Nome contiene<button class="i" data-i="text" type="button">i</button></span><input id="text"></label></div>
       <div id="multi"></div>
       <div class="grid" style="margin-top:8px">
-        <label>TER max %<input id="ter_max"></label>
-        <label>Patrimonio min (M€)<input id="assets_min"></label>
-        <label>Volume medio min (M€/giorno)<input id="adv_min"></label>
-        <label>Spread max %<input id="spread_max"></label>
-        <label>Rendimento 1 anno min %<input id="ret1y_min"></label>
-        <label>Volatilità max %<input id="vol_max"></label>
-        <label>Storia minima (anni)<input id="min_years" value="1,5"></label>
-        <label>Titoli analizzati (max)<input id="pool" value="150"></label>
+        <label><span class="lt">TER max %<button class="i" data-i="ter_max" type="button">i</button></span><input id="ter_max"></label>
+        <label><span class="lt">Patrimonio min (M€)<button class="i" data-i="assets_min" type="button">i</button></span><input id="assets_min"></label>
+        <label><span class="lt">Volume medio min (M€/giorno)<button class="i" data-i="adv_min" type="button">i</button></span><input id="adv_min"></label>
+        <label><span class="lt">Spread max %<button class="i" data-i="spread_max" type="button">i</button></span><input id="spread_max"></label>
+        <label><span class="lt">Rendimento 1 anno min %<button class="i" data-i="ret1y_min" type="button">i</button></span><input id="ret1y_min"></label>
+        <label><span class="lt">Volatilità max %<button class="i" data-i="vol_max" type="button">i</button></span><input id="vol_max"></label>
+        <label><span class="lt">Storia minima (anni)<button class="i" data-i="min_years" type="button">i</button></span><input id="min_years" value="1,5"></label>
+        <label><span class="lt">Titoli analizzati (max)<button class="i" data-i="pool" type="button">i</button></span><input id="pool" value="150"></label>
       </div>
-      <p class="row" style="margin:4px 0"><label><input type="checkbox" id="sustainable"> Solo fondi sostenibili (ESG, dati justETF)</label></p>
-      <p class="row"><label><input type="checkbox" id="unknown"> Includi i titoli senza il dato richiesto (TER, patrimonio, spread… non scaricati)</label></p>
-    </fieldset>
-    <div class="row">
-      <button class="primary" id="bcalc">Calcola le proposte</button>
-      <button id="bcount">Quanti titoli passano?</button>
-      <span class="note" id="count"></span>
-    </div>
-    <p class="note">Il calcolo scarica prima lo storico di 5 anni dei soli titoli che passano i criteri (può richiedere qualche minuto).</p>
-  </section>
-
-  <section id="res" hidden></section>
+      <p class="row" style="margin:8px 0 2px"><label><input type="checkbox" id="sustainable"> <span class="lt">Solo fondi sostenibili (ESG)<button class="i" data-i="sustainable" type="button">i</button></span></label></p>
+      <p class="row" style="margin:2px 0"><label><input type="checkbox" id="unknown"> <span class="lt">Includi i titoli senza il dato richiesto<button class="i" data-i="unknown" type="button">i</button></span></label></p>
+    </section>
+    <section class="card">
+      <h2>Fondi che passano i criteri</h2>
+      <div id="count" class="hint">…</div>
+      <div class="chips" id="byclass"></div>
+      <div class="tbl" id="cands"></div>
+      <div class="cta"><button class="primary" id="bcalc">Calcola le proposte</button><span class="hint">Scarica lo storico di 5 anni dei fondi analizzati che mancano (può richiedere qualche minuto).</span></div>
+    </section>
+    <section id="res" hidden></section>
+  </div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
@@ -152,8 +174,56 @@ const post = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "ap
 const MULTI = { exchanges: "Borse (preferenza nell'ordine)", types: "Tipo", currencies: "Valuta di negoziazione", distributions: "Distribuzione", regions: "Area", replications: "Replica", domiciles: "Domicilio" };
 const OPTS = { types: ["ETF", "ETC", "ETN/ETP"], currencies: ["EUR", "USD", "GBP", "CHF"], distributions: ["Accumulazione", "Distribuzione"], replications: ["Fisica", "Sintetica"] };
 const FIELDS = ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr", "text", "ter_max", "assets_min", "adv_min", "spread_max", "ret1y_min", "vol_max", "min_years", "pool"];
-let INFO = null, wasBusy = false;
+let INFO = null, wasBusy = false, CANDS = [], sortK = null, sortDir = -1;
 
+/* ---------- spiegazioni: cos'è, come si usa, soglie ---------- */
+const R = () => (INFO && INFO.rules) || { minw: .03, shrink: .5, dr_gain: 1.02, window: 3 };
+const I = (t, what, how, ref) => ({ t, h: `<h3>Cos'è</h3><p>${what}</p><h3>Come si usa</h3><p>${how}</p>` + (ref ? `<h3>Soglie di riferimento</h3>${ref}` : "") });
+const ref = (...l) => l.map(x => `<div class="ref">${x}</div>`).join("");
+const TEXTS = () => ({
+  amount: I("Importo (€)", "La somma che vuoi investire.", "Non cambia i pesi dei titoli: serve a calcolare quanti euro e quante quote intere comprare per ciascuno. Le quote sono intere, quindi avanza sempre un piccolo resto (mostrato). A 0 o vuoto si vedono solo le percentuali."),
+  kmin: I("ETF minimo", "Il numero minimo di ETF del portafoglio.", `Il programma parte da tutti i fondi analizzati e toglie, uno alla volta, quello di peso minore, ma non scende mai sotto questo numero.`, ref("2–3 ETF: portafoglio molto semplice.", "Ogni ETF scelto pesa almeno il " + it(R().minw * 100, 0) + "% (soglia fissa del programma).")),
+  kmax: I("ETF massimo", "Il numero massimo di ETF del portafoglio.", `Si tolgono i fondi di peso minore finché ne restano al massimo questo numero e nessuno pesa meno del ${it(R().minw * 100, 0)}%. Il peso massimo per ETF deve essere almeno 100 ÷ ETF massimo, altrimenti il portafoglio non si può comporre.`, ref("3–5 ETF bastano per un portafoglio semplice (azioni mondo + obbligazioni + oro).", "Oltre 8–10 ETF la diversificazione in più è piccola e la gestione si complica.")),
+  cap: I("Peso massimo per ETF (%)", "La quota massima del portafoglio che un singolo ETF può avere.", "Evita che il portafoglio si concentri su un solo fondo. Più è basso più il portafoglio è distribuito ma meno ottimizzato. Deve essere almeno 100 ÷ ETF massimo.", ref("Predefinito 35%.", "Riferimento: 25–40% per un portafoglio di 4–6 ETF.")),
+  rf: I("Tasso privo di rischio (%)", "Il rendimento annuo di un investimento senza rischio (per esempio un BOT a 12 mesi).", "Entra nel rapporto di Sharpe = (rendimento − tasso) ÷ volatilità: serve alla proposta Sharpe e alla scelta del primo titolo della Bilanciata. L'Aggressiva non lo usa.", ref("Predefinito 2%.", "Metti il rendimento lordo di un titolo di Stato a 1 anno.")),
+  vol_aggr: I("Volatilità massima dell'Aggressivo (%)", "Il limite di oscillazione annua della proposta Aggressiva.", "Il programma cerca il massimo rendimento atteso senza superarlo. Se è più basso della volatilità minima raggiungibile con i titoli scelti, viene portato a quella +5% e te lo dice.", ref("Predefinito 20%.", "Azionario mondiale ≈ 12–18%; obbligazionario europeo ≈ 4–6%; mercati emergenti ≈ 18–25%.")),
+  class_caps: I("Composizione: massimo per classe", "Per ogni classe di attivo (azionario, obbligazionario, materie prime…) la quota massima del portafoglio.", "100 = nessun limite, 0 = classe esclusa dalla ricerca. Valgono per tutte e tre le proposte. Esempio: Azionario 60 e il resto 100 → al massimo 60% di azioni. La somma dei massimi deve essere almeno 100. La classe viene da justETF per i fondi con ISIN verificato, altrimenti è dedotta dal nome (può sbagliare).", ref("Prudente: azionario 40–50%. Bilanciato: 60%. Dinamico: 80–100%.")),
+  text: I("Nome contiene", "Parole da cercare nel nome o nel simbolo del fondo.", "Devono comparire tutte, senza distinguere maiuscole. «world acc» trova i fondi con «World» e «Acc»."),
+  exchanges: I("Borse", "Le borse da cui prendere i titoli.", "Nessuna spunta = tutte quelle presenti nell'archivio. Lo stesso fondo quotato su più borse viene preso una sola volta: si preferisce la quotazione in euro, poi la borsa nell'ordine in cui sono elencate, poi quella con più volume. Con Borsa Italiana eviti il cambio e le commissioni di borse estere."),
+  types: I("Tipo", "ETF = fondo indicizzato quotato; ETC = strumento su materie prime (per esempio oro fisico); ETN/ETP = titolo di debito legato a un indice, spesso con leva o a breve termine.", "Dedotto dal nome. Gli ETN/ETP hanno anche rischio dell'emittente: per un portafoglio di lungo periodo di solito si lasciano fuori.", ref("Portafoglio semplice: solo ETF.")),
+  currencies: I("Valuta di negoziazione", "La valuta in cui si compra il titolo sulla borsa (non quella degli investimenti del fondo).", "I prezzi sono comunque convertiti in euro con i cambi BCE. Scegliere EUR evita il cambio al momento dell'acquisto."),
+  distributions: I("Distribuzione", "Accumulazione: i dividendi sono reinvestiti nel fondo. Distribuzione: sono pagati in contanti.", "Per il calcolo uso prezzi aggiustati per i dividendi, quindi le due versioni sono confrontabili. Dato justETF per i fondi con ISIN verificato, altrimenti dedotto dal nome; i fondi senza il dato si escludono salvo la spunta in fondo ai criteri."),
+  regions: I("Area", "L'area geografica dei titoli del fondo.", "Scegline più d'una per ammetterle tutte. Dato justETF, altrimenti dedotto dal nome; i fondi senza il dato si escludono salvo la spunta in fondo ai criteri.", ref("Mondo = massima diversificazione geografica con un solo fondo.")),
+  replications: I("Replica", "Fisica: il fondo compra davvero i titoli dell'indice (tutti o un campione). Sintetica: usa un contratto swap con una banca.", "La sintetica costa spesso meno e replica bene, ma ha rischio di controparte. Dato justETF, disponibile solo per i fondi con ISIN verificato."),
+  domiciles: I("Domicilio", "Il paese in cui è registrato il fondo.", "Conta per le regole e per la tassazione dei dividendi esteri. Irlanda e Lussemburgo sono i più comuni per gli UCITS. Dato justETF, solo per i fondi con ISIN verificato."),
+  sustainable: I("Solo fondi sostenibili (ESG)", "I fondi che justETF classifica come sostenibili (criteri ESG o SRI).", "È una classificazione del sito, non una certificazione. Dato disponibile solo per i fondi con ISIN verificato."),
+  ter_max: I("TER massimo (%)", "Il costo annuo del fondo in percentuale del patrimonio (Total Expense Ratio).", "Il costo riduce il rendimento ogni anno. I fondi senza il dato si escludono, salvo la spunta in fondo ai criteri.", ref("ETF azionari: sotto 0,20% molto basso · 0,20–0,50% normale · oltre 0,50% alto.", "Obbligazionari e mercati emergenti costano di norma un po' di più.")),
+  assets_min: I("Patrimonio minimo (M€)", "Il patrimonio gestito dal fondo, in milioni di euro.", "I fondi piccoli hanno più rischio di chiusura e spread più larghi. Dato justETF o Yahoo (indicativo).", ref("Sotto 100 M€: rischio di chiusura · sopra 500 M€: solido · i principali superano 5.000 M€.")),
+  adv_min: I("Volume medio minimo (M€/giorno)", "Il controvalore medio scambiato ogni giorno negli ultimi 3 mesi (prezzo × volume), in milioni di euro, su quella borsa.", "Più è alto, più è facile comprare e vendere senza spostare il prezzo.", ref("Sotto 0,1 M€: poco liquido · 0,5–1 M€: accettabile · oltre 5 M€: molto liquido.")),
+  spread_max: I("Spread massimo (%)", "La differenza tra prezzo di acquisto (ask) e di vendita (bid) in percentuale del prezzo, all'ultimo aggiornamento.", "È un costo che paghi a ogni operazione. È una fotografia del momento: fuori orario di borsa può essere anomalo.", ref("Sotto 0,10%: ottimo per ETF grandi · sotto 0,30%: buono · oltre 0,50%: caro.")),
+  ret1y_min: I("Rendimento minimo a 1 anno (%)", "Esclude i fondi con rendimento dell'ultimo anno sotto la soglia.", "Dato justETF (rendimento in euro) o variazione a 52 settimane di Yahoo. Il passato non anticipa il futuro, e scegliere solo i vincitori recenti porta a comprare in alto: usalo per scartare fondi chiaramente in difficoltà.", ref("Per scartare i peggiori: −10% o più.")),
+  vol_max: I("Volatilità massima (%)", "L'oscillazione annua del prezzo (deviazione standard dell'ultimo anno).", "Dato justETF o calcolato dallo storico; viene ricontrollato sullo storico scaricato prima del calcolo.", ref("Obbligazioni a breve 1–3% · obbligazioni 4–8% · azionario mondiale 12–18% · mercati emergenti e settori 18–30% · oltre 30%: speculativo.")),
+  min_years: I("Storia minima (anni)", "Gli anni di prezzi necessari per stimare rischio e correlazioni.", `I fondi più recenti si scartano (data di lancio da justETF o Yahoo, poi controllata sullo storico scaricato). La finestra di calcolo è comune a tutti i titoli scelti: un solo titolo giovane accorcia quella di tutti. Si usano al massimo gli ultimi ${R().window} anni.`, ref("Predefinito 1,5 anni · sotto 1 anno le stime sono molto instabili.")),
+  pool: I("Titoli analizzati (max)", "Quanti fondi, tra quelli che passano i criteri, entrano nel calcolo.", "Sono i più grandi per patrimonio, poi per volume. Per ognuno si scarica lo storico dei prezzi (circa un secondo ciascuno la prima volta): più alto = più completo ma più lento.", ref("Predefinito 150.")),
+  unknown: I("Includi i titoli senza il dato", "Un criterio su un dato che manca (per esempio TER non scaricato) esclude il titolo.", "Con questa spunta i titoli senza il dato passano comunque. Utile quando l'archivio è incompleto; il risultato è meno affidabile. Scarica i dati justETF per ridurre i dati mancanti."),
+  rules: { t: "Come si scelgono i portafogli: criteri e soglie", h: `<h3>1. Quali fondi</h3><p>Passano i criteri di ricerca; si prende un solo titolo per fondo (per ISIN) e al massimo «Titoli analizzati», i più grandi per patrimonio.</p>
+    <h3>2. Dati</h3><p>Prezzi di 5 anni in euro, con i dividendi inclusi; rendimenti a 5 giorni sovrapposti sul periodo in comune ai titoli, al massimo gli ultimi ${R().window} anni (soglia fissa).</p>
+    <h3>3. Stime prudenti</h3><p>I rendimenti storici sono molto rumorosi: per scegliere i pesi si portano per il ${it(R().shrink * 100, 0)}% verso la media dei fondi. I numeri mostrati sono invece quelli storici reali del portafoglio.</p>
+    <h3>4. Sharpe</h3><p>Massimo (rendimento − tasso privo di rischio) ÷ volatilità, solo posizioni lunghe, con peso massimo per ETF e massimi per classe. Si tolgono i fondi di peso minore finché restano al massimo «ETF massimo» e nessuno pesa meno del ${it(R().minw * 100, 0)}%.</p>
+    <h3>5. Bilanciato</h3><p>Si scelgono i fondi che aggiungono più diversificazione (rapporto di diversificazione di Choueifaty–Coignard); ci si ferma al massimo di ETF, o prima se il rapporto migliora meno del ${it((R().dr_gain - 1) * 100, 0)}% (dopo il minimo). Poi ogni fondo contribuisce in modo uguale al rischio (parità di rischio).</p>
+    <h3>6. Aggressivo</h3><p>Massimo rendimento atteso con volatilità non oltre il limite scelto.</p>
+    <h3>7. Acquisto</h3><p>Importi e quote intere al prezzo attuale in euro; avanza un piccolo resto.</p>
+    <div class="ref">Sono simulazioni sul passato, non previsioni né consulenza finanziaria.</div>` },
+  results: I("Come leggere i risultati", "Le cifre storiche del portafoglio sul periodo analizzato.", "Servono a confrontare le tre proposte, non a prevedere il futuro.", ref("<b>Rendimento</b>: annuo storico, in euro, dividendi inclusi.", "<b>Volatilità</b>: oscillazione annua; più bassa = più stabile.", "<b>Sharpe</b>: rendimento oltre il tasso privo di rischio per unità di rischio. Sotto 0,5 debole · 0,5–1 discreto · oltre 1 buono (storico, non garantito).", "<b>Diversificazione</b>: 1 = nessun beneficio; oltre 1,3 buona; oltre 1,6 molto buona.", "<b>Correlazione media</b>: quanto si muovono insieme i fondi; sotto 0,5 buona, vicino a 1 poca protezione.", "<b>TER</b>: costo annuo medio ponderato."))
+});
+let TX = null;
+function showInfo(key) { TX = TX || TEXTS(); const x = TX[key]; if (!x) return; $("itit").textContent = x.t; $("ibody").innerHTML = x.h; $("infobox").hidden = false; $("iclose").focus(); }
+document.body.addEventListener("click", e => { const b = e.target.closest("button.i"); if (b) { e.preventDefault(); e.stopPropagation(); showInfo(b.dataset.i); } });
+$("iclose").onclick = () => { $("infobox").hidden = true; };
+$("infobox").addEventListener("click", e => { if (e.target === $("infobox")) $("infobox").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("infobox").hidden = true; });
+
+/* ---------- impostazioni e schermate ---------- */
 function save() {
   const s = { f: {}, multi: {}, cls: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
   FIELDS.forEach(k => s.f[k] = $(k).value);
@@ -162,20 +232,31 @@ function save() {
   try { localStorage.setItem("mm", JSON.stringify(s)); } catch (e) { }
 }
 function load() { try { return JSON.parse(localStorage.getItem("mm")) || {}; } catch (e) { return {}; } }
+function tab(t) {
+  ["arch", "crea"].forEach(k => { $("t-" + k).hidden = k !== t; document.querySelector(`nav.main [data-t=${k}]`).classList.toggle("on", k === t); });
+  try { localStorage.setItem("mm-tab", t); } catch (e) { }
+  if (t === "crea") search();
+}
+document.querySelector("nav.main").onclick = e => { const b = e.target.closest("button[data-t]"); if (b) tab(b.dataset.t); };
 
 async function init() {
   INFO = await (await fetch("/api/info")).json();
   const s = load();
   $("ex").innerHTML = Object.entries(INFO.exchanges).map(([c, n]) => `<label><input type="checkbox" value="${c}" ${!s.ex || s.ex.includes(c) ? "checked" : ""}> ${esc(n)}</label>`).join("");
-  $("cls").innerHTML = INFO.classes.map(c => `<label>${esc(c)}<input data-c="${esc(c)}" value="${esc((s.cls || {})[c] ?? 100)}"></label>`).join("");
+  $("cls").innerHTML = INFO.classes.map(c => `<label><span class="lt">${esc(c)}</span><input data-c="${esc(c)}" value="${esc((s.cls || {})[c] ?? 100)}"></label>`).join("");
   const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
-  $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note" style="min-width:170px">${lab}</span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}</div>`).join("");
+  $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note lt" style="min-width:220px">${lab}<button class="i" data-i="${k}" type="button">i</button></span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}${k === "domiciles" && !opts[k].length ? '<span class="hint">disponibile dopo «Scarica dati justETF»</span>' : ""}</div>`).join("");
   FIELDS.forEach(k => { if (s.f && s.f[k] != null) $(k).value = s.f[k]; });
   $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable;
-  document.body.addEventListener("change", save); document.body.addEventListener("input", save);
-  showInfo(); poll();
+  let t = null;
+  const later = () => { save(); clearTimeout(t); t = setTimeout(search, 350); };
+  $("t-crea").addEventListener("change", later); $("t-crea").addEventListener("input", later);
+  document.body.addEventListener("change", save);
+  showStats(); poll();
+  let tb = "arch"; try { tb = localStorage.getItem("mm-tab") || "arch"; } catch (e) { }
+  tab(tb);
 }
-function showInfo() {
+function showStats() {
   const t = INFO.stats;
   $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN verificato · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
@@ -187,6 +268,32 @@ function form() {
   FIELDS.filter(k => k !== "text").forEach(k => d[k] = num(d[k]));
   return d;
 }
+
+/* ---------- interrogazione dell'archivio ---------- */
+let seq = 0;
+async function search() {
+  if ($("t-crea").hidden) return;
+  const my = ++seq;
+  $("empty").hidden = INFO.stats.titoli > 0;
+  const r = await post("/api/search", form());
+  if (my !== seq || !r.ok) return;
+  const j = r.j; CANDS = j.rows;
+  $("count").innerHTML = j.titoli ? `<b>${j.n_all}</b> fondi passano i criteri · <b>${j.n_pool}</b> analizzati nel calcolo · ${j.with_history} con storico dei prezzi già scaricato` + (j.n_all > j.n_pool ? ` · gli altri ${j.n_all - j.n_pool} restano fuori (limite «Titoli analizzati»)` : "") : "";
+  $("byclass").innerHTML = Object.entries(j.by_class).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span class="chip">${esc(k)} ${v}</span>`).join("");
+  drawCands(j);
+}
+const COLS = [["symbol", "Simbolo", 0], ["isin", "ISIN", 0], ["name", "Nome", 0], ["asset_class", "Classe", 0], ["region", "Area", 0], ["exchange_name", "Borsa", 0], ["ter", "TER %", 1], ["assets_eur_m", "Patrim. M€", 1],
+              ["adv_eur_m", "Vol. M€/g", 1], ["spread_pct", "Spread %", 1], ["ret_1y", "Rend. 1A %", 1], ["vol_1y", "Vol. 1A %", 1], ["replication", "Replica", 0], ["domicile", "Domicilio", 0], ["hist_n", "Storico", 0]];
+function drawCands(j) {
+  let rows = CANDS.slice();
+  if (sortK) rows.sort((a, b) => { const e = typeof (a[sortK] ?? b[sortK]) === "string" ? "" : -1e18, x = a[sortK] ?? e, y = b[sortK] ?? e; return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
+  $("cands").innerHTML = !rows.length ? "" : `<table><thead><tr>${COLS.map(([k, t, n]) => `<th class="sort ${n ? "n" : ""}" data-k="${k}">${t}${sortK === k ? (sortDir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${esc(r.symbol)}</td><td>${esc(r.isin || "—")}</td><td style="white-space:normal;min-width:240px">${esc(r.name)}</td><td>${esc(r.asset_class || "—")}</td><td>${esc(r.region || "—")}</td><td>${esc(r.exchange_name || "")}</td><td class="n">${it(r.ter)}</td><td class="n">${it(r.assets_eur_m, 0)}</td><td class="n">${it(r.adv_eur_m)}</td><td class="n">${it(r.spread_pct)}</td><td class="n">${it(r.ret_1y, 1)}</td><td class="n">${it(r.vol_1y, 1)}</td><td>${esc(r.replication || "—")}</td><td>${esc(r.domicile || "—")}</td><td>${r.hist_n ? "✓" : ""}</td></tr>`).join("")}
+    </tbody></table>${j && j.n_pool > rows.length ? `<p class="hint">Mostrati i primi ${rows.length} di ${j.n_pool}.</p>` : ""}`;
+}
+$("cands").addEventListener("click", e => { const th = e.target.closest("th.sort"); if (!th) return; sortDir = sortK === th.dataset.k ? -sortDir : -1; sortK = th.dataset.k; drawCands(); });
+
+/* ---------- lavori in corso e avvisi ---------- */
 async function poll() {
   let s;
   try { s = await (await fetch("/api/status")).json(); } catch (e) { return setTimeout(poll, 2000); }
@@ -201,9 +308,10 @@ async function poll() {
   }
   ["bdl", "bq", "bj", "bcalc"].forEach(i => $(i).disabled = s.busy);
   if (wasBusy && !s.busy) {
-    INFO.stats = (await (await fetch("/api/info")).json()).stats; showInfo();
+    const i2 = await (await fetch("/api/info")).json(); INFO.stats = i2.stats; showStats();
     outcome(s);
-    if (s.kind === "propose" && !s.error && s.result) render(s.result);
+    if (s.kind === "propose" && !s.error && s.result) { render(s.result); }
+    search();
   }
   wasBusy = s.busy;
   setTimeout(poll, s.busy ? 600 : 2000);
@@ -227,25 +335,21 @@ $("bdl").onclick = async () => {
 $("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", {}); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
 $("stop").onclick = () => post("/api/cancel");
-$("bcount").onclick = async () => {
-  const r = await post("/api/count", form());
-  $("count").textContent = `${r.j.n} fondi passano i criteri (un titolo per fondo, al massimo ${r.j.pool}); ${r.j.with_history} hanno già lo storico dei prezzi.`;
-};
 $("bcalc").onclick = async () => {
-  if (!INFO.stats.titoli) return alert("L'archivio è vuoto: prima premi «Scarica elenco titoli».");
+  if (!INFO.stats.titoli) return alert("L'archivio è vuoto: prima scarica l'elenco titoli.");
   wasBusy = true; $("res").hidden = true;
   const r = await post("/api/propose", form());
   if (!r.ok) { wasBusy = false; alert(r.j.error || "Un altro lavoro è in corso"); }
 };
 
-function render(R) {
+function render(R_) {
   const box = $("res"); box.hidden = false;
-  if (R.message) { box.innerHTML = `<div class="card err">${esc(R.message)}</div>`; return; }
-  const P = R.proposals;
-  box.innerHTML = `<div class="card"><h2>Proposte di portafoglio</h2>
-    <div class="note">${R.n} fondi analizzati · periodo ${R.from} → ${R.to} (${it(R.years, 1)} anni) · rendimenti a 5 giorni, in EUR, dividendi inclusi · simulazione sul passato, non una previsione né una consulenza</div>
-    ${R.fail.length ? `<p class="err">Proposta non calcolabile con questi vincoli: ${esc(R.fail.join(", "))}</p>` : ""}
-    <div class="tabs">${P.map((p, i) => `<button data-i="${i}">${esc(p.name)}</button>`).join("")}</div><div id="prop"></div></div>`;
+  if (R_.message) { box.innerHTML = `<div class="card err">${esc(R_.message)}</div>`; return; }
+  const P = R_.proposals;
+  box.innerHTML = `<div class="card"><h2>Proposte di portafoglio <button class="i" data-i="results" type="button">i</button> <button class="i" data-i="rules" type="button">i</button></h2>
+    <div class="note">${R_.n} fondi analizzati · periodo ${R_.from} → ${R_.to} (${it(R_.years, 1)} anni) · rendimenti a 5 giorni, in EUR, dividendi inclusi · simulazione sul passato, non una previsione né una consulenza</div>
+    ${R_.fail.length ? `<p class="err">Proposta non calcolabile con questi vincoli: ${esc(R_.fail.join(", "))}</p>` : ""}
+    <div class="tabs">${P.map((p, i) => `<button data-i2="${i}">${esc(p.name)}</button>`).join("")}</div><div id="prop"></div></div>`;
   const show = i => {
     box.querySelectorAll(".tabs button").forEach((b, k) => b.classList.toggle("on", k === i));
     const p = P[i], comp = Object.entries(p.classes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} ${it(v * 100, 0)}%`).join(" · ");
@@ -255,13 +359,13 @@ function render(R) {
       <div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
       ${p.items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}
       </tbody></table></div>
-      ${R.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
+      ${R_.amount ? `<p class="note">Con quote intere: investiti ${it(p.spent)} € su ${it(R_.amount)} €, avanzano ${it(p.cash)} €.</p>` : ""}
       <button id="csv">Scarica CSV</button>`;
     $("csv").onclick = () => {
       const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
       const rows = [["simbolo", "isin", "nome", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(p.items.map(x => [x.symbol, x.isin, x.name, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
       const a = document.createElement("a"); a.download = `portafoglio-${p.name.toLowerCase()}.csv`;
-      a.href = URL.createObjectURL(new Blob(["﻿" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
+      a.href = URL.createObjectURL(new Blob(["\ufeff" + rows.map(r => r.map(q).join(";")).join("\n")], { type: "text/csv" })); a.click();
     };
   };
   box.querySelectorAll(".tabs button").forEach((b, i) => b.onclick = () => show(i));
