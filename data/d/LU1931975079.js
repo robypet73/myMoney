@@ -1,1 +1,0 @@
-window.DX=window.DX||{};window.DX["LU1931975079"]={"countries":[["Francia",18.25],["Stati Uniti",18.07],["Germania",12.08],["Regno Unito",9.07],["Altri",42.53]],"sectors":[["Finanza",44.39],["Industria",7.81],["Servizi di pubblica utilità",7.7],["Beni di consumo non ciclici",7.15],["Altri",32.95]],"source":"https://www.justetf.com/en/etf-profile.html?isin=LU1931975079"};
