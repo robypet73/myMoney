@@ -84,17 +84,39 @@ def select(db, f, today=None):
             best[k] = (score, r)
     rows = [v[1] for v in best.values()]
     rows.sort(key=lambda r: (r["assets_eur_m"] or 0, r["adv_eur_m"] or 0), reverse=True)
-    return rows[: int(f["pool"])] if f["pool"] else rows
+    return pick_pool(rows, f) if f["pool"] else rows
+
+
+MIN_PER_CLASS = 3  # se i massimi per classe limitano il portafoglio, ogni classe ammessa porta almeno questi fondi nel calcolo
+
+
+def pick_pool(rows, f):
+    """I fondi da analizzare: i `pool` più grandi. Se i massimi per classe sono limitati (< 100%), il numero di fondi per classe è proporzionale al massimo
+    (almeno MIN_PER_CLASS): senza questo i fondi più grandi sarebbero tutti di una classe e il portafoglio non si potrebbe comporre."""
+    n = int(f.get("pool") or DEFAULT_FILTERS["pool"])
+    caps = {k: v / 100 for k, v in (f.get("class_caps") or {}).items() if v is not None}
+    if len(rows) <= n or not any(0 < c < 1 for c in caps.values()):
+        return rows[:n]
+    by = {}
+    for r in rows:
+        by.setdefault(r["asset_class"] or "Altro", []).append(r)
+    w = {k: min(caps.get(k, 1.0), 1.0) for k in by}
+    tot = sum(w.values()) or 1.0
+    keep = set()
+    for k, lst in by.items():
+        q = max(MIN_PER_CLASS, round(n * w[k] / tot)) if w[k] > 0 else 0
+        keep.update(r["symbol"] for r in lst[:q])
+    return [r for r in rows if r["symbol"] in keep]
 
 
 def search_summary(db, f):
     """Per la schermata di creazione: tutti i fondi che passano i criteri (senza il limite `pool`), quelli analizzati (primi `pool`) e il conteggio per classe."""
     allr = select(db, {**f, "pool": 0})
-    pool = int(f.get("pool") or DEFAULT_FILTERS["pool"])
+    pool = pick_pool(allr, {**DEFAULT_FILTERS, **f})
     by = {}
     for r in allr:
         by[r["asset_class"] or "Altro"] = by.get(r["asset_class"] or "Altro", 0) + 1
-    return allr, allr[:pool], by
+    return allr, pool, by
 
 
 # ------------------------------------------------------------------ dati per il calcolo

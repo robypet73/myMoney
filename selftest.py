@@ -79,6 +79,12 @@ def main():
         assert len(f) == 1 and f[0]["symbol"] == "T1.MI" and f[0]["n_quotazioni"] == 3 and set(f[0]["quotazioni"].split()) == {"T1.MI", "T1.DE", "T1.L"}, [dict(x) for x in f]
         assert f[0]["ter"] == 0.1 and f[0]["replication"] == "Fisica completa" and "justetf" in f[0]["fonti"] and "openfigi" in f[0]["fonti"]
         assert db.export_csv(os.path.join(d, "fondi.csv")) == db.c.execute("SELECT COUNT(*) FROM fondo").fetchone()[0]
+        # il pool tiene conto dei massimi per classe: senza, i fondi più grandi sarebbero tutti azionari
+        rows = PF.select(db, {"pool": 0})
+        stra = PF.pick_pool(rows, {"pool": 6, "class_caps": {"Azionario": 40, "Obbligazionario": 100, "Materie prime": 100, "Immobiliare": 100}})
+        cls = {r["asset_class"] for r in stra}
+        assert {"Azionario", "Obbligazionario", "Materie prime"} <= cls, cls
+        assert len(PF.pick_pool(rows, {"pool": 6})) == 6  # nessun limite di classe: i più grandi e basta
         print("OK")
 
 

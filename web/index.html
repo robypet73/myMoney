@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem("mm-theme") || "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }</script>
 <title>myMoney</title>
 <style>
 :root { --bg:#f6f7f9; --card:#fff; --fg:#1b1f24; --soft:#6a737d; --line:#e1e4e8; --acc:#1f6feb; --up:#1a7f37; --down:#cf222e; --fs-l:1.25rem; --fs-m:.95rem; --fs-s:.8rem; }
-@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --soft:#8b949e; --line:#30363d; --acc:#58a6ff; --up:#3fb950; --down:#f85149; } }
+/* tema: scuro per impostazione predefinita, si cambia con il pulsante in alto (scelta ricordata) */
+:root[data-theme=light] { color-scheme:light; }
+:root[data-theme=dark] { color-scheme:dark; --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --soft:#8b949e; --line:#30363d; --acc:#58a6ff; --up:#3fb950; --down:#f85149; }
+:root[data-theme=dark] button.primary { color:#0d1117; }
+:root[data-theme=dark] .notice.warn { border-color:#d29922; }
+#theme { position:absolute; top:16px; right:16px; padding:4px 10px; font-size:var(--fs-s); }
+main { position:relative; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--fg); font:var(--fs-m)/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
 main { max-width:1000px; margin:0 auto; padding:16px; }
@@ -76,6 +83,7 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
 </head>
 <body>
 <main>
+  <button id="theme" type="button" aria-label="Cambia tema"></button>
   <h1>myMoney</h1>
   <div class="sub" id="info">…</div>
   <div class="last" id="last"></div>
@@ -204,7 +212,7 @@ const TEXTS = () => ({
   ret1y_min: I("Rendimento minimo a 1 anno (%)", "Esclude i fondi con rendimento dell'ultimo anno sotto la soglia.", "Dato justETF (rendimento in euro) o variazione a 52 settimane di Yahoo. Il passato non anticipa il futuro, e scegliere solo i vincitori recenti porta a comprare in alto: usalo per scartare fondi chiaramente in difficoltà.", ref("Per scartare i peggiori: −10% o più.")),
   vol_max: I("Volatilità massima (%)", "L'oscillazione annua del prezzo (deviazione standard dell'ultimo anno).", "Dato justETF o calcolato dallo storico; viene ricontrollato sullo storico scaricato prima del calcolo.", ref("Obbligazioni a breve 1–3% · obbligazioni 4–8% · azionario mondiale 12–18% · mercati emergenti e settori 18–30% · oltre 30%: speculativo.")),
   min_years: I("Storia minima (anni)", "Gli anni di prezzi necessari per stimare rischio e correlazioni.", `I fondi più recenti si scartano (data di lancio da justETF o Yahoo, poi controllata sullo storico scaricato). La finestra di calcolo è comune a tutti i titoli scelti: un solo titolo giovane accorcia quella di tutti. Si usano al massimo gli ultimi ${R().window} anni.`, ref("Predefinito 1,5 anni · sotto 1 anno le stime sono molto instabili.")),
-  pool: I("Titoli analizzati (max)", "Quanti fondi, tra quelli che passano i criteri, entrano nel calcolo.", "Sono i più grandi per patrimonio, poi per volume. Per ognuno si scarica lo storico dei prezzi (circa un secondo ciascuno la prima volta): più alto = più completo ma più lento.", ref("Predefinito 150.")),
+  pool: I("Titoli analizzati (max)", "Quanti fondi, tra quelli che passano i criteri, entrano nel calcolo.", "Sono i più grandi per patrimonio, poi per volume. Se hai limitato qualche classe (massimo sotto 100), i posti si dividono tra le classi in proporzione al massimo, almeno 3 per classe: così il portafoglio si può comporre anche quando i fondi più grandi sono tutti di una classe. Per ognuno si scarica lo storico dei prezzi (circa un secondo ciascuno la prima volta): più alto = più completo ma più lento.", ref("Predefinito 150.")),
   unknown: I("Includi i titoli senza il dato", "Un criterio su un dato che manca (per esempio TER non scaricato) esclude il titolo.", "Con questa spunta i titoli senza il dato passano comunque. Utile quando l'archivio è incompleto; il risultato è meno affidabile. Scarica i dati justETF per ridurre i dati mancanti."),
   rules: { t: "Come si scelgono i portafogli: criteri e soglie", h: `<h3>1. Quali fondi</h3><p>Passano i criteri di ricerca; si prende un solo titolo per fondo (per ISIN) e al massimo «Titoli analizzati», i più grandi per patrimonio.</p>
     <h3>2. Dati</h3><p>Prezzi di 5 anni in euro, con i dividendi inclusi; rendimenti a 5 giorni sovrapposti sul periodo in comune ai titoli, al massimo gli ultimi ${R().window} anni (soglia fissa).</p>
@@ -222,6 +230,11 @@ document.body.addEventListener("click", e => { const b = e.target.closest("butto
 $("iclose").onclick = () => { $("infobox").hidden = true; };
 $("infobox").addEventListener("click", e => { if (e.target === $("infobox")) $("infobox").hidden = true; });
 document.addEventListener("keydown", e => { if (e.key === "Escape") $("infobox").hidden = true; });
+
+/* ---------- tema ---------- */
+function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem("mm-theme", t); } catch (e) { } $("theme").textContent = t === "dark" ? "☀ Tema chiaro" : "☾ Tema scuro"; }
+$("theme").onclick = () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+setTheme(document.documentElement.dataset.theme);
 
 /* ---------- impostazioni e schermate ---------- */
 function save() {
@@ -346,6 +359,7 @@ function render(R_) {
   const box = $("res"); box.hidden = false;
   if (R_.message) { box.innerHTML = `<div class="card err">${esc(R_.message)}</div>`; return; }
   const P = R_.proposals;
+  if (!P || !P.length) { box.innerHTML = `<div class="card err">Nessuna proposta calcolabile.</div>`; return; }
   box.innerHTML = `<div class="card"><h2>Proposte di portafoglio <button class="i" data-i="results" type="button">i</button> <button class="i" data-i="rules" type="button">i</button></h2>
     <div class="note">${R_.n} fondi analizzati · periodo ${R_.from} → ${R_.to} (${it(R_.years, 1)} anni) · rendimenti a 5 giorni, in EUR, dividendi inclusi · simulazione sul passato, non una previsione né una consulenza</div>
     ${R_.fail.length ? `<p class="err">Proposta non calcolabile con questi vincoli: ${esc(R_.fail.join(", "))}</p>` : ""}

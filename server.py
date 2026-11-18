@@ -223,6 +223,14 @@ def make_handler(path, job):
                     if ds is None:
                         return {"message": "Servono almeno 2 titoli con storico sufficiente: abbassa «Storia minima» o allarga i criteri."}
                     out, fail = PF.propose(ds, **p)
+                    if not out:
+                        caps = {k: v for k, v in p["caps"].items() if v < 1.0}
+                        room = PF.capacity(list(range(len(ds.cls))), ds.cls, caps, p["cap"])
+                        if room < 1:
+                            have = ", ".join(sorted(set(ds.cls)))
+                            return {"message": f"I {len(ds.rows)} fondi analizzati sono di classi ({have}) che i massimi per classe limitano al {room * 100:.0f}% del portafoglio: "
+                                               "alza i massimi o allarga i criteri (per esempio togli il limite di patrimonio o volume) così entrano fondi delle altre classi."}
+                        return {"message": "Nessuna proposta calcolabile con questi vincoli (" + ", ".join(fail) + "): prova ad alzare il peso massimo per ETF o il numero massimo di ETF."}
                     return {"proposals": out, "fail": fail, "n": len(ds.rows), "from": ds.dates[0], "to": ds.dates[-1], "years": ds.years, "amount": p["amount"]}
 
                 ok = job.start("propose", run)
