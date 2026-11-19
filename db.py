@@ -60,13 +60,34 @@ class DB:
         for col in COLS:  # database creato da una versione precedente: aggiunge le colonne nuove
             if col not in have:
                 self.c.execute(f"ALTER TABLE etf ADD COLUMN {col}")
+        self._legacy_cleanup()
         self.c.execute("DROP VIEW IF EXISTS fondo")
         self.c.execute(VIEW)
         self.c.execute("CREATE INDEX IF NOT EXISTS etf_group ON etf(group_key)")
         self.c.execute("CREATE INDEX IF NOT EXISTS etf_isin ON etf(isin)")
 
+    def _legacy_cleanup(self):
+        """Un archivio creato da una versione che assegnava gli ISIN per ipotesi (dal nome) ha dati justETF copiati su titoli sbagliati. Quegli ISIN diventano ipotesi
+        (`isin_guess`) e tutto ciò che poteva venire da justETF su quei titoli si azzera: i dati di Yahoo tornano con il prossimo «Scarica titoli», gli altri solo
+        dopo la verifica dell'ISIN."""
+        if self.c.execute("SELECT 1 FROM etf WHERE isin IS NOT NULL AND isin_src IS NULL LIMIT 1").fetchone():
+            self.c.execute("UPDATE etf SET isin_guess=COALESCE(isin_guess, isin) WHERE isin IS NOT NULL AND isin_src IS NULL")
+            self.c.execute("""UPDATE etf SET isin=NULL, replication=NULL, domicile=NULL, n_holdings=NULL, sustainable=NULL, div_yield=NULL, class_src=NULL, stats_src=NULL,
+                ter=NULL, assets=NULL, assets_eur_m=NULL, ret_1y=NULL, ret_3y=NULL, ret_5y=NULL, vol_1y=NULL, vol_3y=NULL, max_dd=NULL, inception=NULL, holdings=NULL, sectors=NULL
+                WHERE isin IS NOT NULL AND isin_src IS NULL""")
+            self.c.commit()
+
     def close(self):
         self.c.close()
+
+    def snapshot(self, dest):
+        """Copia coerente del database in `dest` (anche mentre è in uso)."""
+        self.c.commit()
+        out = sqlite3.connect(dest)
+        try:
+            self.c.backup(out)
+        finally:
+            out.close()
 
     # ---- anagrafica ----
     def upsert(self, symbol, **kw):
@@ -84,11 +105,12 @@ class DB:
     def all(self, where="1", args=()):
         return self.c.execute(f"SELECT * FROM etf WHERE {where}", args).fetchall()
 
-    def update_group(self, group_key, **kw):
-        """Dati del fondo (TER, patrimonio, composizione…) uguali per tutte le quotazioni dello stesso fondo."""
+    def update_group(self, group_key, isin=None, **kw):
+        """Dati del fondo (TER, patrimonio, composizione…) uguali per tutte le quotazioni dello stesso fondo: stesso nome, e mai su un ISIN verificato diverso
+        (classi di azioni con lo stesso nome sono fondi diversi)."""
         kw = {k: v for k, v in kw.items() if k in COLS}
         if kw and group_key:
-            self.c.execute(f"UPDATE etf SET {', '.join(k + '=?' for k in kw)} WHERE group_key=?", [*kw.values(), group_key])
+            self.c.execute(f"UPDATE etf SET {', '.join(k + '=?' for k in kw)} WHERE group_key=? AND (isin IS NULL OR isin IS ?)", [*kw.values(), group_key, isin])
 
     # ---- justETF ----
     JCOLS = ["name", "ticker", "cur", "aum", "ter", "dist", "repl", "dom", "inc", "n", "sust", "div", "r1", "r3", "r5", "vol1", "vol3", "dd", "asset", "region"]
@@ -176,7 +198,8 @@ class DB:
     def fill_groups(self):
         """TER, patrimonio e data di lancio, noti per una quotazione, valgono per tutte le quotazioni dello stesso fondo."""
         for col, agg in (("ter", "MAX(t.ter)"), ("assets_eur_m", "MAX(t.assets_eur_m)"), ("inception", "MIN(t.inception)")):
-            self.c.execute(f"UPDATE etf SET {col}=(SELECT {agg} FROM etf t WHERE t.group_key=etf.group_key) WHERE {col} IS NULL AND group_key IS NOT NULL AND group_key<>''")
+            self.c.execute(f"UPDATE etf SET {col}=(SELECT {agg} FROM etf t WHERE t.group_key=etf.group_key) WHERE {col} IS NULL AND group_key IS NOT NULL AND group_key<>'' "
+                           "AND (SELECT COUNT(DISTINCT t.isin) FROM etf t WHERE t.group_key=etf.group_key AND t.isin IS NOT NULL) <= 1")
 
     def stats(self):
         q = lambda s: self.c.execute(s).fetchone()[0]

@@ -106,6 +106,24 @@ class JustETF:
             self.sleep(1)
         return out, total
 
+    @staticmethod
+    def parse_row(x):
+        pol = x.get("distributionPolicy") or ""
+        return {"isin": x.get("isin"), "name": x.get("name"), "ticker": x.get("ticker") or None, "cur": (re.sub(r"<.*", "", x.get("fundCurrency") or "").strip() or None), "aum": f(x.get("fundSize")), "ter": f(x.get("ter")),
+                "dist": "Accumulazione" if re.search("accum|capital", pol, re.I) else "Distribuzione" if re.search("distrib", pol, re.I) else None,
+                "repl": repl(x.get("replicationMethod")), "dom": COUNTRY.get(x.get("domicileCountry"), x.get("domicileCountry") or None), "inc": date(x.get("inceptionDate")),
+                "n": int(f(x.get("numberOfHoldings"))) if f(x.get("numberOfHoldings")) else None, "sust": 1 if x.get("sustainable") == "Yes" else 0, "div": f(x.get("currentDividendYield")),
+                "r1": f(x.get("yearReturnCUR")), "r3": ann(f(x.get("threeYearReturnCUR")), 3), "r5": ann(f(x.get("fiveYearReturnCUR")), 5), "vol1": f(x.get("yearVolatilityCUR")),
+                "vol3": f(x.get("threeYearVolatilityCUR")), "dd": f(x.get("maxDrawdownCUR"))}
+
+    def by_isin(self, isin):
+        """La riga justETF di un solo ISIN (una chiamata), o None."""
+        rows_, _ = self._all(f"search=ETFS&query={isin}", step=10)
+        for x in rows_:
+            if x.get("isin") == isin:
+                return self.parse_row(x)
+        return None
+
     def catalog(self, progress=None):
         """Tutti gli ETF dello screener: lista di dict con i campi dello screener più asset_class e region dai filtri."""
         rows_, total = self._all(progress=progress)
@@ -127,11 +145,7 @@ class JustETF:
             if not isin or isin in seen:
                 continue
             seen.add(isin)
-            pol = x.get("distributionPolicy") or ""
-            out.append({"isin": isin, "name": x.get("name"), "ticker": x.get("ticker") or None, "cur": x.get("fundCurrency") or None, "aum": f(x.get("fundSize")), "ter": f(x.get("ter")),
-                        "dist": "Accumulazione" if re.search("accum|capital", pol, re.I) else "Distribuzione" if re.search("distrib", pol, re.I) else None,
-                        "repl": repl(x.get("replicationMethod")), "dom": COUNTRY.get(x.get("domicileCountry"), x.get("domicileCountry") or None), "inc": date(x.get("inceptionDate")),
-                        "n": int(f(x.get("numberOfHoldings"))) if f(x.get("numberOfHoldings")) else None, "sust": 1 if x.get("sustainable") == "Yes" else 0, "div": f(x.get("currentDividendYield")),
-                        "r1": f(x.get("yearReturnCUR")), "r3": ann(f(x.get("threeYearReturnCUR")), 3), "r5": ann(f(x.get("fiveYearReturnCUR")), 5), "vol1": f(x.get("yearVolatilityCUR")),
-                        "vol3": f(x.get("threeYearVolatilityCUR")), "dd": f(x.get("maxDrawdownCUR")), "asset": asset.get(isin), "region": region.get(isin)})
+            row = self.parse_row(x)
+            row["asset"], row["region"] = asset.get(isin), region.get(isin)
+            out.append(row)
         return out

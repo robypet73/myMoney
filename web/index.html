@@ -102,6 +102,10 @@ button.danger { color:var(--down); border-color:var(--down); }
 .ss input[type=range] { width:100%; accent-color:var(--acc); margin:4px 0 0; }
 .cov { margin:10px 0 2px; }
 .grid2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:4px 26px; }
+details.chkf { border:1px solid var(--line); border-radius:8px; margin:8px 0; padding:6px 10px; }
+details.chkf summary { cursor:pointer; }
+details.chkf.fail { border-color:var(--down); } details.chkf.warn { border-color:#d29922; }
+.st-ok { color:var(--up); } .st-warn { color:#d29922; } .st-fail { color:var(--down); } .st-skip { color:var(--soft); }
 th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
 #cands { max-height:480px; overflow:auto; }
 .cta { position:sticky; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 14px; margin:12px -14px -14px; border-radius:0 0 10px 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
@@ -149,22 +153,20 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
   <!-- ============ ARCHIVIO ============ -->
   <div id="t-arch">
     <section class="card">
-      <h2>Archivio titoli (Yahoo Finance)</h2>
-      <div class="row" id="ex"></div>
-      <p class="row"><label><input type="checkbox" id="det"> Scarica anche le schede dei fondi (TER, patrimonio, composizione): molto più lento, si può interrompere e riprendere</label></p>
-      <p class="row"><label><input type="checkbox" id="dlhist"> Scarica anche lo storico dei prezzi di tutti i fondi (rendimenti, volatilità…): lungo, si può interrompere e riprendere</label></p>
-      <div class="row">
-        <button class="primary" id="bdl">Scarica elenco titoli</button>
-        <button id="bq">Aggiorna prezzi attuali</button>
-        <a class="btn" href="/api/export">Scarica il CSV</a>
-      </div>
-      <h2 style="margin-top:16px">Storico dei prezzi e rendimenti</h2>
-      <p class="note" style="margin:0 0 6px">5 anni di prezzi giornalieri in euro (dividendi inclusi) per tutti i fondi dell'archivio, dai più grandi: servono per rendimenti a 1, 3 e 5 anni, volatilità, perdita massima e per i portafogli. La prima volta è lungo (circa un secondo a titolo: una quarantina di minuti per Borsa Italiana, ore per tutte le borse) ma si può interrompere e riprendere. <b>Le volte successive scarica solo i giorni nuovi</b> e riallinea i dividendi usciti nel frattempo.</p>
-      <p class="row" style="margin:4px 0"><label><input type="checkbox" id="allq"> Tutte le quotazioni (non solo la preferita di ogni fondo)</label></p>
-      <div class="row"><button class="primary" id="bh">Scarica o aggiorna lo storico dei prezzi</button><span class="hint" id="hstat"></span></div>
-      <h2 style="margin-top:16px">Dati justETF</h2>
-      <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
-      <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
+      <h2>Archivio titoli</h2>
+      <p class="note" style="margin:0 0 8px">Se non c'è ancora un archivio lo crea da zero; se c'è già lo aggiorna in modo incrementale (solo ciò che è nuovo o cambiato). La prima volta può durare ore: si può interrompere e riprendere.</p>
+      <div class="row"><button class="primary" id="bdl">Scarica titoli</button><span class="hint" id="hstat"></span></div>
+    </section>
+    <section class="card">
+      <h2>Controllo dei dati</h2>
+      <p class="note" style="margin:0 0 8px">Prende 15 fondi a caso dall'archivio e confronta ogni informazione con fonti indipendenti scaricate in questo momento (Yahoo, justETF, registro ESMA, OpenFIGI) e con la coerenza interna (storico, quotazioni su più borse, ISIN). Non corregge nulla: ti dice dove i dati non tornano.</p>
+      <div class="row"><button id="bchk">Controllo a campione</button></div>
+      <div id="chk"></div>
+    </section>
+    <section class="card">
+      <h2>Archivio tra computer</h2>
+      <p class="note" style="margin:0 0 8px">Esporta in un file zip l'archivio e i portafogli salvati, e importalo su un altro computer: poi «Scarica titoli» aggiorna solo il nuovo. L'importazione sostituisce l'archivio attuale (ne tiene una copia accanto).</p>
+      <div class="row"><a class="btn" href="/api/db/export" id="bexp">Esporta archivio</a><button id="bimp">Importa archivio…</button><a class="btn" href="/api/export">Esporta CSV</a><input type="file" id="fimp" accept=".zip,.db,.sqlite" hidden></div>
     </section>
   </div>
 
@@ -336,7 +338,7 @@ setTheme(document.documentElement.dataset.theme);
 
 /* ---------- impostazioni e schermate ---------- */
 function save() {
-  const s = { v: 2, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked, dlhist: $("dlhist").checked, allq: $("allq").checked };
+  const s = { v: 2, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked };
   document.querySelectorAll(".ss").forEach(el => s.ss[el.dataset.k] = el.querySelector("input").value);
   document.querySelectorAll(".rs").forEach(el => s.rs[el.dataset.k] = [el.querySelector(".lo").value, el.querySelector(".hi").value]);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
@@ -354,11 +356,10 @@ document.querySelector("nav.main").onclick = e => { const b = e.target.closest("
 async function init() {
   INFO = await (await fetch("/api/info")).json();
   const s = load();
-  $("ex").innerHTML = Object.entries(INFO.exchanges).map(([c, n]) => `<label><input type="checkbox" value="${c}" ${!s.ex || s.ex.includes(c) ? "checked" : ""}> ${esc(n)}</label>`).join("");
   const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
   $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note lt" style="min-width:220px">${lab}<button class="i" data-i="${k}" type="button">i</button></span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}${k === "domiciles" && !opts[k].length ? '<span class="hint">disponibile dopo «Scarica dati justETF»</span>' : ""}</div>`).join("");
   buildCrea(s);
-  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("dlhist").checked = !!s.dlhist; $("allq").checked = !!s.allq; $("sustainable").checked = !!s.sustainable;
+  $("unknown").checked = !!s.unknown; $("sustainable").checked = !!s.sustainable;
   let t = null;
   const later = () => { save(); clearTimeout(t); t = setTimeout(search, 350); };
   $("t-crea").addEventListener("input", e => {
@@ -374,7 +375,7 @@ async function init() {
 }
 function showStats() {
   const t = INFO.stats;
-  $("hstat").textContent = t.con_storico ? `${t.con_storico} titoli con storico` + (t.storico_al ? `, aggiornato al ${t.storico_al}` : "") : "nessun storico scaricato";
+  $("hstat").textContent = t.titoli ? `${t.fondi} fondi · ${t.con_storico} con storico dei prezzi` + (t.storico_al ? ` (fino al ${t.storico_al})` : "") + (t.ultimo ? ` · elenco del ${t.ultimo.slice(0, 10)}` : "") : "archivio vuoto: premi «Scarica titoli»";
   $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN verificato · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
 function form() {
@@ -418,7 +419,7 @@ $("cands").addEventListener("click", e => { const th = e.target.closest("th.sort
 async function poll() {
   let s;
   try { s = await (await fetch("/api/status")).json(); } catch (e) { return setTimeout(poll, 2000); }
-  $("wait").hidden = !s.busy;
+  if (!UPL) $("wait").hidden = !s.busy;
   if (s.busy) {
     $("wtext").textContent = s.text;
     $("pbar").classList.toggle("ind", !s.total);
@@ -427,11 +428,12 @@ async function poll() {
     $("wlog").textContent = s.log.slice(-6).join("\n");
     $("wlog").hidden = !s.log.length;
   }
-  ["bdl", "bq", "bj", "bh", "bcalc"].forEach(i => $(i).disabled = s.busy); if ($("bret")) $("bret").disabled = s.busy;
+  ["bdl", "bchk", "bcalc"].forEach(i => $(i).disabled = s.busy); if ($("bret")) $("bret").disabled = s.busy;
   if (wasBusy && !s.busy) {
     const i2 = await (await fetch("/api/info")).json(); INFO.stats = i2.stats; showStats();
     outcome(s);
     if (s.kind === "propose" && !s.error && s.result) { render(s.result); }
+    if (s.kind === "check" && !s.error && s.result) renderCheck(s.result);
     search();
   }
   wasBusy = s.busy;
@@ -448,14 +450,33 @@ function outcome(s) {
   $("notice").hidden = false;
 }
 $("nclose").onclick = () => { $("notice").hidden = true; };
-$("bdl").onclick = async () => {
-  const ex = [...document.querySelectorAll("#ex input:checked")].map(x => x.value);
-  if (!ex.length) return alert("Scegli almeno una borsa");
-  wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked, history: $("dlhist").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
+$("bdl").onclick = async () => { wasBusy = true; const r = await post("/api/sync"); if (!r.ok) { wasBusy = false; alert(r.j.error || "Un altro lavoro è in corso"); } };
+$("bchk").onclick = async () => { wasBusy = true; $("chk").innerHTML = ""; const r = await post("/api/check"); if (!r.ok) { wasBusy = false; alert(r.j.error || "Un altro lavoro è in corso"); } };
+// importazione dell'archivio: il file si carica così com'è (anche centinaia di MB) e sostituisce quello attuale
+let UPL = false;
+$("bimp").onclick = () => $("fimp").click();
+$("fimp").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  if (!confirm(`Importare «${f.name}»? Sostituisce l'archivio attuale (ne resta una copia accanto, «.prima-dell-importazione»).`)) return;
+  UPL = true; $("wait").hidden = false; $("wtext").textContent = "Carico e controllo l'archivio…"; $("pbar").classList.add("ind"); $("wsub").textContent = ""; $("wlog").hidden = true; $("stop").disabled = true;
+  try {
+    const r = await fetch("/api/db/import", { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: f }), j = await r.json();
+    UPL = false; $("wait").hidden = true; $("stop").disabled = false;
+    if (!r.ok) return notice("bad", "Importazione non riuscita", `<p class="err">${esc(j.error || "errore")}</p><p class="note">L'archivio attuale non è stato toccato.</p>`);
+    INFO = await (await fetch("/api/info")).json(); showStats(); search();
+    notice("", "Archivio importato", `<p>${j.stats.titoli_importati} titoli importati (${j.stats.con_storico} con storico${j.stats.storico_al ? ", aggiornato al " + esc(j.stats.storico_al) : ""}).</p><p class="note">Ora «Scarica titoli» aggiorna solo ciò che è cambiato da allora.</p>${j.stats.portafogli_aggiunti ? `<p class="note">Portafogli salvati aggiunti: ${j.stats.portafogli_aggiunti}.</p>` : ""}`);
+  } catch (err) { UPL = false; $("wait").hidden = true; $("stop").disabled = false; notice("bad", "Importazione non riuscita", `<p class="err">${esc(String(err))}</p>`); }
 };
-$("bh").onclick = async () => { wasBusy = true; const r = await post("/api/history", { all_listings: $("allq").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
-$("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", {}); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
-$("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
+function notice(cls, title, html) { $("noticebox").className = "dlg notice " + cls; $("ntitle").textContent = title; $("nbody").innerHTML = html; $("notice").hidden = false; }
+// rapporto del controllo a campione
+const ICON = { ok: "✔", warn: "⚠", fail: "✖", skip: "–" };
+function renderCheck(R) {
+  const c = R.checks;
+  $("chk").innerHTML = `<p style="margin:12px 0 4px"><b>${R.n}</b> fondi controllati a caso: <span class="st-ok"><b>${R.funds_ok}</b> senza problemi</span> · <span class="st-warn"><b>${R.funds_warn}</b> con avvisi</span> · <span class="st-fail"><b>${R.funds_fail}</b> con errori</span>.
+    Controlli: ${c.ok} riusciti, ${c.warn} avvisi, ${c.fail} errori, ${c.skip} non verificabili.</p><p class="hint">Rapporto completo salvato in ${esc(R.file || "")} (seme ${R.seed}, ${esc(R.at)}).</p>` +
+    R.funds.map(f => `<details class="chkf ${f.status}" ${f.status === "ok" || f.status === "skip" ? "" : "open"}><summary><span class="st-${f.status}">${ICON[f.status]}</span> <b>${esc(f.symbol)}</b> ${esc(f.isin || "senza ISIN")} · ${esc(f.name)} · ${esc(f.exchange || "")}</summary>
+      <div class="tbl"><table><thead><tr><th></th><th>Controllo</th><th>Esito</th><th>Fonte</th></tr></thead><tbody>${f.checks.map(k => `<tr><td class="st-${k.status}">${ICON[k.status]}</td><td style="white-space:normal">${esc(k.check)}</td><td style="white-space:normal">${esc(k.detail)}</td><td>${esc(k.source || "")}</td></tr>`).join("")}</tbody></table></div></details>`).join("");
+}
 $("stop").onclick = () => post("/api/cancel");
 $("bcalc").onclick = async () => {
   if (!INFO.stats.titoli) return alert("L'archivio è vuoto: prima scarica l'elenco titoli.");

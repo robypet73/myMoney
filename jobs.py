@@ -149,7 +149,7 @@ def download_details(db, y, limit=None, progress=nop, max_age_days=60):
             if d.get("assets"):
                 upd["assets_eur_m"] = d["assets"] * fx / 1e6
         upd["detail_at"] = now()
-        db.update_group(r["group_key"], **upd)
+        db.update_group(r["group_key"], r["isin"], **upd)
         if i % 25 == 24:
             db.commit()
     db.commit()
@@ -350,3 +350,30 @@ def download_justetf(db, y, jt, figi_key=None, max_figi=None, progress=nop, canc
     if amb:
         y.warn(f"{amb} titoli lasciati senza ISIN per dubbio (simbolo conteso tra più ISIN o nome incoerente)")
     progress(f"ISIN verificati: {ok} titoli su {tot}", 1, 1)
+
+
+def sync_all(db, y, jt, figi_key=None, progress=nop, cancel=None, log=nop, exchanges=None):
+    """Un solo comando: crea l'archivio se non c'è, altrimenti lo aggiorna in modo incrementale. Passi: 1) elenco titoli e prezzi attuali di tutte le borse;
+    2) dati justETF e ISIN verificati (solo i fondi nuovi per le verifiche OpenFIGI); 3) storico dei prezzi (5 anni la prima volta, poi solo i giorni nuovi);
+    4) schede dei fondi (solo quelle mai scaricate o vecchie di oltre 60 giorni). Un passo che fallisce non ferma gli altri: l'errore va negli avvisi."""
+    exchanges = list(exchanges or EXCHANGES)
+    had_data = db.c.execute("SELECT COUNT(*) FROM etf").fetchone()[0] > 0
+    steps = [("Elenco titoli", lambda p: download_catalog(db, y, exchanges, False, None, p)),
+             ("Dati justETF e ISIN", lambda p: download_justetf(db, y, jt, figi_key, None, p, cancel, log)),
+             ("Storico dei prezzi", lambda p: download_history_all(db, y, False, p)),
+             ("Schede dei fondi", lambda p: download_details(db, y, None, p))]
+    failed = []
+    for k, (name, fn) in enumerate(steps):
+        prog = lambda t, d=0, n=0, k=k, name=name: progress(f"Passo {k + 1} di {len(steps)} · {t}", d, n)
+        prog(f"{name}…", 0, 0)
+        try:
+            fn(prog)
+        except Cancelled:
+            raise
+        except RuntimeError as e:
+            db.commit()
+            if k == 0 and not had_data:
+                raise  # senza elenco non c'è niente da fare
+            y.warn(f"{name}: non riuscito ({e}). Quanto già scaricato è salvato; riprova più tardi.")
+            failed.append(name)
+    progress("Archivio aggiornato" + (f" (passi non riusciti: {', '.join(failed)})" if failed else ""), 1, 1)

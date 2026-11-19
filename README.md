@@ -45,13 +45,13 @@ python build.py
 
 Il risultato è in `dist/myMoney` (circa 60 MB; la build richiede 1–2 minuti). **Va costruito su ogni sistema operativo per cui serve**: un `.exe` si crea solo su Windows. Il database `etf.db` viene creato **accanto al programma**, quindi copia o sposta il file insieme al database. Gli stessi comandi della riga di comando valgono senza `python mymoney.py`: `myMoney justetf`, `myMoney esporta`, ecc. Windows e macOS possono avvisare che il programma non è firmato («SmartScreen», «sviluppatore non identificato»): è normale per un programma fatto in casa. Ho provato la build e l'avvio solo su Linux; su Windows e Mac non l'ho provata.
 
-## Prima volta: l'ordine giusto
+## Prima volta
 
-1. **Scarica elenco titoli**: scegli le borse (a Milano, circa 2.300 titoli in meno di un minuto) e premi il pulsante. Compare una clessidra con l'avanzamento.
-2. **Scarica dati justETF** (consigliato): aggiunge ISIN verificati, replica, domicilio, rendimenti, classe e area ufficiali. La prima volta 10–30 minuti per le verifiche OpenFIGI; con una chiave gratuita di openfigi.com bastano pochi minuti. Windows (PowerShell): `$env:OPENFIGI_KEY="la-tua-chiave"`; Windows (Prompt): `set OPENFIGI_KEY=la-tua-chiave`; Mac/Linux: `export OPENFIGI_KEY=la-tua-chiave`, **prima** di lanciare il programma.
-3. **Crea portafoglio**: imposta importo, numero di ETF, massimi per classe e criteri, poi «Calcola le proposte». Il calcolo scarica da solo lo storico dei prezzi dei titoli che passano i criteri (qualche minuto la prima volta).
+1. Premi **Scarica titoli** e lascia lavorare: crea tutto da solo (clessidra con avanzamento, «Annulla» per fermarti; quando riparti riprende da dove era arrivato). La prima volta sono ore, soprattutto per lo storico dei prezzi (circa un secondo a titolo) e per la verifica degli ISIN. **Per accorciare la verifica degli ISIN** (10–30 minuti senza chiave) usa una chiave gratuita di openfigi.com, impostata **prima** di lanciare il programma: Windows (PowerShell) `$env:OPENFIGI_KEY="la-tua-chiave"`; Windows (Prompt) `set OPENFIGI_KEY=la-tua-chiave`; Mac/Linux `export OPENFIGI_KEY=la-tua-chiave`.
+2. Se hai già un archivio creato su un altro computer: **Importa archivio…** con lo zip esportato da lì, poi **Scarica titoli** per aggiornarlo.
+3. **Crea portafoglio**: imposta importo, numero di ETF, massimi per classe e criteri, poi «Calcola le proposte».
 
-I lavori lunghi si possono **annullare** e **riprendere**: quanto già scaricato resta nel database. Per scaricare di notte senza il browser: `python mymoney.py scarica --schede` (tutte le borse e le schede dei fondi, può durare ore) e `python mymoney.py justetf`.
+Per scaricare di notte senza il browser: `python mymoney.py scarica`.
 
 ## Problemi comuni
 
@@ -82,23 +82,36 @@ Il collegamento ISIN ↔ simbolo è quello **verificato** descritto sotto; solo 
 
 ## Uso
 
-1. **Scarica elenco titoli**: tutti gli ETF/ETC/ETN delle borse scelte (Milano, Xetra, Parigi, Amsterdam, Londra, SIX) con nome, tipo, valuta, prezzo, bid, ask, spread, volume medio, TER e patrimonio quando Yahoo li dà, rendimento a 1 anno e data di primo scambio. Circa 2.300 titoli per Milano in meno di un minuto.
-   *Facoltativo*: «Scarica anche le schede dei fondi» aggiunge la composizione (azioni, obbligazioni, liquidità) e completa TER e patrimonio. Una richiesta per fondo: può durare ore, ma si può interrompere e riprendere.
-2. **Storico dei prezzi e rendimenti**: «Scarica o aggiorna lo storico dei prezzi» (o la spunta «Scarica anche lo storico…» insieme all'elenco, o `python mymoney.py storico`) scarica 5 anni di prezzi giornalieri in euro per **tutti i fondi** dell'archivio, dai più grandi, e ne ricava rendimenti a 1/3/5 anni, volatilità e perdita massima, così puoi filtrare a monte per rendimento. La prima volta è lungo (circa un secondo a titolo; una quarantina di minuti per Borsa Italiana) e si può interrompere e riprendere. **Le volte successive scarica solo i giorni nuovi** (con 10 giorni di sovrapposizione): i prezzi aggiustati per i dividendi del passato cambiano quando esce un dividendo, quindi lo storico vecchio viene riallineato sul periodo in comune. Le richieste a Yahoo restano una per titolo, ma sono molto più leggere.
-3. **Aggiorna prezzi attuali**: ultimo prezzo, bid, ask, volume.
-4. **Scarica il CSV**: una riga per fondo con i dati di tutte le fonti (apribile in Excel).
+La schermata **Archivio** ha **un solo pulsante di scaricamento**:
 
-Durante ogni scaricamento compare una **clessidra** con l'avanzamento e «Annulla»; a lavoro finito, un avviso elenca **errori e dati mancanti** (titoli senza prezzo o storico, fonti non raggiungibili, ISIN dubbi). Quanto scaricato resta salvato e si può riprendere.
-5. **Crea portafoglio** (seconda schermata): la pagina interroga il database **mentre cambi i criteri** e mostra subito quanti fondi passano, il conteggio per classe di attivo e la tabella dei fondi (simbolo, ISIN, nome, classe, area, borsa, TER, patrimonio, volume, spread, rendimenti a 1/3/5 anni, volatilità, perdita massima, replica, domicilio, storico già scaricato), ordinabile cliccando sulle intestazioni. **Non si scrive nulla**: tutto si imposta con cursori (a due estremi per gli intervalli) o con selezioni multiple, e **tutti i criteri partono disattivati** (all'estremo del cursore il limite non c'è).
+1. **Scarica titoli**: se non c'è ancora un archivio lo crea da zero; se c'è già lo **aggiorna in modo incrementale** (solo ciò che è nuovo o cambiato). Fa tutto da solo, in quattro passi, su tutte le borse (Milano, Xetra, Parigi, Amsterdam, Londra, SIX): elenco dei titoli e prezzi attuali; dati justETF e ISIN verificati (solo i fondi nuovi per le verifiche OpenFIGI); storico dei prezzi (5 anni la prima volta, poi solo i giorni nuovi, con riallineamento dei dividendi); schede dei fondi (solo quelle mancanti o vecchie di oltre 60 giorni). La prima volta può durare ore (soprattutto storico e verifiche degli ISIN) e si può **interrompere e riprendere**. Un passo che fallisce non ferma gli altri: l'errore compare negli avvisi. Compare una **clessidra** con l'avanzamento e «Annulla»; alla fine un avviso elenca **errori e dati mancanti**.
+2. **Controllo a campione**: prende 15 fondi a caso e confronta ogni informazione con fonti indipendenti scaricate in quel momento, e con la coerenza interna dei dati. Per ogni fondo un elenco di controlli con esito ✔ ⚠ ✖ o «non verificabile»; il rapporto completo si salva in `controlli/`. Non corregge nulla. Vedi sotto.
+3. **Archivio tra computer**: «Esporta archivio» scarica uno zip con il database e i portafogli salvati; «Importa archivio…» lo carica su un altro computer **sostituendo** l'archivio attuale (accanto resta una copia, `etf.db.prima-dell-importazione`, e il file viene controllato prima: se non è valido non si tocca nulla). Dopo l'importazione «Scarica titoli» aggiorna solo il nuovo. «Esporta CSV» dà una riga per fondo con tutti i dati (apribile in Excel).
+4. **Crea portafoglio** (seconda schermata): la pagina interroga il database **mentre cambi i criteri** e mostra subito quanti fondi passano, il conteggio per classe di attivo e la tabella dei fondi (simbolo, ISIN, nome, classe, area, borsa, TER, patrimonio, volume, spread, rendimenti a 1/3/5 anni, volatilità, perdita massima, replica, domicilio, storico già scaricato), ordinabile cliccando sulle intestazioni. **Non si scrive nulla**: tutto si imposta con cursori (a due estremi per gli intervalli) o con selezioni multiple, e **tutti i criteri partono disattivati** (all'estremo del cursore il limite non c'è).
    - **Primo criterio: correlazione e diversificazione.** «Diversificazione minima» e «Correlazione media massima» valgono per tutte le proposte e per la frontiera. Se non si possono raggiungere con i fondi analizzati, la pagina dice il massimo (o minimo) possibile.
    - **Numero di ETF.** Ogni proposta e ogni punto della frontiera ha tra il minimo e il massimo di ETF scelti, ognuno con almeno il 3% di peso: nessun fondo a peso zero.
-   - **Rendimenti storici a monte.** Puoi filtrare per rendimento a 1, 3 e 5 anni, volatilità e perdita massima. La pagina mostra per quanti fondi il dato c'è (viene da justETF, da Yahoo o dallo storico dei prezzi); il pulsante **«Scarica lo storico dei N fondi senza rendimenti»** scarica quello mancante per i fondi che passano gli altri criteri (riprendibile) e calcola i rendimenti.
-   - **Dati puliti.** Gli errori di Yahoo (picchi isolati, frazionamenti non corretti) si correggono; i fondi con movimenti giornalieri oltre il 50% si escludono e così quelli con meno di 2 anni di storia che accorcerebbero il periodo degli altri: la pagina lo segnala.
-   Imposta importo, numero di ETF, peso massimo per ETF, massimi per classe. «Calcola le proposte» scarica lo storico dei prezzi (5 anni, in EUR) dei soli fondi analizzati che mancano e mostra le tre proposte con pesi, importi e quote intere. **Ogni criterio ha la sua «i»** con cos'è, come si usa e le soglie di riferimento; la «i» accanto a «Portafoglio» spiega **come si scelgono i portafogli** e quella delle proposte come leggere i risultati.
-6. **Proposta sulla frontiera efficiente**: dopo il calcolo, le tre proposte (rombi colorati) appaiono sul grafico della **frontiera efficiente** dei loro fondi (rischio sull'asse orizzontale, rendimento storico sul verticale). Muovi il cursore **«Incertezza»** (volatilità), oppure clicca o trascina sul grafico: pesi, importi e quote cambiano subito; clicca un rombo o «Torna alla proposta» per tornare a una proposta. La «i» accanto al titolo spiega come leggerla.
-7. **Salva o elimina**: «Salva con nome…» scrive un file **JSON** nella cartella `portafogli/` accanto al database (nome, descrizione, importo, fonte del punto scelto, periodo dei dati, criteri usati, metriche, posizioni con ISIN, peso, importo, quote e prezzo). «Elimina la proposta» la scarta senza salvare. La schermata **Portafogli salvati** elenca i file, mostra le posizioni, li scarica o li elimina.
+   - **Rendimenti storici a monte.** Si può filtrare per rendimento a 1, 3 e 5 anni, volatilità e perdita massima. La pagina mostra per quanti fondi il dato c'è; per i fondi che passano gli altri criteri ma non hanno lo storico compare «Scarica lo storico dei N fondi senza rendimenti».
+   - **Dati puliti.** Gli errori di Yahoo (picchi isolati, frazionamenti non corretti) si correggono; i fondi con movimenti giornalieri oltre il 50% si escludono, e così quelli con meno di 2 anni di storia che accorcerebbero il periodo degli altri: la pagina lo segnala.
+   Imposta importo, numero di ETF, peso massimo per ETF, massimi per classe. «Calcola le proposte» scarica lo storico dei prezzi che manca e mostra le tre proposte con pesi, importi e quote intere. **Ogni criterio ha la sua «i»** con cos'è, come si usa e le soglie di riferimento.
+5. **Proposta sulla frontiera efficiente**: dopo il calcolo, le tre proposte (rombi colorati) appaiono sul grafico della **frontiera efficiente** dei loro fondi (rischio sull'asse orizzontale, rendimento storico sul verticale). Muovi il cursore **«Incertezza»** (volatilità), oppure clicca o trascina sul grafico: pesi, importi e quote cambiano subito; clicca un rombo o «Torna alla proposta» per tornare a una proposta.
+6. **Salva o elimina**: «Salva con nome…» scrive un file **JSON** nella cartella `portafogli/` accanto al database (nome, descrizione, importo, fonte del punto scelto, periodo dei dati, criteri usati, metriche, posizioni con ISIN, peso, importo, quote e prezzo). «Elimina la proposta» la scarta senza salvare. La schermata **Portafogli salvati** elenca i file, mostra le posizioni, li scarica o li elimina.
 
-Dalla riga di comando (utile per i download lunghi): `python mymoney.py scarica --borse MIL GER --schede`, `aggiorna`, `esporta etf.csv`, `info`.
+Dalla riga di comando (per i download lunghi, anche senza browser): `python mymoney.py scarica` (tutto, come il pulsante), `controlla` (controllo a campione), `backup file.zip` e `ripristina file.zip`, `esporta etf.csv`, `info`. Per un passo solo: `storico`, `justetf`, `aggiorna`.
+
+## Controllo a campione: cosa confronta
+
+Per ognuno dei 15 fondi (in maggioranza con ISIN verificato, alcuni quotati su più borse, alcuni senza ISIN), **con dati scaricati in quel momento**:
+
+| Controllo | Confronto |
+|---|---|
+| ISIN | formato e cifra di controllo; prefisso del paese e domicilio; come è stato verificato |
+| Quotazione | prezzo, valuta e nome contro Yahoo ora |
+| Borsa e ticker | OpenFIGI conferma ticker e borsa; registro ESMA conferma che l'ISIN è attivo su quella borsa |
+| Caratteristiche | TER, patrimonio, rendimento e volatilità a 1 anno, domicilio, replica, distribuzione, data di lancio contro justETF ora |
+| Storico | completezza (buchi, punti attesi), movimenti anomali, aggiornamento, nuovo scarico degli ultimi 60 giorni da Yahoo contro quello salvato (rileva dividendi usciti nel frattempo) |
+| Coerenza | prezzo attuale contro ultima chiusura; stesso fondo su altre borse (prezzo in euro) |
+
+Le fonti non raggiungibili danno «non verificabile», mai ✔. Alcuni scarti sono attesi e segnalati come avvisi, non errori: il rendimento justETF include i dividendi, il TER di Yahoo è poco affidabile, i nomi del registro ESMA sono abbreviati. Il controllo è **a campione**: dice se le fonti concordano su quei fondi, non garantisce tutto l'archivio.
 
 ## ISIN e dati justETF
 

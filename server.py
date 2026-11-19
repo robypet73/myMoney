@@ -2,9 +2,12 @@
 import json
 import os
 import re
+import shutil
+import sqlite3
 import sys
 import tempfile
 import unicodedata
+import zipfile
 import threading
 import time
 import webbrowser
@@ -12,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import classify as C
+import checks
 import jobs
 from justetf import JustETF
 import portfolio as PF
@@ -161,6 +165,79 @@ def pf_list(folder):
     return sorted(out, key=lambda x: x.get("saved_at") or "", reverse=True)
 
 
+# ---------------------------------------------------------------- esportazione e importazione dell'archivio tra computer
+def db_export(path, pf_folder, dest):
+    """Scrive in `dest` uno zip con una copia coerente del database (etf.db) e i portafogli salvati (portafogli/*.json)."""
+    tmp = path + ".snapshot"
+    d = DB(path)
+    try:
+        d.snapshot(tmp)
+    finally:
+        d.close()
+    try:
+        with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+            z.write(tmp, "etf.db")
+            if os.path.isdir(pf_folder):
+                for fn in sorted(os.listdir(pf_folder)):
+                    if re.fullmatch(r"[a-z0-9-]{1,60}\.json", fn):
+                        z.write(os.path.join(pf_folder, fn), "portafogli/" + fn)
+            z.writestr("LEGGIMI.txt", "Archivio myMoney esportato il " + time.strftime("%Y-%m-%d %H:%M:%S") + ".\nSi importa dalla pagina (Archivio > Importa archivio) o con: python mymoney.py ripristina FILE\n")
+    finally:
+        os.remove(tmp)
+
+
+def db_import(path, pf_folder, upload):
+    """Sostituisce il database con quello del file caricato (zip di `db_export` o file SQLite). Prima lo controlla; tiene una copia del database precedente
+    accanto («.prima-dell-importazione»). I portafogli salvati nello zip si aggiungono a quelli presenti (senza sostituirli). Ritorna le statistiche."""
+    tmp = path + ".import"
+    try:
+        if zipfile.is_zipfile(upload):
+            with zipfile.ZipFile(upload) as z:
+                name = next((n for n in z.namelist() if n == "etf.db" or (n.endswith(".db") and "/" not in n)), None)
+                if not name:
+                    raise ValueError("Lo zip non contiene un archivio etf.db")
+                with z.open(name) as src, open(tmp, "wb") as out:
+                    shutil.copyfileobj(src, out, 1 << 20)
+                pfs = [n for n in z.namelist() if re.fullmatch(r"portafogli/[a-z0-9-]{1,60}\.json", n)]
+                payload = {n: z.read(n) for n in pfs}
+        else:
+            shutil.copyfile(upload, tmp)
+            payload = {}
+        try:
+            c = sqlite3.connect(tmp)
+            ok = c.execute("PRAGMA integrity_check").fetchone()[0]
+            tabs = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            cols = {r[1] for r in c.execute("PRAGMA table_info(etf)")} if "etf" in tabs else set()
+            n = c.execute("SELECT COUNT(*) FROM etf").fetchone()[0] if cols else 0
+            c.close()
+        except sqlite3.DatabaseError:
+            raise ValueError("Il file non è un archivio myMoney valido")
+        if ok != "ok" or not {"etf", "prezzi"} <= tabs or "symbol" not in cols:
+            raise ValueError("Il file non è un archivio myMoney valido o è danneggiato")
+        if os.path.exists(path):
+            shutil.copy2(path, path + ".prima-dell-importazione")
+        os.replace(tmp, path)
+        for sfx in ("-wal", "-shm", "-journal"):
+            if os.path.exists(path + sfx):
+                os.remove(path + sfx)
+        added = 0
+        for name, data in payload.items():
+            target = os.path.join(pf_folder, os.path.basename(name))
+            if not os.path.exists(target):
+                os.makedirs(pf_folder, exist_ok=True)
+                open(target, "wb").write(data)
+                added += 1
+        d = DB(path)  # apre e aggiorna lo schema di un archivio creato da una versione precedente
+        try:
+            st = d.stats()
+        finally:
+            d.close()
+        return dict(st, portafogli_aggiunti=added, titoli_importati=n)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
 def jsonable(o):
     if isinstance(o, dict):
         return {k: jsonable(v) for k, v in o.items()}
@@ -214,6 +291,24 @@ def make_handler(path, job):
                 except (ValueError, OSError):
                     return self.send(404, {"error": "portafoglio non trovato"})
                 return self.send(200, data, "application/json", {"Content-Disposition": f'attachment; filename="{os.path.basename(fp)}"'} if q.get("dl") else None)
+            if u == "/api/db/export":
+                if job.status()["busy"]:
+                    return self.send(409, {"error": "Un lavoro è in corso: aspetta che finisca"})
+                dest = path + ".export.zip"
+                try:
+                    db_export(path, folder, dest)
+                    size = os.path.getsize(dest)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/zip")
+                    self.send_header("Content-Length", str(size))
+                    self.send_header("Content-Disposition", f'attachment; filename="myMoney-archivio-{time.strftime("%Y%m%d-%H%M")}.zip"')
+                    self.end_headers()
+                    with open(dest, "rb") as f:
+                        shutil.copyfileobj(f, self.wfile, 1 << 20)
+                finally:
+                    if os.path.exists(dest):
+                        os.remove(dest)
+                return
             if u == "/api/export":
                 db = DB(path)
                 try:
@@ -231,6 +326,27 @@ def make_handler(path, job):
             if origin and urlparse(origin).netloc != self.headers.get("Host"):
                 return self.send(403, {"error": "origine non consentita"})
             n = int(self.headers.get("Content-Length") or 0)
+            if urlparse(self.path).path == "/api/db/import":
+                if job.status()["busy"]:
+                    return self.send(409, {"error": "Un lavoro è in corso: aspetta che finisca"})
+                up = path + ".upload"
+                try:
+                    with open(up, "wb") as f:
+                        left = n
+                        while left > 0:
+                            chunk = self.rfile.read(min(1 << 20, left))
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                            left -= len(chunk)
+                    return self.send(200, {"ok": True, "stats": db_import(path, folder, up)})
+                except ValueError as e:
+                    return self.send(400, {"error": str(e)})
+                except OSError as e:
+                    return self.send(500, {"error": f"Importazione non riuscita: {e}"})
+                finally:
+                    if os.path.exists(up):
+                        os.remove(up)
             try:
                 d = json.loads(self.rfile.read(n) or b"{}")
             except ValueError:
@@ -265,6 +381,25 @@ def make_handler(path, job):
                         jobs.download_history_all(db, y, False, p)
 
                 ok = job.start("download", run)
+                return self.send(200 if ok else 409, {"ok": ok})
+            if u == "/api/sync":
+                key = os.environ.get("OPENFIGI_KEY") or None
+                ok = job.start("sync", lambda db, y, p: jobs.sync_all(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), key, p, job.cancel.is_set, job._log))
+                return self.send(200 if ok else 409, {"ok": ok})
+            if u == "/api/check":
+                key = os.environ.get("OPENFIGI_KEY") or None
+
+                def run(db, y, prog):
+                    rep_ = checks.run(db, y, JustETF(cancel=job.cancel.is_set, log=job._log), 15, prog, None, key)
+                    cf = os.path.join(os.path.dirname(os.path.abspath(path)), "controlli")
+                    os.makedirs(cf, exist_ok=True)
+                    fn = os.path.join(cf, "controllo-" + time.strftime("%Y%m%d-%H%M%S") + ".json")
+                    with open(fn, "w", encoding="utf-8") as f:
+                        json.dump(rep_, f, ensure_ascii=False, indent=1)
+                    rep_["file"] = fn
+                    return rep_
+
+                ok = job.start("check", run)
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/history":
                 allq = bool(d.get("all_listings"))

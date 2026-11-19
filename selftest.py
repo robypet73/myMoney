@@ -144,6 +144,61 @@ def main():
         db.c.execute("UPDATE etf SET hist_to='2020-01-01', hist_at='2020-01-01 00:00:00' WHERE symbol='INC.MI'"); db.commit()
         jobs.download_history(db, fy, ["INC.MI"], max_age_days=0)
         assert fy.calls[-1] is None
+        # archivio tra computer: esporta, importa (con controlli), copia di sicurezza, portafogli
+        import server, zipfile as _zf
+        folder2 = os.path.join(d, "pf2"); os.makedirs(folder2, exist_ok=True)
+        server.pf_save(folder2, {"portfolio": {"name": "Uno", "positions": [{"isin": "X", "weight": 1}]}})
+        z = os.path.join(d, "arch.zip")
+        db.commit(); server.db_export(os.path.join(d, "t.db"), folder2, z)
+        names = _zf.ZipFile(z).namelist()
+        assert "etf.db" in names and "portafogli/uno.json" in names, names
+        other = os.path.join(d, "altro", "etf.db"); os.makedirs(os.path.dirname(other))
+        DB(other).close()
+        st = server.db_import(other, os.path.join(d, "altro", "portafogli"), z)
+        assert st["titoli_importati"] == db.stats()["titoli"] and st["portafogli_aggiunti"] == 1 and os.path.exists(other + ".prima-dell-importazione"), st
+        assert os.path.exists(os.path.join(d, "altro", "portafogli", "uno.json")) and DB(other).stats()["titoli"] == st["titoli_importati"]
+        bad = os.path.join(d, "finto.db"); open(bad, "wb").write(b"questo non e' un archivio")
+        try:
+            server.db_import(other, os.path.join(d, "altro", "portafogli"), bad)
+            raise AssertionError("file non valido accettato")
+        except ValueError:
+            pass
+        assert DB(other).stats()["titoli"] == st["titoli_importati"]  # l'archivio non è stato toccato
+        # controllo a campione: confronti con valori noti
+        import checks
+        assert checks.isin_valid("IE00B4L5Y983") and not checks.isin_valid("IE00B4L5Y984") and not checks.isin_valid("")
+        smp = checks.pick_sample(db, 8, seed=1)
+        assert len(smp) == 8 and len({r["symbol"] for r in smp}) == 8 and [r["symbol"] for r in smp] == [r["symbol"] for r in checks.pick_sample(db, 8, seed=1)]
+        row = db.get("T1.MI")
+        q_ok = {"regularMarketPrice": row["price"] * 1.01, "currency": "EUR", "longName": row["name"]}
+        res = checks.check_fund(db, row, q_ok, None, None, [("IM", "T1")], None, {})
+        st_ = {c["check"]: c["status"] for c in res}
+        assert st_["Prezzo attuale"] == "ok" and st_["Valuta di negoziazione"] == "ok" and st_["ISIN: formato e cifra di controllo"] in ("fail", "ok"), st_
+        res = checks.check_fund(db, row, {"regularMarketPrice": row["price"] * 1.5, "currency": "USD", "longName": "tutt'altro"}, None, None, [("IM", "ALTRO")], None, {})
+        st_ = {c["check"]: c["status"] for c in res}
+        assert st_["Prezzo attuale"] == "fail" and st_["Valuta di negoziazione"] == "fail" and st_["OpenFIGI: ticker e borsa"] == "warn", st_
+        res = checks.check_fund(db, row, None, False, False, None, None, {})
+        # fonti non raggiungibili: «non verificabile», mai «ok» (l'ISIN inventato del test ha la cifra di controllo sbagliata: errore giusto)
+        fails = {c["check"] for c in res if c["status"] == "fail"}
+        assert fails == {"ISIN: formato e cifra di controllo", "Stesso fondo su Xetra (T1.DE)", "Stesso fondo su Londra (T1.L)"}, fails  # i prezzi inventati sulle altre borse non tornano: giusto
+        assert {c["check"] for c in res if c["status"] == "skip"} >= {"Prezzo, valuta e nome", "OpenFIGI: ticker e borsa", "justETF"}
+        # archivio di una versione precedente (ISIN assegnati per nome): gli ISIN non verificati e i dati copiati su quei titoli si azzerano all'apertura
+        leg = os.path.join(d, "legacy.db")
+        ld = DB(leg)
+        ld.upsert("A.MI", name="Fondo A", isin="IE0000000099", ter=0.07, replication="Fisica", domicile="Irlanda", currency="EUR", price_eur=1.0)
+        ld.upsert("B.MI", name="Fondo B", isin="IE0000000098", isin_src="figi", ter=0.2, currency="EUR", price_eur=1.0)
+        ld.commit(); ld.close()
+        ld = DB(leg)
+        a_, b_ = ld.get("A.MI"), ld.get("B.MI")
+        assert a_["isin"] is None and a_["isin_guess"] == "IE0000000099" and a_["ter"] is None and a_["replication"] is None, dict(a_)
+        assert b_["isin"] == "IE0000000098" and b_["ter"] == 0.2  # quello verificato non si tocca
+        # i dati di una scheda non passano a un altro ISIN con lo stesso nome
+        ld.upsert("C.MI", name="Stesso nome", group_key="stesso nome", isin="IE0000000001", isin_src="figi", currency="EUR")
+        ld.upsert("C.DE", name="Stesso nome", group_key="stesso nome", isin="IE0000000002", isin_src="figi", currency="EUR")
+        ld.upsert("C.L", name="Stesso nome", group_key="stesso nome", currency="EUR")
+        ld.update_group("stesso nome", "IE0000000001", ter=0.5)
+        assert ld.get("C.MI")["ter"] == 0.5 and ld.get("C.DE")["ter"] is None and ld.get("C.L")["ter"] == 0.5
+        ld.close()
         # un fondo giovane non accorcia il periodo di tutti: si esclude e lo si dice
         db.upsert("YOUNG.MI", name="Fondo giovane", exchange="MIL", currency="EUR", price_eur=10.0, asset_class="Azionario")
         import numpy as _np

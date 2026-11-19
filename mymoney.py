@@ -3,7 +3,9 @@
 
     python mymoney.py                       apre la pagina nel browser (http://127.0.0.1:8765)
     python mymoney.py --db DATI.db          usa un altro file di database
-    python mymoney.py scarica [--borse MIL GER ...] [--schede] [--max-schede N]
+    python mymoney.py scarica               crea l'archivio o lo aggiorna in modo incrementale (tutto)
+    python mymoney.py controlla             controllo a campione dei dati con altre fonti online
+    python mymoney.py backup [file.zip]     esporta archivio e portafogli;  ripristina FILE: li importa
     python mymoney.py justetf [--max-figi N]   justETF e ISIN verificati
     python mymoney.py storico [--tutte]     storico dei prezzi: 5 anni la prima volta, poi solo i giorni nuovi
     python mymoney.py aggiorna              prezzi attuali, bid, ask
@@ -29,11 +31,15 @@ def cli(argv):
     p.add_argument("--porta", type=int, default=8765)
     p.add_argument("--no-browser", action="store_true", help="non aprire il browser")
     sub = p.add_subparsers(dest="cmd")
-    s = sub.add_parser("scarica", help="elenco di tutti i titoli delle borse scelte")
+    s = sub.add_parser("scarica", help="crea l'archivio se non c'è, altrimenti lo aggiorna in modo incrementale (tutto: elenco, justETF e ISIN, storico, schede)")
     s.add_argument("--borse", nargs="+", default=list(EXCHANGES), choices=list(EXCHANGES), metavar="BORSA", help="codici Yahoo: " + " ".join(EXCHANGES))
-    s.add_argument("--schede", action="store_true", help="scarica anche la scheda di ogni fondo (TER, patrimonio, composizione): lento, riprendibile")
-    s.add_argument("--max-schede", type=int, help="al massimo N schede (i fondi più scambiati)")
-    s.add_argument("--storico", action="store_true", help="scarica anche lo storico dei prezzi di tutti i fondi (lento; poi solo i giorni nuovi)")
+    s.add_argument("--chiave-figi", default=os.environ.get("OPENFIGI_KEY"), help="chiave gratuita OpenFIGI (con la chiave le verifiche degli ISIN sono molto più rapide)")
+    c = sub.add_parser("controlla", help="controllo a campione: confronta 15 fondi a caso con altre fonti online")
+    c.add_argument("-n", type=int, default=15)
+    b = sub.add_parser("backup", help="esporta l'archivio e i portafogli salvati in uno zip da portare su un altro computer")
+    b.add_argument("file", nargs="?", default="myMoney-archivio.zip")
+    rs = sub.add_parser("ripristina", help="importa un archivio esportato (zip o file .db) sostituendo quello attuale")
+    rs.add_argument("file")
     h = sub.add_parser("storico", help="scarica o aggiorna lo storico dei prezzi (5 anni la prima volta, poi solo i giorni nuovi)")
     h.add_argument("--tutte", action="store_true", help="tutte le quotazioni, non solo la preferita di ogni fondo")
     j = sub.add_parser("justetf", help="justETF + ISIN verificati (Xetra, OpenFIGI) e dati abbinati ai titoli")
@@ -47,14 +53,42 @@ def cli(argv):
     if not a.cmd:
         import server
         return server.run(a.db, a.porta, not a.no_browser)
+    if a.cmd in ("backup", "ripristina"):  # prima di aprire il database: un file aperto non si può sostituire (Windows)
+        import server
+        pf = os.path.join(os.path.dirname(os.path.abspath(a.db)), "portafogli")
+        if a.cmd == "backup":
+            server.db_export(a.db, pf, a.file)
+            print("Archivio esportato in", a.file)
+        else:
+            try:
+                print(server.db_import(a.db, pf, a.file))
+            except ValueError as e:
+                print("Errore:", e)
+                return 1
+        return 0
     db = DB(a.db)
     show = lambda t, d=0, n=0: print("\r" + t.ljust(70), end="", flush=True)
     y = Yahoo(log=lambda m: print("\n" + m), warn=lambda m: print("\n⚠ " + m))
     try:
         if a.cmd == "scarica":
-            jobs.download_catalog(db, y, a.borse, a.schede, a.max_schede, show)
-            if a.storico:
-                jobs.download_history_all(db, y, False, show)
+            from justetf import JustETF
+            jobs.sync_all(db, y, JustETF(log=lambda m_: print("\n" + m_)), a.chiave_figi, show, None, lambda m_: print("\n" + m_), a.borse)
+        elif a.cmd == "controlla":
+            import json as _json
+            import checks
+            from justetf import JustETF
+            rep = checks.run(db, y, JustETF(), a.n, show, None, os.environ.get("OPENFIGI_KEY"))
+            print(f"\nControllati {rep['n']} fondi: senza problemi {rep['funds_ok']}, con avvisi {rep['funds_warn']}, con errori {rep['funds_fail']} (controlli: {rep['checks']})")
+            for f in rep["funds"]:
+                if f["status"] in ("warn", "fail"):
+                    print(f"\n[{f['status'].upper()}] {f['symbol']} {f['isin'] or ''} {f['name']}")
+                    for c_ in f["checks"]:
+                        if c_["status"] in ("warn", "fail"):
+                            print(f"   {c_['status']:<4} {c_['check']}: {c_['detail']}")
+            fn = os.path.join(os.path.dirname(os.path.abspath(a.db)), "controlli", "controllo-" + rep["at"].replace(":", "").replace("-", "").replace(" ", "-") + ".json")
+            os.makedirs(os.path.dirname(fn), exist_ok=True)
+            open(fn, "w", encoding="utf-8").write(_json.dumps(rep, ensure_ascii=False, indent=1))
+            print("\nRapporto completo:", fn)
         elif a.cmd == "storico":
             jobs.download_history_all(db, y, a.tutte, show)
         elif a.cmd == "justetf":

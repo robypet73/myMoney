@@ -59,6 +59,14 @@ def firds_list(mics, cancel=None, log=None):
     return out
 
 
+def firds_lookup(isin, mic, cancel=None):
+    """Il record del registro ESMA di un ISIN su una borsa (attivo), o None."""
+    q = [("q", f"isin:{isin}"), ("fq", f"mic:{mic}"), ("fq", "latest_received_flag:1"), ("fq", "-status:term"), ("fq", "-status:canc"),
+         ("fl", "isin,mic,gnr_full_name,gnr_cfi_code,gnr_notional_curr_code,status"), ("rows", 1), ("wt", "json")]
+    j = json.load(urllib.request.urlopen(urllib.request.Request(FIRDS + "?" + urllib.parse.urlencode(q), headers={"User-Agent": UA}), timeout=60))["response"]
+    return j["docs"][0] if j["docs"] else None
+
+
 def ecb_fx(curs, start, cancel=None):
     """Cambi ufficiali BCE (interfaccia SDMX, CSV): {valuta: {data: EUR per 1 unità}}. Le valute che la BCE non pubblica mancano dal risultato."""
     curs = sorted({("GBP" if c == "GBp" else c) for c in curs if c and c != "EUR"})
