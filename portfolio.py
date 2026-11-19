@@ -12,31 +12,41 @@ SHRINK = 0.5           # i rendimenti storici sono rumorosi: per scegliere i pes
 MINW = 0.03            # peso minimo di un titolo scelto (sotto, si scarta)
 DR_GAIN = 1.02         # nella scelta per diversificazione si smette di aggiungere titoli se il rapporto di diversificazione migliora meno del 2%
 WINDOW_YEARS = 3.0     # finestra massima dei rendimenti: gli ultimi 3 anni (o meno, se i titoli hanno meno storia in comune)
+MIN_WINDOW_YEARS = 2.0 # se alcuni fondi giovani accorciano la finestra comune sotto 2 anni, i più recenti si escludono (finché restano almeno 8 fondi e il 60%)
 
 
 # ------------------------------------------------------------------ criteri di ricerca
-DEFAULT_FILTERS = {"text": "", "exchanges": [], "types": [], "currencies": [], "distributions": [], "regions": [], "replications": [], "domiciles": [], "sustainable": False, "class_caps": {},
-                   "ter_max": None, "assets_min": None, "adv_min": None, "spread_max": None, "ret1y_min": None, "vol_max": None,
-                   "min_years": 1.5, "pool": 150, "unknown": False}
+# Tutti i criteri sono assenti (null) finché non li imposti. Gli intervalli hanno estremi facoltativi: [minimo o None, massimo o None].
+RANGE_COLS = {"ter": "ter", "assets": "assets_eur_m", "adv": "adv_eur_m", "spread": "spread_pct", "ret_1y": "ret_1y", "ret_3y": "ret_3y", "ret_5y": "ret_5y",
+              "vol_1y": "vol_1y", "vol_3y": "vol_3y", "max_dd": "max_dd"}
+DEFAULT_FILTERS = {"exchanges": [], "types": [], "currencies": [], "distributions": [], "regions": [], "replications": [], "domiciles": [], "sustainable": False,
+                   "class_caps": {}, "ranges": {}, "pool": 150, "unknown": False}
 
 
-def select(db, f, today=None):
+def _years(r, today):
+    """Anni dalla data di lancio (o di primo scambio)."""
+    if not r["inception"]:
+        return None
+    try:
+        return (today - datetime.strptime(r["inception"], "%Y-%m-%d")).days / 365.25
+    except ValueError:
+        return None
+
+
+def select(db, f, today=None, skip=()):
     """Titoli che rispettano i criteri (un solo titolo per fondo), ordinati per patrimonio e poi per liquidità, al massimo `pool`.
-    Un criterio su un dato mancante esclude il titolo, salvo `unknown`."""
+    Un criterio su un dato mancante esclude il titolo, salvo `unknown`. `skip` = chiavi di `ranges` da ignorare."""
     f = {**DEFAULT_FILTERS, **f}
     today = today or datetime.now()
     caps = f["class_caps"] or {}
-    text = [t for t in f["text"].lower().split() if t]
     unk = f["unknown"]
+    ranges = {k: v for k, v in (f["ranges"] or {}).items() if k not in skip and v and (v[0] is not None or v[1] is not None)}
 
     def ok(v, test):
         return (unk and v is None) or (v is not None and test(v))
 
     out = []
     for r in db.all("price_eur IS NOT NULL"):
-        n = (r["name"] or "") + " " + r["symbol"]
-        if text and not all(t in n.lower() for t in text):
-            continue
         if f["exchanges"] and r["exchange"] not in f["exchanges"]:
             continue
         if f["types"] and r["type"] not in f["types"]:
@@ -55,19 +65,13 @@ def select(db, f, today=None):
             continue
         if caps and caps.get(r["asset_class"] or "Altro", 100) <= 0:
             continue
-        if f["ter_max"] is not None and not ok(r["ter"], lambda v: v <= f["ter_max"]):
-            continue
-        if f["assets_min"] is not None and not ok(r["assets_eur_m"], lambda v: v >= f["assets_min"]):
-            continue
-        if f["adv_min"] is not None and not ok(r["adv_eur_m"], lambda v: v >= f["adv_min"]):
-            continue
-        if f["spread_max"] is not None and not ok(r["spread_pct"], lambda v: v <= f["spread_max"]):
-            continue
-        if f["ret1y_min"] is not None and not ok(r["ret_1y"], lambda v: v >= f["ret1y_min"]):
-            continue
-        if f["vol_max"] is not None and not ok(r["vol_1y"], lambda v: v <= f["vol_max"]):
-            continue
-        if r["inception"] and f["min_years"] and r["inception"] > (today - timedelta(days=365 * f["min_years"])).strftime("%Y-%m-%d"):
+        bad = False
+        for k, (lo, hi) in ranges.items():
+            v = _years(r, today) if k == "years" else r[RANGE_COLS[k]]
+            if not ok(v, lambda x: (lo is None or x >= lo) and (hi is None or x <= hi)):
+                bad = True
+                break
+        if bad:
             continue
         out.append(r)
     # un solo titolo per fondo: EUR, poi la borsa preferita (ordine scelto dall'utente), poi il volume
@@ -110,19 +114,25 @@ def pick_pool(rows, f):
 
 
 def search_summary(db, f):
-    """Per la schermata di creazione: tutti i fondi che passano i criteri (senza il limite `pool`), quelli analizzati (primi `pool`) e il conteggio per classe."""
+    """Per la schermata di creazione: tutti i fondi che passano i criteri (senza il limite `pool`), quelli analizzati (primi `pool`), il conteggio per classe e
+    la disponibilità dei dati di rendimento tra i fondi che passano i criteri diversi dai rendimenti (per sapere quanti storici mancano)."""
     allr = select(db, {**f, "pool": 0})
     pool = pick_pool(allr, {**DEFAULT_FILTERS, **f})
     by = {}
     for r in allr:
         by[r["asset_class"] or "Altro"] = by.get(r["asset_class"] or "Altro", 0) + 1
-    return allr, pool, by
+    base = select(db, {**f, "pool": 0}, skip=tuple(RETURN_KEYS))
+    cover = {k: sum(1 for r in base if r[RANGE_COLS[k]] is not None) for k in RETURN_KEYS}
+    return allr, pool, by, {"base": len(base), "cover": cover, "missing_hist": sum(1 for r in base if not r["hist_n"] and r["ret_3y"] is None)}
+
+
+RETURN_KEYS = ("ret_1y", "ret_3y", "ret_5y", "vol_1y", "vol_3y", "max_dd")
 
 
 # ------------------------------------------------------------------ dati per il calcolo
 class Dataset:
-    def __init__(self, rows, dates, P):
-        self.rows, self.dates, self.P = rows, dates, P
+    def __init__(self, rows, dates, P, notes=()):
+        self.rows, self.dates, self.P, self.notes = rows, dates, P, list(notes)
         self.sym = [r["symbol"] for r in rows]
         R = P[5:] / P[:-5] - 1
         self.mu = R.mean(axis=0) * AGG
@@ -132,30 +142,65 @@ class Dataset:
         self.years = len(dates) / 252
 
 
-def load_dataset(db, rows, years=3.0, min_years=1.5, vol_max=None, ret1y_min=None, today=None):
-    """Allinea gli storici in EUR (ultimi `years` anni, finestra in comune) e scarta chi ha troppo poca storia o non rispetta rendimento/volatilità."""
+def clean_series(v):
+    """Corregge gli errori di dati di Yahoo: un punto isolato fuori scala (picco che torna normale) si sostituisce con il precedente; un salto permanente oltre
+    2,5 volte (o sotto 0,4) è un frazionamento non corretto e si riporta sullo storico. Ritorna (serie, numero di correzioni)."""
+    v = np.array(v, float)
+    fixes = 0
+    for t in range(1, len(v)):
+        r = v[t] / v[t - 1]
+        if r > 2.5 or r < 0.4:
+            nxt = v[t + 1: t + 4]
+            if len(nxt) and np.all(np.abs(nxt / v[t - 1] - 1) < 0.25):
+                v[t] = v[t - 1]  # picco isolato
+            elif len(nxt) and np.all(np.abs(nxt / v[t] - 1) < 0.25):
+                v[:t] *= r  # salto permanente: frazionamento non corretto
+            else:
+                continue
+            fixes += 1
+    return v, fixes
+
+
+MAX_MOVE = 0.5  # dopo la correzione, un movimento giornaliero oltre il 50% = dato inaffidabile: il fondo si esclude
+
+
+def load_dataset(db, rows, years=WINDOW_YEARS, min_years=0.0, today=None):
+    """Allinea gli storici in EUR (ultimi `years` anni, finestra in comune). Corregge gli errori di dati, scarta i fondi con troppa poca storia o con movimenti
+    giornalieri anomali e riporta cosa ha fatto in `notes`."""
     today = today or datetime.now()
     cut = (today - timedelta(days=365 * years)).strftime("%Y-%m-%d")
-    need = (today - timedelta(days=365 * min_years)).strftime("%Y-%m-%d")
-    ser = {}
+    need = (today - timedelta(days=365 * min_years)).strftime("%Y-%m-%d") if min_years else None
+    ser, notes, fixed, dropped = {}, [], [], []
     for r in rows:
         s = db.prices(r["symbol"])
-        if len(s) >= 60 and s[0][0] <= need:
-            ser[r["symbol"]] = {d: p for d, p in s if d >= cut}
-    keep = []
-    for r in rows:
-        s = ser.get(r["symbol"])
-        if not s:
+        if len(s) < 60 or (need and s[0][0] > need):
             continue
-        v = np.array([s[d] for d in sorted(s)])
-        a = v[-253:]
-        r1 = a[-1] / a[0] - 1 if len(a) > 200 else None
-        vol = np.std(a[5:] / a[:-5] - 1) * math.sqrt(AGG) if len(a) > 200 else None
-        if ret1y_min is not None and (r1 is None or r1 * 100 < ret1y_min):
+        days = [d for d, _ in s if d >= cut]
+        vals, nfix = clean_series([p for d, p in s if d >= cut])
+        if len(vals) < 60:
             continue
-        if vol_max is not None and (vol is None or vol * 100 > vol_max):
+        if np.max(np.abs(vals[1:] / vals[:-1] - 1)) > MAX_MOVE:
+            dropped.append(r["symbol"])
             continue
-        keep.append(r)
+        if nfix:
+            fixed.append(r["symbol"])
+        ser[r["symbol"]] = dict(zip(days, vals.tolist()))
+    # un fondo giovane accorcerebbe il periodo di tutti: si escludono i più recenti finché la finestra comune arriva ad almeno MIN_WINDOW_YEARS
+    target = (today - timedelta(days=365 * MIN_WINDOW_YEARS)).strftime("%Y-%m-%d")
+    firsts = sorted(((min(v), s) for s, v in ser.items()), reverse=True)
+    n0, young = len(ser), []
+    while firsts and firsts[0][0] > target and len(ser) - len(young) > max(8, int(0.6 * n0)):
+        young.append(firsts.pop(0)[1])
+    for s in young:
+        del ser[s]
+    keep = [r for r in rows if r["symbol"] in ser]
+    fixed = [s for s in fixed if s in ser]
+    if young:
+        notes.append(f"{len(young)} fondi con meno di {MIN_WINDOW_YEARS:.0f} anni di storia esclusi per non accorciare il periodo di tutti gli altri: {', '.join(young[:8])}{'…' if len(young) > 8 else ''}")
+    if fixed:
+        notes.append(f"{len(fixed)} fondi con errori nei dati di Yahoo corretti (picchi isolati o frazionamenti): {', '.join(fixed[:8])}{'…' if len(fixed) > 8 else ''}")
+    if dropped:
+        notes.append(f"{len(dropped)} fondi esclusi per movimenti giornalieri oltre il {MAX_MOVE * 100:.0f}% (dati inaffidabili o prodotti estremi): {', '.join(dropped[:8])}{'…' if len(dropped) > 8 else ''}")
     if len(keep) < 2:
         return None
     start = max(min(ser[r["symbol"]]) for r in keep)
@@ -168,10 +213,17 @@ def load_dataset(db, rows, years=3.0, min_years=1.5, vol_max=None, ret1y_min=Non
         P[:, j] = vs[np.clip(np.searchsorted(ds_, darr, side="right") - 1, 0, len(vs) - 1)]
     if len(dates) < 120:
         return None
-    return Dataset(keep, dates, P)
+    return Dataset(keep, dates, P, notes)
 
 
 # ------------------------------------------------------------------ ottimizzazione
+def wcorr(w, cov, sd):
+    """Correlazione media pesata sui pesi: media delle correlazioni tra coppie di titoli, ognuna pesata con w_i·w_j·σ_i·σ_j."""
+    own = float((w * sd) @ (w * sd))
+    den = float(w @ sd) ** 2 - own
+    return 1.0 if den < 1e-12 else float((w @ cov @ w - own) / den)
+
+
 def _cons(n, cls_idx, cls_cap):
     c = [{"type": "eq", "fun": lambda w: w.sum() - 1, "jac": lambda w: np.ones(n)}]
     for idx, cap in zip(cls_idx, cls_cap):
@@ -179,18 +231,33 @@ def _cons(n, cls_idx, cls_cap):
     return c
 
 
-def _check(w, cap, cls_idx, cls_cap):
-    return abs(w.sum() - 1) < 1e-4 and (w > -1e-6).all() and (w < cap + 1e-4).all() and all(w[i].sum() <= c + 1e-3 for i, c in zip(cls_idx, cls_cap))
+def _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max):
+    sd = np.sqrt(np.diag(cov))
+    ok = abs(w.sum() - 1) < 1e-4 and (w > lb - 1e-4).all() and (w < cap + 1e-4).all() and all(w[i].sum() <= c + 1e-3 for i, c in zip(cls_idx, cls_cap))
+    if ok and dr_min:
+        ok = float(w @ sd) / math.sqrt(max(float(w @ cov @ w), 1e-18)) >= dr_min - 2e-3
+    if ok and corr_max is not None:
+        ok = wcorr(w, cov, sd) <= corr_max + 2e-3
+    return ok
 
 
-def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None):
-    """Pesi di un portafoglio solo lungo: kind = sharpe | minvar | aggr | erc. Ritorna None se i vincoli non sono rispettabili."""
+def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None, lb=0.0, dr_min=None, corr_max=None):
+    """Pesi di un portafoglio solo lungo: kind = sharpe | minvar | aggr | erc | maxdr | mincorr. `lb` = peso minimo di ogni titolo scelto; `dr_min` e `corr_max` =
+    diversificazione minima e correlazione media pesata massima. Ritorna None se i vincoli non sono rispettabili."""
     n = len(mu)
     cap = max(cap, 1.02 / n)
+    lb = min(lb, 0.99 / n)
+    sd = np.sqrt(np.diag(cov))
     cls_idx = [np.array([i for i, c in enumerate(cls) if c == k]) for k in class_caps if any(c == k for c in cls)]
     cls_cap = [class_caps[k] for k in class_caps if any(c == k for c in cls)]
     cons = _cons(n, cls_idx, cls_cap)
-    x0 = np.full(n, 1 / n) if w0 is None else w0
+    if dr_min:
+        cons.append({"type": "ineq", "fun": lambda w: float(w @ sd) - dr_min * math.sqrt(max(float(w @ cov @ w), 1e-18))})
+    if corr_max is not None:
+        cons.append({"type": "ineq", "fun": lambda w: corr_max - wcorr(w, cov, sd)})
+    x0 = np.full(n, 1 / n) if w0 is None else np.clip(w0, lb, cap)
+    x0 = x0 / x0.sum()
+    g = None
     if kind == "sharpe":
         def f(w):
             v = max(w @ cov @ w, 1e-12)
@@ -207,17 +274,20 @@ def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None):
         f = lambda w: -(w @ mu)
         g = lambda w: -mu
         cons.append({"type": "ineq", "fun": lambda w: vol_cap ** 2 - w @ cov @ w, "jac": lambda w: -2 * cov @ w})
+    elif kind == "maxdr":
+        f = lambda w: -float(w @ sd) / math.sqrt(max(float(w @ cov @ w), 1e-18))
+    elif kind == "mincorr":
+        f = lambda w: wcorr(w, cov, sd)
     else:  # erc: ogni titolo contribuisce in modo uguale al rischio
         def f(w):
             rc = w * (cov @ w)
             return float(((rc - rc.mean()) ** 2).sum()) * 1e6
-        g = None
-    r = minimize(f, x0, jac=g, bounds=[(0, cap)] * n, constraints=cons, method="SLSQP", options={"maxiter": 400, "ftol": 1e-10})
-    w = np.clip(r.x, 0, None)
+    r = minimize(f, x0, jac=g, bounds=[(lb, cap)] * n, constraints=cons, method="SLSQP", options={"maxiter": 400, "ftol": 1e-10})
+    w = np.clip(r.x, lb, None)
     if w.sum() <= 0:
         return None
     w = w / w.sum()
-    return w if _check(w, cap, cls_idx, cls_cap) else None
+    return w if _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max) else None
 
 
 def capacity(idx, cls, caps, cap):
@@ -228,33 +298,62 @@ def capacity(idx, cls, caps, cap):
     return sum(min(v, caps.get(k, 1.0)) for k, v in by.items())
 
 
-def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None):
-    """Parte da tutti i titoli (o da `start`) e toglie via via quello di peso minore finché ce ne sono al massimo kmax e nessuno pesa meno di MINW."""
+def _solve_idx(kind, ds, mu, idx, cap, caps, rf, vol_cap=None, lb=0.0, ck=None):
+    return solve(kind, mu[idx], ds.cov[np.ix_(idx, idx)], cap, [ds.cls[i] for i in idx], caps, rf, vol_cap, lb=lb, **(ck or {}))
+
+
+def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None, ck=None):
+    """Parte da tutti i titoli (o da `start`) e toglie via via quello di peso minore finché ce ne sono al massimo kmax e nessuno pesa meno di MINW (mai sotto kmin).
+    Alla fine ogni titolo scelto riceve almeno MINW: il numero di ETF del portafoglio è quello dichiarato, senza titoli a peso zero. Ritorna (indici, pesi) o None."""
     idx = list(range(len(mu))) if start is None else list(start)
-    best = None
+    w = _solve_idx(kind, ds, mu, idx, cap, caps, rf, vol_cap, 0.0, ck)
+    if w is None:
+        return None
     while True:
-        w = solve(kind, mu[idx], ds.cov[np.ix_(idx, idx)], cap, [ds.cls[i] for i in idx], caps, rf, vol_cap)
-        if w is None:
-            return best
-        best = (list(idx), w)
-        if len(idx) > 2 * kmax:  # primo passo grossolano
-            keep = np.argsort(-w)[: 2 * kmax]
-        elif len(idx) > kmax or (w.min() < MINW and len(idx) > kmin):
-            keep = np.delete(np.arange(len(idx)), int(np.argmin(w)))
-        else:
-            return best
-        idx = [idx[k] for k in sorted(keep)]
+        k = len(idx)
+        nxt = None
+        if k > 2 * kmax:  # primo passo grossolano
+            c = [idx[j] for j in sorted(np.argsort(-w)[: 2 * kmax])]
+            w2 = _solve_idx(kind, ds, mu, c, cap, caps, rf, vol_cap, 0.0, ck)
+            if w2 is not None:
+                nxt = (c, w2)
+        if nxt is None and (k > kmax or (w.min() < MINW and k > kmin)):
+            for d in np.argsort(w)[:4]:  # toglie il titolo più piccolo; se i vincoli non lo permettono, prova il successivo
+                c = [i for j, i in enumerate(idx) if j != d]
+                w2 = _solve_idx(kind, ds, mu, c, cap, caps, rf, vol_cap, 0.0, ck)
+                if w2 is not None:
+                    nxt = (c, w2)
+                    break
+        if nxt is None:
+            break
+        idx, w = nxt
+    if len(idx) > kmax or len(idx) < min(kmin, len(mu)):
+        return None
+    for lb in (MINW, MINW / 2, 0.005):
+        w3 = _solve_idx(kind, ds, mu, idx, cap, caps, rf, vol_cap, lb, ck)
+        if w3 is not None:
+            return idx, w3
+    return None
 
 
-def greedy_dr(ds, mu, kmin, kmax, cap, caps, rf):
-    """Sceglie i titoli che aggiungono più diversificazione (rapporto di diversificazione, Choueifaty–Coignard 2008), partendo dal miglior rendimento/rischio."""
+def greedy_dr(ds, mu, kmin, kmax, cap, caps, rf, ck=None):
+    """Sceglie i titoli che aggiungono più diversificazione (rapporto di diversificazione, Choueifaty–Coignard 2008), partendo dal miglior rendimento/rischio.
+    Con diversificazione minima o correlazione massima impostate continua finché non sono raggiunte (entro kmax)."""
+    ck = ck or {}
     n = len(mu)
     sd = ds.sd
 
-    def dr(s):
+    def inv(s):
         w = 1 / sd[s]
-        w = w / w.sum()
+        return w / w.sum()
+
+    def dr(s):
+        w = inv(s)
         return (w @ sd[s]) / math.sqrt(w @ ds.cov[np.ix_(s, s)] @ w)
+
+    def goal(s):
+        w = inv(s)
+        return (not ck.get("dr_min") or dr(s) >= ck["dr_min"]) and (ck.get("corr_max") is None or wcorr(w, ds.cov[np.ix_(s, s)], sd[s]) <= ck["corr_max"])
 
     sel = [int(np.argmax((mu - rf) / sd))]
     cur = 1.0
@@ -265,7 +364,7 @@ def greedy_dr(ds, mu, kmin, kmax, cap, caps, rf):
         if capacity(sel, ds.cls, caps, cap) < 1:  # servono altre classi: si sceglie solo tra quelle che aumentano la capacità
             cand = [c for c in cand if capacity(sel + [c[1]], ds.cls, caps, cap) > capacity(sel, ds.cls, caps, cap) + 1e-9] or cand
         d, j = max(cand)
-        if len(sel) >= kmin and capacity(sel, ds.cls, caps, cap) >= 1 and d < cur * DR_GAIN:
+        if len(sel) >= kmin and capacity(sel, ds.cls, caps, cap) >= 1 and d < cur * DR_GAIN and goal(sel):
             break
         sel.append(j)
         cur = d
@@ -276,9 +375,7 @@ def metrics(ds, idx, w, rf):
     mu, cov, sd = ds.mu[idx], ds.cov[np.ix_(idx, idx)], ds.sd[idx]
     vol = math.sqrt(w @ cov @ w)
     ret = float(w @ mu)
-    cc = cov / np.outer(sd, sd)
-    off = cc[~np.eye(len(idx), dtype=bool)]
-    return {"ret": ret, "vol": vol, "sharpe": (ret - rf) / vol if vol else 0.0, "dr": float(w @ sd) / vol if vol else 1.0, "corr": float(off.mean()) if off.size else 1.0}
+    return {"ret": ret, "vol": vol, "sharpe": (ret - rf) / vol if vol else 0.0, "dr": float(w @ sd) / vol if vol else 1.0, "corr": wcorr(w, cov, sd)}
 
 
 def build(ds, idx, w, amount, rf, name, desc, note=""):
@@ -302,35 +399,55 @@ def build(ds, idx, w, amount, rf, name, desc, note=""):
             "ter": ter / known if known > 0.5 else None, **m}
 
 
-def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20, caps=None):
-    """Tre proposte sugli stessi titoli e criteri: massimo Sharpe, bilanciato (parità di rischio) e aggressivo (massimo rendimento con volatilità limitata)."""
+def limits(ds, cap, caps):
+    """Il massimo di diversificazione e il minimo di correlazione media pesata raggiungibili con i fondi analizzati (per spiegare un vincolo irraggiungibile)."""
     caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
-    kmax = max(kmin, min(kmax, len(ds.rows)))
-    kmin = min(kmin, kmax)
-    mus = (1 - SHRINK) * ds.mu + SHRINK * ds.mu.mean()  # rendimenti prudenti, solo per scegliere i pesi
-    out, fail = [], []
+    out = {}
+    w = solve("maxdr", ds.mu, ds.cov, cap, ds.cls, caps)
+    if w is not None:
+        out["dr_max"] = float(w @ ds.sd) / math.sqrt(float(w @ ds.cov @ w))
+    w = solve("mincorr", ds.mu, ds.cov, cap, ds.cls, caps)
+    if w is not None:
+        out["corr_min"] = wcorr(w, ds.cov, ds.sd)
+    return out
 
-    r = prune("sharpe", ds, mus, kmin, kmax, cap, caps, rf)
+
+def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20, caps=None, dr_min=None, corr_max=None):
+    """Tre proposte sugli stessi titoli e criteri: massimo Sharpe, bilanciato (parità di rischio) e aggressivo (massimo rendimento con volatilità limitata).
+    Ognuna ha tra kmin e kmax ETF, tutti con almeno MINW di peso; rispetta diversificazione minima e correlazione massima se impostate."""
+    caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
+    ck = {k: v for k, v in (("dr_min", dr_min), ("corr_max", corr_max)) if v is not None}
+    out, fail = [], []
+    if len(ds.rows) < kmin:
+        return out, ["Sharpe", "Bilanciato", "Aggressivo"]
+    kmax = max(kmin, min(kmax, len(ds.rows)))
+    mus = (1 - SHRINK) * ds.mu + SHRINK * ds.mu.mean()  # rendimenti prudenti, solo per scegliere i pesi
+
+    r = prune("sharpe", ds, mus, kmin, kmax, cap, caps, rf, ck=ck)
     if r:
         out.append(build(ds, *r, amount, rf, "Sharpe", "Massimo rendimento per unità di rischio (rapporto di Sharpe)."))
     else:
         fail.append("Sharpe")
 
-    sel = greedy_dr(ds, mus, kmin, kmax, cap, caps, rf)
-    w = solve("erc", mus[sel], ds.cov[np.ix_(sel, sel)], cap, [ds.cls[i] for i in sel], caps, rf)
-    if w is not None:
+    sel = greedy_dr(ds, mus, kmin, kmax, cap, caps, rf, ck)
+    w = None
+    for lb in (MINW, MINW / 2, 0.005):
+        w = solve("erc", mus[sel], ds.cov[np.ix_(sel, sel)], cap, [ds.cls[i] for i in sel], caps, rf, lb=min(lb, 0.5 / len(sel)), **ck)
+        if w is not None:
+            break
+    if w is not None and kmin <= len(sel) <= kmax:
         out.append(build(ds, sel, w, amount, rf, "Bilanciato", "Ogni titolo contribuisce in modo uguale al rischio (parità di rischio), con i titoli più diversificanti."))
     else:
         fail.append("Bilanciato")
 
-    allw = solve("minvar", ds.mu, ds.cov, cap, ds.cls, caps, rf)
+    allw = solve("minvar", ds.mu, ds.cov, cap, ds.cls, caps, rf, **ck)
     note = ""
     if allw is not None:
         vmin = math.sqrt(allw @ ds.cov @ allw)
         vc = max(vol_aggr, vmin * 1.05)
         if vc > vol_aggr:
             note = f"Volatilità richiesta {vol_aggr * 100:.0f}% non raggiungibile: portata a {vc * 100:.1f}%."
-        r = prune("aggr", ds, mus, kmin, kmax, cap, caps, rf, vol_cap=vc)
+        r = prune("aggr", ds, mus, kmin, kmax, cap, caps, rf, vol_cap=vc, ck=ck)
         if r:
             out.append(build(ds, *r, amount, rf, "Aggressivo", f"Massimo rendimento atteso con volatilità fino al {vc * 100:.0f}%.", note))
         else:
@@ -341,30 +458,38 @@ def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20
 
 
 # ------------------------------------------------------------------ frontiera efficiente
-def frontier(ds, idx, cap, caps, rf, n=36):
-    """Frontiera efficiente (solo posizioni lunghe, tetto per ETF e massimi per classe) sui titoli `idx` del dataset, con rendimenti e rischio storici reali.
-    Ritorna {"funds": [...], "points": [{vol, ret, sharpe, dr, corr, w}, ...]} dal punto di minima volatilità a quello di massimo rendimento; `w` è allineato a `funds`."""
+def frontier(ds, idx, cap, caps, rf, kmin=3, kmax=8, dr_min=None, corr_max=None, n=28):
+    """Frontiera efficiente (solo posizioni lunghe, tetto per ETF, massimi per classe, tra kmin e kmax ETF per punto) sui titoli `idx` del dataset, con
+    rendimenti e rischio storici reali. Ritorna {"idx": [...], "points": [{vol, ret, sharpe, dr, corr, w, n}, ...]} dal punto di minima volatilità a quello di
+    massimo rendimento; `w` è allineato a `idx`. Ogni punto può usare fondi diversi (peso zero per gli altri)."""
     caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
+    ck = {k: v for k, v in (("dr_min", dr_min), ("corr_max", corr_max)) if v is not None}
     idx = list(idx)
-    mu, cov = ds.mu[idx], ds.cov[np.ix_(idx, idx)]
-    cls = [ds.cls[i] for i in idx]
-    vol = lambda w: math.sqrt(max(float(w @ cov @ w), 0.0))
-    wmin = solve("minvar", mu, cov, cap, cls, caps, rf)
-    wmax = solve("aggr", mu, cov, cap, cls, caps, rf, vol_cap=10.0)
-    if wmin is None or wmax is None:
+    kmax = max(kmin, min(kmax, len(idx)))
+    pos = {i: k for k, i in enumerate(idx)}
+
+    def run(kind, vc=None):
+        r = prune(kind, ds, ds.mu, kmin, kmax, cap, caps, rf, vol_cap=vc, start=idx, ck=ck)
+        if r is None:
+            return None
+        sub, w = r
+        full = np.zeros(len(idx))
+        for i, x in zip(sub, w):
+            full[pos[i]] = x
+        m = metrics(ds, sub, w, rf)
+        return {"vol": m["vol"], "ret": m["ret"], "sharpe": m["sharpe"], "dr": m["dr"], "corr": m["corr"], "w": [float(x) for x in full], "n": len(sub)}
+
+    lo, hi = run("minvar"), run("aggr", 10.0)
+    if lo is None or hi is None:
         return None
-    pts, prev = [], wmin
-    for v in np.linspace(vol(wmin), vol(wmax), n):
-        w = wmin if not pts else (wmax if abs(v - vol(wmax)) < 1e-12 else solve("aggr", mu, cov, cap, cls, caps, rf, vol_cap=v * 1.0005, w0=prev))
-        if w is None:
-            continue
-        prev = w
-        w = np.where(w < 0.01, 0.0, w)  # pesi sotto l'1% si scartano
-        if w.sum() <= 0:
-            continue
-        w = w / w.sum()
-        m = metrics(ds, [idx[i] for i in range(len(idx)) if w[i] > 0], w[w > 0], rf)
-        if pts and m["ret"] <= pts[-1]["ret"] + 1e-6:
-            continue  # tiene solo la parte efficiente (rendimento che cresce con il rischio)
-        pts.append({"vol": m["vol"], "ret": m["ret"], "sharpe": m["sharpe"], "dr": m["dr"], "corr": m["corr"], "w": [float(x) for x in w]})
+    cand = [lo, hi]
+    for v in np.linspace(lo["vol"], hi["vol"], n)[1:-1]:
+        p = run("aggr", v * 1.0005)
+        if p is not None:
+            cand.append(p)
+    cand.sort(key=lambda p: p["vol"])
+    pts = []
+    for p in cand:  # parte efficiente: il rendimento deve crescere con il rischio
+        if not pts or p["ret"] > pts[-1]["ret"] + 1e-6:
+            pts.append(p)
     return {"idx": idx, "points": pts}

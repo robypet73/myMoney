@@ -85,21 +85,28 @@ def num(x):
 
 
 def parse_create(d):
-    """Dai campi della pagina ai criteri di ricerca (f) e ai parametri del portafoglio (p)."""
+    """Dai campi della pagina ai criteri di ricerca (f) e ai parametri del portafoglio (p). Tutti i criteri sono assenti (null) finché non li imposti."""
     caps = {c: num((d.get("class_caps") or {}).get(c)) for c in C.CLASSES}
     caps = {c: 100.0 if v is None else v for c, v in caps.items()}
-    f = {"text": d.get("text") or "", "unknown": bool(d.get("unknown")), "ter_max": num(d.get("ter_max")), "assets_min": num(d.get("assets_min")),
-         "adv_min": num(d.get("adv_min")), "spread_max": num(d.get("spread_max")), "ret1y_min": num(d.get("ret1y_min")), "vol_max": num(d.get("vol_max")),
-         "min_years": num(d.get("min_years")) or 0, "pool": int(num(d.get("pool")) or 150), "class_caps": caps}
+    ranges = {}
+    for k, v in (d.get("ranges") or {}).items():
+        if k in PF.RANGE_COLS or k == "years":
+            lo, hi = (num(v[0]), num(v[1])) if isinstance(v, (list, tuple)) and len(v) == 2 else (None, None)
+            if lo is not None or hi is not None:
+                ranges[k] = [lo, hi]
+    f = {"unknown": bool(d.get("unknown")), "pool": int(num(d.get("pool")) or 150), "class_caps": caps, "ranges": ranges}
     for k in ("exchanges", "types", "currencies", "distributions", "regions", "replications", "domiciles"):
         f[k] = list(d.get(k) or [])
     f["sustainable"] = bool(d.get("sustainable"))
     p = {"amount": num(d.get("amount")) or 0.0, "kmin": int(num(d.get("kmin")) or 3), "kmax": int(num(d.get("kmax")) or 8), "cap": (num(d.get("cap")) or 35) / 100,
-         "rf": (num(d.get("rf")) if num(d.get("rf")) is not None else 2) / 100, "vol_aggr": (num(d.get("vol_aggr")) or 20) / 100, "caps": {c: v / 100 for c, v in caps.items()}}
+         "rf": (num(d.get("rf")) if num(d.get("rf")) is not None else 2) / 100, "vol_aggr": (num(d.get("vol_aggr")) or 20) / 100, "caps": {c: v / 100 for c, v in caps.items()},
+         "dr_min": num(d.get("dr_min")), "corr_max": num(d.get("corr_max"))}
     return f, p
 
 
 def check(p):
+    if p["kmin"] > p["kmax"]:
+        return "Il numero minimo di ETF supera il massimo."
     if sum(p["caps"].values()) < 1 - 1e-9:
         return "La somma dei massimi per classe è sotto il 100%: il portafoglio non può essere composto."
     if p["cap"] * p["kmax"] < 1:
@@ -191,7 +198,7 @@ def make_handler(path, job):
             if u == "/api/info":
                 db = DB(path)
                 try:
-                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS], "rules": {"minw": PF.MINW, "shrink": PF.SHRINK, "dr_gain": PF.DR_GAIN, "window": PF.WINDOW_YEARS},
+                    return self.send(200, {"path": os.path.abspath(path), "stats": db.stats(), "exchanges": EXCHANGES, "classes": C.CLASSES, "regions": [r for r, _ in C.REGIONS], "rules": {"minw": PF.MINW, "shrink": PF.SHRINK, "dr_gain": PF.DR_GAIN, "window": PF.WINDOW_YEARS, "min_window": PF.MIN_WINDOW_YEARS},
                                      "domiciles": [x[0] for x in db.c.execute("SELECT DISTINCT domicile FROM etf WHERE domicile IS NOT NULL ORDER BY 1")]})
                 finally:
                     db.close()
@@ -268,13 +275,25 @@ def make_handler(path, job):
                 f, _ = parse_create(d)
                 db = DB(path)
                 try:
-                    allr, pool, by = PF.search_summary(db, f)
-                    cols = ("symbol", "isin", "name", "asset_class", "region", "exchange_name", "currency", "ter", "assets_eur_m", "adv_eur_m", "spread_pct", "ret_1y", "ret_3y", "vol_1y",
-                            "replication", "domicile", "sustainable", "hist_n")
+                    allr, pool, by, cov = PF.search_summary(db, f)
+                    cols = ("symbol", "isin", "name", "asset_class", "region", "exchange_name", "currency", "ter", "assets_eur_m", "adv_eur_m", "spread_pct", "ret_1y", "ret_3y", "ret_5y",
+                            "vol_1y", "max_dd", "replication", "domicile", "sustainable", "hist_n")
                     return self.send(200, {"n_all": len(allr), "n_pool": len(pool), "with_history": sum(1 for r in pool if r["hist_n"]), "by_class": by, "titoli": db.stats()["titoli"],
-                                           "rows": [{k: r[k] for k in cols} for r in pool[:300]]})
+                                           "coverage": cov, "rows": [{k: r[k] for k in cols} for r in pool[:300]]})
                 finally:
                     db.close()
+            if u == "/api/returns":
+                f, _ = parse_create(d)
+                db = DB(path)
+                try:
+                    base = PF.select(db, {**f, "pool": 0}, skip=tuple(PF.RETURN_KEYS))
+                    todo = [r["symbol"] for r in base if not r["hist_n"] and r["ret_3y"] is None]
+                finally:
+                    db.close()
+                if not todo:
+                    return self.send(200, {"ok": True, "n": 0})
+                ok = job.start("returns", lambda db, y, prog: jobs.download_history(db, y, todo, prog))
+                return self.send(200 if ok else 409, {"ok": ok, "n": len(todo)})
             if u == "/api/propose":
                 f, p = parse_create(d)
                 err = check(p)
@@ -294,24 +313,35 @@ def make_handler(path, job):
                     prog("Calcolo le proposte…", 0, 0)
                     order = {s: i for i, s in enumerate(syms)}
                     fresh = sorted(db.all(f"symbol IN ({','.join('?' * len(syms))})", syms), key=lambda r: order[r["symbol"]])
-                    ds = PF.load_dataset(db, fresh, PF.WINDOW_YEARS, f["min_years"], f["vol_max"], f["ret1y_min"])
+                    yr = (f["ranges"].get("years") or [None, None])[0]
+                    ds = PF.load_dataset(db, fresh, PF.WINDOW_YEARS, yr or 0.0)
                     if ds is None:
-                        return {"message": "Servono almeno 2 titoli con storico sufficiente: abbassa «Storia minima» o allarga i criteri."}
+                        return {"message": "Servono almeno 2 titoli con storico sufficiente e dati affidabili: allarga i criteri o abbassa la storia minima."}
                     out, fail = PF.propose(ds, **p)
                     if not out:
                         caps = {k: v for k, v in p["caps"].items() if v < 1.0}
                         room = PF.capacity(list(range(len(ds.cls))), ds.cls, caps, p["cap"])
-                        if room < 1:
+                        lim = PF.limits(ds, p["cap"], p["caps"]) if (p["dr_min"] or p["corr_max"] is not None) else {}
+                        if len(ds.rows) < p["kmin"]:
+                            msg = f"Solo {len(ds.rows)} fondi analizzati hanno dati sufficienti, meno del minimo di {p['kmin']} ETF: allarga i criteri."
+                        elif room < 1:
                             have = ", ".join(sorted(set(ds.cls)))
-                            return {"message": f"I {len(ds.rows)} fondi analizzati sono di classi ({have}) che i massimi per classe limitano al {room * 100:.0f}% del portafoglio: "
-                                               "alza i massimi o allarga i criteri (per esempio togli il limite di patrimonio o volume) così entrano fondi delle altre classi."}
-                        return {"message": "Nessuna proposta calcolabile con questi vincoli (" + ", ".join(fail) + "): prova ad alzare il peso massimo per ETF o il numero massimo di ETF."}
+                            msg = (f"I {len(ds.rows)} fondi analizzati sono di classi ({have}) che i massimi per classe limitano al {room * 100:.0f}% del portafoglio: "
+                                   "alza i massimi o allarga i criteri così entrano fondi delle altre classi.")
+                        elif p["dr_min"] and lim.get("dr_max") is not None and p["dr_min"] > lim["dr_max"] + 1e-3:
+                            msg = f"Diversificazione minima {p['dr_min']:.2f} non raggiungibile: con questi fondi il massimo è {lim['dr_max']:.2f}. Abbassala o allarga i criteri."
+                        elif p["corr_max"] is not None and lim.get("corr_min") is not None and p["corr_max"] < lim["corr_min"] - 1e-3:
+                            msg = f"Correlazione massima {p['corr_max']:.2f} non raggiungibile: con questi fondi il minimo è {lim['corr_min']:.2f}. Alzala o allarga i criteri."
+                        else:
+                            msg = ("Nessuna proposta calcolabile con questi vincoli (" + ", ".join(fail) + f"): non riesco a comporre da {p['kmin']} a {p['kmax']} ETF "
+                                   "rispettando peso massimo, classi, correlazione e diversificazione. Alza il peso massimo o il numero massimo di ETF, o rilassa i vincoli.")
+                        return {"message": msg, "notes": ds.notes}
                     # frontiera efficiente sui fondi delle tre proposte
                     order = {r["symbol"]: i for i, r in enumerate(ds.rows)}
                     fsyms = []
                     for pr in out:
                         fsyms += [x["symbol"] for x in pr["items"] if x["symbol"] not in fsyms]
-                    fr = PF.frontier(ds, [order[s_] for s_ in fsyms], p["cap"], p["caps"], p["rf"])
+                    fr = PF.frontier(ds, [order[s_] for s_ in fsyms], p["cap"], p["caps"], p["rf"], p["kmin"], p["kmax"], p["dr_min"], p["corr_max"])
                     front = None
                     if fr and len(fr["points"]) >= 2:
                         funds = []
@@ -320,7 +350,7 @@ def make_handler(path, job):
                             funds.append({"symbol": r["symbol"], "isin": r["isin"], "name": r["name"], "class": ds.cls[i], "exchange": r["exchange_name"], "price": r["price_eur"], "ter": r["ter"],
                                           "replication": r["replication"], "domicile": r["domicile"], "vol": float(ds.sd[i]), "ret": float(ds.mu[i])})
                         front = {"funds": funds, "points": fr["points"], "rf": p["rf"]}
-                    return {"proposals": out, "frontier": front, "fail": fail, "n": len(ds.rows), "from": ds.dates[0], "to": ds.dates[-1], "years": ds.years, "amount": p["amount"], "criteria": d}
+                    return {"proposals": out, "frontier": front, "fail": fail, "n": len(ds.rows), "from": ds.dates[0], "to": ds.dates[-1], "years": ds.years, "amount": p["amount"], "criteria": d, "notes": ds.notes, "kmin": p["kmin"], "kmax": p["kmax"]}
 
                 ok = job.start("propose", run)
                 return self.send(200 if ok else 409, {"ok": ok, "n": len(rows)})

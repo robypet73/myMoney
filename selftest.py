@@ -40,7 +40,11 @@ def main():
         assert db.export_csv(os.path.join(d, "t.csv")) == 30
         rows = PF.select(db, {"class_caps": {"Azionario": 100}, "pool": 40})
         assert len(rows) == 30, len(rows)
-        assert len(PF.select(db, {"text": "gold"})) == 3
+        # intervalli: ogni estremo è facoltativo; senza criteri passano tutti
+        exp = sum(1 for r in db.all() if r["ter"] <= 0.3)
+        assert len(PF.select(db, {"ranges": {"ter": [None, 0.3]}, "pool": 0})) == exp
+        assert len(PF.select(db, {"ranges": {"ter": [None, None]}, "pool": 0})) == 30
+        assert len(PF.select(db, {"ranges": {"ter": [0.2, 0.3], "assets": [1000, None]}, "pool": 0})) == sum(1 for r in db.all() if 0.2 <= r["ter"] <= 0.3 and r["assets_eur_m"] >= 1000)
         ds = PF.load_dataset(db, rows)
         assert ds is not None and len(ds.rows) == 30
         caps = {"Azionario": 0.6, "Obbligazionario": 1.0}
@@ -48,7 +52,7 @@ def main():
         assert not fail and len(out) == 3, fail
         for p in out:
             w = np.array([i["weight"] for i in p["items"]])
-            assert abs(w.sum() - 1) < 1e-3 and w.max() <= 0.30 + 1e-3 and 3 <= len(w) <= 8, (p["name"], w)
+            assert abs(w.sum() - 1) < 1e-3 and w.max() <= 0.30 + 1e-3 and 3 <= len(w) <= 8 and w.min() >= 0.0049, (p["name"], w)
             assert p["classes"].get("Azionario", 0) <= 0.6 + 1e-3, (p["name"], p["classes"])
             assert p["spent"] <= 20000
             print(f"{p['name']:<11} n={len(w)} rend={p['ret']*100:5.1f}% vol={p['vol']*100:5.1f}% sharpe={p['sharpe']:.2f} DR={p['dr']:.2f} classi={ {k: round(v, 2) for k, v in p['classes'].items()} }")
@@ -85,17 +89,46 @@ def main():
         cls = {r["asset_class"] for r in stra}
         assert {"Azionario", "Obbligazionario", "Materie prime"} <= cls, cls
         assert len(PF.pick_pool(rows, {"pool": 6})) == 6  # nessun limite di classe: i più grandi e basta
+        # numero di ETF: sempre tra minimo e massimo, nessun titolo a peso zero
+        for kmin, kmax in ((2, 3), (4, 5), (6, 10), (5, 5)):
+            o, f_ = PF.propose(ds, amount=10000, cap=0.5, kmin=kmin, kmax=kmax, caps={})
+            assert not f_ and len(o) == 3, (kmin, kmax, f_)
+            for p in o:
+                ws = [i["weight"] for i in p["items"]]
+                assert kmin <= len(ws) <= kmax and min(ws) >= 0.0049, (kmin, kmax, p["name"], ws)
+        # correlazione media massima e diversificazione minima
+        base = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=8, caps={})[0]
+        c0, d0 = max(p["corr"] for p in base), min(p["dr"] for p in base)
+        o, f_ = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=8, caps={}, corr_max=0.30, dr_min=1.4)
+        for p in o:
+            assert p["corr"] <= 0.30 + 3e-3 and p["dr"] >= 1.4 - 3e-3, (p["name"], p["corr"], p["dr"])
+        lim = PF.limits(ds, 0.5, {})
+        assert lim["dr_max"] > 1.4 and lim["corr_min"] < 0.5, lim
+        o, f_ = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=8, caps={}, dr_min=lim["dr_max"] + 1.0)
+        assert not o and len(f_) == 3  # irraggiungibile: nessuna proposta (e la pagina spiega il massimo possibile)
+        # un fondo giovane non accorcia il periodo di tutti: si esclude e lo si dice
+        db.upsert("YOUNG.MI", name="Fondo giovane", exchange="MIL", currency="EUR", price_eur=10.0, asset_class="Azionario")
+        import numpy as _np
+        db.save_prices("YOUNG.MI", [(x, 10 + 0.001 * i) for i, x in enumerate(ds.dates[-200:])]); db.commit()
+        ds2 = PF.load_dataset(db, [db.get(s) for s in ds.sym] + [db.get("YOUNG.MI")])
+        assert "YOUNG.MI" not in ds2.sym and ds2.years > 2 and any("YOUNG.MI" in n_ for n_ in ds2.notes), (ds2.years, ds2.notes)
+        # errori di dati: picco isolato e frazionamento non corretto
+        v, n_ = PF.clean_series([100, 101, 100, 5000, 101, 102, 103, 104])
+        assert n_ == 1 and v.max() < 200
+        v, n_ = PF.clean_series([100, 101, 102, 103, 1, 1.01, 1.02, 1.03, 1.04])  # raggruppamento 100:1 non corretto
+        assert n_ == 1 and abs(v[0] - 1.0) < 0.1 and abs(v[-1] - 1.04) < 1e-9, v
         # frontiera efficiente sui fondi delle proposte
         syms = []
         for pr in out:
             syms += [x["symbol"] for x in pr["items"] if x["symbol"] not in syms]
         order = {r["symbol"]: i for i, r in enumerate(ds.rows)}
-        fr = PF.frontier(ds, [order[x] for x in syms], 0.30, {"Azionario": 0.6, "Obbligazionario": 1.0}, 0.02)
+        fr = PF.frontier(ds, [order[x] for x in syms], 0.30, {"Azionario": 0.6, "Obbligazionario": 1.0}, 0.02, 3, 6)
         pts = fr["points"]
+        assert all(3 <= q["n"] <= 6 and sum(1 for x in q["w"] if x > 0) == q["n"] for q in pts), [q["n"] for q in pts]
         assert len(pts) >= 5 and all(b["vol"] >= a["vol"] - 1e-9 and b["ret"] > a["ret"] for a, b in zip(pts, pts[1:])), [(x["vol"], x["ret"]) for x in pts]
         for q in pts:
             w = np.array(q["w"])
-            assert abs(w.sum() - 1) < 1e-6 and w.max() <= 0.30 * 1.02  # tolleranza: lo scarto dei pesi sotto l1% e la rinormalizzazione
+            assert abs(w.sum() - 1) < 1e-6 and w.max() <= 0.30 + 1e-3
             ac = sum(w[i] for i, j in enumerate(fr["idx"]) if ds.cls[j] == "Azionario")
             assert ac <= 0.6 + 1e-2, ac
         # portafogli salvati: file JSON, nome unico, elenco, cancellazione

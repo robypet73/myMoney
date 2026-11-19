@@ -36,6 +36,14 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 - `PF.frontier` calcola la frontiera efficiente (rendimenti storici reali, stessi vincoli) sui fondi delle tre proposte; il risultato di `/api/propose` include `frontier` (fondi, punti con pesi `w`) e `criteria`. La pagina disegna il grafico in SVG (`drawFrontier`), il cursore e il clic selezionano un punto (`SEL`), importi e quote si ricalcolano nel browser (`fundsPort`).
 - Portafogli salvati: file JSON `{version, saved_at, portfolio:{name, description, amount, source, data_period, criteria, metrics, classes, cash, positions[]}}` in `portafogli/` accanto al database (`pf_save`, `pf_list`, `pf_path`; nome unico, `id` = slug, nessun percorso arbitrario). Se cambi il formato, alza `version` e leggi anche i vecchi.
 
+## Criteri: tutti null, solo cursori e selezioni
+
+- **Nessun campo di testo o numero** nella schermata Crea portafoglio: cursori singoli (`SS`), intervalli a due estremi (`RS`, valori a gradini; l'estremo = nessun limite = `null`) e selezioni multiple. **Tutti i criteri partono a null**; i parametri di calcolo hanno un valore iniziale (importo, ETF 3–8, peso massimo 35%, tasso 2%, volatilità aggressivo 20%, titoli analizzati 150). Un nuovo criterio va aggiunto in `RS`/`SS`, in `PF.RANGE_COLS`/`PF.select` e in `TEXTS` (con la «i»).
+- Il primo criterio sono `dr_min` (diversificazione minima) e `corr_max` (correlazione media **pesata** massima): vincoli di `PF.solve`, validi per le tre strategie e per la frontiera; se irraggiungibili il server spiega i limiti (`PF.limits`).
+- **Numero di ETF**: `PF.prune` toglie i fondi fino a `kmax` e alla fine rifà il calcolo con peso minimo `MINW` per ogni fondo scelto: il numero effettivo è sempre tra `kmin` e `kmax`. La frontiera usa `prune` per ogni punto. Non ripristinare titoli a peso zero nei risultati.
+- **Dati**: `load_dataset` corregge gli errori di Yahoo (`clean_series`), esclude i fondi con movimenti giornalieri > 50% (`MAX_MOVE`) e quelli giovani che accorciano la finestra sotto `MIN_WINDOW_YEARS`, e riporta tutto in `ds.notes` (mostrato nella pagina). I rendimenti a monte dei criteri vengono da `etf.ret_*`, `vol_*`, `max_dd` (justETF, Yahoo, `hist_stats`); `/api/returns` scarica lo storico dei fondi che ne sono privi.
+- Gli assi del grafico della frontiera seguono la curva e le proposte, mai i singoli fondi.
+
 ## Verifica
 
 - `python selftest.py` (serve numpy e scipy). La pagina si prova avviando `python mymoney.py --db PROVA.db --no-browser --porta 8799` (database con `selftest.make_db`) e Playwright a 1100 e 390 px: nessun errore di pagina né scroll orizzontale.
