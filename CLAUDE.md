@@ -57,7 +57,7 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 
 ## Scheda di un fondo
 
-- Ogni titolo mostrato (proposte, tabella dei candidati, portafogli salvati) si rende con `flink(symbol, testo)` e un clic apre la scheda (`openFund` → `/api/fund` → `server.fund_detail`, statistiche in `PF.fund_stats`): anagrafica, rendimenti dallo storico a confronto con quelli dell'archivio (`stats_src`), grafici con `lineChart` (asse verticale sui dati, mai forzato a 0), rendimento per anno, composizione, altre quotazioni. Un nuovo elenco di titoli deve usare `flink`. Senza storico la scheda offre `/api/fund/history`.
+- Ogni titolo mostrato (proposte, tabella dei candidati, portafogli salvati) si rende con `flink(symbol, testo)` e un clic apre la scheda (`openFund` → `/api/fund` → `server.fund_detail`, statistiche in `PF.fund_stats`): anagrafica, rendimenti dallo storico a confronto con quelli dell'archivio (`stats_src`), grafici con `lineChart` (asse verticale sui dati, mai forzato a 0; area sfumata verde sopra il livello di riferimento e rossa sotto, `ref`: prezzo a inizio periodo, 0 per la perdita), rendimento per anno, composizione, altre quotazioni. Un nuovo elenco di titoli deve usare `flink`. Senza storico la scheda offre `/api/fund/history`.
 
 ## Verifica
 

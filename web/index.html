@@ -678,8 +678,8 @@ function drawFundCharts(days) {
   let i0 = 0; while (i0 < n - 1 && new Date(H.dates[i0]).getTime() < from) i0++;
   const t = H.dates.slice(i0).map(d => new Date(d).getTime()), p = H.close.slice(i0);
   let pk = p[0]; const dd = p.map(v => { pk = Math.max(pk, v); return v / pk - 1; });
-  lineChart($("fpr"), t, p, { f: v => it(v, 2), color: "var(--acc)" });
-  lineChart($("fdd"), t, dd, { f: v => it(v * 100, 0) + "%", color: "var(--down)", area: true, h: 150 });
+  lineChart($("fpr"), t, p, { f: v => it(v, 2), color: "var(--fg)", ref: p[0] });  // riferimento: il prezzo a inizio periodo
+  lineChart($("fdd"), t, dd, { f: v => it(v * 100, 0) + "%", color: "var(--fg)", ref: 0, h: 150 });
 }
 // grafico lineare: l'asse verticale segue i dati (mai forzato a 0), asse del tempo con date, indicatore al passaggio
 function lineChart(box, t, y, o) {
@@ -690,8 +690,16 @@ function lineChart(box, t, y, o) {
   const nt = W < 500 ? 4 : 6; for (let k = 0; k < nt; k++) { const tv = t0 + (t1 - t0) * k / (nt - 1), d = new Date(tv); g += `<text class="ax" x="${X(tv)}" y="${Hh - 6}" text-anchor="${k === 0 ? "start" : k === nt - 1 ? "end" : "middle"}">${d.toLocaleDateString("it-IT", { month: "short", year: "2-digit" })}</text>`; }
   const step = Math.max(1, Math.floor(t.length / 700)), pts = []; for (let i = 0; i < t.length; i += step) pts.push(i); if (pts[pts.length - 1] !== t.length - 1) pts.push(t.length - 1);
   const d = pts.map((i, k) => (k ? "L" : "M") + X(t[i]).toFixed(1) + " " + Y(y[i]).toFixed(1)).join("");
-  const area = o.area ? `<path d="${d}L${X(t1)} ${Y(Math.min(0, b))}L${X(t0)} ${Y(Math.min(0, b))}Z" fill="${o.color}" opacity=".18"/>` : "";
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" role="img">${g}${area}<path d="${d}" fill="none" stroke="${o.color}" stroke-width="1.8" stroke-linejoin="round"/><g class="hv" visibility="hidden"><line class="hl" y1="${T}" y2="${Hh - B}" stroke="var(--soft)" stroke-dasharray="3 3"/><circle r="4" fill="${o.color}" class="hd"/><text class="ht" y="${T + 10}" font-size="12" fill="var(--fg)"></text></g></svg>`;
+  // area sfumata: verde sopra il livello di riferimento, rossa sotto (il riferimento è tratteggiato)
+  let area = "", defs = "";
+  if (o.ref != null) {
+    const id = (box.id || "c"), bot = Hh - B, ry = Math.min(Math.max(Y(o.ref), T), bot), ad = d + `L${X(t1)} ${ry}L${X(t0)} ${ry}Z`;
+    defs = `<defs><linearGradient id="${id}u" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${T}" y2="${ry}"><stop offset="0" stop-color="var(--up)" stop-opacity=".5"/><stop offset="1" stop-color="var(--up)" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="${id}d" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${ry}" y2="${bot}"><stop offset="0" stop-color="var(--down)" stop-opacity=".04"/><stop offset="1" stop-color="var(--down)" stop-opacity=".5"/></linearGradient>
+      <clipPath id="${id}cu"><rect x="0" y="${T}" width="${W}" height="${Math.max(0, ry - T)}"/></clipPath><clipPath id="${id}cd"><rect x="0" y="${ry}" width="${W}" height="${Math.max(0, bot - ry)}"/></clipPath></defs>`;
+    area = `<path d="${ad}" fill="url(#${id}u)" clip-path="url(#${id}cu)"/><path d="${ad}" fill="url(#${id}d)" clip-path="url(#${id}cd)"/><line x1="${L}" x2="${W - R}" y1="${ry}" y2="${ry}" stroke="var(--soft)" stroke-dasharray="4 3" stroke-width="1"/>`;
+  }
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" role="img">${defs}${g}${area}<path d="${d}" fill="none" stroke="${o.color}" stroke-width="1.6" stroke-linejoin="round"/><g class="hv" visibility="hidden"><line class="hl" y1="${T}" y2="${Hh - B}" stroke="var(--soft)" stroke-dasharray="3 3"/><circle r="4" fill="${o.color}" class="hd"/><text class="ht" y="${T + 10}" font-size="12" fill="var(--fg)"></text></g></svg>`;
   const svg = box.firstElementChild, hv = svg.querySelector(".hv"), hl = svg.querySelector(".hl"), hd = svg.querySelector(".hd"), ht = svg.querySelector(".ht");
   const mv = ev => { const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * (W / r.width), tv = t0 + (x - L) / (W - L - R) * (t1 - t0); let lo = 0, hi = t.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < tv) lo = m + 1; else hi = m; } const i = lo > 0 && Math.abs(t[lo - 1] - tv) < Math.abs(t[lo] - tv) ? lo - 1 : lo;
     hv.setAttribute("visibility", "visible"); hl.setAttribute("x1", X(t[i])); hl.setAttribute("x2", X(t[i])); hd.setAttribute("cx", X(t[i])); hd.setAttribute("cy", Y(y[i]));
