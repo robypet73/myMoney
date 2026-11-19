@@ -89,21 +89,24 @@ def num(x):
 
 
 def parse_create(d):
-    """Dai campi della pagina ai criteri di ricerca (f) e ai parametri del portafoglio (p). Tutti i criteri sono assenti (null) finché non li imposti."""
+    """Dai campi della pagina ai criteri di ricerca (f) e ai parametri del portafoglio (p). Ogni campo vuoto = non impostato: i criteri non limitano,
+    i parametri di calcolo prendono il valore predefinito (mostrato nel campo)."""
+    dv = lambda k, x: x if num(d.get(k)) is None else num(d.get(k))
     caps = {c: num((d.get("class_caps") or {}).get(c)) for c in C.CLASSES}
     caps = {c: 100.0 if v is None else v for c, v in caps.items()}
+    cmin = {c: num((d.get("class_min") or {}).get(c)) or 0.0 for c in C.CLASSES}
     ranges = {}
     for k, v in (d.get("ranges") or {}).items():
         if k in PF.RANGE_COLS or k == "years":
             lo, hi = (num(v[0]), num(v[1])) if isinstance(v, (list, tuple)) and len(v) == 2 else (None, None)
             if lo is not None or hi is not None:
                 ranges[k] = [lo, hi]
-    f = {"unknown": bool(d.get("unknown")), "pool": int(num(d.get("pool")) or 150), "class_caps": caps, "ranges": ranges}
+    f = {"unknown": bool(d.get("unknown")), "pool": int(dv("pool", 150) or 150), "class_caps": caps, "class_min": cmin, "ranges": ranges}
     for k in ("exchanges", "types", "currencies", "distributions", "regions", "replications", "domiciles"):
         f[k] = list(d.get(k) or [])
     f["sustainable"] = bool(d.get("sustainable"))
-    p = {"amount": num(d.get("amount")) or 0.0, "kmin": int(num(d.get("kmin")) or 3), "kmax": int(num(d.get("kmax")) or 8), "cap": (num(d.get("cap")) or 35) / 100,
-         "rf": (num(d.get("rf")) if num(d.get("rf")) is not None else 2) / 100, "vol_aggr": (num(d.get("vol_aggr")) or 20) / 100, "caps": {c: v / 100 for c, v in caps.items()},
+    p = {"amount": dv("amount", 10000.0), "kmin": int(dv("kmin", 3)), "kmax": int(dv("kmax", 8)), "cap": dv("cap", 35.0) / 100, "minw": dv("minw", PF.MINW * 100) / 100,
+         "rf": dv("rf", 2.0) / 100, "vol_aggr": dv("vol_aggr", 20.0) / 100, "caps": {c: v / 100 for c, v in caps.items()}, "cmin": {c: v / 100 for c, v in cmin.items() if v},
          "dr_min": num(d.get("dr_min")), "corr_max": num(d.get("corr_max"))}
     return f, p
 
@@ -111,6 +114,15 @@ def parse_create(d):
 def check(p):
     if p["kmin"] > p["kmax"]:
         return "Il numero minimo di ETF supera il massimo."
+    if p["minw"] * p["kmin"] > 1 + 1e-9:
+        return f"Con almeno {p['kmin']} ETF il peso minimo per ETF non può superare {100 / p['kmin']:.0f}%."
+    if p["minw"] > p["cap"] + 1e-9:
+        return "Il peso minimo per ETF supera il peso massimo."
+    if sum(p["cmin"].values()) > 1 + 1e-9:
+        return "La somma dei minimi per classe supera il 100%."
+    bad = [c for c, m in p["cmin"].items() if m > p["caps"].get(c, 1.0) + 1e-9]
+    if bad:
+        return "Il minimo supera il massimo per la classe: " + ", ".join(bad) + "."
     if sum(p["caps"].values()) < 1 - 1e-9:
         return "La somma dei massimi per classe è sotto il 100%: il portafoglio non può essere composto."
     if p["cap"] * p["kmax"] < 1:
@@ -497,7 +509,7 @@ def make_handler(path, job):
                     ds = PF.load_dataset(db, fresh, PF.WINDOW_YEARS, yr or 0.0)
                     if ds is None:
                         return {"message": "Servono almeno 2 titoli con storico sufficiente e dati affidabili: allarga i criteri o abbassa la storia minima."}
-                    out, fail = PF.propose(ds, **p)
+                    out, fail = PF.propose(ds, **{k: v for k, v in p.items()})
                     if not out:
                         caps = {k: v for k, v in p["caps"].items() if v < 1.0}
                         room = PF.capacity(list(range(len(ds.cls))), ds.cls, caps, p["cap"])
@@ -521,7 +533,7 @@ def make_handler(path, job):
                     fsyms = []
                     for pr in out:
                         fsyms += [x["symbol"] for x in pr["items"] if x["symbol"] not in fsyms]
-                    fr = PF.frontier(ds, [order[s_] for s_ in fsyms], p["cap"], p["caps"], p["rf"], p["kmin"], p["kmax"], p["dr_min"], p["corr_max"])
+                    fr = PF.frontier(ds, [order[s_] for s_ in fsyms], p["cap"], p["caps"], p["rf"], p["kmin"], p["kmax"], p["dr_min"], p["corr_max"], cmin=p["cmin"], minw=p["minw"])
                     front = None
                     if fr and len(fr["points"]) >= 2:
                         funds = []

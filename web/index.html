@@ -101,6 +101,9 @@ button.danger { color:var(--down); border-color:var(--down); }
 .rs-track input[type=range]::-webkit-slider-runnable-track { background:none; } .rs-track input[type=range]::-moz-range-track { background:none; }
 .ss input[type=range] { width:100%; accent-color:var(--acc); margin:4px 0 0; }
 .cov { margin:10px 0 2px; }
+.rs-num { display:flex; align-items:center; gap:6px; margin:3px 0 0; }
+.rs-num input { width:100%; max-width:110px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); font:inherit; font-size:var(--fs-s); }
+.rs-num input.bad { border-color:var(--down); } .rs-num .u { font-size:var(--fs-s); color:var(--soft); min-width:1.5em; }
 .grid2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:4px 26px; }
 .flink { color:var(--acc); cursor:pointer; text-decoration:none; border-bottom:1px dotted var(--acc); }
 .dlg.wide { width:min(980px,100%); text-align:left; max-height:92vh; overflow:auto; position:relative; }
@@ -196,12 +199,12 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
       <div class="grid2" id="c-port"></div>
     </section>
     <section class="card">
-      <h2>Composizione: massimo per classe <button class="i" data-i="class_caps" type="button">i</button></h2>
-      <div class="hint">100% = libero · 0% = classe esclusa</div>
+      <h2>Composizione: minimo e massimo per classe <button class="i" data-i="class_caps" type="button">i</button></h2>
+      <div class="hint">massimo 0% = classe esclusa · campi vuoti = nessun limite</div>
       <div class="grid2" id="cls" style="margin-top:6px"></div>
     </section>
     <section class="card">
-      <h2>Criteri di ricerca <span class="hint">(tutti disattivati finché non li imposti)</span></h2>
+      <h2>Criteri di ricerca <span class="hint">(tutti vuoti = nessun limite; scrivi qualsiasi numero o usa i cursori)</span></h2>
       <div id="multi"></div>
       <div class="grid2" id="c-ranges" style="margin-top:10px"></div>
       <div class="cov hint" id="cov"></div>
@@ -237,54 +240,81 @@ const post = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "ap
 const MULTI = { exchanges: "Borse (preferenza nell'ordine)", types: "Tipo", currencies: "Valuta di negoziazione", distributions: "Distribuzione", regions: "Area", replications: "Replica", domiciles: "Domicilio" };
 const OPTS = { types: ["ETF", "ETC", "ETN/ETP"], currencies: ["EUR", "USD", "GBP", "CHF"], distributions: ["Accumulazione", "Distribuzione"], replications: ["Fisica", "Sintetica"] };
 const V = [0, 2, 4, 6, 8, 10, 12, 15, 20, 25, 30, 40, 60];
-// intervalli [chiave, titolo, valori, unità, decimali]: all'estremo il limite non c'è (null)
+const P5 = Array.from({ length: 21 }, (_, i) => i * 5);
+// intervalli [chiave, titolo, valori del cursore, unità, decimali]: ogni estremo è un campo numerico facoltativo (vuoto = nessun limite); il cursore è una scorciatoia
 const RS = [["ter", "TER (costo annuo)", [0, .05, .1, .15, .2, .3, .4, .5, .75, 1], "%", 2], ["assets", "Patrimonio", [0, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 50000], "M€", 0],
   ["adv", "Volume medio giornaliero", [0, .05, .1, .25, .5, 1, 2.5, 5, 10, 50], "M€", 2], ["spread", "Spread bid-ask", [0, .05, .1, .2, .3, .5, 1, 2], "%", 2],
   ["ret_1y", "Rendimento 1 anno", [-50, -25, -10, 0, 5, 10, 15, 20, 30, 50, 100], "%", 0], ["ret_3y", "Rendimento 3 anni (annuo)", [-20, -10, -5, 0, 3, 5, 8, 10, 12, 15, 20, 30], "%", 0],
   ["ret_5y", "Rendimento 5 anni (annuo)", [-10, -5, 0, 3, 5, 8, 10, 12, 15, 20, 30], "%", 0], ["vol_1y", "Volatilità 1 anno", V, "%", 0], ["vol_3y", "Volatilità 3 anni", V, "%", 0],
   ["max_dd", "Perdita massima (drawdown)", [-80, -60, -50, -40, -30, -20, -10, 0], "%", 0], ["years", "Storia disponibile", [0, 1, 2, 3, 5, 7, 10, 15, 20], "anni", 0]];
-// cursori singoli: valori da `min` a `max`, oppure elenco `stops`; `nul` = estremo che significa «nessun limite»
+// cursori con un solo valore: `def` = valore usato se il campo è vuoto (null = criterio disattivato); `nul` = estremo del cursore che significa «vuoto»
 const SS = {
-  dr_min: { t: "Diversificazione minima", min: 1, max: 3, step: .05, def: 1, nul: "min", f: v => it(v, 2), grp: "first" },
-  corr_max: { t: "Correlazione media massima", min: 0, max: 1, step: .05, def: 1, nul: "max", f: v => it(v, 2), grp: "first" },
-  amount: { t: "Importo", stops: [1000, 2500, 5000, 10000, 15000, 25000, 50000, 100000, 250000, 500000, 1000000], def: 10000, f: v => it(v, 0) + " €", grp: "port" },
-  kmin: { t: "ETF minimo", min: 2, max: 15, step: 1, def: 3, f: v => v, grp: "port" }, kmax: { t: "ETF massimo", min: 2, max: 20, step: 1, def: 8, f: v => v, grp: "port" },
-  cap: { t: "Peso massimo per ETF", min: 10, max: 100, step: 5, def: 35, f: v => v + "%", grp: "port" }, rf: { t: "Tasso privo di rischio", min: 0, max: 6, step: .25, def: 2, f: v => it(v, 2) + "%", grp: "port" },
-  vol_aggr: { t: "Volatilità massima dell'Aggressivo", min: 5, max: 40, step: 1, def: 20, f: v => v + "%", grp: "port" },
-  pool: { t: "Titoli analizzati (massimo)", stops: [25, 50, 75, 100, 150, 200, 300], def: 150, f: v => v, grp: "calc" }
+  dr_min: { t: "Diversificazione minima", min: 1, max: 3, step: .05, def: null, nul: "min", u: "", grp: "first" },
+  corr_max: { t: "Correlazione media massima", min: 0, max: 1, step: .05, def: null, nul: "max", u: "", grp: "first" },
+  amount: { t: "Importo", stops: [1000, 2500, 5000, 10000, 15000, 25000, 50000, 100000, 250000, 500000, 1000000], def: 10000, u: "€", grp: "port" },
+  kmin: { t: "ETF minimo", min: 2, max: 15, step: 1, def: 3, u: "", grp: "port" }, kmax: { t: "ETF massimo", min: 2, max: 20, step: 1, def: 8, u: "", grp: "port" },
+  minw: { t: "Peso minimo per ETF", min: 0, max: 30, step: 1, def: 3, u: "%", grp: "port" }, cap: { t: "Peso massimo per ETF", min: 10, max: 100, step: 5, def: 35, u: "%", grp: "port" },
+  rf: { t: "Tasso privo di rischio", min: 0, max: 6, step: .25, def: 2, u: "%", grp: "port" }, vol_aggr: { t: "Volatilità massima dell'Aggressivo", min: 5, max: 40, step: 1, def: 20, u: "%", grp: "port" },
+  pool: { t: "Titoli analizzati (massimo)", stops: [25, 50, 75, 100, 150, 200, 300], def: 150, u: "", grp: "calc" }
 };
 let INFO = null, wasBusy = false, CANDS = [], sortK = null, sortDir = -1;
 const nf = (v, d) => it(v, d);
+const inFmt = v => String(Math.round(v * 1e6) / 1e6).replace(".", ",");   // valore nel campo: virgola decimale
+const nearest = (st, v) => { let b = 0; st.forEach((x, i) => { if (Math.abs(x - v) < Math.abs(st[b] - v)) b = i; }); return b; };
 function ssHtml(k, c) {
-  const n = c.stops ? c.stops.length - 1 : null, v = c.stops ? c.stops.indexOf(c.def) : c.def;
   return `<div class="ss" data-k="${k}"><div class="rs-head"><span class="lt">${c.t}<button class="i" data-i="${c.ikey || k}" type="button">i</button></span><b class="sv"></b></div>
-    <input type="range" min="${c.stops ? 0 : c.min}" max="${c.stops ? n : c.max}" step="${c.stops ? 1 : c.step}" value="${v}" aria-label="${c.t}"></div>`;
+    <div class="rs-num"><input class="n1" inputmode="decimal" autocomplete="off" placeholder="${c.def == null ? "nessun limite" : inFmt(c.def)}" aria-label="${c.t}"><span class="u">${c.u}</span></div>
+    <input class="sl" type="range" min="${c.stops ? 0 : c.min}" max="${c.stops ? c.stops.length - 1 : c.max}" step="${c.stops ? 1 : c.step}" aria-label="${c.t}: cursore"></div>`;
 }
-function ssVal(k) { const c = SS[k], r = document.querySelector(`.ss[data-k="${k}"] input`), x = +r.value; if (c.stops) return c.stops[x]; if (c.nul === "min" && x <= c.min) return null; if (c.nul === "max" && x >= c.max) return null; return x; }
+const ssVal = k => num(document.querySelector(`.ss[data-k="${k}"] .n1`).value);
+function ssPos(el) {   // posizione del cursore secondo il campo
+  const k = el.dataset.k, c = SS[k], v = num(el.querySelector(".n1").value), sl = el.querySelector(".sl");
+  if (v == null) sl.value = c.def == null ? (c.nul === "max" ? c.max : c.min) : c.stops ? c.stops.indexOf(c.def) : c.def;
+  else sl.value = c.stops ? nearest(c.stops, v) : Math.min(c.max, Math.max(c.min, v));
+}
 function ssShow(el) {
-  const k = el.dataset.k, c = SS[k], r = el.querySelector("input"), v = ssVal(k);
-  el.querySelector(".sv").textContent = v == null ? "nessun limite" : c.f(v);
+  const k = el.dataset.k, c = SS[k], v = ssVal(k);
+  el.querySelector(".sv").textContent = v == null ? (c.def == null ? "nessun limite" : `predefinito ${inFmt(c.def)}${c.u ? " " + c.u : ""}`) : `${inFmt(v)}${c.u ? " " + c.u : ""}`;
+}
+function ssFromSlider(el) {
+  const k = el.dataset.k, c = SS[k], x = +el.querySelector(".sl").value; let v = c.stops ? c.stops[x] : x;
+  if ((c.nul === "min" && x <= c.min) || (c.nul === "max" && x >= c.max)) v = null;
+  el.querySelector(".n1").value = v == null ? "" : inFmt(v);
 }
 function rsHtml(k, t, st, u) {
-  return `<div class="rs" data-k="${k}"><div class="rs-head"><span class="lt">${t}<button class="i" data-i="${k}" type="button">i</button></span><b class="rv">nessun limite</b></div>
-    <div class="rs-track"><input class="lo" type="range" min="0" max="${st.length - 1}" step="1" value="0" aria-label="${t}: minimo"><input class="hi" type="range" min="0" max="${st.length - 1}" step="1" value="${st.length - 1}" aria-label="${t}: massimo"></div></div>`;
+  return `<div class="rs" data-k="${k}"><div class="rs-head"><span class="lt">${t}<button class="i" data-i="${k.startsWith("cls_") ? "class_caps" : k}" type="button">i</button></span><b class="rv">nessun limite</b></div>
+    <div class="rs-num"><input class="nlo" inputmode="decimal" autocomplete="off" placeholder="minimo" aria-label="${t}: minimo"><span>–</span><input class="nhi" inputmode="decimal" autocomplete="off" placeholder="massimo" aria-label="${t}: massimo"><span class="u">${u}</span></div>
+    <div class="rs-track"><input class="lo" type="range" min="0" max="${st.length - 1}" step="1" value="0" aria-label="${t}: cursore minimo"><input class="hi" type="range" min="0" max="${st.length - 1}" step="1" value="${st.length - 1}" aria-label="${t}: cursore massimo"></div></div>`;
 }
-function rsVal(k) { const [, , st] = RS.find(x => x[0] === k), el = document.querySelector(`.rs[data-k="${k}"]`), lo = +el.querySelector(".lo").value, hi = +el.querySelector(".hi").value; return [lo <= 0 ? null : st[lo], hi >= st.length - 1 ? null : st[hi]]; }
-function rsShow(el, moved) {
-  const k = el.dataset.k, [, , st, u, d] = RS.find(x => x[0] === k), lo = el.querySelector(".lo"), hi = el.querySelector(".hi");
-  if (+lo.value > +hi.value) { if (moved === "lo") hi.value = lo.value; else lo.value = hi.value; }
-  const a = +lo.value, b = +hi.value, n = st.length - 1;
+const rsDef = k => RS.find(x => x[0] === k) || CLS.find(x => x[0] === k);
+const rsVal = k => { const el = document.querySelector(`.rs[data-k="${k}"]`); return [num(el.querySelector(".nlo").value), num(el.querySelector(".nhi").value)]; };
+function rsPos(el) {   // posizione dei cursori secondo i campi
+  const st = rsDef(el.dataset.k)[2], [lo, hi] = rsVal(el.dataset.k);
+  el.querySelector(".lo").value = lo == null ? 0 : nearest(st, lo); el.querySelector(".hi").value = hi == null ? st.length - 1 : nearest(st, hi);
+}
+function rsFromSlider(el, which) {
+  const st = rsDef(el.dataset.k)[2], lo = el.querySelector(".lo"), hi = el.querySelector(".hi");
+  if (+lo.value > +hi.value) { if (which === "lo") hi.value = lo.value; else lo.value = hi.value; }
+  const inp = el.querySelector(which === "lo" ? ".nlo" : ".nhi"), x = +(which === "lo" ? lo : hi).value;
+  inp.value = (which === "lo" ? x <= 0 : x >= st.length - 1) ? "" : inFmt(st[x]);
+}
+function rsShow(el) {
+  const [, , st, u, d] = rsDef(el.dataset.k), [lo, hi] = rsVal(el.dataset.k), n = st.length - 1, a = +el.querySelector(".lo").value, b = +el.querySelector(".hi").value, bad = lo != null && hi != null && lo > hi;
   el.querySelector(".rs-track").style.setProperty("--a", (a / n * 100) + "%"); el.querySelector(".rs-track").style.setProperty("--b", (b / n * 100) + "%");
-  const parts = []; if (a > 0) parts.push("da " + nf(st[a], d) + " " + u); if (b < n) parts.push("fino a " + nf(st[b], d) + " " + u);
-  el.querySelector(".rv").textContent = parts.length ? parts.join(" ") : "nessun limite";
+  el.querySelectorAll(".nlo, .nhi").forEach(x => x.classList.toggle("bad", bad));
+  const parts = [], sh = v => inFmt(v);   // il numero scritto, senza arrotondamenti
+  if (lo != null) parts.push("da " + sh(lo) + " " + u); if (hi != null) parts.push("fino a " + sh(hi) + " " + u);
+  el.querySelector(".rv").textContent = bad ? "il minimo supera il massimo" : parts.length ? parts.join(" ") : "nessun limite";
 }
+let CLS = [];
 function buildCrea(s) {
   const put = (g, ks) => $(g).innerHTML = ks.map(k => ssHtml(k, SS[k])).join("");
-  put("c-first", ["dr_min", "corr_max"]); put("c-port", ["amount", "kmin", "kmax", "cap", "rf", "vol_aggr"]); put("c-calc", ["pool"]);
-  $("cls").innerHTML = INFO.classes.map(c => { SS["cap_" + c] = { t: c, min: 0, max: 100, step: 5, def: 100, f: v => v + "%", ikey: "class_caps" }; return ssHtml("cap_" + c, SS["cap_" + c]); }).join("");
+  put("c-first", ["dr_min", "corr_max"]); put("c-port", ["amount", "kmin", "kmax", "minw", "cap", "rf", "vol_aggr"]); put("c-calc", ["pool"]);
+  CLS = INFO.classes.map(c => ["cls_" + c, c, P5, "%", 0]);
+  $("cls").innerHTML = CLS.map(([k, t, st, u]) => rsHtml(k, t, st, u)).join("");
   $("c-ranges").innerHTML = RS.map(([k, t, st, u]) => rsHtml(k, t, st, u)).join("");
-  const sv = s.ss || {}; document.querySelectorAll(".ss").forEach(el => { const k = el.dataset.k; if (sv[k] != null) el.querySelector("input").value = sv[k]; ssShow(el); });
-  const rv = s.rs || {}; document.querySelectorAll(".rs").forEach(el => { const k = el.dataset.k; if (rv[k]) { el.querySelector(".lo").value = rv[k][0]; el.querySelector(".hi").value = rv[k][1]; } rsShow(el); });
+  const sv = s.ss || {}; document.querySelectorAll(".ss").forEach(el => { const k = el.dataset.k; if (sv[k] != null) el.querySelector(".n1").value = sv[k]; ssPos(el); ssShow(el); });
+  const rv = s.rs || {}; document.querySelectorAll(".rs").forEach(el => { const k = el.dataset.k; if (rv[k]) { el.querySelector(".nlo").value = rv[k][0]; el.querySelector(".nhi").value = rv[k][1]; } rsPos(el); rsShow(el); });
 }
 /* ---------- spiegazioni: cos'è, come si usa, soglie ---------- */
 const R = () => (INFO && INFO.rules) || { minw: .03, shrink: .5, dr_gain: 1.02, window: 3, min_window: 2 };
@@ -293,18 +323,19 @@ const ref = (...l) => l.map(x => `<div class="ref">${x}</div>`).join("");
 const TEXTS = () => ({
   first: { t: "Primo criterio: correlazione e diversificazione", h: `<h3>Cos'è</h3><p>Due misure di quanto i fondi del portafoglio si muovono insieme. Sono il primo criterio perché valgono per tutte e tre le proposte e per la frontiera.</p>
     <h3>Come si usa</h3><p><b>Diversificazione minima</b>: il rapporto di diversificazione (Choueifaty–Coignard) è la media delle volatilità dei fondi diviso la volatilità del portafoglio. 1 = nessun beneficio; più è alto, più i fondi si compensano. <b>Correlazione media massima</b>: la correlazione media tra le coppie di fondi, pesata sui pesi (−1 si compensano, 0 indipendenti, +1 si muovono insieme).</p>
-    <p>Lasciando il cursore all'estremo (1,00 per la diversificazione, 1,00 per la correlazione) il criterio è disattivato. Se con i fondi analizzati non si può raggiungere il valore chiesto, la pagina dice qual è il massimo (o minimo) possibile.</p>
+    <p>Lasciando il campo vuoto il criterio è disattivato. Se con i fondi analizzati non si può raggiungere il valore chiesto, la pagina dice qual è il massimo (o minimo) possibile.</p>
     <h3>Soglie di riferimento</h3><div class="ref">Diversificazione: sotto 1,2 poca · 1,2–1,6 buona · oltre 1,6 molto buona.</div><div class="ref">Correlazione media: sotto 0,4 buona · 0,4–0,8 media · oltre 0,8 poca protezione.</div>` },
-  dr_min: I("Diversificazione minima", "Il rapporto di diversificazione del portafoglio: media delle volatilità dei fondi ÷ volatilità del portafoglio.", "Il portafoglio proposto deve avere almeno questo valore. Al minimo (1,00) il criterio è disattivato. Più lo alzi, più il programma sceglie fondi che si compensano (obbligazioni, oro, aree diverse).", ref("Sotto 1,2: poca · 1,2–1,6: buona · oltre 1,6: molto buona (dipende dai fondi disponibili).")),
-  corr_max: I("Correlazione media massima", "La correlazione media tra le coppie di fondi del portafoglio, pesata sui pesi.", "Il portafoglio proposto deve avere al massimo questo valore. Al massimo (1,00) il criterio è disattivato. Più lo abbassi, più i fondi sono diversi tra loro.", ref("Sotto 0,4: buona · 0,4–0,8: media · oltre 0,8: i fondi si muovono quasi insieme.")),
+  dr_min: I("Diversificazione minima", "Il rapporto di diversificazione del portafoglio: media delle volatilità dei fondi ÷ volatilità del portafoglio.", "Il portafoglio proposto deve avere almeno questo valore. Campo vuoto: il criterio è disattivato. Più lo alzi, più il programma sceglie fondi che si compensano (obbligazioni, oro, aree diverse).", ref("Sotto 1,2: poca · 1,2–1,6: buona · oltre 1,6: molto buona (dipende dai fondi disponibili).")),
+  corr_max: I("Correlazione media massima", "La correlazione media tra le coppie di fondi del portafoglio, pesata sui pesi.", "Il portafoglio proposto deve avere al massimo questo valore. Campo vuoto: il criterio è disattivato. Più lo abbassi, più i fondi sono diversi tra loro.", ref("Sotto 0,4: buona · 0,4–0,8: media · oltre 0,8: i fondi si muovono quasi insieme.")),
   amount: I("Importo", "La somma che vuoi investire.", "Non cambia i pesi dei titoli: serve a calcolare quanti euro e quante quote intere comprare per ciascuno. Le quote sono intere, quindi avanza sempre un piccolo resto (mostrato)."),
-  kmin: I("ETF minimo", "Il numero minimo di ETF del portafoglio.", `Ogni portafoglio proposto ha almeno questo numero di ETF, tutti con un peso di almeno il ${it(R().minw * 100, 0)}% (soglia fissa): nessun fondo «finto» a peso zero. Se i vincoli non permettono questo numero, la proposta non viene calcolata e la pagina lo spiega.`, ref("2–3 ETF: portafoglio molto semplice.")),
+  kmin: I("ETF minimo", "Il numero minimo di ETF del portafoglio.", `Ogni portafoglio proposto ha almeno questo numero di ETF, tutti con un peso di almeno il «Peso minimo per ETF»: nessun fondo «finto» a peso zero. Se i vincoli non permettono questo numero, la proposta non viene calcolata e la pagina lo spiega. Campo vuoto: 3.`, ref("2–3 ETF: portafoglio molto semplice.")),
+  minw: I("Peso minimo per ETF", "La quota minima che ogni ETF scelto deve avere nel portafoglio.", `Evita posizioni troppo piccole per contare. Vale per ogni proposta e per ogni punto della frontiera. Con almeno N ETF il peso minimo non può superare 100 ÷ N. Campo vuoto: ${it(R().minw * 100, 0)}% (valore predefinito).`, ref("Predefinito 3%. Con importi piccoli conviene alzarlo (5–10%) per non avere quote da poche decine di euro.")),
   kmax: I("ETF massimo", "Il numero massimo di ETF del portafoglio.", `Il programma parte da tutti i fondi analizzati e toglie, uno alla volta, quello di peso minore, fino a questo numero. Vale anche per ogni punto della frontiera efficiente. Il peso massimo per ETF deve essere almeno 100 ÷ ETF massimo.`, ref("3–5 ETF bastano per un portafoglio semplice (azioni mondo + obbligazioni + oro).", "Oltre 8–10 ETF la diversificazione in più è piccola e la gestione si complica.")),
-  cap: I("Peso massimo per ETF", "La quota massima del portafoglio che un singolo ETF può avere.", "Evita che il portafoglio si concentri su un solo fondo. Più è basso più il portafoglio è distribuito ma meno ottimizzato. Deve essere almeno 100 ÷ ETF massimo.", ref("Predefinito 35%.", "Riferimento: 25–40% per un portafoglio di 4–6 ETF.")),
+  cap: I("Peso massimo per ETF", "La quota massima del portafoglio che un singolo ETF può avere.", "Evita che il portafoglio si concentri su un solo fondo. Più è basso più il portafoglio è distribuito ma meno ottimizzato. Deve essere almeno 100 ÷ ETF massimo. Campo vuoto: 35%.", ref("Predefinito 35%.", "Riferimento: 25–40% per un portafoglio di 4–6 ETF.")),
   rf: I("Tasso privo di rischio", "Il rendimento annuo di un investimento senza rischio (per esempio un BOT a 12 mesi).", "Entra nel rapporto di Sharpe = (rendimento − tasso) ÷ volatilità: serve alla proposta Sharpe e alla scelta del primo titolo della Bilanciata. L'Aggressiva non lo usa.", ref("Predefinito 2%.", "Metti il rendimento lordo di un titolo di Stato a 1 anno.")),
   vol_aggr: I("Volatilità massima dell'Aggressivo", "Il limite di oscillazione annua della proposta Aggressiva.", "Il programma cerca il massimo rendimento atteso senza superarlo. Se è più basso della volatilità minima raggiungibile con i titoli scelti, viene portato a quella +5% e te lo dice.", ref("Predefinito 20%.", "Azionario mondiale ≈ 12–18%; obbligazionario europeo ≈ 4–6%; mercati emergenti ≈ 18–25%.")),
   pool: I("Titoli analizzati (massimo)", "Quanti fondi, tra quelli che passano i criteri, entrano nel calcolo.", "Sono i più grandi per patrimonio, poi per volume. Se hai limitato qualche classe (massimo sotto 100%), i posti si dividono tra le classi in proporzione al massimo, almeno 3 per classe. Per ognuno si scarica lo storico dei prezzi (circa un secondo ciascuno la prima volta): più alto = più completo ma più lento.", ref("Predefinito 150.")),
-  class_caps: I("Composizione: massimo per classe", "Per ogni classe di attivo (azionario, obbligazionario, materie prime…) la quota massima del portafoglio.", "100% = nessun limite, 0% = classe esclusa dalla ricerca. Valgono per tutte e tre le proposte. Esempio: Azionario 60% e il resto 100% → al massimo 60% di azioni. La somma dei massimi deve essere almeno 100%. La classe viene da justETF per i fondi con ISIN verificato, altrimenti è dedotta dal nome (può sbagliare).", ref("Prudente: azionario 40–50%. Bilanciato: 60%. Dinamico: 80–100%.")),
+  class_caps: I("Composizione: minimo e massimo per classe", "Per ogni classe di attivo (azionario, obbligazionario, materie prime…) la quota minima e massima del portafoglio.", "Scrivi i numeri (o usa il cursore a due estremi). Massimo vuoto = nessun limite; massimo 0% = classe esclusa dalla ricerca; minimo vuoto = nessun obbligo. Esempi: Obbligazionario minimo 30% e massimo 60% → il portafoglio ha tra il 30% e il 60% di obbligazioni; Azionario massimo 60% → al massimo 60% di azioni. La somma dei massimi deve essere almeno 100% e quella dei minimi al massimo 100%. La classe viene da justETF per i fondi con ISIN verificato, altrimenti è dedotta dal nome (può sbagliare).", ref("Prudente: azionario 40–50%. Bilanciato: 60%. Dinamico: 80–100%.")),
   exchanges: I("Borse", "Le borse da cui prendere i titoli.", "Nessuna spunta = tutte quelle presenti nell'archivio. Lo stesso fondo quotato su più borse viene preso una sola volta: si preferisce la quotazione in euro, poi la borsa nell'ordine in cui sono elencate, poi quella con più volume. Con Borsa Italiana eviti il cambio e le commissioni di borse estere."),
   types: I("Tipo", "ETF = fondo indicizzato quotato; ETC = strumento su materie prime (per esempio oro fisico); ETN/ETP = titolo di debito legato a un indice, spesso con leva o a breve termine.", "Dedotto dal nome. Nessuna spunta = tutti. Gli ETN/ETP hanno anche rischio dell'emittente: per un portafoglio di lungo periodo di solito si lasciano fuori.", ref("Portafoglio semplice: solo ETF.")),
   currencies: I("Valuta di negoziazione", "La valuta in cui si compra il titolo sulla borsa (non quella degli investimenti del fondo).", "Nessuna spunta = tutte. I prezzi sono comunque convertiti in euro con i cambi BCE. Scegliere EUR evita il cambio al momento dell'acquisto."),
@@ -313,7 +344,7 @@ const TEXTS = () => ({
   replications: I("Replica", "Fisica: il fondo compra davvero i titoli dell'indice (tutti o un campione). Sintetica: usa un contratto swap con una banca.", "La sintetica costa spesso meno e replica bene, ma ha rischio di controparte. Dato justETF, disponibile solo per i fondi con ISIN verificato."),
   domiciles: I("Domicilio", "Il paese in cui è registrato il fondo.", "Conta per le regole e per la tassazione dei dividendi esteri. Irlanda e Lussemburgo sono i più comuni per gli UCITS. Dato justETF, solo per i fondi con ISIN verificato."),
   sustainable: I("Solo fondi sostenibili (ESG)", "I fondi che justETF classifica come sostenibili (criteri ESG o SRI).", "È una classificazione del sito, non una certificazione. Dato disponibile solo per i fondi con ISIN verificato."),
-  ter: I("TER (costo annuo)", "Il costo annuo del fondo in percentuale del patrimonio (Total Expense Ratio).", "Trascina i due estremi: all'estremo il limite non c'è. Il costo riduce il rendimento ogni anno. I fondi senza il dato si escludono, salvo la spunta in fondo ai criteri.", ref("ETF azionari: sotto 0,20% molto basso · 0,20–0,50% normale · oltre 0,50% alto.", "Obbligazionari e mercati emergenti costano di norma un po' di più.")),
+  ter: I("TER (costo annuo)", "Il costo annuo del fondo in percentuale del patrimonio (Total Expense Ratio).", "Scrivi il minimo e/o il massimo (qualsiasi numero) o trascina i cursori: un campo vuoto = nessun limite su quel lato. Il costo riduce il rendimento ogni anno. I fondi senza il dato si escludono, salvo la spunta in fondo ai criteri.", ref("ETF azionari: sotto 0,20% molto basso · 0,20–0,50% normale · oltre 0,50% alto.", "Obbligazionari e mercati emergenti costano di norma un po' di più.")),
   assets: I("Patrimonio", "Il patrimonio gestito dal fondo, in milioni di euro.", "I fondi piccoli hanno più rischio di chiusura e spread più larghi. Dato justETF o Yahoo (indicativo).", ref("Sotto 100 M€: rischio di chiusura · sopra 500 M€: solido · i principali superano 5.000 M€.")),
   adv: I("Volume medio giornaliero", "Il controvalore medio scambiato ogni giorno negli ultimi 3 mesi (prezzo × volume), in milioni di euro, su quella borsa.", "Più è alto, più è facile comprare e vendere senza spostare il prezzo.", ref("Sotto 0,1 M€: poco liquido · 0,5–1 M€: accettabile · oltre 5 M€: molto liquido.")),
   spread: I("Spread bid-ask", "La differenza tra prezzo di acquisto (ask) e di vendita (bid) in percentuale del prezzo, all'ultimo aggiornamento.", "È un costo che paghi a ogni operazione. È una fotografia del momento: fuori orario di borsa può essere anomalo.", ref("Sotto 0,10%: ottimo per ETF grandi · sotto 0,30%: buono · oltre 0,50%: caro.")),
@@ -328,7 +359,7 @@ const TEXTS = () => ({
   rules: { t: "Come si scelgono i portafogli: criteri e soglie", h: `<h3>1. Quali fondi</h3><p>Passano i criteri di ricerca (tutti disattivati finché non li imposti); si prende un solo titolo per fondo (per ISIN) e al massimo «Titoli analizzati», i più grandi per patrimonio.</p>
     <h3>2. Dati</h3><p>Prezzi di 5 anni in euro, con i dividendi inclusi; rendimenti a 5 giorni sovrapposti sul periodo in comune ai titoli, al massimo gli ultimi ${R().window} anni (soglia fissa). Gli errori di dati di Yahoo (picchi isolati, frazionamenti non corretti) si correggono; i fondi con movimenti giornalieri oltre il 50% si escludono e la pagina lo segnala. Se alcuni fondi con meno di ${R().min_window} anni di storia accorciassero il periodo di tutti, i più recenti si escludono (restano almeno 8 fondi e il 60%) e la pagina lo segnala.</p>
     <h3>3. Stime prudenti</h3><p>I rendimenti storici sono molto rumorosi: per scegliere i pesi si portano per il ${it(R().shrink * 100, 0)}% verso la media dei fondi. I numeri mostrati sono invece quelli storici reali del portafoglio.</p>
-    <h3>4. Sharpe</h3><p>Massimo (rendimento − tasso privo di rischio) ÷ volatilità, solo posizioni lunghe, con peso massimo per ETF e massimi per classe. Si tolgono i fondi di peso minore finché restano al massimo «ETF massimo»; ogni fondo scelto pesa almeno il ${it(R().minw * 100, 0)}% (quindi il numero di ETF è sempre tra minimo e massimo). Valgono anche diversificazione minima e correlazione massima, se impostate.</p>
+    <h3>4. Sharpe</h3><p>Massimo (rendimento − tasso privo di rischio) ÷ volatilità, solo posizioni lunghe, con peso massimo per ETF e massimi per classe. Si tolgono i fondi di peso minore finché restano al massimo «ETF massimo»; ogni fondo scelto pesa almeno il «peso minimo per ETF» (predefinito ${it(R().minw * 100, 0)}%): il numero di ETF è sempre tra minimo e massimo. Valgono anche diversificazione minima e correlazione massima, se impostate.</p>
     <h3>5. Bilanciato</h3><p>Si scelgono i fondi che aggiungono più diversificazione (rapporto di diversificazione di Choueifaty–Coignard); ci si ferma al massimo di ETF, o prima se il rapporto migliora meno del ${it((R().dr_gain - 1) * 100, 0)}% (dopo il minimo e una volta rispettati i criteri di correlazione e diversificazione). Poi ogni fondo contribuisce in modo uguale al rischio (parità di rischio).</p>
     <h3>6. Aggressivo</h3><p>Massimo rendimento atteso con volatilità non oltre il limite scelto.</p>
     <h3>7. Acquisto</h3><p>Importi e quote intere al prezzo attuale in euro; avanza un piccolo resto.</p>
@@ -352,13 +383,13 @@ setTheme(document.documentElement.dataset.theme);
 
 /* ---------- impostazioni e schermate ---------- */
 function save() {
-  const s = { v: 2, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked };
-  document.querySelectorAll(".ss").forEach(el => s.ss[el.dataset.k] = el.querySelector("input").value);
-  document.querySelectorAll(".rs").forEach(el => s.rs[el.dataset.k] = [el.querySelector(".lo").value, el.querySelector(".hi").value]);
+  const s = { v: 3, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked };
+  document.querySelectorAll(".ss").forEach(el => s.ss[el.dataset.k] = el.querySelector(".n1").value);
+  document.querySelectorAll(".rs").forEach(el => s.rs[el.dataset.k] = [el.querySelector(".nlo").value, el.querySelector(".nhi").value]);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
-  try { localStorage.setItem("mm2", JSON.stringify(s)); } catch (e) { }
+  try { localStorage.setItem("mm3", JSON.stringify(s)); } catch (e) { }
 }
-function load() { try { return JSON.parse(localStorage.getItem("mm2")) || {}; } catch (e) { return {}; } }
+function load() { try { return JSON.parse(localStorage.getItem("mm3")) || {}; } catch (e) { return {}; } }
 function tab(t) {
   ["arch", "crea", "pf"].forEach(k => { $("t-" + k).hidden = k !== t; document.querySelector(`nav.main [data-t=${k}]`).classList.toggle("on", k === t); });
   try { localStorage.setItem("mm-tab", t); } catch (e) { }
@@ -376,9 +407,10 @@ async function init() {
   $("unknown").checked = !!s.unknown; $("sustainable").checked = !!s.sustainable;
   let t = null;
   const later = () => { save(); clearTimeout(t); t = setTimeout(search, 350); };
-  $("t-crea").addEventListener("input", e => {
-    const ss = e.target.closest(".ss"), rs = e.target.closest(".rs");
-    if (ss) ssShow(ss); if (rs) rsShow(rs, e.target.classList.contains("lo") ? "lo" : "hi");
+  $("t-crea").addEventListener("input", e => {   // cursore -> campi, campi -> cursore
+    const ss = e.target.closest(".ss"), rs = e.target.closest(".rs"), cl = e.target.classList;
+    if (ss) { if (cl.contains("sl")) ssFromSlider(ss); else ssPos(ss); ssShow(ss); }
+    if (rs) { if (cl.contains("lo")) rsFromSlider(rs, "lo"); else if (cl.contains("hi")) rsFromSlider(rs, "hi"); else rsPos(rs); rsShow(rs); }
     later();
   });
   $("t-crea").addEventListener("change", later);
@@ -393,9 +425,9 @@ function showStats() {
   $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN verificato · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
 function form() {
-  const d = { unknown: $("unknown").checked, sustainable: $("sustainable").checked, class_caps: {}, ranges: {} };
-  Object.keys(SS).filter(k => !k.startsWith("cap_")).forEach(k => d[k] = ssVal(k));
-  INFO.classes.forEach(c => d.class_caps[c] = ssVal("cap_" + c));
+  const d = { unknown: $("unknown").checked, sustainable: $("sustainable").checked, class_caps: {}, class_min: {}, ranges: {} };
+  Object.keys(SS).forEach(k => d[k] = ssVal(k));
+  INFO.classes.forEach(c => { const [lo, hi] = rsVal("cls_" + c); d.class_min[c] = lo; d.class_caps[c] = hi; });
   RS.forEach(([k]) => d.ranges[k] = rsVal(k));
   Object.keys(MULTI).forEach(k => d[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
   return d;

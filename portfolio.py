@@ -99,7 +99,8 @@ def pick_pool(rows, f):
     (almeno MIN_PER_CLASS): senza questo i fondi più grandi sarebbero tutti di una classe e il portafoglio non si potrebbe comporre."""
     n = int(f.get("pool") or DEFAULT_FILTERS["pool"])
     caps = {k: v / 100 for k, v in (f.get("class_caps") or {}).items() if v is not None}
-    if len(rows) <= n or not any(0 < c < 1 for c in caps.values()):
+    mins = {k: v / 100 for k, v in (f.get("class_min") or {}).items() if v}
+    if len(rows) <= n or not (any(0 < c < 1 for c in caps.values()) or mins):
         return rows[:n]
     by = {}
     for r in rows:
@@ -108,7 +109,7 @@ def pick_pool(rows, f):
     tot = sum(w.values()) or 1.0
     keep = set()
     for k, lst in by.items():
-        q = max(MIN_PER_CLASS, round(n * w[k] / tot)) if w[k] > 0 else 0
+        q = max(MIN_PER_CLASS, round(n * max(w[k], mins.get(k, 0)) / tot)) if w[k] > 0 else 0
         keep.update(r["symbol"] for r in lst[:q])
     return [r for r in rows if r["symbol"] in keep]
 
@@ -231,9 +232,10 @@ def _cons(n, cls_idx, cls_cap):
     return c
 
 
-def _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max):
+def _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max, cls_min_idx=(), cls_min_val=()):
     sd = np.sqrt(np.diag(cov))
     ok = abs(w.sum() - 1) < 1e-4 and (w > lb - 1e-4).all() and (w < cap + 1e-4).all() and all(w[i].sum() <= c + 1e-3 for i, c in zip(cls_idx, cls_cap))
+    ok = ok and all(w[i].sum() >= m - 1e-3 for i, m in zip(cls_min_idx, cls_min_val))
     if ok and dr_min:
         ok = float(w @ sd) / math.sqrt(max(float(w @ cov @ w), 1e-18)) >= dr_min - 2e-3
     if ok and corr_max is not None:
@@ -241,7 +243,7 @@ def _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max):
     return ok
 
 
-def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None, lb=0.0, dr_min=None, corr_max=None):
+def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None, lb=0.0, dr_min=None, corr_max=None, class_min=None):
     """Pesi di un portafoglio solo lungo: kind = sharpe | minvar | aggr | erc | maxdr | mincorr. `lb` = peso minimo di ogni titolo scelto; `dr_min` e `corr_max` =
     diversificazione minima e correlazione media pesata massima. Ritorna None se i vincoli non sono rispettabili."""
     n = len(mu)
@@ -251,6 +253,13 @@ def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None, l
     cls_idx = [np.array([i for i, c in enumerate(cls) if c == k]) for k in class_caps if any(c == k for c in cls)]
     cls_cap = [class_caps[k] for k in class_caps if any(c == k for c in cls)]
     cons = _cons(n, cls_idx, cls_cap)
+    cmin = {k: v for k, v in (class_min or {}).items() if v and v > 0}
+    if any(not any(c == k for c in cls) for k in cmin):
+        return None  # una classe con minimo non è tra i titoli: impossibile
+    cmi = [np.array([i for i, c in enumerate(cls) if c == k]) for k in cmin]
+    cmv = list(cmin.values())
+    for idx_, m_ in zip(cmi, cmv):
+        cons.append({"type": "ineq", "fun": lambda w, i=idx_, m=m_: w[i].sum() - m, "jac": lambda w, i=idx_: np.isin(np.arange(n), i).astype(float)})
     if dr_min:
         cons.append({"type": "ineq", "fun": lambda w: float(w @ sd) - dr_min * math.sqrt(max(float(w @ cov @ w), 1e-18))})
     if corr_max is not None:
@@ -287,7 +296,7 @@ def solve(kind, mu, cov, cap, cls, class_caps, rf=0.02, vol_cap=None, w0=None, l
     if w.sum() <= 0:
         return None
     w = w / w.sum()
-    return w if _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max) else None
+    return w if _check(w, cap, lb, cls_idx, cls_cap, cov, dr_min, corr_max, cmi, cmv) else None
 
 
 def capacity(idx, cls, caps, cap):
@@ -302,7 +311,7 @@ def _solve_idx(kind, ds, mu, idx, cap, caps, rf, vol_cap=None, lb=0.0, ck=None):
     return solve(kind, mu[idx], ds.cov[np.ix_(idx, idx)], cap, [ds.cls[i] for i in idx], caps, rf, vol_cap, lb=lb, **(ck or {}))
 
 
-def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None, ck=None):
+def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None, ck=None, minw=MINW):
     """Parte da tutti i titoli (o da `start`) e toglie via via quello di peso minore finché ce ne sono al massimo kmax e nessuno pesa meno di MINW (mai sotto kmin).
     Alla fine ogni titolo scelto riceve almeno MINW: il numero di ETF del portafoglio è quello dichiarato, senza titoli a peso zero. Ritorna (indici, pesi) o None."""
     idx = list(range(len(mu))) if start is None else list(start)
@@ -317,7 +326,7 @@ def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None, ck=
             w2 = _solve_idx(kind, ds, mu, c, cap, caps, rf, vol_cap, 0.0, ck)
             if w2 is not None:
                 nxt = (c, w2)
-        if nxt is None and (k > kmax or (w.min() < MINW and k > kmin)):
+        if nxt is None and (k > kmax or (w.min() < minw and k > kmin)):
             for d in np.argsort(w)[:4]:  # toglie il titolo più piccolo; se i vincoli non lo permettono, prova il successivo
                 c = [i for j, i in enumerate(idx) if j != d]
                 w2 = _solve_idx(kind, ds, mu, c, cap, caps, rf, vol_cap, 0.0, ck)
@@ -329,7 +338,7 @@ def prune(kind, ds, mu, kmin, kmax, cap, caps, rf, vol_cap=None, start=None, ck=
         idx, w = nxt
     if len(idx) > kmax or len(idx) < min(kmin, len(mu)):
         return None
-    for lb in (MINW, MINW / 2, 0.005):
+    for lb in (minw, minw / 2, min(0.005, minw)):
         w3 = _solve_idx(kind, ds, mu, idx, cap, caps, rf, vol_cap, lb, ck)
         if w3 is not None:
             return idx, w3
@@ -356,6 +365,11 @@ def greedy_dr(ds, mu, kmin, kmax, cap, caps, rf, ck=None):
         return (not ck.get("dr_min") or dr(s) >= ck["dr_min"]) and (ck.get("corr_max") is None or wcorr(w, ds.cov[np.ix_(s, s)], sd[s]) <= ck["corr_max"])
 
     sel = [int(np.argmax((mu - rf) / sd))]
+    for k_, m_ in (ck.get("class_min") or {}).items():  # ogni classe con minimo deve avere almeno un fondo (il migliore per rendimento/rischio)
+        if m_ and m_ > 0 and not any(ds.cls[i] == k_ for i in sel):
+            best = [(float((mu[i] - rf) / sd[i]), i) for i in range(n) if ds.cls[i] == k_]
+            if best:
+                sel.append(max(best)[1])
     cur = 1.0
     while len(sel) < kmax:
         cand = [(dr(sel + [j]), j) for j in range(n) if j not in sel]
@@ -412,18 +426,21 @@ def limits(ds, cap, caps):
     return out
 
 
-def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20, caps=None, dr_min=None, corr_max=None):
+def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20, caps=None, dr_min=None, corr_max=None, cmin=None, minw=MINW):
     """Tre proposte sugli stessi titoli e criteri: massimo Sharpe, bilanciato (parità di rischio) e aggressivo (massimo rendimento con volatilità limitata).
     Ognuna ha tra kmin e kmax ETF, tutti con almeno MINW di peso; rispetta diversificazione minima e correlazione massima se impostate."""
     caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
     ck = {k: v for k, v in (("dr_min", dr_min), ("corr_max", corr_max)) if v is not None}
+    cm = {k: v for k, v in (cmin or {}).items() if v and v > 0}
+    if cm:
+        ck["class_min"] = cm
     out, fail = [], []
     if len(ds.rows) < kmin:
         return out, ["Sharpe", "Bilanciato", "Aggressivo"]
     kmax = max(kmin, min(kmax, len(ds.rows)))
     mus = (1 - SHRINK) * ds.mu + SHRINK * ds.mu.mean()  # rendimenti prudenti, solo per scegliere i pesi
 
-    r = prune("sharpe", ds, mus, kmin, kmax, cap, caps, rf, ck=ck)
+    r = prune("sharpe", ds, mus, kmin, kmax, cap, caps, rf, ck=ck, minw=minw)
     if r:
         out.append(build(ds, *r, amount, rf, "Sharpe", "Massimo rendimento per unità di rischio (rapporto di Sharpe)."))
     else:
@@ -431,7 +448,7 @@ def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20
 
     sel = greedy_dr(ds, mus, kmin, kmax, cap, caps, rf, ck)
     w = None
-    for lb in (MINW, MINW / 2, 0.005):
+    for lb in (minw, minw / 2, min(0.005, minw)):
         w = solve("erc", mus[sel], ds.cov[np.ix_(sel, sel)], cap, [ds.cls[i] for i in sel], caps, rf, lb=min(lb, 0.5 / len(sel)), **ck)
         if w is not None:
             break
@@ -447,7 +464,7 @@ def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20
         vc = max(vol_aggr, vmin * 1.05)
         if vc > vol_aggr:
             note = f"Volatilità richiesta {vol_aggr * 100:.0f}% non raggiungibile: portata a {vc * 100:.1f}%."
-        r = prune("aggr", ds, mus, kmin, kmax, cap, caps, rf, vol_cap=vc, ck=ck)
+        r = prune("aggr", ds, mus, kmin, kmax, cap, caps, rf, vol_cap=vc, ck=ck, minw=minw)
         if r:
             out.append(build(ds, *r, amount, rf, "Aggressivo", f"Massimo rendimento atteso con volatilità fino al {vc * 100:.0f}%.", note))
         else:
@@ -458,18 +475,21 @@ def propose(ds, amount=10000.0, cap=0.35, kmin=3, kmax=8, rf=0.02, vol_aggr=0.20
 
 
 # ------------------------------------------------------------------ frontiera efficiente
-def frontier(ds, idx, cap, caps, rf, kmin=3, kmax=8, dr_min=None, corr_max=None, n=28):
+def frontier(ds, idx, cap, caps, rf, kmin=3, kmax=8, dr_min=None, corr_max=None, n=28, cmin=None, minw=MINW):
     """Frontiera efficiente (solo posizioni lunghe, tetto per ETF, massimi per classe, tra kmin e kmax ETF per punto) sui titoli `idx` del dataset, con
     rendimenti e rischio storici reali. Ritorna {"idx": [...], "points": [{vol, ret, sharpe, dr, corr, w, n}, ...]} dal punto di minima volatilità a quello di
     massimo rendimento; `w` è allineato a `idx`. Ogni punto può usare fondi diversi (peso zero per gli altri)."""
     caps = {k: v for k, v in (caps or {}).items() if v < 1.0}
     ck = {k: v for k, v in (("dr_min", dr_min), ("corr_max", corr_max)) if v is not None}
+    cm = {k: v for k, v in (cmin or {}).items() if v and v > 0}
+    if cm:
+        ck["class_min"] = cm
     idx = list(idx)
     kmax = max(kmin, min(kmax, len(idx)))
     pos = {i: k for k, i in enumerate(idx)}
 
     def run(kind, vc=None):
-        r = prune(kind, ds, ds.mu, kmin, kmax, cap, caps, rf, vol_cap=vc, start=idx, ck=ck)
+        r = prune(kind, ds, ds.mu, kmin, kmax, cap, caps, rf, vol_cap=vc, start=idx, ck=ck, minw=minw)
         if r is None:
             return None
         sub, w = r

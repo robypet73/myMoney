@@ -96,6 +96,18 @@ def main():
             for p in o:
                 ws = [i["weight"] for i in p["items"]]
                 assert kmin <= len(ws) <= kmax and min(ws) >= 0.0049, (kmin, kmax, p["name"], ws)
+        # minimo per classe e peso minimo per ETF scelti dall'utente
+        o, f_ = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=6, caps={}, cmin={"Obbligazionario": 0.4, "Materie prime": 0.1}, minw=0.08)
+        assert not f_ and len(o) == 3, f_
+        for p in o:
+            assert p["classes"].get("Obbligazionario", 0) >= 0.4 - 3e-3 and p["classes"].get("Materie prime", 0) >= 0.1 - 3e-3 and min(i["weight"] for i in p["items"]) >= 0.0799, (p["name"], p["classes"])
+        # parametri vuoti = valori predefiniti; criteri vuoti = nessun limite
+        import server as _sv
+        f0, p0 = _sv.parse_create({})
+        assert p0["amount"] == 10000 and (p0["kmin"], p0["kmax"]) == (3, 8) and abs(p0["cap"] - 0.35) < 1e-9 and abs(p0["minw"] - 0.03) < 1e-9 and not f0["ranges"] and p0["dr_min"] is None and not p0["cmin"]
+        f1, p1 = _sv.parse_create({"amount": 0, "ranges": {"ter": [None, 0.3], "assets": [None, None], "ret_1y": [-5, 12.5]}, "class_min": {"Obbligazionario": 30}, "minw": 5})
+        assert p1["amount"] == 0 and f1["ranges"] == {"ter": [None, 0.3], "ret_1y": [-5, 12.5]} and abs(p1["cmin"]["Obbligazionario"] - 0.3) < 1e-9 and abs(p1["minw"] - 0.05) < 1e-9
+        assert _sv.check({**p1, "cmin": {"Obbligazionario": 0.9, "Azionario": 0.2}}) and not _sv.check(p1)  # minimi che superano il 100%: errore chiaro
         # correlazione media massima e diversificazione minima
         base = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=8, caps={})[0]
         c0, d0 = max(p["corr"] for p in base), min(p["dr"] for p in base)
