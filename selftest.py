@@ -199,6 +199,20 @@ def main():
         ld.update_group("stesso nome", "IE0000000001", ter=0.5)
         assert ld.get("C.MI")["ter"] == 0.5 and ld.get("C.DE")["ter"] is None and ld.get("C.L")["ter"] == 0.5
         ld.close()
+        # scheda di un fondo: statistiche dallo storico
+        import server
+        ser0 = [(x, p_) for x, p_ in db.prices("T0.MI")]
+        st0 = PF.fund_stats(ser0)
+        v0 = np.array([p_ for _, p_ in ser0])
+        from datetime import datetime as _dt, timedelta as _td2
+        tgt = (_dt.strptime(ser0[-1][0], "%Y-%m-%d") - _td2(days=365)).strftime("%Y-%m-%d")
+        base = [p_ for x, p_ in ser0 if x <= tgt][-1]
+        assert abs(st0["periods"]["1y"] - (v0[-1] / base - 1)) < 1e-9, st0["periods"]  # ultimo prezzo non successivo a un anno fa
+        assert st0["max_dd"]["value"] < 0 and st0["max_dd"]["peak"] <= st0["max_dd"]["low"] and st0["years"][-1]["partial"]
+        assert abs(sum(1 for _ in st0["years"]) - (int(ser0[-1][0][:4]) - int(ser0[0][0][:4]) + 1)) == 0
+        det = server.fund_detail(db, "T0.MI")
+        assert det["history"]["close"][-1] == round(ser0[-1][1], 4) and det["fund"]["name"] and det["stats"]["n"] == len(ser0)
+        assert server.fund_detail(db, "NONESISTE.MI") is None
         # un fondo giovane non accorcia il periodo di tutti: si esclude e lo si dice
         db.upsert("YOUNG.MI", name="Fondo giovane", exchange="MIL", currency="EUR", price_eur=10.0, asset_class="Azionario")
         import numpy as _np

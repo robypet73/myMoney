@@ -493,3 +493,45 @@ def frontier(ds, idx, cap, caps, rf, kmin=3, kmax=8, dr_min=None, corr_max=None,
         if not pts or p["ret"] > pts[-1]["ret"] + 1e-6:
             pts.append(p)
     return {"idx": idx, "points": pts}
+
+
+# ------------------------------------------------------------------ scheda di un fondo
+def fund_stats(ser):
+    """Statistiche di un fondo dallo storico salvato (prezzi in EUR aggiustati per i dividendi): rendimenti per periodo, per anno solare, volatilità, perdita massima."""
+    dates = [d for d, _ in ser]
+    v = np.array([x for _, x in ser], float)
+    last = datetime.strptime(dates[-1], "%Y-%m-%d")
+    first = datetime.strptime(dates[0], "%Y-%m-%d")
+
+    def at(day):  # ultimo prezzo non successivo a `day` (None se prima dell'inizio dello storico)
+        t = day.strftime("%Y-%m-%d")
+        k = np.searchsorted(np.array(dates), t, side="right") - 1
+        return float(v[k]) if k >= 0 else None
+
+    def since(days):
+        t = last - timedelta(days=days)
+        if t < first - timedelta(days=7):
+            return None
+        a = at(t) or float(v[0])
+        return float(v[-1] / a - 1)
+
+    per = {"1m": since(30), "3m": since(91), "6m": since(182), "1y": since(365)}
+    prev = at(datetime(last.year - 1, 12, 31))
+    per["ytd"] = float(v[-1] / prev - 1) if prev else None
+    for y in (3, 5):
+        r = since(365 * y)
+        per[f"{y}y_ann"] = (1 + r) ** (1 / y) - 1 if r is not None and r > -1 else None
+    years = []
+    for y in range(first.year, last.year + 1):
+        a = at(datetime(y - 1, 12, 31)) or float(v[0])
+        b = at(datetime(y, 12, 31)) if y < last.year else float(v[-1])
+        if a and b:
+            years.append({"year": y, "ret": float(b / a - 1), "partial": y == first.year or y == last.year})
+    r = v[1:] / v[:-1] - 1
+    dd = v / np.maximum.accumulate(v) - 1
+    k = int(np.argmin(dd))
+    pk = int(np.argmax(v[: k + 1]))
+    rec = next((j for j in range(k + 1, len(v)) if v[j] >= v[pk]), None)
+    return {"periods": per, "years": years, "n": len(v), "from": dates[0], "to": dates[-1],
+            "vol_1y": float(np.std(r[-252:]) * math.sqrt(252)) if len(r) >= 120 else None, "vol_3y": float(np.std(r[-756:]) * math.sqrt(252)) if len(r) >= 500 else None,
+            "max_dd": {"value": float(dd[k]), "peak": dates[pk], "low": dates[k], "recovered": dates[rec] if rec is not None else None}}

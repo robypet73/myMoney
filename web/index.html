@@ -102,6 +102,17 @@ button.danger { color:var(--down); border-color:var(--down); }
 .ss input[type=range] { width:100%; accent-color:var(--acc); margin:4px 0 0; }
 .cov { margin:10px 0 2px; }
 .grid2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:4px 26px; }
+.flink { color:var(--acc); cursor:pointer; text-decoration:none; border-bottom:1px dotted var(--acc); }
+.dlg.wide { width:min(980px,100%); text-align:left; max-height:92vh; overflow:auto; position:relative; }
+.dlg.wide h2 { margin:0 0 2px; }
+.xclose { position:absolute; top:10px; right:12px; width:32px; height:32px; padding:0; border-radius:50%; font-size:18px; line-height:1; }
+.kv { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:6px 22px; margin:8px 0; }
+.kv div { font-size:var(--fs-s); color:var(--soft); } .kv b { display:block; color:var(--fg); font-weight:600; font-size:var(--fs-m); word-break:break-word; }
+.sect { margin:16px 0 4px; font-size:var(--fs-s); text-transform:uppercase; letter-spacing:.05em; color:var(--soft); border-top:1px solid var(--line); padding-top:10px; }
+.cv svg { width:100%; display:block; touch-action:none; cursor:crosshair; } .cv .gl { stroke:var(--line); } .cv .ax { fill:var(--soft); font-size:11px; }
+.pbtn { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; } .pbtn button { padding:3px 10px; } .pbtn button.on { background:var(--acc); color:var(--bg); border-color:var(--acc); }
+.bar2 { display:flex; align-items:center; gap:8px; font-size:var(--fs-s); margin:2px 0; } .bar2 span.n { width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .bar2 i { display:block; height:10px; border-radius:2px; background:var(--acc); }
+.up { color:var(--up); } .down { color:var(--down); }
 details.chkf { border:1px solid var(--line); border-radius:8px; margin:8px 0; padding:6px 10px; }
 details.chkf summary { cursor:pointer; }
 details.chkf.fail { border-color:var(--down); } details.chkf.warn { border-color:#d29922; }
@@ -145,6 +156,9 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
       <p class="err" id="serr" hidden></p>
       <p style="text-align:center;margin:12px 0 0"><button class="primary" type="submit">Salva</button> <button type="button" id="scancel">Annulla</button></p>
     </form>
+  </div>
+  <div class="overlay" id="fundbox" hidden role="dialog" aria-modal="true" aria-label="Dettaglio del fondo">
+    <div class="dlg wide"><button class="xclose" id="fclose" type="button" aria-label="Chiudi">×</button><div id="fbody"></div></div>
   </div>
   <div class="overlay" id="infobox" hidden role="dialog" aria-modal="true">
     <div class="dlg"><h2 id="itit"></h2><div id="ibody"></div><p style="text-align:center;margin-top:14px"><button class="primary" id="iclose">Chiudi</button></p></div>
@@ -409,7 +423,7 @@ function drawCands(j) {
   let rows = CANDS.slice();
   if (sortK) rows.sort((a, b) => { const e = typeof (a[sortK] ?? b[sortK]) === "string" ? "" : -1e18, x = a[sortK] ?? e, y = b[sortK] ?? e; return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
   $("cands").innerHTML = !rows.length ? "" : `<table><thead><tr>${COLS.map(([k, t, n]) => `<th class="sort ${n ? "n" : ""}" data-k="${k}">${t}${sortK === k ? (sortDir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>
-    ${rows.map(r => `<tr><td>${esc(r.symbol)}</td><td>${esc(r.isin || "—")}</td><td style="white-space:normal;min-width:240px">${esc(r.name)}</td><td>${esc(r.asset_class || "—")}</td><td>${esc(r.region || "—")}</td><td>${esc(r.exchange_name || "")}</td><td class="n">${it(r.ter)}</td><td class="n">${it(r.assets_eur_m, 0)}</td><td class="n">${it(r.adv_eur_m)}</td><td class="n">${it(r.spread_pct)}</td><td class="n">${it(r.ret_1y, 1)}</td><td class="n">${it(r.ret_3y, 1)}</td><td class="n">${it(r.ret_5y, 1)}</td><td class="n">${it(r.vol_1y, 1)}</td><td class="n">${it(r.max_dd, 1)}</td><td>${esc(r.replication || "—")}</td><td>${esc(r.domicile || "—")}</td><td>${r.hist_n ? "✓" : ""}</td></tr>`).join("")}
+    ${rows.map(r => `<tr><td>${flink(r.symbol)}</td><td>${esc(r.isin || "—")}</td><td style="white-space:normal;min-width:240px">${flink(r.symbol, r.name)}</td><td>${esc(r.asset_class || "—")}</td><td>${esc(r.region || "—")}</td><td>${esc(r.exchange_name || "")}</td><td class="n">${it(r.ter)}</td><td class="n">${it(r.assets_eur_m, 0)}</td><td class="n">${it(r.adv_eur_m)}</td><td class="n">${it(r.spread_pct)}</td><td class="n">${it(r.ret_1y, 1)}</td><td class="n">${it(r.ret_3y, 1)}</td><td class="n">${it(r.ret_5y, 1)}</td><td class="n">${it(r.vol_1y, 1)}</td><td class="n">${it(r.max_dd, 1)}</td><td>${esc(r.replication || "—")}</td><td>${esc(r.domicile || "—")}</td><td>${r.hist_n ? "✓" : ""}</td></tr>`).join("")}
     </tbody></table>${j && j.n_pool > rows.length ? `<p class="hint">Mostrati i primi ${rows.length} di ${j.n_pool}.</p>` : ""}`;
 }
 $("cov").addEventListener("click", async e => { if (e.target.id !== "bret") return; wasBusy = true; const r = await post("/api/returns", form()); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); });
@@ -434,6 +448,7 @@ async function poll() {
     outcome(s);
     if (s.kind === "propose" && !s.error && s.result) { render(s.result); }
     if (s.kind === "check" && !s.error && s.result) renderCheck(s.result);
+    if (s.kind === "fundhist" && PENDING) { const sy = PENDING; PENDING = null; openFund(sy); }
     search();
   }
   wasBusy = s.busy;
@@ -572,7 +587,7 @@ function update() {
   if ($("bback")) $("bback").onclick = () => { SEL = { kind: "prop", i: 0 }; update(); };
 }
 const posTable = items => `<div class="tbl"><table><thead><tr><th>Simbolo</th><th>ISIN</th><th>Nome</th><th>Classe</th><th>Replica</th><th>Domicilio</th><th class="n">Peso</th><th class="n">Importo €</th><th class="n">Quote</th><th class="n">Prezzo €</th><th class="n">TER %</th></tr></thead><tbody>
-  ${items.map(x => `<tr><td>${esc(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${esc(x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}</tbody></table></div>`;
+  ${items.map(x => `<tr><td>${flink(x.symbol)}</td><td>${esc(x.isin || "—")}</td><td>${flink(x.symbol, x.name)}</td><td>${esc(x.class)}</td><td>${esc(x.replication || "—")}</td><td>${esc(x.domicile || "—")}</td><td class="n">${it(x.weight * 100, 1)}%</td><td class="n">${it(x.amount)}</td><td class="n">${x.qty}</td><td class="n">${it(x.price, 3)}</td><td class="n">${x.ter == null ? "—" : it(x.ter)}</td></tr>`).join("")}</tbody></table></div>`;
 function csvOut(c) {
   const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
   const rows = [["simbolo", "isin", "nome", "classe", "replica", "domicilio", "borsa", "peso_%", "importo_eur", "quote", "prezzo_eur", "costo_eur", "ter_%"]].concat(c.items.map(x => [x.symbol, x.isin, x.name, x.class, x.replication, x.domicile, x.exchange, (x.weight * 100).toFixed(2), x.amount.toFixed(2), x.qty, x.price.toFixed(3), x.cost.toFixed(2), x.ter == null ? "" : x.ter]));
@@ -599,6 +614,90 @@ $("saveform").onsubmit = async e => {
   $("savebox").hidden = true; $("noticebox").className = "dlg notice"; $("ntitle").textContent = "Portafoglio salvato";
   $("nbody").innerHTML = `<p>«${esc(name)}» è salvato in:</p><p class="note" style="word-break:break-all">${esc(r.j.file)}</p><p class="note">Lo ritrovi nella schermata «Portafogli salvati».</p>`; $("notice").hidden = false;
 };
+
+/* ---------- scheda di un fondo ---------- */
+const flink = (sym, text) => `<a class="flink" data-sym="${esc(sym)}" role="button" tabindex="0">${esc(text == null ? sym : text)}</a>`;
+document.body.addEventListener("click", e => { const a = e.target.closest(".flink"); if (a) { e.preventDefault(); openFund(a.dataset.sym); } });
+document.body.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("flink")) openFund(e.target.dataset.sym); });
+$("fclose").onclick = () => { $("fundbox").hidden = true; };
+$("fundbox").addEventListener("click", e => { if (e.target === $("fundbox")) $("fundbox").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("fundbox").hidden = true; });
+let FUND = null, FUNDSYM = null;
+const pc = (v, d = 1) => v == null ? "—" : `<span class="${v >= 0 ? "up" : "down"}">${(v >= 0 ? "+" : "−") + it(Math.abs(v) * 100, d)}%</span>`;
+const SECT = { realestate: "Immobiliare", consumer_cyclical: "Beni ciclici", basic_materials: "Materiali", consumer_defensive: "Beni difensivi", technology: "Tecnologia", communication_services: "Comunicazione", financial_services: "Finanza", utilities: "Servizi pubblici", industrials: "Industria", energy: "Energia", healthcare: "Salute" };
+const SRC = { justetf: "justETF (rendimento totale, con i dividendi)", hist: "calcolato dallo storico salvato", null: "Yahoo (variazione a 52 settimane)" };
+async function openFund(sym) {
+  FUNDSYM = sym; $("fbody").innerHTML = '<p class="hint">Carico la scheda…</p>'; $("fundbox").hidden = false;
+  const r = await fetch("/api/fund?symbol=" + encodeURIComponent(sym));
+  if (!r.ok) { $("fbody").innerHTML = `<h2>${esc(sym)}</h2><p class="err">Titolo non presente nell'archivio (forse non più negoziato o archivio diverso).</p>`; return; }
+  FUND = await r.json(); renderFund();
+}
+function kv(pairs) { return `<div class="kv">${pairs.filter(p => p[1] != null && p[1] !== "").map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("")}</div>`; }
+function renderFund() {
+  const F = FUND.fund, S = FUND.stats, H = FUND.history;
+  const ext = [F.isin ? `<a href="https://www.justetf.com/en/etf-profile.html?isin=${encodeURIComponent(F.isin)}" target="_blank" rel="noopener">justETF</a>` : "", `<a href="https://finance.yahoo.com/quote/${encodeURIComponent(F.symbol)}" target="_blank" rel="noopener">Yahoo Finance</a>`].filter(Boolean).join(" · ");
+  let h = `<h2>${esc(F.name)}</h2><div class="hint">${esc(F.symbol)} · ${esc(F.isin || "senza ISIN verificato")} · ${esc(F.exchange_name || "")} · ${ext}</div>`;
+  h += `<div class="sect">Anagrafica</div>` + kv([
+    ["Classe di attivo", esc(F.asset_class)], ["Area", esc(F.region)], ["Tipo", esc(F.type)], ["Replica", esc(F.replication)], ["Domicilio", esc(F.domicile)], ["Distribuzione", esc(F.distribution)],
+    ["Copertura del cambio", F.hedged ? "sì" : null], ["Sostenibile (ESG)", F.sustainable ? "sì" : null], ["Emittente", esc(F.family)], ["Categoria", esc(F.category)],
+    ["TER annuo", F.ter == null ? null : it(F.ter) + "%"], ["Patrimonio", F.assets_eur_m == null ? null : it(F.assets_eur_m, 0) + " M€"], ["Data di lancio (o primo scambio)", esc(F.inception)], ["Numero di titoli", F.n_holdings],
+    ["Rendimento da dividendi", F.div_yield == null ? null : it(F.div_yield) + "%"], ["Valuta di negoziazione", esc(F.currency)],
+    ["Prezzo", F.price_eur == null ? null : it(F.price_eur, 3) + " €" + (F.quote_at ? ` (${esc(F.quote_at.slice(0, 16))})` : "")], ["Bid / Ask", F.bid && F.ask ? `${it(F.bid, 3)} / ${it(F.ask, 3)} ${esc(F.currency || "")}` : null],
+    ["Spread", F.spread_pct == null ? null : it(F.spread_pct) + "%"], ["Volume medio", F.adv_eur_m == null ? null : it(F.adv_eur_m) + " M€/giorno"],
+    ["ISIN verificato da", F.isin_src ? esc(F.isin_src.replace("figi", "OpenFIGI").replace("firds", "registro ESMA").replace("+", " + ")) : null]]);
+  // rendimenti
+  h += `<div class="sect">Rendimenti e rischio</div>`;
+  if (S) {
+    const P = S.periods, M = S.max_dd, a = (v, c) => `<tr><td>${v[0]}</td><td class="n">${v[1]}</td><td class="n">${v[2]}</td></tr>`;
+    h += `<div class="tbl"><table><thead><tr><th></th><th class="n">Dallo storico salvato</th><th class="n">Archivio (${SRC[F.stats_src] || SRC.null})</th></tr></thead><tbody>
+      ${a(["1 mese", pc(P["1m"]), "—"])}${a(["3 mesi", pc(P["3m"]), "—"])}${a(["6 mesi", pc(P["6m"]), "—"])}${a(["Da inizio anno", pc(P.ytd), "—"])}
+      ${a(["1 anno", pc(P["1y"]), F.ret_1y == null ? "—" : pc(F.ret_1y / 100)])}${a(["3 anni (annuo)", pc(P["3y_ann"]), F.ret_3y == null ? "—" : pc(F.ret_3y / 100)])}${a(["5 anni (annuo)", pc(P["5y_ann"]), F.ret_5y == null ? "—" : pc(F.ret_5y / 100)])}
+      ${a(["Volatilità 1 anno", S.vol_1y == null ? "—" : it(S.vol_1y * 100, 1) + "%", F.vol_1y == null ? "—" : it(F.vol_1y, 1) + "%"])}${a(["Volatilità 3 anni", S.vol_3y == null ? "—" : it(S.vol_3y * 100, 1) + "%", F.vol_3y == null ? "—" : it(F.vol_3y, 1) + "%"])}
+      ${a(["Perdita massima", pc(M.value), F.max_dd == null ? "—" : pc(F.max_dd / 100)])}
+      </tbody></table></div><p class="hint">Perdita massima dallo storico: dal massimo del ${esc(M.peak)} al minimo del ${esc(M.low)}${M.recovered ? ", recuperata il " + esc(M.recovered) : ", non ancora recuperata"}.</p><p class="hint">Rendimenti in euro con i dividendi inclusi (prezzi aggiustati), dal ${esc(S.from)} al ${esc(S.to)} (${S.n} giorni). Il passato non anticipa il futuro.</p>`;
+  } else h += `<p class="hint">Storico dei prezzi non scaricato per questo titolo.</p><p><button id="fhist" class="primary" type="button">Scarica lo storico di questo titolo</button></p>`;
+  if (H) h += `<div class="sect">Prezzo (€)</div><div class="pbtn" id="fper"></div><div class="cv" id="fpr"></div><div class="sect">Perdita dal massimo precedente</div><div class="cv" id="fdd"></div>`;
+  if (S && S.years.length) {
+    const mx = Math.max(...S.years.map(y => Math.abs(y.ret)), .01);
+    h += `<div class="sect">Rendimento per anno</div>` + S.years.map(y => `<div class="bar2"><span class="n">${y.year}${y.partial ? " (parziale)" : ""}</span><i style="width:${Math.max(2, Math.abs(y.ret) / mx * 40)}%;background:var(--${y.ret >= 0 ? "up" : "down"})"></i>${pc(y.ret)}</div>`).join("");
+  }
+  const hl = F.holdings || [], sc = F.sectors && !Array.isArray(F.sectors) ? Object.entries(F.sectors).sort((a, b) => b[1] - a[1]) : [];
+  if (hl.length || sc.length) h += `<div class="sect">Composizione (da Yahoo, se scaricata la scheda)</div><div class="kv" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">` +
+    (hl.length ? `<div>Primi titoli${hl.map(([n, p]) => `<div class="bar2"><span class="n">${esc(n)}</span><i style="width:${Math.min(40, p * 3)}%"></i>${it(p, 1)}%</div>`).join("")}</div>` : "") +
+    (sc.length ? `<div>Settori${sc.map(([n, p]) => `<div class="bar2"><span class="n">${esc(SECT[n] || n.replace(/_/g, " "))}</span><i style="width:${Math.min(40, p * 100)}%"></i>${it(p * 100, 1)}%</div>`).join("")}</div>` : "") + "</div>";
+  if (FUND.others.length) h += `<div class="sect">Lo stesso fondo su altre borse</div><div class="tbl"><table><thead><tr><th>Borsa</th><th>Simbolo</th><th>Valuta</th><th class="n">Prezzo €</th><th class="n">Spread %</th><th class="n">Volume M€/g</th></tr></thead><tbody>${FUND.others.map(o => `<tr><td>${esc(o.exchange_name)}</td><td>${flink(o.symbol)}</td><td>${esc(o.currency)}</td><td class="n">${it(o.price_eur, 3)}</td><td class="n">${it(o.spread_pct)}</td><td class="n">${it(o.adv_eur_m)}</td></tr>`).join("")}</tbody></table></div>`;
+  $("fbody").innerHTML = h;
+  if ($("fhist")) $("fhist").onclick = async () => { $("fundbox").hidden = true; wasBusy = true; PENDING = FUNDSYM; const r = await post("/api/fund/history", { symbol: FUNDSYM }); if (!r.ok) { wasBusy = false; alert("Un altro lavoro è in corso"); } };
+  if (H) { drawFundCharts(365 * 3); const per = [["1 anno", 365], ["3 anni", 365 * 3], ["5 anni", 365 * 5], ["Tutto", 1e9]].filter(([, d], i, a) => d >= 1e9 || d <= (new Date(S.to) - new Date(S.from)) / 864e5 + 10);
+    $("fper").innerHTML = per.map(([t, d]) => `<button type="button" data-d="${d}">${t}</button>`).join(""); const on = b => { $("fper").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); drawFundCharts(+b.dataset.d); };
+    $("fper").onclick = e => { const b = e.target.closest("button"); if (b) on(b); }; const pick = [...$("fper").querySelectorAll("button")].find(b => +b.dataset.d >= 365 * 3) || $("fper").lastElementChild; if (pick) on(pick); }
+}
+let PENDING = null;
+function drawFundCharts(days) {
+  const H = FUND.history, n = H.dates.length, last = new Date(H.dates[n - 1]).getTime(), from = days >= 1e9 ? 0 : last - days * 864e5;
+  let i0 = 0; while (i0 < n - 1 && new Date(H.dates[i0]).getTime() < from) i0++;
+  const t = H.dates.slice(i0).map(d => new Date(d).getTime()), p = H.close.slice(i0);
+  let pk = p[0]; const dd = p.map(v => { pk = Math.max(pk, v); return v / pk - 1; });
+  lineChart($("fpr"), t, p, { f: v => it(v, 2), color: "var(--acc)" });
+  lineChart($("fdd"), t, dd, { f: v => it(v * 100, 0) + "%", color: "var(--down)", area: true, h: 150 });
+}
+// grafico lineare: l'asse verticale segue i dati (mai forzato a 0), asse del tempo con date, indicatore al passaggio
+function lineChart(box, t, y, o) {
+  const W = Math.max(280, box.clientWidth), Hh = o.h || (W < 500 ? 220 : 280), L = 52, R = 12, T = 10, B = 24;
+  let a = Math.min(...y), b = Math.max(...y); const pad = (b - a) * .06 || Math.abs(a) * .02 || .01; a -= pad; b += pad;
+  const t0 = t[0], t1 = t[t.length - 1], X = v => L + (v - t0) / ((t1 - t0) || 1) * (W - L - R), Y = v => T + (b - v) / (b - a) * (Hh - T - B);
+  const st = niceStep(b - a, 4); let g = ""; for (let v = Math.ceil(a / st) * st; v <= b; v += st) g += `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${o.f(Math.abs(v) < 1e-12 ? 0 : v)}</text>`;
+  const nt = W < 500 ? 4 : 6; for (let k = 0; k < nt; k++) { const tv = t0 + (t1 - t0) * k / (nt - 1), d = new Date(tv); g += `<text class="ax" x="${X(tv)}" y="${Hh - 6}" text-anchor="${k === 0 ? "start" : k === nt - 1 ? "end" : "middle"}">${d.toLocaleDateString("it-IT", { month: "short", year: "2-digit" })}</text>`; }
+  const step = Math.max(1, Math.floor(t.length / 700)), pts = []; for (let i = 0; i < t.length; i += step) pts.push(i); if (pts[pts.length - 1] !== t.length - 1) pts.push(t.length - 1);
+  const d = pts.map((i, k) => (k ? "L" : "M") + X(t[i]).toFixed(1) + " " + Y(y[i]).toFixed(1)).join("");
+  const area = o.area ? `<path d="${d}L${X(t1)} ${Y(Math.min(0, b))}L${X(t0)} ${Y(Math.min(0, b))}Z" fill="${o.color}" opacity=".18"/>` : "";
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" role="img">${g}${area}<path d="${d}" fill="none" stroke="${o.color}" stroke-width="1.8" stroke-linejoin="round"/><g class="hv" visibility="hidden"><line class="hl" y1="${T}" y2="${Hh - B}" stroke="var(--soft)" stroke-dasharray="3 3"/><circle r="4" fill="${o.color}" class="hd"/><text class="ht" y="${T + 10}" font-size="12" fill="var(--fg)"></text></g></svg>`;
+  const svg = box.firstElementChild, hv = svg.querySelector(".hv"), hl = svg.querySelector(".hl"), hd = svg.querySelector(".hd"), ht = svg.querySelector(".ht");
+  const mv = ev => { const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * (W / r.width), tv = t0 + (x - L) / (W - L - R) * (t1 - t0); let lo = 0, hi = t.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < tv) lo = m + 1; else hi = m; } const i = lo > 0 && Math.abs(t[lo - 1] - tv) < Math.abs(t[lo] - tv) ? lo - 1 : lo;
+    hv.setAttribute("visibility", "visible"); hl.setAttribute("x1", X(t[i])); hl.setAttribute("x2", X(t[i])); hd.setAttribute("cx", X(t[i])); hd.setAttribute("cy", Y(y[i]));
+    ht.textContent = `${new Date(t[i]).toLocaleDateString("it-IT")} · ${o.f(y[i])}`; ht.setAttribute("x", X(t[i]) > W / 2 ? X(t[i]) - 8 : X(t[i]) + 8); ht.setAttribute("text-anchor", X(t[i]) > W / 2 ? "end" : "start"); };
+  svg.addEventListener("pointermove", mv); svg.addEventListener("pointerdown", mv); svg.addEventListener("pointerleave", () => hv.setAttribute("visibility", "hidden"));
+}
 
 /* ---------- portafogli salvati ---------- */
 async function loadPf() {

@@ -238,6 +238,29 @@ def db_import(path, pf_folder, upload):
             os.remove(tmp)
 
 
+def fund_detail(db, symbol):
+    """Tutto ciò che l'archivio sa di un titolo: anagrafica, altre quotazioni dello stesso fondo, storico e statistiche."""
+    r = db.get(symbol)
+    if not r:
+        return None
+    f = {k: r[k] for k in r.keys()}
+    for k in ("holdings", "sectors"):
+        try:
+            f[k] = json.loads(f[k]) if f[k] else None
+        except ValueError:
+            f[k] = None
+    if r["isin"]:
+        others = db.c.execute("SELECT symbol, exchange_name, currency, price, price_eur, spread_pct, adv_eur_m, hist_n FROM etf WHERE isin=? AND symbol<>? ORDER BY adv_eur_m IS NULL, adv_eur_m DESC", (r["isin"], symbol)).fetchall()
+    else:
+        others = []
+    ser = [(d, p) for d, p in db.prices(symbol)]
+    out = {"fund": f, "others": [{k: o[k] for k in o.keys()} for o in others], "history": None, "stats": None}
+    if len(ser) >= 30:
+        out["history"] = {"dates": [d for d, _ in ser], "close": [round(p, 4) for _, p in ser]}
+        out["stats"] = PF.fund_stats(ser)
+    return out
+
+
 def jsonable(o):
     if isinstance(o, dict):
         return {k: jsonable(v) for k, v in o.items()}
@@ -281,6 +304,14 @@ def make_handler(path, job):
                     db.close()
             if u == "/api/status":
                 return self.send(200, job.status())
+            if u == "/api/fund":
+                q = parse_qs(urlparse(self.path).query)
+                db = DB(path)
+                try:
+                    det = fund_detail(db, (q.get("symbol") or [""])[0])
+                finally:
+                    db.close()
+                return self.send(200 if det else 404, det or {"error": "titolo non presente nell'archivio"})
             if u == "/api/pf/list":
                 return self.send(200, {"folder": folder, "items": pf_list(folder)})
             if u == "/api/pf/get":
@@ -400,6 +431,10 @@ def make_handler(path, job):
                     return rep_
 
                 ok = job.start("check", run)
+                return self.send(200 if ok else 409, {"ok": ok})
+            if u == "/api/fund/history":
+                sym = str(d.get("symbol") or "")
+                ok = job.start("fundhist", lambda db, y, p: jobs.download_history(db, y, [sym], p, 0))
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/history":
                 allq = bool(d.get("all_listings"))

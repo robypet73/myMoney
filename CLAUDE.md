@@ -55,6 +55,10 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 - **Esporta/importa** (`server.db_export` / `db_import`): zip con `etf.db` (copia coerente con l'API di backup di SQLite) e `portafogli/*.json`; l'importazione controlla il file (`integrity_check`, tabelle `etf` e `prezzi`), tiene `etf.db.prima-dell-importazione`, sostituisce il file e aggiunge i portafogli mancanti. I comandi `backup` e `ripristina` agiscono prima di aprire il database (un file aperto non si sostituisce su Windows).
 - **Controllo a campione** (`checks.py`, `/api/check`, comando `controlla`, rapporti in `controlli/`): confronta 15 fondi con Yahoo, justETF, registro ESMA, OpenFIGI e con la coerenza interna. Un confronto non fattibile è `skip`, mai `ok`. Un nuovo dato importante nell'archivio deve avere il suo controllo. `Database._legacy_cleanup` azzera i dati copiati su titoli con ISIN non verificato (archivi di versioni precedenti); `update_group` e `fill_groups` non propagano dati tra ISIN verificati diversi.
 
+## Scheda di un fondo
+
+- Ogni titolo mostrato (proposte, tabella dei candidati, portafogli salvati) si rende con `flink(symbol, testo)` e un clic apre la scheda (`openFund` → `/api/fund` → `server.fund_detail`, statistiche in `PF.fund_stats`): anagrafica, rendimenti dallo storico a confronto con quelli dell'archivio (`stats_src`), grafici con `lineChart` (asse verticale sui dati, mai forzato a 0), rendimento per anno, composizione, altre quotazioni. Un nuovo elenco di titoli deve usare `flink`. Senza storico la scheda offre `/api/fund/history`.
+
 ## Verifica
 
 - `python selftest.py` (serve numpy e scipy). La pagina si prova avviando `python mymoney.py --db PROVA.db --no-browser --porta 8799` (database con `selftest.make_db`) e Playwright a 1100 e 390 px: nessun errore di pagina né scroll orizzontale.
