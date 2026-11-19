@@ -106,6 +106,44 @@ def main():
         assert lim["dr_max"] > 1.4 and lim["corr_min"] < 0.5, lim
         o, f_ = PF.propose(ds, amount=10000, cap=0.5, kmin=3, kmax=8, caps={}, dr_min=lim["dr_max"] + 1.0)
         assert not o and len(f_) == 3  # irraggiungibile: nessuna proposta (e la pagina spiega il massimo possibile)
+        # storico: la prima volta 5 anni, poi solo i giorni nuovi; i dividendi usciti nel frattempo riallineano lo storico vecchio
+        import jobs
+        from datetime import timedelta as _td
+
+        class FakeY:
+            cancel = staticmethod(lambda: False)
+            log = staticmethod(lambda m: None)
+            warn = staticmethod(lambda m: warns.append(m))
+
+            def __init__(self):
+                self.calls = []
+
+            def history(self, symbol, rng="5y", since=None):
+                self.calls.append(since)
+                base = [(x, 100.0 * (1 + 0.0005 * i)) for i, x in enumerate(days_all)]
+                scale = 1.0 if since is None else 0.98  # dopo la prima volta esce un dividendo: i prezzi aggiustati del passato scendono del 2%
+                rows = [(x, v * scale) for x, v in base if (since is None and x <= days_all[-6]) or (since is not None and x >= since)]
+                return "EUR", rows
+
+        warns = []
+        days_all = [(datetime.now() - _td(days=200 - i)).strftime("%Y-%m-%d") for i in range(201)]
+        db.upsert("INC.MI", name="Fondo incrementale", exchange="MIL", currency="EUR", price_eur=100.0)
+        db.commit()
+        fy = FakeY()
+        jobs.download_history(db, fy, ["INC.MI"], max_age_days=0)
+        assert fy.calls == [None] and db.get("INC.MI")["hist_n"] == 196, (fy.calls, db.get("INC.MI")["hist_n"])
+        first = dict(db.prices("INC.MI"))
+        jobs.download_history(db, fy, ["INC.MI"], max_age_days=0)
+        assert len(fy.calls) == 2 and fy.calls[1] is not None, fy.calls  # seconda volta: solo i giorni nuovi
+        now_ = db.prices("INC.MI")
+        assert len(now_) == 201 and now_[-1][0] == days_all[-1], (len(now_), now_[-1])
+        k = days_all[0]
+        assert abs(dict(now_)[k] / first[k] - 0.98) < 1e-6, (dict(now_)[k], first[k])  # lo storico vecchio è stato riallineato
+        assert db.get("INC.MI")["stats_src"] == "hist" and db.get("INC.MI")["max_dd"] is not None
+        # un fondo senza sovrapposizione (storico vecchio di oltre 300 giorni) si riscarica per intero
+        db.c.execute("UPDATE etf SET hist_to='2020-01-01', hist_at='2020-01-01 00:00:00' WHERE symbol='INC.MI'"); db.commit()
+        jobs.download_history(db, fy, ["INC.MI"], max_age_days=0)
+        assert fy.calls[-1] is None
         # un fondo giovane non accorcia il periodo di tutti: si esclude e lo si dice
         db.upsert("YOUNG.MI", name="Fondo giovane", exchange="MIL", currency="EUR", price_eur=10.0, asset_class="Azionario")
         import numpy as _np

@@ -44,6 +44,11 @@ App Python (server locale + pagina web + SQLite) che scarica da Yahoo Finance an
 - **Dati**: `load_dataset` corregge gli errori di Yahoo (`clean_series`), esclude i fondi con movimenti giornalieri > 50% (`MAX_MOVE`) e quelli giovani che accorciano la finestra sotto `MIN_WINDOW_YEARS`, e riporta tutto in `ds.notes` (mostrato nella pagina). I rendimenti a monte dei criteri vengono da `etf.ret_*`, `vol_*`, `max_dd` (justETF, Yahoo, `hist_stats`); `/api/returns` scarica lo storico dei fondi che ne sono privi.
 - Gli assi del grafico della frontiera seguono la curva e le proposte, mai i singoli fondi.
 
+## Storico dei prezzi: completo la prima volta, poi solo i giorni nuovi
+
+- `jobs.download_history`: 5 anni la prima volta, poi **solo i giorni nuovi** (`Yahoo.history(since=…)`, 10 giorni di sovrapposizione) uniti con `Database.merge_prices`, che riallinea lo storico vecchio sul rapporto mediano nel periodo in comune (i prezzi aggiustati per i dividendi cambiano a ogni dividendo); senza sovrapposizione o con storico più vecchio di 300 giorni si riscarica tutto. `download_history_all` copre i fondi dell'archivio (la quotazione preferita della vista `fondo`, o tutte), dai più grandi; riprendibile (`max_age_days`).
+- Dopo ogni scarico `_refresh_stats` ricalcola rendimenti, volatilità e perdita massima dallo storico salvato (`stats_src='hist'`); quelli justETF (`stats_src='justetf'`) hanno la precedenza e si riempiono solo i vuoti; il valore a 52 settimane di Yahoo (`ret_1y`) si scrive solo se non c'è una fonte migliore.
+
 ## Verifica
 
 - `python selftest.py` (serve numpy e scipy). La pagina si prova avviando `python mymoney.py --db PROVA.db --no-browser --porta 8799` (database con `selftest.make_db`) e Playwright a 1100 e 390 px: nessun errore di pagina né scroll orizzontale.

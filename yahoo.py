@@ -154,9 +154,16 @@ class Yahoo:
         return parse_summary(r[0]) if r else {}
 
     # ---- storico e cambi ----
-    def history(self, symbol, rng="5y"):
-        """(valuta, [(data ISO, chiusura aggiustata)]) dello storico giornaliero. La chiusura aggiustata include i dividendi."""
-        r = self.request(f"/v8/finance/chart/{urllib.parse.quote(symbol)}", {"range": rng, "interval": "1d", "events": "div,splits"})["chart"]["result"]
+    def history(self, symbol, rng="5y", since=None):
+        """(valuta, [(data ISO, chiusura aggiustata)]) dello storico giornaliero. La chiusura aggiustata include i dividendi.
+        Con `since` (data ISO) si scarica solo da quel giorno a oggi: serve per aggiornare uno storico già presente."""
+        q = {"interval": "1d", "events": "div,splits"}
+        if since:
+            q["period1"] = int(datetime.strptime(since, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+            q["period2"] = int(time.time()) + 86400
+        else:
+            q["range"] = rng
+        r = self.request(f"/v8/finance/chart/{urllib.parse.quote(symbol)}", q)["chart"]["result"]
         if not r:
             raise NotFound(symbol)
         return parse_chart(r[0])

@@ -257,8 +257,18 @@ def make_handler(path, job):
                 ex = [c for c in d.get("exchanges", []) if c in EXCHANGES]
                 if not ex:
                     return self.send(400, {"error": "Scegli almeno una borsa"})
-                det = bool(d.get("details"))
-                ok = job.start("download", lambda db, y, p: jobs.download_catalog(db, y, ex, det, None, p))
+                det, hist = bool(d.get("details")), bool(d.get("history"))
+
+                def run(db, y, p):
+                    jobs.download_catalog(db, y, ex, det, None, p)
+                    if hist:
+                        jobs.download_history_all(db, y, False, p)
+
+                ok = job.start("download", run)
+                return self.send(200 if ok else 409, {"ok": ok})
+            if u == "/api/history":
+                allq = bool(d.get("all_listings"))
+                ok = job.start("history", lambda db, y, p: jobs.download_history_all(db, y, allq, p))
                 return self.send(200 if ok else 409, {"ok": ok})
             if u == "/api/quotes":
                 ok = job.start("quotes", lambda db, y, p: jobs.update_quotes(db, y, None, p))

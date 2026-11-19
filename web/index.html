@@ -152,11 +152,16 @@ th.sort { cursor:pointer; } th.sort:hover { color:var(--fg); }
       <h2>Archivio titoli (Yahoo Finance)</h2>
       <div class="row" id="ex"></div>
       <p class="row"><label><input type="checkbox" id="det"> Scarica anche le schede dei fondi (TER, patrimonio, composizione): molto più lento, si può interrompere e riprendere</label></p>
+      <p class="row"><label><input type="checkbox" id="dlhist"> Scarica anche lo storico dei prezzi di tutti i fondi (rendimenti, volatilità…): lungo, si può interrompere e riprendere</label></p>
       <div class="row">
         <button class="primary" id="bdl">Scarica elenco titoli</button>
         <button id="bq">Aggiorna prezzi attuali</button>
         <a class="btn" href="/api/export">Scarica il CSV</a>
       </div>
+      <h2 style="margin-top:16px">Storico dei prezzi e rendimenti</h2>
+      <p class="note" style="margin:0 0 6px">5 anni di prezzi giornalieri in euro (dividendi inclusi) per tutti i fondi dell'archivio, dai più grandi: servono per rendimenti a 1, 3 e 5 anni, volatilità, perdita massima e per i portafogli. La prima volta è lungo (circa un secondo a titolo: una quarantina di minuti per Borsa Italiana, ore per tutte le borse) ma si può interrompere e riprendere. <b>Le volte successive scarica solo i giorni nuovi</b> e riallinea i dividendi usciti nel frattempo.</p>
+      <p class="row" style="margin:4px 0"><label><input type="checkbox" id="allq"> Tutte le quotazioni (non solo la preferita di ogni fondo)</label></p>
+      <div class="row"><button class="primary" id="bh">Scarica o aggiorna lo storico dei prezzi</button><span class="hint" id="hstat"></span></div>
       <h2 style="margin-top:16px">Dati justETF</h2>
       <p class="note" style="margin:0 0 6px">ISIN, replica, domicilio, rendimenti a 1/3/5 anni, volatilità, perdita massima, classe di attivo e area. L'ISIN si assegna a un titolo solo se OpenFIGI lo lega al suo ticker e alla sua borsa, con il registro ufficiale ESMA come conferma. Senza chiave OpenFIGI (variabile OPENFIGI_KEY) la prima volta ci vogliono 10–30 minuti secondo le borse scaricate, poi solo i fondi nuovi.</p>
       <div class="row"><button class="primary" id="bj">Scarica dati justETF</button></div>
@@ -331,7 +336,7 @@ setTheme(document.documentElement.dataset.theme);
 
 /* ---------- impostazioni e schermate ---------- */
 function save() {
-  const s = { v: 2, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked };
+  const s = { v: 2, ss: {}, rs: {}, multi: {}, unknown: $("unknown").checked, sustainable: $("sustainable").checked, ex: [...document.querySelectorAll("#ex input:checked")].map(x => x.value), det: $("det").checked, dlhist: $("dlhist").checked, allq: $("allq").checked };
   document.querySelectorAll(".ss").forEach(el => s.ss[el.dataset.k] = el.querySelector("input").value);
   document.querySelectorAll(".rs").forEach(el => s.rs[el.dataset.k] = [el.querySelector(".lo").value, el.querySelector(".hi").value]);
   Object.keys(MULTI).forEach(k => s.multi[k] = [...document.querySelectorAll(`#multi [data-k=${k}] input:checked`)].map(x => x.value));
@@ -353,7 +358,7 @@ async function init() {
   const opts = { ...OPTS, exchanges: Object.keys(INFO.exchanges), regions: INFO.regions, domiciles: INFO.domiciles };
   $("multi").innerHTML = Object.entries(MULTI).map(([k, lab]) => `<div class="row" data-k="${k}" style="margin:4px 0"><span class="note lt" style="min-width:220px">${lab}<button class="i" data-i="${k}" type="button">i</button></span>${opts[k].map(v => `<label><input type="checkbox" value="${esc(v)}" ${((s.multi || {})[k] || []).includes(v) ? "checked" : ""}> ${esc(k === "exchanges" ? INFO.exchanges[v] : v)}</label>`).join("")}${k === "domiciles" && !opts[k].length ? '<span class="hint">disponibile dopo «Scarica dati justETF»</span>' : ""}</div>`).join("");
   buildCrea(s);
-  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("sustainable").checked = !!s.sustainable;
+  $("unknown").checked = !!s.unknown; $("det").checked = !!s.det; $("dlhist").checked = !!s.dlhist; $("allq").checked = !!s.allq; $("sustainable").checked = !!s.sustainable;
   let t = null;
   const later = () => { save(); clearTimeout(t); t = setTimeout(search, 350); };
   $("t-crea").addEventListener("input", e => {
@@ -369,6 +374,7 @@ async function init() {
 }
 function showStats() {
   const t = INFO.stats;
+  $("hstat").textContent = t.con_storico ? `${t.con_storico} titoli con storico` + (t.storico_al ? `, aggiornato al ${t.storico_al}` : "") : "nessun storico scaricato";
   $("info").textContent = `${t.titoli} titoli (${t.fondi} fondi) · ${t.con_isin} con ISIN verificato · ${t.con_dettagli} con scheda · ${t.con_storico} con storico prezzi` + (t.ultimo ? ` · ultimo elenco ${t.ultimo}` : "") + ` · dati in ${INFO.path}`;
 }
 function form() {
@@ -421,7 +427,7 @@ async function poll() {
     $("wlog").textContent = s.log.slice(-6).join("\n");
     $("wlog").hidden = !s.log.length;
   }
-  ["bdl", "bq", "bj", "bcalc"].forEach(i => $(i).disabled = s.busy); if ($("bret")) $("bret").disabled = s.busy;
+  ["bdl", "bq", "bj", "bh", "bcalc"].forEach(i => $(i).disabled = s.busy); if ($("bret")) $("bret").disabled = s.busy;
   if (wasBusy && !s.busy) {
     const i2 = await (await fetch("/api/info")).json(); INFO.stats = i2.stats; showStats();
     outcome(s);
@@ -445,8 +451,9 @@ $("nclose").onclick = () => { $("notice").hidden = true; };
 $("bdl").onclick = async () => {
   const ex = [...document.querySelectorAll("#ex input:checked")].map(x => x.value);
   if (!ex.length) return alert("Scegli almeno una borsa");
-  wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
+  wasBusy = true; const r = await post("/api/download", { exchanges: ex, details: $("det").checked, history: $("dlhist").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso");
 };
+$("bh").onclick = async () => { wasBusy = true; const r = await post("/api/history", { all_listings: $("allq").checked }); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bj").onclick = async () => { wasBusy = true; const r = await post("/api/justetf", {}); if (!r.ok) alert(r.j.error || "Un altro lavoro è in corso"); };
 $("bq").onclick = async () => { wasBusy = true; await post("/api/quotes"); };
 $("stop").onclick = () => post("/api/cancel");

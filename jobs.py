@@ -96,7 +96,7 @@ def download_catalog(db, y, exchanges, details=False, max_details=None, progress
             if not (prev and (prev["detail_at"] or prev["class_src"] == "justetf")):
                 extra["asset_class"] = C.asset_class(name)
             ft = num(x.get("firstTradeDateMilliseconds"))
-            for kk, v in (("ter", num(x.get("netExpenseRatio"))), ("ret_1y", num(x.get("fiftyTwoWeekChangePercent"))),
+            for kk, v in (("ter", num(x.get("netExpenseRatio"))), ("ret_1y", None if prev and prev["stats_src"] else num(x.get("fiftyTwoWeekChangePercent"))),
                           ("inception", datetime.fromtimestamp(ft / 1000).strftime("%Y-%m-%d") if ft else None)):
                 if v is not None and not (kk == "inception" and prev and prev["inception"]):
                     extra[kk] = v
@@ -204,8 +204,28 @@ def hist_stats(ser):
     return out
 
 
-def download_history(db, y, symbols, progress=nop, max_age_days=3):
-    """Storico giornaliero di 5 anni in EUR (chiusure aggiustate dei dividendi). Salta i titoli scaricati da meno di `max_age_days` giorni."""
+STATS = ("ret_1y", "ret_3y", "ret_5y", "vol_1y", "vol_3y", "max_dd")
+
+
+def _refresh_stats(db, r, symbol):
+    """Rendimenti, volatilità e perdita massima dallo storico completo salvato (sempre aggiornati dopo ogni scarico). Quelli di justETF hanno la precedenza:
+    per questi si riempiono solo i vuoti."""
+    ser = [(d, p) for d, p in db.prices(symbol)]
+    if len(ser) < 60:
+        return
+    st = {k: v for k, v in hist_stats(ser).items() if v is not None}
+    row = db.get(symbol)
+    if row["stats_src"] == "justetf":
+        st = {k: v for k, v in st.items() if row[k] is None}
+    else:
+        st["stats_src"] = "hist"
+    if st:
+        db.upsert(symbol, **st)
+
+
+def download_history(db, y, symbols, progress=nop, max_age_days=0.5, full=False):
+    """Storico giornaliero in EUR (chiusure aggiustate dei dividendi): 5 anni la prima volta, poi **solo i giorni nuovi** (con 10 giorni di sovrapposizione per
+    riallineare i dividendi nel frattempo usciti). `full` riscarica tutto. Salta i titoli aggiornati da meno di `max_age_days` giorni. Ritorna quanti ne ha trattati."""
     fresh = (datetime.now() - timedelta(days=max_age_days)).strftime("%Y-%m-%d %H:%M:%S")
     todo = []
     for s in symbols:
@@ -215,44 +235,65 @@ def download_history(db, y, symbols, progress=nop, max_age_days=3):
     if not todo:
         return 0
     _rates(db, y, {r["currency"] for r in todo}, "5y")
-    cache, ok, bad, streak = {}, 0, [], Streak(y)
+    cache, ok, bad, streak, inc_n = {}, 0, [], Streak(y), 0
+
+    def to_eur(ser, cur):
+        if cur == "EUR" or not ser:
+            return ser
+        if cur not in cache:
+            h = db.fx(cur)
+            cache[cur] = (sorted(h), [h[d] for d in sorted(h)])
+        days, vals = cache[cur]
+        return [(d, p * vals[max(0, bisect.bisect_right(days, d) - 1)]) for d, p in ser] if days else []
+
     for i, r in enumerate(todo):
         progress(f"Storico prezzi: {i} di {len(todo)}" + (f" ({len(bad)} senza dati)" if bad else ""), i, len(todo))
+        last = r["hist_to"]
+        inc = (not full) and last and (r["hist_n"] or 0) >= 60 and (datetime.now() - datetime.strptime(last, "%Y-%m-%d")).days <= 300
         try:
-            cur, ser = y.history(r["symbol"])
+            if inc:
+                cur, ser = y.history(r["symbol"], since=(datetime.strptime(last, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d"))
+                ser = to_eur(ser, cur or r["currency"])
+                if db.merge_prices(r["symbol"], ser) is None:  # nessuna sovrapposizione: si riscarica tutto
+                    inc = False
+                else:
+                    inc_n += 1
+            if not inc:
+                cur, ser = y.history(r["symbol"])
+                ser = to_eur(ser, cur or r["currency"])
+                if len(ser) < 30:
+                    bad.append(r["symbol"])
+                db.save_prices(r["symbol"], ser)
             streak.ok()
         except NotFound:
-            ser, cur = [], r["currency"]
+            bad.append(r["symbol"])
+            if not inc:
+                db.save_prices(r["symbol"], [])
+            continue
         except RuntimeError as e:
             db.commit()
             streak.fail(f"{r['symbol']}: storico non scaricato ({e})")
             bad.append(r["symbol"])
             continue
-        cur = cur or r["currency"]
-        if cur != "EUR" and ser:
-            if cur not in cache:
-                h = db.fx(cur)
-                cache[cur] = (sorted(h), [h[d] for d in sorted(h)])
-            days, vals = cache[cur]
-            if not days:
-                ser = []
-            else:
-                ser = [(d, p * vals[max(0, bisect.bisect_right(days, d) - 1)]) for d, p in ser]
-        if len(ser) < 30:
-            bad.append(r["symbol"])
-        db.save_prices(r["symbol"], ser)
-        if len(ser) >= 60:
-            fill = {k: v for k, v in hist_stats(ser).items() if v is not None and r[k] is None}
-            if fill:
-                db.upsert(r["symbol"], **fill)
+        _refresh_stats(db, r, r["symbol"])
         ok += 1
         if i % 10 == 9:
             db.commit()
     db.commit()
     if bad:
         y.warn(f"{len(bad)} titoli senza storico dei prezzi (esclusi dal calcolo): {_examples(bad, 12)}")
-    progress(f"Storico prezzi: {len(todo)} di {len(todo)}", len(todo), len(todo))
+    progress(f"Storico prezzi: {len(todo)} di {len(todo)}" + (f" ({inc_n} aggiornati solo con i giorni nuovi)" if inc_n else ""), len(todo), len(todo))
     return ok
+
+
+def download_history_all(db, y, all_listings=False, progress=nop, max_age_days=0.5):
+    """Storico di tutti i fondi dell'archivio (la quotazione preferita di ciascuno, o tutte), dai più grandi: la prima volta 5 anni, poi solo i giorni nuovi.
+    Riprendibile: i titoli già aggiornati si saltano."""
+    if all_listings:
+        rows = db.c.execute("SELECT symbol FROM etf ORDER BY assets_eur_m IS NULL, assets_eur_m DESC, adv_eur_m IS NULL, adv_eur_m DESC").fetchall()
+    else:
+        rows = db.c.execute("SELECT symbol FROM fondo ORDER BY assets_eur_m IS NULL, assets_eur_m DESC, adv_eur_m IS NULL, adv_eur_m DESC").fetchall()
+    return download_history(db, y, [r[0] for r in rows], progress, max_age_days)
 
 
 def download_justetf(db, y, jt, figi_key=None, max_figi=None, progress=nop, cancel=None, log=nop):

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS etf (
   avg_volume REAL, adv_eur_m REAL,
   assets REAL, assets_eur_m REAL, ret_1y REAL, ter REAL, family TEXT, category TEXT, inception TEXT,
   stock REAL, bond REAL, cash REAL, other REAL, yield REAL, sectors TEXT,
-  class_src TEXT, replication TEXT, domicile TEXT, n_holdings INTEGER, sustainable INTEGER, div_yield REAL, ret_3y REAL, ret_5y REAL,
+  class_src TEXT, stats_src TEXT, replication TEXT, domicile TEXT, n_holdings INTEGER, sustainable INTEGER, div_yield REAL, ret_3y REAL, ret_5y REAL,
   vol_1y REAL, vol_3y REAL, max_dd REAL, holdings TEXT,
   listed_at TEXT, quote_at TEXT, detail_at TEXT, hist_at TEXT, hist_from TEXT, hist_to TEXT, hist_n INTEGER
 );
@@ -168,6 +168,8 @@ class DB:
         for e, j in self.MAP:
             sub = f"(SELECT [{j}] FROM jetf WHERE jetf.isin=etf.isin)"
             self.c.execute(f"UPDATE etf SET [{e}]={sub} WHERE isin IS NOT NULL AND {sub} IS NOT NULL")
+        # rendimenti, volatilità e perdita massima di justETF hanno la precedenza su quelli calcolati dallo storico e su quelli di Yahoo
+        self.c.execute("UPDATE etf SET stats_src='justetf' WHERE isin IS NOT NULL AND (SELECT r1 FROM jetf WHERE jetf.isin=etf.isin) IS NOT NULL")
         sub = "(SELECT asset FROM jetf WHERE jetf.isin=etf.isin)"
         self.c.execute(f"UPDATE etf SET asset_class={sub}, class_src='justetf' WHERE isin IS NOT NULL AND {sub} IS NOT NULL")
 
@@ -180,13 +182,31 @@ class DB:
         q = lambda s: self.c.execute(s).fetchone()[0]
         return {"titoli": q("SELECT COUNT(*) FROM etf"), "fondi": q("SELECT COUNT(*) FROM fondo"),
                 "con_dettagli": q("SELECT COUNT(*) FROM etf WHERE detail_at IS NOT NULL"), "con_isin": q("SELECT COUNT(*) FROM etf WHERE isin IS NOT NULL"), "con_storico": q("SELECT COUNT(*) FROM etf WHERE hist_n > 0"),
-                "ultimo": self.c.execute("SELECT MAX(listed_at) FROM etf").fetchone()[0]}
+                "ultimo": self.c.execute("SELECT MAX(listed_at) FROM etf").fetchone()[0], "storico_al": self.c.execute("SELECT MAX(hist_to) FROM etf").fetchone()[0]}
 
     # ---- prezzi e cambi ----
     def save_prices(self, symbol, rows):
         self.c.execute("DELETE FROM prezzi WHERE symbol=?", (symbol,))
         self.c.executemany("INSERT OR REPLACE INTO prezzi VALUES (?,?,?)", [(symbol, d, p) for d, p in rows])
         self.upsert(symbol, hist_at=now(), hist_n=len(rows), hist_from=rows[0][0] if rows else None, hist_to=rows[-1][0] if rows else None)
+
+    def merge_prices(self, symbol, rows):
+        """Aggiunge a uno storico esistente le righe nuove (EUR) che ne ripartono con qualche giorno di sovrapposizione. Le chiusure aggiustate cambiano quando esce
+        un dividendo: sul periodo in comune si confronta il nuovo con il vecchio e, se differiscono, tutto lo storico precedente si riallinea con quel rapporto.
+        Ritorna il rapporto applicato, o None se non c'è sovrapposizione (serve riscaricare tutto)."""
+        if not rows:
+            return 1.0
+        old = {r[0]: r[1] for r in self.c.execute("SELECT date, close_eur FROM prezzi WHERE symbol=? AND date>=?", (symbol, rows[0][0]))}
+        ratios = sorted(v / old[dd] for dd, v in rows if old.get(dd))
+        if not ratios:
+            return None
+        r = ratios[len(ratios) // 2]
+        if abs(r - 1) > 1e-4:
+            self.c.execute("UPDATE prezzi SET close_eur=close_eur*? WHERE symbol=? AND date<?", (r, symbol, rows[0][0]))
+        self.c.executemany("INSERT OR REPLACE INTO prezzi VALUES (?,?,?)", [(symbol, dd, p) for dd, p in rows])
+        n, a, b = self.c.execute("SELECT COUNT(*), MIN(date), MAX(date) FROM prezzi WHERE symbol=?", (symbol,)).fetchone()
+        self.upsert(symbol, hist_at=now(), hist_n=n, hist_from=a, hist_to=b)
+        return r
 
     def prices(self, symbol):
         return self.c.execute("SELECT date, close_eur FROM prezzi WHERE symbol=? ORDER BY date", (symbol,)).fetchall()
