@@ -123,7 +123,7 @@ Yahoo non fornisce l'ISIN, quindi arriva da fonti dirette e **si assegna a un ti
 - L'abbinamento dal nome o dal ticker resta solo come **ipotesi** (`isin_guess`, visibile nel CSV) e non serve per attribuire dati: in una prova sul 4% dei casi era sbagliato (stesso nome, ISIN diversi).
 - **Cambi**: dalla BCE (dati ufficiali, interfaccia SDMX); Yahoo solo per le valute che la BCE non pubblica.
 
-Il pulsante «Scarica dati justETF» (o `python mymoney.py justetf`) legge l'elenco justETF (~5.000 ETF, circa 70 secondi), verifica gli ISIN e **solo ai titoli con ISIN verificato** aggiunge, con precedenza sui dati di Yahoo:
+Il passo «Dati justETF e ISIN» di «Scarica titoli» (o `python mymoney.py justetf`) legge l'elenco justETF (~5.000 ETF, circa 70 secondi), verifica gli ISIN e **solo ai titoli con ISIN verificato** aggiunge, con precedenza sui dati di Yahoo:
 
 - TER, patrimonio, data di lancio, distribuzione, numero di titoli, fondo sostenibile (ESG), rendimento da dividendi;
 - **replica** (fisica completa, a campione, sintetica) e **domicilio**;
