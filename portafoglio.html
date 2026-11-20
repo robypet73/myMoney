@@ -125,7 +125,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div>
       <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select></label>
       <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
-      <p class="sub" id="sub" hidden>Portafoglio Mondo Emergenti · 40.000 € in otto ETF ed ETC ad accumulazione, a replica fisica, quotati a Borsa Italiana e senza commissioni di acquisto su Fineco fino a marzo 2027. 70% azioni, 20% obbligazioni, 10% oro, con il 15% in mercati emergenti.</p>
+      <p class="sub" id="sub" hidden></p>
     </div>
     <div class="agg">
       <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
@@ -505,7 +505,8 @@ function disegnaKpi() {
   const fl = []; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) fl.push({ t: new Date(DATES[x.t]).getTime(), v: -x.costo }); })); fl.sort((a, b) => a.t - b.t); let xi = null;
   if (fl.length && VAL > 0 && new Date(last).getTime() - fl[0].t > 30 * 864e5) { fl.push({ t: new Date(last).getTime(), v: VAL }); xi = xirr(fl); }
   const hasPos = VAL > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
-  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
+  const sdv = COV.map((r, i) => Math.sqrt(r[i])), vp = Math.sqrt(sum(WCUR.map((x, i) => sum(WCUR.map((y, j) => x * y * COV[i][j]))))), dr = vp ? sum(WCUR.map((x, i) => x * sdv[i])) / vp : 1, neff = 1 / sum(WCUR.map((x) => x * x));
+  $("#kpi").innerHTML = [["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF + " · da 1 (nessun beneficio) in su"], ["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
     ["Rendimento annuo dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per1").textContent = $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
@@ -698,11 +699,10 @@ function ricevi(d) {
 async function leggi() { try { const r = await fetch("/api/prezzi", { cache: "no-store" }); if (!r.ok) throw 0; ricevi(await r.json()); } catch (e) { stato("Il programma locale non risponde: restano i prezzi del " + dataIt(BASE) + ". Riavvia avvia.cmd.", true); } }
 async function avvia() {
   caricaPortafogli();
-  if (VUOTO) { stato("Nessun portafoglio caricato."); return; }
-  stato("Prezzi di riferimento: chiusura del " + dataIt(BASE) + ".");
+  if (VUOTO) return;
   try { const r = await fetch("/api/prezzi", { cache: "no-store" }); if (r.ok) { const j = await r.json(); if (j && j.prezzi) { MODO = "locale"; ricevi(j); setInterval(leggi, 15000); } } } catch (e) {}
   if (!MODO && window.claude && window.claude.use) { try { DB = await window.claude.use("db"); } catch (e) { DB = null; } if (DB) { MODO = "pagina"; DB.doc("mercato/ultimo").onSnapshot((s) => { if (s.exists) ricevi(s.data()); }, () => {}); } }
-  if (MODO) $("#aggiorna").hidden = false; else stato("Prezzi di riferimento: chiusura del " + dataIt(BASE) + ". Per prezzi aggiornati avvia avvia.cmd.");
+  if (MODO) $("#aggiorna").hidden = false;
 }
 /* finestra di scarico: clessidra, avanzamento e testo che scorre con i dati man mano che arrivano */
 const SC = { q: [], timer: null, fine: null, aperta: false, k: 0, n: 0 };
