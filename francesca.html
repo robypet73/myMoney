@@ -68,6 +68,7 @@ details { background: var(--surface); border: 1px solid var(--line); border-radi
 ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; max-width: 80ch; }
 .leg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); } .leg i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
 .pt { cursor: pointer; }
+.warn { color: var(--warn); } .soglie { font-size: 14px; border-left: 3px solid var(--line); padding: 4px 0 4px 12px; } .soglie.fuori { border-left-color: var(--warn); } .soglie ul { margin: 6px 0 0; padding-left: 18px; }
 #fcomp table th:first-child, #fcomp table td:first-child { min-width: 0; } #fcomp table th, #fcomp table td { padding: 6px 8px; }
 .ovl { position: fixed; inset: 0; z-index: 50; background: rgba(5, 9, 14, .72); display: flex; align-items: flex-start; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
 .ovl[hidden] { display: none; } .ovl .box { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; width: 100%; max-width: 940px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 16px; margin: auto 0; }
@@ -238,6 +239,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <section>
     <div class="sec-head"><h2>Ribilanciamento</h2><span class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</span></div>
     <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
@@ -261,6 +263,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <li>La perdita massima storica del piano è stata del <span id="ddtxt"></span> (<span id="ddper"></span>); non è un limite garantito.</li>
       <span id="note-extra" style="display:contents"></span>
       <li>Fonti: prezzi in euro e caratteristiche dei fondi da justETF (per i titoli con un simbolo di Borsa Italiana l'aggiornamento arriva da Yahoo Finance); composizioni pubblicate da justETF o dagli emittenti, che possono riferirsi a date diverse.</li>
+      <li>Liquidità: ogni ordine del piano è al massimo circa il 2% del volume giornaliero medio del fondo a Borsa Italiana (il più alto è EMSRI, circa 6.000 € su 320.000 € al giorno, a 40.000 € investiti).</li>
+      <li>Regola di ribilanciamento: controlla una volta l'anno (gennaio) e riporta ai pesi del piano solo se un fondo si sposta di almeno 5 punti (o del 25% e almeno 2 punti) o una classe di almeno 5 punti. Vendi solo l'eccesso e usa prima i nuovi versamenti, perché le vendite fanno pagare l'imposta sulle plusvalenze. Nelle simulazioni 2019–2026 un satellite del 7% lasciato correre sarebbe arrivato al 20% del portafoglio.</li>
       <li>Costo di acquisto di un lotto: quote per prezzo di chiusura del giorno (o dell'ultimo giorno di borsa aperta prima della data), oppure il prezzo che indichi tu. Non sono considerati commissioni, imposte e spread.</li>
       <li>Analisi tecnica sui dati, non consulenza personalizzata.</li>
     </ul>
@@ -575,7 +579,20 @@ function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pt
 
 /* ---------- ribilanciamento ---------- */
 function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
+/* ---------- controllo della deriva: regola 5/25 ---------- */
+const SOGLIA_ASS = 0.05, SOGLIA_REL = 0.25, SOGLIA_MIN = 0.02;
+const fondoFuori = (i) => { const d = Math.abs(WCUR[i] - F[i].w); return d >= SOGLIA_ASS || (d >= SOGLIA_MIN && d >= SOGLIA_REL * F[i].w); };
+function disegnaSoglie() {
+  const box = $("#rb-soglie"); if (!box) return;
+  const regola = "Regola: controllo una volta l'anno (gennaio); si riporta ai pesi del piano solo se un fondo si sposta di almeno 5 punti (o del 25% e almeno 2 punti) o una classe di almeno 5 punti.";
+  if (VAL <= 0) { box.innerHTML = `<div class="soglie muted">Inserisci i tuoi acquisti per controllare la deriva dei pesi. ${regola}</div>`; return; }
+  const voci = [];
+  F.forEach((f, i) => { if (fondoFuori(i)) voci.push(`${flink(i, f.s)} è al ${pct(WCUR[i])} contro ${pct(f.w, 0)} del piano (${(WCUR[i] > f.w ? "+" : "−") + nf(Math.abs(WCUR[i] - f.w) * 100, 1)} punti)`); });
+  CLASSI.forEach((c) => { const t = sum(F.filter((f) => f.cls === c).map((f) => f.w)), a = sum(F.map((f, i) => (f.cls === c ? WCUR[i] : 0))); if (Math.abs(a - t) >= SOGLIA_ASS) voci.push(`${CNOME[c]} è al ${pct(a)} contro ${pct(t, 0)} del piano`); });
+  box.innerHTML = voci.length ? `<div class="soglie fuori"><strong class="warn">Fuori soglia: conviene ribilanciare.</strong><ul>${voci.map((v) => `<li>${v}</li>`).join("")}</ul><div class="muted" style="margin-top:6px">${regola} Vendi solo l'eccesso e, se puoi, usa prima i nuovi versamenti.</div></div>` : `<div class="soglie"><strong class="up">Entro le soglie: nessun ribilanciamento necessario.</strong><div class="muted" style="margin-top:4px">${regola}</div></div>`;
+}
 function aggiornaRib() {
+  disegnaSoglie();
   $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = !!ST.rib.v;
   const wt = pesiObiettivo(), cash = Math.max(0, +ST.rib.c || 0), tot = VAL + cash, vend = !!ST.rib.v;
   if (tot <= 0) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci i tuoi acquisti oppure un versamento: il piano mostrerà quante quote comprare."; return; }
