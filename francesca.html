@@ -15,9 +15,9 @@ body { background: var(--bg); color: var(--fg); font-family: var(--text); font-s
 h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
 h1 { font-size: clamp(24px, 4vw, 32px); letter-spacing: -0.01em; } h2 { font-size: 20px; } h3 { font-size: 15px; font-family: var(--text); } h4 { font-size: 13px; font-family: var(--text); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 500; }
 p { margin: 0; } .muted { color: var(--muted); } .num { font-variant-numeric: tabular-nums; } .up { color: var(--good); } .down { color: var(--bad); }
-header.top { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end; justify-content: space-between; } header.top > div { min-width: 0; }
-.sub { color: var(--muted); max-width: 64ch; margin-top: 6px; }
-.agg { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 46ch; }
+header.top { display: flex; flex-direction: column; gap: 16px; align-items: stretch; } header.top > div { min-width: 0; }
+.sub { color: var(--muted); margin-top: 6px; }
+.agg { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; } .agg > .btn { padding: 8px 14px; font-size: 14px; } .agg-btn { display: contents; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 .btn { background: var(--accent); color: #06121f; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; }
@@ -25,10 +25,10 @@ button { cursor: pointer; }
 .btn.small { padding: 5px 10px; font-size: 13px; }
 .btn:disabled { opacity: .55; cursor: default; }
 .btn:focus-visible, .seg button:focus-visible, .flink:focus-visible, .pt:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-#stato { font-size: 13px; color: var(--muted); } #stato.err { color: var(--warn); }
+#stato { font-size: 12px; color: var(--muted); flex-basis: 100%; } #stato:empty { display: none; } #stato.err { color: var(--warn); }
 .banner { background: var(--raised); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; font-size: 14px; }
-.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.kpi > div { background: var(--surface); padding: 14px 16px; min-width: 0; }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.kpi > div { background: var(--surface); padding: 12px 12px; min-width: 0; }
 .kpi .l { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; } .kpi .v { font-family: var(--display); font-size: 24px; margin-top: 2px; font-variant-numeric: tabular-nums; } .kpi .n { font-size: 12px; color: var(--muted); }
 section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .sec-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
@@ -78,7 +78,7 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
 .vtag { font-family: var(--text); font-size: 13px; font-weight: 500; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); vertical-align: middle; }
 .pfsel[hidden] { display: none; }
 /* modello vuoto e caricamento JSON */
-.agg-btn { display: flex; flex-wrap: wrap; gap: 8px; } .agg-btn[hidden], #start[hidden] { display: none; }
+.agg-btn[hidden], #start[hidden] { display: none; }
 body.vuoto .wrap > :not(header):not(#start):not(#banner) { display: none; } #start { display: flex; flex-direction: column; gap: 14px; }
 pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.55 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; overflow-x: auto; }
 /* importo da ripartire */
@@ -129,7 +129,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </div>
     <div class="agg">
       <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
-      <div class="agg-btn"><button class="btn sec small js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec small" id="scarica-json" type="button">Scarica JSON</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
+      <div class="agg-btn"><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
       <div id="stato" role="status"></div>
     </div>
   </header>
@@ -520,9 +520,9 @@ function disegnaKpi() {
   if (fl.length && VAL > 0 && new Date(last).getTime() - fl[0].t > 30 * 864e5) { fl.push({ t: new Date(last).getTime(), v: VAL }); xi = xirr(fl); }
   const hasPos = VAL > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
   const sdv = COV.map((r, i) => Math.sqrt(r[i])), vp = Math.sqrt(sum(WCUR.map((x, i) => sum(WCUR.map((y, j) => x * y * COV[i][j]))))), dr = vp ? sum(WCUR.map((x, i) => x * sdv[i])) / vp : 1, neff = 1 / sum(WCUR.map((x) => x * x));
-  $("#kpi").innerHTML = [["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF + " · da 1 (nessun beneficio) in su"], ["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
-    ["Rendimento annuo dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
-    ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
+  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
+    ["Rend. dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
+    ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
   $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
   const az = $("#azzera"); if (az) az.onclick = () => { F.forEach((f) => (ST.lots[f.s] = [])); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); };
@@ -707,10 +707,10 @@ const stato = (t, err) => { const e = $("#stato"); e.textContent = t; e.classLis
 let ULTIMO = null, MODO = null, DB = null;
 function ricevi(d) {
   if (!d || !d.prezzi || d.at === ULTIMO) return; ULTIMO = d.at; LIVE = d; costruisci(); aggiornaSubito(); richiediFrontiera();
-  const n = Object.keys(d.prezzi).length, av = d.avvisi && d.avvisi.length, quando = new Date(d.at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  const n = Object.keys(d.prezzi).length, av = d.avvisi && d.avvisi.length, quando = new Date(d.at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }), giorno = new Date(d.at).toLocaleDateString("it-IT");
   if (!(d.risposte ?? n)) { stato("Alle " + quando + " non sono riuscito a scaricare i prezzi" + (av ? ": " + d.avvisi.join("; ") : ".") + " Restano i prezzi del " + dataIt(BASE) + ".", true); return; }
   if (!n) { stato("Scaricato alle " + quando + " da " + d.fonte + ": nessuna quotazione dopo il " + dataIt(BASE) + " (borsa chiusa o seduta non ancora iniziata)." + (av ? " Avvisi: " + d.avvisi.join("; ") : ""), !!av); return; }
-  stato("Aggiornato alle " + quando + " · prezzi del " + dataIt(DATES[DATES.length - 1]) + ". Fonte: " + d.fonte + "." + (av ? " Avvisi: " + d.avvisi.join("; ") : ""), !!av);
+  stato("Aggiornato il " + giorno + " alle " + quando + (av ? " · " + d.avvisi.join("; ") : ""), !!av);
 }
 async function leggi() { try { const r = await fetch("/api/prezzi", { cache: "no-store" }); if (!r.ok) throw 0; ricevi(await r.json()); } catch (e) { stato("Il programma locale non risponde: restano i prezzi del " + dataIt(BASE) + ". Riavvia avvia.cmd.", true); } }
 async function avvia() {
