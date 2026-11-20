@@ -1,0 +1,151 @@
+{
+ "fondo": {
+  "s": "SWDA",
+  "isin": "IE00B4L5Y983",
+  "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+  "cls": "Azionario",
+  "ruolo": "Nucleo",
+  "tipo": "Azioni · mondo ed Europa",
+  "ter": 0.2,
+  "aum": 130418.0,
+  "adv": 12.26,
+  "emittente": "iShares by BlackRock",
+  "repl": "Fisica a campione",
+  "dom": "Irlanda",
+  "lancio": "2009-09-25",
+  "valuta": "USD",
+  "n": 1249,
+  "mix": {
+   "aree": {
+    "Stati Uniti": 0.7193,
+    "Area euro": 0.0903,
+    "Europa fuori dall'euro": 0.0676,
+    "Altri sviluppati": 0.0605,
+    "Giappone": 0.0558,
+    "Altro": 0.0036,
+    "Mercati emergenti": 0.0029
+   },
+   "settori": {
+    "Tecnologia": 0.2808,
+    "Beni voluttuari": 0.093,
+    "Comunicazioni": 0.0751,
+    "Salute": 0.1031,
+    "Finanza": 0.1647,
+    "Energia": 0.0414,
+    "Beni di prima necessità": 0.0562,
+    "Industria": 0.1084,
+    "Materiali": 0.0312,
+    "Altro": 0.0037,
+    "Pubblica utilità": 0.0258,
+    "Immobiliare": 0.0167
+   },
+   "valute": {
+    "USD": 0.7322,
+    "EUR": 0.081,
+    "JPY": 0.0558,
+    "GBP": 0.0341,
+    "CAD": 0.0336,
+    "CHF": 0.0238,
+    "AUD": 0.0157,
+    "Altre valute": 0.0237
+   },
+   "paesi": [
+    [
+     "Stati Uniti",
+     0.7193
+    ],
+    [
+     "Giappone",
+     0.0558
+    ],
+    [
+     "Canada",
+     0.0324
+    ],
+    [
+     "Regno Unito",
+     0.0302
+    ],
+    [
+     "Svizzera",
+     0.0244
+    ],
+    [
+     "Francia",
+     0.0221
+    ],
+    [
+     "Germania",
+     0.021
+    ],
+    [
+     "Paesi Bassi",
+     0.0164
+    ]
+   ],
+   "top": [
+    [
+     "Apple",
+     "Stati Uniti",
+     0.0596,
+     "apple"
+    ],
+    [
+     "Microsoft",
+     "Stati Uniti",
+     0.0413,
+     "microsoft"
+    ],
+    [
+     "Nvidia",
+     "Stati Uniti",
+     0.04,
+     "nvidia"
+    ],
+    [
+     "Amazon Com Inc",
+     "Stati Uniti",
+     0.0299,
+     "amazon com"
+    ],
+    [
+     "Alphabet Class A",
+     "Stati Uniti",
+     0.0191,
+     "alphabet"
+    ],
+    [
+     "Broadcom Inc",
+     "Stati Uniti",
+     0.0184,
+     "broadcom"
+    ],
+    [
+     "Meta Platforms Class A",
+     "Stati Uniti",
+     0.0156,
+     "meta platforms"
+    ],
+    [
+     "Alphabet Class C",
+     "Stati Uniti",
+     0.015,
+     "alphabet"
+    ],
+    [
+     "Eli Lilly",
+     "Stati Uniti",
+     0.0127,
+     "eli lilly"
+    ],
+    [
+     "Tesla Inc",
+     "Stati Uniti",
+     0.0126,
+     "tesla"
+    ]
+   ],
+   "nt": 1251
+  }
+ }
+}

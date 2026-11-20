@@ -1,4 +1,5 @@
 {
+  "$schema": "schema.json",
   "nome": "esempio",
   "versione": "V1",
   "descrizione": "Esempio del formato: 70% azioni, 20% obbligazioni, 10% oro, con il 15% in mercati emergenti.",

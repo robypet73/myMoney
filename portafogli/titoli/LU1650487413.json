@@ -1,0 +1,126 @@
+{
+ "fondo": {
+  "s": "EM13",
+  "isin": "LU1650487413",
+  "name": "Amundi Euro Government Bond 1-3Y UCITS ETF Acc",
+  "cls": "Obbligazionario",
+  "ruolo": "Obbligazioni",
+  "tipo": "Obbligazioni · titoli di Stato",
+  "ter": 0.15,
+  "aum": 2264.0,
+  "adv": 1.01,
+  "emittente": "Amundi",
+  "repl": "Fisica completa",
+  "dom": "Lussemburgo",
+  "lancio": "2005-09-22",
+  "valuta": "EUR",
+  "n": 81,
+  "mix": {
+   "aree": {
+    "Area euro": 1.0,
+    "Altro": -0.0
+   },
+   "settori": {},
+   "valute": {
+    "EUR": 1.0
+   },
+   "paesi": [
+    [
+     "Francia",
+     0.2356
+    ],
+    [
+     "Germania",
+     0.2289
+    ],
+    [
+     "Italia",
+     0.2247
+    ],
+    [
+     "Spagna",
+     0.1625
+    ],
+    [
+     "Belgio",
+     0.0371
+    ],
+    [
+     "Paesi Bassi",
+     0.0352
+    ],
+    [
+     "Austria",
+     0.0328
+    ],
+    [
+     "Portogallo",
+     0.0168
+    ]
+   ],
+   "top": [
+    [
+     "French Republ OAT 2.75% 25Feb29",
+     "Francia",
+     0.0364,
+     "french republ oat 2 75 25feb29"
+    ],
+    [
+     "France OAT 0.75% 25May28",
+     "Francia",
+     0.0364,
+     "france oat 0 75 25may28"
+    ],
+    [
+     "French Republ OAT 0.75% 25Nov28",
+     "Francia",
+     0.0339,
+     "french republ oat 0 75 25nov28"
+    ],
+    [
+     "French Republ OAT 0.5% 25May29",
+     "Francia",
+     0.0312,
+     "french republ oat 0 5 25may29"
+    ],
+    [
+     "France OAT 5.5% 25Apr29",
+     "Francia",
+     0.0274,
+     "france oat 5 5 25apr29"
+    ],
+    [
+     "French Republ OAT 2.4% 24Sep28",
+     "Francia",
+     0.0271,
+     "french republ oat 2 4 24sep28"
+    ],
+    [
+     "French Republ OAT 0.75% 25Feb28",
+     "Francia",
+     0.025,
+     "french republ oat 0 75 25feb28"
+    ],
+    [
+     "French Republ OAT 2.4% 24Sep29",
+     "Francia",
+     0.0181,
+     "french republ oat 2 4 24sep29"
+    ],
+    [
+     "Kingdom Of Sp 3.5% 31May29",
+     "Spagna",
+     0.017,
+     "kingdom of sp 3 5 31may29"
+    ],
+    [
+     "Spain (Kingdo 6% 31Jan29",
+     "Spagna",
+     0.0169,
+     "spain kingdo 6 31jan29"
+    ]
+   ],
+   "nt": 79
+  }
+ }
+}

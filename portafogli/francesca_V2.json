@@ -1,0 +1,34 @@
+{
+  "$schema": "schema.json",
+  "nome": "francesca",
+  "versione": "V2",
+  "descrizione": "Più bilanciato di V1: satelliti CHIP e BNKE al 5% ciascuno, più Europa (CEU 12%), meno dollari. Stessa diversificazione e liquidità.",
+  "valore": 40000,
+  "titoli": [
+    {"isin": "IE00B4L5Y983", "peso": 33.0},
+    {"isin": "LU1861138961", "peso": 15.0},
+    {"isin": "LU1681042609", "peso": 12.0},
+    {"isin": "LU1650487413", "peso": 10.0},
+    {"isin": "FR0013416716", "peso": 10.0},
+    {"isin": "LU1681041114", "peso": 10.0},
+    {"isin": "LU1900066033", "peso": 5.0},
+    {"isin": "LU1829219390", "peso": 5.0}
+  ],
+  "vincoli": {
+    "fondi": {
+      "IE00B4L5Y983": [28, 40],
+      "LU1861138961": [12, 16],
+      "LU1681042609": [8, 15],
+      "LU1900066033": [3, 6],
+      "LU1829219390": [3, 6],
+      "LU1650487413": [6, 12],
+      "LU1681041114": [6, 12],
+      "FR0013416716": [5, 10]
+    },
+    "classi": {
+      "Azionario": [70, 80],
+      "Obbligazionario": [10, 20],
+      "Materie prime": [5, 10]
+    }
+  }
+}
