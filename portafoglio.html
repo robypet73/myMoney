@@ -883,7 +883,7 @@ async function caricaPortafogli() {
     const r = await fetch("/api/portafogli", { cache: "no-store" }); if (!r.ok) throw 0; const j = await r.json();
     PF.server = true; PF.lista = j.lista || []; if (!/\.json$/i.test(PF.file)) PF.file = j.ultimo || "";
   } catch (e) { PF.server = false; return; }
-  const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""}>${esc(x.nome)} · ${esc(x.versione)}${x.descrizione ? " — " + esc(x.descrizione.length > 60 ? x.descrizione.slice(0, 58) + "…" : x.descrizione) : ""}</option>`).join("");
+  const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""} title="${esc(x.descrizione || "")}">${esc(x.nome)} · ${esc(x.versione)}</option>`).join("");
   try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
   $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
 }

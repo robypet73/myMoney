@@ -46,7 +46,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
     static final int DOWN = Color.parseColor("#D6453D");
 
     static final String TICK = "it.robypet73.mymoneyportafogli.TICK";
-    static final long EVERY = 5 * 60 * 1000L;
+    static final long EVERY = 60 * 60 * 1000L;  // aggiornamento automatico ogni ora
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
@@ -70,8 +70,6 @@ public class MyMoneyWidget extends AppWidgetProvider {
     public void onReceive(Context c, Intent i) {
         if (TICK.equals(i.getAction())) {
             schedule(c);
-            PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-            if (pm != null && !pm.isInteractive()) return; // schermo spento: nessuno guarda il widget, si risparmia batteria
             refreshAsync(c, goAsync());
             return;
         }
