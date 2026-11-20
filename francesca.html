@@ -92,6 +92,22 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
   <div class="kpi" id="kpi"></div>
 
   <section>
+    <h2>Anagrafica</h2>
+    <div class="cards" id="ana"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Il tuo andamento</h2><span class="muted" id="and-n"></span></div>
+    <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)</h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
+    <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato</h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
+    <div class="scroll"><table id="tab"></table></div>
+  </section>
+
+  <section>
     <div class="sec-head"><h2>Le tue posizioni</h2><span class="muted">Inserisci quote e data di ogni acquisto: tutto si ricalcola</span></div>
     <div class="cards pos" id="pos"></div>
     <details>
@@ -100,11 +116,6 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
       <textarea id="export" aria-label="Dati delle posizioni"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sec small" id="copia" type="button">Copia</button><button class="btn sec small" id="importa" type="button">Importa</button><span class="muted" id="exstato"></span></div>
     </details>
-  </section>
-
-  <section>
-    <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
-    <div class="scroll"><table id="tab"></table></div>
   </section>
 
   <section>
@@ -150,12 +161,6 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
   </section>
 
   <section>
-    <div class="sec-head"><h2>Il tuo andamento</h2><span class="muted" id="and-n"></span></div>
-    <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)</h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
-    <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato</h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
-  </section>
-
-  <section>
     <div class="sec-head"><h2>Storico del portafoglio</h2>
       <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
     </div>
@@ -168,11 +173,6 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
   <section>
     <div class="sec-head"><h2>Storico di ciascun titolo</h2><span class="muted">Clicca sul nome per la scheda completa</span></div>
     <div class="grid" id="fondi"></div>
-  </section>
-
-  <section>
-    <h2>Anagrafica</h2>
-    <div class="cards" id="ana"></div>
   </section>
 
   <section>
