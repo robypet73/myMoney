@@ -362,12 +362,14 @@
     try {
       const last = DATES.length - 1, hasPos = VAL > 0, q = (i) => (hasPos ? POS[i].q : F[i].q0);
       const pos = F.map((f, i) => ({ q: q(i), isin: f.isin, p: PX[i][last] })).filter((x) => x.q > 0);
-      let val = hasPos ? VAL : sum(pos.map((x) => x.q * x.p)), serie = null;
-      if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) serie = su.val; }
-      if (!serie) serie = statistiche(pesiPiano(), Math.max(0, last - 365)).v.map((x) => x * IMPORTO());
-      const n = serie.length, giorno = n > 1 ? serie[n - 1] / serie[n - 2] - 1 : null, passo = Math.max(1, Math.ceil(n / 100)), pochi = serie.filter((_, i) => i % passo === 0 || i === n - 1);
-      pochi[pochi.length - 1] = val;
-      const ref = hasPos && INV > 0 ? INV : pochi[0], d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, ref, roi: val / ref - 1, profit: Math.round((val - ref) * 100) / 100, roiL: hasPos && INV > 0 ? "sull'investito" : "ultimo anno", day: giorno, series: pochi, pos, at: Date.now() };
+      const val = hasPos ? VAL : sum(pos.map((x) => x.q * x.p));
+      let i0 = 0, v = null;  // serie del valore: dai tuoi acquisti se ci sono, altrimenti quella del piano su tutto lo storico
+      if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) { v = su.val; i0 = DATES.length - v.length; } }
+      if (!v) v = statistiche(pesiPiano(), 0).v.map((x) => x * IMPORTO());
+      const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [];
+      v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
+      vs[vs.length - 1] = Math.round(val * 100) / 100;
+      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, day: giorno, ds, vs, pos, at: Date.now() };
       const s = JSON.stringify(d); if (s === ultimoWidget) return; ultimoWidget = s; W.update({ data: s }).catch(() => {});
     } catch (e) {}
   }

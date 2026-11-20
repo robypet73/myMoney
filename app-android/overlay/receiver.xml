@@ -8,3 +8,4 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+        <activity android:name=".MyMoneyWidgetSettings" android:exported="false" android:label="Grafico del widget" android:theme="@android:style/Theme.DeviceDefault.Dialog" />

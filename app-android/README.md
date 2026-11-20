@@ -24,7 +24,7 @@ Pulsante **Cartella…** in alto: si apre direttamente il selettore di cartelle 
 
 ## Widget della schermata Home
 
-Aggiungi il widget «myMoney» dalla schermata Home (tieni premuto su uno spazio vuoto → Widget). Mostra il nome del portafoglio aperto, il **valore**, la **rendita** (sull'investito se hai inserito acquisti, altrimenti nell'ultimo anno), la variazione di oggi e il **grafico** dell'andamento. Si ridimensiona (più è alto, più dettagli). La pagina passa i dati al widget mentre l'app è aperta; il widget poi aggiorna il valore da solo con i prezzi di justETF (ogni 5 minuti a schermo acceso, se Android lo consente) e un tocco apre l'app.
+Aggiungi il widget «myMoney» dalla schermata Home (tieni premuto su uno spazio vuoto → Widget). Mostra il nome del portafoglio aperto, il **valore**, la **rendita** (sull'investito se hai inserito acquisti, altrimenti nel periodo del grafico), la variazione di oggi e il **grafico** dell'andamento con gli assi in piccolo (valori a sinistra, mesi o anni in basso), più l'ora dell'**ultimo aggiornamento** in fondo. La **rotellina** in alto a destra apre la scelta del periodo del grafico: 1 mese, 3 mesi, 6 mesi, 1 anno, 3 anni, 5 anni, tutto lo storico (per ogni widget). Il widget si ridimensiona (più è alto, più dettagli); un tocco altrove apre l'app. La pagina passa i dati al widget mentre l'app è aperta; il widget poi aggiorna il valore da solo con i prezzi di justETF (ogni 5 minuti a schermo acceso, se Android lo consente).
 
 ## Cosa fa e cosa no
 
