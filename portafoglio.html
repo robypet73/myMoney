@@ -136,7 +136,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="wrap">
   <header class="top">
     <div>
-      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
+      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-cartella" type="button" hidden>Cartella…</button><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
       <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
       <p class="sub" id="sub" hidden></p>
       <p class="solo-stampa" id="stampa-data"></p>
@@ -883,7 +883,8 @@ async function caricaPortafogli() {
     PF.server = true; PF.lista = j.lista || []; if (!/\.json$/i.test(PF.file)) PF.file = j.ultimo || "";
   } catch (e) { PF.server = false; return; }
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""}>${esc(x.nome)} · ${esc(x.versione)}${x.descrizione ? " — " + esc(x.descrizione.length > 60 ? x.descrizione.slice(0, 58) + "…" : x.descrizione) : ""}</option>`).join("");
-  $("#pfsel-w").hidden = PF.lista.length === 0; $("#pf-del").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
+  try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; } } catch (e) {}
+  $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
 }
 $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo stile da carta; si sceglie «Salva come PDF»
   const t0 = document.title, d = new Date();
@@ -891,6 +892,15 @@ $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo 
   document.title = NOMEPF + "_" + VERS + "_report_" + d.toISOString().slice(0, 10);  // è il nome che il browser propone per il file PDF
   const fine = () => { document.title = t0; window.removeEventListener("afterprint", fine); };
   window.addEventListener("afterprint", fine); window.print();
+};
+$("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o di Google Drive per desktop (per esempio G:\Il mio Drive\portafogli)
+  const c = PF.cartella || {}, n = prompt("Cartella dei portafogli (percorso sul computer; con Google Drive per desktop è la cartella sincronizzata, per esempio G:\\Il mio Drive\\portafogli).\nLascia vuoto per usare quella del programma.\n\nAttuale: " + (c.cartella || ""), c.personalizzata ? c.cartella : "");
+  if (n === null) return;
+  try {
+    const r = await fetch("/api/cartella", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartella: n }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
+    location.href = "/";
+  } catch (e) { stato("Cartella non cambiata: " + e.message, true); }
 };
 $("#pf-del").onclick = async () => {
   const x = PF.lista.find((y) => y.file === PF.file); if (!x) return;

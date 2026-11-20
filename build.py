@@ -281,12 +281,50 @@ class Portafogli:
 
     def __init__(self, cartella, file_ultimo, dati=None):
         self.base = cartella
-        self.dir = os.path.join(cartella, CARTELLA_PF)
+        self.predefinita = os.path.join(cartella, CARTELLA_PF)
+        self.dir = self.predefinita
         self.semi = os.path.join(self.dir, "titoli")  # schede dei titoli già note, nel repository: composizioni complete
         self.file_ultimo = file_ultimo
         self.cache = os.path.join(dati or os.path.dirname(file_ultimo), "titoli")  # una scheda JSON per ISIN già scaricato
         self.lock = threading.Lock()
         self.prezzi = None  # impostato da avvia_app: riceve i titoli dei portafogli aperti
+        self.file_config = os.path.join(dati or os.path.dirname(file_ultimo), "config.json")
+        scelta = (self._json(self.file_config) or {}).get("cartella")
+        if scelta and os.path.isdir(scelta):  # cartella scelta dall'utente (anche di Google Drive per desktop); se non c'è più si torna a quella del programma
+            self.dir = scelta
+
+    def cartella_info(self):
+        return {"cartella": self.dir, "predefinita": self.predefinita, "personalizzata": os.path.abspath(self.dir) != os.path.abspath(self.predefinita)}
+
+    def imposta_cartella(self, percorso):
+        """Sceglie la cartella dei JSON dei portafogli (percorso del computer, per esempio quello di Google Drive per desktop). Vuoto = quella del programma.
+        Ritorna cartella_info(); ValueError con un messaggio per l'utente se non va."""
+        percorso = (percorso or "").strip().strip('"')
+        if not percorso:
+            nuova = self.predefinita
+        else:
+            nuova = os.path.abspath(os.path.expanduser(percorso))
+            if not os.path.isdir(nuova):
+                raise ValueError(f"La cartella «{nuova}» non esiste.")
+            if not os.access(nuova, os.R_OK | os.W_OK):
+                raise ValueError(f"Non posso leggere e scrivere in «{nuova}».")
+        schema = os.path.join(self.predefinita, "schema.json")
+        if nuova != self.predefinita and os.path.exists(schema) and not os.path.exists(os.path.join(nuova, "schema.json")):
+            try:
+                shutil.copy2(schema, os.path.join(nuova, "schema.json"))  # i JSON puntano a «schema.json» accanto a loro
+            except OSError:
+                pass
+        with self.lock:
+            self.dir = nuova
+        try:
+            os.makedirs(os.path.dirname(self.file_config), exist_ok=True)
+            with open(self.file_config, "w", encoding="utf-8") as fh:
+                json.dump({"cartella": "" if nuova == self.predefinita else nuova}, fh, ensure_ascii=False)
+        except OSError as e:
+            raise ValueError(f"Cartella scelta ma non memorizzata: {e}")
+        if self.prezzi is not None:
+            self.prezzi.titoli, self.prezzi.base = self.titoli_noti()
+        return self.cartella_info()
 
     def percorso(self, nomefile):
         return os.path.join(self.dir, nomefile)
@@ -664,6 +702,8 @@ def crea_server(prezzi, porta, portafogli):
                 return self.invia(200, prezzi.leggi())
             if p == "/api/portafogli":
                 return self.invia(200, {"ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
+            if p == "/api/cartella":
+                return self.invia(200, portafogli.cartella_info())
             if p == "/":
                 return self.vai("/" + MODELLO)
             if p == "/" + MODELLO:
@@ -696,9 +736,12 @@ def crea_server(prezzi, porta, portafogli):
             if not (self.host_ok() and self.origine_ok()):
                 return self.invia(403, {"errore": "richiesta non ammessa"})
             percorso = self.path.split("?")[0]
-            if percorso in ("/api/salva", "/api/elimina"):
+            if percorso in ("/api/salva", "/api/elimina", "/api/cartella"):
                 try:
                     r = self.corpo_json(65536)
+                    if percorso == "/api/cartella":
+                        info = portafogli.imposta_cartella(r.get("cartella"))
+                        return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
                         return self.invia(200, portafogli.elimina(r.get("file")))
                     nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"))
@@ -790,11 +833,17 @@ def avvia_app():
     ap.add_argument("--minuti", type=float, default=5, help="ogni quanti minuti scaricare con la borsa aperta (fuori orario ogni 60)")
     ap.add_argument("--porta", type=int, default=8800)
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--cartella", help="cartella dei JSON dei portafogli (anche di Google Drive per desktop): viene ricordata; vuota (\"\") per tornare a quella del programma")
     ap.add_argument("--file", help=f"apre questo portafoglio (JSON nella cartella {CARTELLA_PF}) invece dell'ultimo aperto")
     a = ap.parse_args()
     cartella = os.path.dirname(os.path.abspath(__file__))
     dati = cartella_dati()
     pf = Portafogli(cartella, os.path.join(dati, "ultimo.json"), dati=dati)
+    if a.cartella is not None:
+        try:
+            pf.imposta_cartella(a.cartella)
+        except ValueError as e:
+            sys.exit(str(e))
     if a.file:
         if not pf.info(os.path.basename(a.file)):
             sys.exit(f"{a.file} non è un portafoglio presente nella cartella {CARTELLA_PF}.")
@@ -817,7 +866,7 @@ def avvia_app():
     threading.Thread(target=ciclo, args=(prezzi, a.minuti, ferma), daemon=True).start()
     url = f"http://127.0.0.1:{porta}/"
     print("Pagina:", url, "- lascia aperta questa finestra; chiudila o premi Ctrl+C per fermare i prezzi.", flush=True)
-    print("Portafoglio aperto:", aperto or "nessuno (carica un JSON dalla pagina)", "- cartella:", os.path.join(cartella, CARTELLA_PF), flush=True)
+    print("Portafoglio aperto:", aperto or "nessuno (carica un JSON dalla pagina)", "- cartella:", pf.dir, flush=True)
     print("Dati scaricati in:", dati, flush=True)
     if not a.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()

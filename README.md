@@ -23,7 +23,8 @@ Serve Python 3.9 o più recente, nient'altro.
 4. **Carica portafoglio (JSON)**: scegli un file nel formato qui sotto. Il programma lo salva in `portafogli/` (nome e versione esistenti non si sovrascrivono: cambia la versione), scarica i dati dei titoli e apre il portafoglio.
 5. **Salva**: dalla composizione («Salva il portafoglio…») o dalla frontiera efficiente («Salva come nuovo portafoglio…») si scrive un nuovo `nome_Vn.json` in `portafogli/`, con nome (solo lettere e cifre), versione (1, 2, 3…) e descrizione.
 6. **Elimina**: cancella il JSON del portafoglio aperto (chiede conferma).
-7. **Scarica JSON**: esporta la definizione del portafoglio aperto (con i vincoli della frontiera).
+7. **Cartella…**: sceglie dove stanno i JSON dei portafogli, **sul computer o su Google Drive**: con Google Drive per desktop basta indicare la cartella sincronizzata (per esempio `G:\Il mio Drive\portafogli`). Vuoto = la cartella `portafogli/` del programma. La scelta è ricordata (`config.json` nella cartella dell'utente) e si può dare anche da riga di comando: `python build.py --cartella "G:\Il mio Drive\portafogli"` (`--cartella ""` per tornare a quella del programma). Il programma copia `schema.json` nella cartella scelta; i portafogli salvati o caricati finiscono lì. Le schede note dei titoli restano nel programma.
+8. **Scarica JSON**: esporta la definizione del portafoglio aperto (con i vincoli della frontiera).
 
 ## Formato di un portafoglio
 
@@ -58,8 +59,8 @@ Lo schema è in [`portafogli/schema.json`](portafogli/schema.json). Esempio (`po
 
 ## Dove stanno i dati
 
-- **`portafogli/`** (nel repository): i JSON dei portafogli, lo schema e le schede note dei titoli (`titoli/<ISIN>.json`).
-- **Cartella dell'utente** (`%LOCALAPPDATA%\myMoney`, oppure `~/.myMoney`): `prezzi.json` (ultimo scarico), `ultimo.json` (ultimo portafoglio aperto) e `titoli/<ISIN>.json` (scheda e storico dei prezzi scaricati oggi da justETF).
+- **`portafogli/`** (nel repository, o la cartella scelta con «Cartella…»): i JSON dei portafogli e lo schema; le schede note dei titoli (`portafogli/titoli/<ISIN>.json`) restano sempre nel repository.
+- **Cartella dell'utente** (`%LOCALAPPDATA%\myMoney`, oppure `~/.myMoney`): `prezzi.json` (ultimo scarico), `ultimo.json` (ultimo portafoglio aperto), `config.json` (cartella scelta) e `titoli/<ISIN>.json` (scheda e storico dei prezzi scaricati oggi da justETF).
 - Gli acquisti inseriti nella pagina restano nel browser, separati per portafoglio.
 - Nessun database.
 
