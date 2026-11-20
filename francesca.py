@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""francesca: crea l'eseguibile Windows della pagina del portafoglio (dist/francesca.exe).
+"""francesca: apre la pagina del portafoglio (francesca.html) nel browser e scarica i prezzi aggiornati dei fondi.
 
-Il programma, quando lo lanci, apre il browser su francesca.html e scarica i prezzi aggiornati dei fondi (Yahoo Finance; se non risponde, justETF).
+Prezzi da Yahoo Finance (quotazioni di Borsa Italiana); se Yahoo non risponde, da justETF. Solo libreria standard di Python (3.9 o più recente).
 
-Costruire l'eseguibile (serve Windows con Python 3.9 o più recente; PyInstaller si installa da solo):
-    python build.py
-Provare senza costruire (qualsiasi sistema):
-    python build.py --esegui
-Opzioni del programma (anche per francesca.exe): --minuti 5  --porta 8800  --no-browser
+Avvio:  avvia.cmd  (doppio clic su Windows)   oppure   python francesca.py
+Opzioni: --minuti 5  --porta 8800  --no-browser
 
-Un eseguibile Windows si può costruire solo su Windows. Su Mac o Linux lo stesso comando crea il programma per quel sistema.
+Il programma ascolta solo su 127.0.0.1 e serve soltanto francesca.html. L'ultimo scarico è salvato nella cartella dell'utente
+(Windows: %LOCALAPPDATA%\\francesca\\prezzi.json), non accanto ai file del programma.
 """
 import argparse
 import datetime
 import json
 import os
 import re
-import subprocess
+import tempfile
 import sys
 import threading
 import time
@@ -31,26 +29,15 @@ FONTE_YAHOO = "Yahoo Finance (Borsa Italiana)"
 FONTE_JETF = "justETF (quotazione di riferimento: può differire di qualche centesimo da Borsa Italiana)"
 
 
-# =====================================================================================================================
-# Programma che gira dentro l'eseguibile
-# =====================================================================================================================
-def cartella_risorse():
-    """Cartella da cui leggere francesca.html: quella interna dell'eseguibile, oppure quella dello script."""
-    return getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
-
-
 def cartella_dati():
-    """Dove salvare l'ultimo scarico: accanto all'eseguibile se si può scrivere, altrimenti nella cartella dell'utente."""
-    base = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+    """Dove salvare l'ultimo scarico: cartella dell'utente, così il repository non si sporca."""
+    base = os.environ.get("LOCALAPPDATA")
+    d = os.path.join(base, NOME) if base else os.path.join(os.path.expanduser("~"), "." + NOME)
     try:
-        prova = os.path.join(base, ".prova_scrittura")
-        open(prova, "w").close()
-        os.remove(prova)
-        return base
+        os.makedirs(d, exist_ok=True)
+        return d
     except OSError:
-        alt = os.path.join(os.path.expanduser("~"), "." + NOME)
-        os.makedirs(alt, exist_ok=True)
-        return alt
+        return tempfile.gettempdir()
 
 
 def carica_config(percorso):
@@ -261,11 +248,12 @@ def avvia_app():
     ap.add_argument("--porta", type=int, default=8800)
     ap.add_argument("--no-browser", action="store_true")
     a = ap.parse_args()
-    percorso = os.path.join(cartella_risorse(), HTML)
+    percorso = os.path.join(os.path.dirname(os.path.abspath(__file__)), HTML)
     if not os.path.exists(percorso):
         sys.exit(f"Manca {HTML}.")
     titoli, base = carica_config(percorso)
-    prezzi = Prezzi(titoli, base, os.path.join(cartella_dati(), "prezzi.json"))
+    file_prezzi = os.path.join(cartella_dati(), "prezzi.json")
+    prezzi = Prezzi(titoli, base, file_prezzi)
     srv = None
     for porta in range(a.porta, a.porta + 20):  # se la porta è occupata prova la successiva
         try:
@@ -279,6 +267,7 @@ def avvia_app():
     threading.Thread(target=ciclo, args=(prezzi, a.minuti, ferma), daemon=True).start()
     url = f"http://127.0.0.1:{porta}/"
     print("Pagina:", url, "- lascia aperta questa finestra; chiudila o premi Ctrl+C per fermare i prezzi.", flush=True)
+    print("Ultimo scarico salvato in:", file_prezzi, flush=True)
     if not a.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
@@ -290,35 +279,5 @@ def avvia_app():
         srv.server_close()
 
 
-# =====================================================================================================================
-# Costruzione dell'eseguibile
-# =====================================================================================================================
-def costruisci():
-    aqui = os.path.dirname(os.path.abspath(__file__))
-    html = os.path.join(aqui, HTML)
-    if not os.path.exists(html):
-        sys.exit(f"Manca {HTML} accanto a build.py.")
-    carica_config(html)  # controlla che la pagina contenga i dati dei fondi
-    try:
-        import PyInstaller  # noqa: F401
-    except ImportError:
-        print("Installo PyInstaller...", flush=True)
-        if subprocess.call([sys.executable, "-m", "pip", "install", "pyinstaller"]) != 0:
-            sys.exit("Non riesco a installare PyInstaller: prova 'pip install pyinstaller' e rilancia build.py.")
-    cmd = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--onefile", "--name", NOME, "--exclude-module", "tkinter",
-           "--add-data", f"{html}{os.pathsep}.", "--distpath", os.path.join(aqui, "dist"), "--workpath", os.path.join(aqui, "build"), "--specpath", os.path.join(aqui, "build"),
-           os.path.abspath(__file__)]
-    if subprocess.call(cmd, cwd=aqui) != 0:
-        sys.exit("La costruzione non è riuscita: guarda i messaggi sopra.")
-    exe = os.path.join(aqui, "dist", NOME + (".exe" if os.name == "nt" else ""))
-    if not os.path.exists(exe):
-        sys.exit("PyInstaller non ha creato il programma atteso: " + exe)
-    print(f"\nFatto: {exe}\nLancialo con un doppio clic: apre il browser e scarica i prezzi.", flush=True)
-
-
 if __name__ == "__main__":
-    if getattr(sys, "frozen", False) or "--esegui" in sys.argv:
-        sys.argv = [x for x in sys.argv if x != "--esegui"]
-        avvia_app()
-    else:
-        costruisci()
+    avvia_app()
