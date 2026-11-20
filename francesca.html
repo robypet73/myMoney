@@ -129,6 +129,16 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div class="kpi" id="kpi"></div>
 
   <section>
+    <div class="sec-head"><h2>Storico del portafoglio</h2>
+      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
+    </div>
+    <div class="panel"><div class="fhead"><h3>Valore di 40.000 € investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
+    <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
+    <div class="years" id="anni"></div>
+    <p class="muted" style="max-width:80ch">Ricostruzione con i pesi attuali tenuti costanti (portafoglio ribilanciato ogni giorno) sui prezzi giornalieri; non è un risultato realmente ottenuto.</p>
+  </section>
+
+  <section>
     <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
     <div class="scroll"><table id="tab"></table></div>
   </section>
@@ -204,15 +214,6 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </div>
   </section>
 
-  <section>
-    <div class="sec-head"><h2>Storico del portafoglio</h2>
-      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
-    </div>
-    <div class="panel"><div class="fhead"><h3>Valore di 40.000 € investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
-    <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
-    <div class="years" id="anni"></div>
-    <p class="muted" style="max-width:80ch">Ricostruzione con i pesi attuali tenuti costanti (portafoglio ribilanciato ogni giorno) sui prezzi giornalieri; non è un risultato realmente ottenuto.</p>
-  </section>
 
   <section>
     <div class="sec-head"><h2>Storico di ciascun titolo</h2><span class="muted">Clicca sul nome per la scheda completa</span></div>
@@ -668,10 +669,10 @@ function scEvento(ev) {
 }
 async function scScarica() {  // programma locale: risposta a flusso, una riga JSON per ogni passo
   const r = await fetch("/api/aggiorna", { method: "POST", cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status);
-  let fine = null; const riga = (l) => { if (!l.trim()) return; const ev = JSON.parse(l); if (ev.t === "fine") fine = ev.dati; else scEvento(ev); };
+  let fine = null, visti = 0; const riga = (l) => { if (!l.trim()) return; const ev = JSON.parse(l); visti++; if (ev.t === "fine") fine = ev.dati; else if (!ev.t && ev.prezzi) fine = ev; else scEvento(ev); };  // ev.prezzi senza t: risposta del programma vecchio
   if (r.body && r.body.getReader) { const rd = r.body.getReader(), dec = new TextDecoder(); let buf = ""; for (;;) { const { done, value } = await rd.read(); if (done) break; buf += dec.decode(value, { stream: true }); let i; while ((i = buf.indexOf("\n")) >= 0) { riga(buf.slice(0, i)); buf = buf.slice(i + 1); } } riga(buf); }
   else (await r.text()).split("\n").forEach(riga);
-  if (!fine) throw new Error("scarico interrotto");
+  if (!fine) throw new Error(visti ? "il programma si è fermato a metà: riavvia avvia.cmd e riprova" : "risposta vuota dal programma: chiudilo e rilancia avvia.cmd");
   return fine;
 }
 async function scArchivio() {  // pagina senza programma locale: legge l'archivio e ne mostra il contenuto

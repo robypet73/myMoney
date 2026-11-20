@@ -401,7 +401,16 @@ def crea_server(prezzi, porta, portafogli):
                     riga({"t": "riuso"})
                     dati = prezzi.leggi()
                 else:
-                    dati = prezzi.aggiorna(riga)
+                    try:
+                        dati = prezzi.aggiorna(riga)
+                    except (BrokenPipeError, ConnectionError):
+                        raise
+                    except Exception as e:  # un errore imprevisto non deve lasciare la pagina senza risposta
+                        print("errore nello scarico:", e, flush=True)
+                        riga({"t": "errore", "testo": f"errore nello scarico: {e}"})
+                        dati = prezzi.leggi()
+                        dati["avvisi"] = list(dati.get("avvisi") or []) + [f"errore nello scarico: {e}"]
+                        dati["risposte"] = 0
                 riga({"t": "fine", "dati": dati})
             except (BrokenPipeError, ConnectionError):
                 pass  # la pagina ha chiuso la finestra: lo scarico è già salvato
