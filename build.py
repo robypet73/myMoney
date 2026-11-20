@@ -342,6 +342,17 @@ class Portafogli:
         except OSError:
             pass
 
+    def elimina(self, nomefile):
+        """Cancella il file di un portafoglio (mai il modello). Ritorna {eliminato, ultimo}; ValueError con un messaggio per l'utente se non si può."""
+        i = self.info(nomefile)
+        if not i:
+            raise ValueError("Portafoglio non trovato.")
+        if i["versione"] == "modello" or nomefile == MODELLO:
+            raise ValueError("Il modello non si può eliminare: serve a creare i nuovi portafogli.")
+        with self.lock:
+            os.remove(self.percorso(nomefile))
+        return {"eliminato": nomefile, "ultimo": self.ultimo()}
+
     # ---- pagine: il codice è sempre quello del modello, i dati sono quelli del portafoglio
     def _leggi(self, nomefile):
         with open(self.percorso(nomefile), encoding="utf-8") as fh:
@@ -662,6 +673,20 @@ def crea_server(prezzi, porta, portafogli):
                 except OSError as e:
                     return self.invia(500, {"errore": f"file non scritto: {e}"})
                 return self.invia(200, nuovo)
+            if percorso == "/api/elimina":
+                n = int(self.headers.get("Content-Length") or 0)
+                if n > 4096:
+                    return self.invia(413, {"errore": "richiesta troppo grande"})
+                try:
+                    r = json.loads(self.rfile.read(n))
+                    if not isinstance(r, dict):
+                        raise ValueError("richiesta non valida")
+                    esito = portafogli.elimina(r.get("file"))
+                except ValueError as e:
+                    return self.invia(400, {"errore": str(e) or "richiesta non valida"})
+                except OSError as e:
+                    return self.invia(500, {"errore": f"file non eliminato: {e}"})
+                return self.invia(200, esito)
             if percorso == "/api/crea":
                 n = int(self.headers.get("Content-Length") or 0)
                 if n > 65536:

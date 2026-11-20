@@ -123,7 +123,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="wrap">
   <header class="top">
     <div>
-      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select></label>
+      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
       <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
       <p class="sub" id="sub" hidden></p>
     </div>
@@ -205,7 +205,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="fhead"><h3>Quanta incertezza vuoi accettare?</h3><span class="num" id="rs-v"></span></div>
       <input type="range" id="rs" min="0" max="200" step="1" value="0" aria-label="Livello di rischio sulla frontiera" disabled>
       <div class="rs-lab"><span>meno incertezza, rendimento più basso</span><span>più incertezza, rendimento più alto</span></div>
-      <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="fmin" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rischio minimo</button><button class="btn sec small" type="button" data-rs="fmax" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rendimento massimo</button></div>
+      <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="srisk" title="Il punto della frontiera con lo stesso rischio del tuo portafoglio">Stesso rischio, più rendimento</button><button class="btn sec small" type="button" data-rs="srend" title="Il punto della frontiera con lo stesso rendimento del tuo portafoglio">Stesso rendimento, meno rischio</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="fmin" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rischio minimo</button><button class="btn sec small" type="button" data-rs="fmax" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rendimento massimo</button></div>
     </div>
     <div class="stack">
       <div class="panel"><div id="bozza"></div><div class="chart" id="front"></div><div class="leg" id="fleg" style="margin-top:8px"></div></div>
@@ -605,7 +605,7 @@ function sincRischio(P, tuo, ob, dalCursore) {
   $("#rs-v").innerHTML = `rischio <b>${pct(x.vol)}</b> · rendimento <b>${pct(x.ret)}</b>` + (typeof SEL === "number" || SEL === "sharpe" ? "" : ` <span class="muted">(${SEL === "obiettivo" ? "piano" : SEL === "fmin" || SEL === "fmax" ? "stessa composizione" : "il tuo"})</span>`);
 }
 $("#rs").addEventListener("input", (e) => { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const v = P[0].vol + (+e.target.value / +e.target.max) * (P[P.length - 1].vol - P[0].vol); SEL = P.reduce((a, p, i) => (Math.abs(p.vol - v) < Math.abs(P[a].vol - v) ? i : a), 0); disegnaFrontiera(true); proponiRitardo(); });  // il cursore è sul rischio: sceglie il punto della frontiera più vicino
-$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); proponi(); }));
+$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; if (k === "srisk" || k === "srend") { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const o = statistiche(BOZZA ? BOZZA.wcur : WCUR, FRI0()); SEL = P.reduce((a, p, i) => ((k === "srisk" ? Math.abs(p.vol - o.vol) < Math.abs(P[a].vol - o.vol) : Math.abs(p.ret - o.cagr) < Math.abs(P[a].ret - o.cagr)) ? i : a), 0); } else SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); proponi(); }));
 function applicaBozza(w) {
   if (!BOZZA) BOZZA = { w: F.map((f) => f.w), q0: F.map((f) => f.q0), lots: JSON.parse(JSON.stringify(ST.lots)), esempio: ST.esempio, wcur: WCUR.slice() };
   F.forEach((f, i) => { f.w = w[i]; f.q0 = Math.floor((IMPORTO() * w[i]) / f.p0); });
@@ -860,8 +860,17 @@ async function caricaPortafogli() {
     PF.server = true; PF.lista = j.lista || []; if (!/\.html$/i.test(PF.file)) PF.file = j.ultimo || "";
   } catch (e) { PF.server = false; return; }
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""}>${esc(x.nome)} · ${esc(x.versione)}${x.descrizione ? " — " + esc(x.descrizione.length > 60 ? x.descrizione.slice(0, 58) + "…" : x.descrizione) : ""}</option>`).join("");
-  $("#pfsel-w").hidden = PF.lista.length === 0;
+  $("#pfsel-w").hidden = PF.lista.length === 0; $("#pf-del").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
 }
+$("#pf-del").onclick = async () => {
+  const x = PF.lista.find((y) => y.file === PF.file); if (!x) return;
+  if (!confirm("Eliminare «" + x.nome + " · " + x.versione + "»?\nIl file " + x.file + " viene cancellato dalla cartella del programma e non si può recuperare.")) return;
+  try {
+    const r = await fetch("/api/elimina", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: PF.file }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
+    location.href = "/";
+  } catch (e) { stato("Non sono riuscito a eliminare il portafoglio: " + e.message, true); }
+};
 $("#pfsel").addEventListener("change", (e) => { if (e.target.value && e.target.value !== PF.file) location.href = "/" + encodeURIComponent(e.target.value); });
 
 let SV = { w: null, tocca: false, opener: null };
