@@ -251,7 +251,8 @@ public class MyMoneyWidget extends AppWidgetProvider {
     static void draw(Context c, AppWidgetManager m, int id) {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mymoney);
         Bundle o = m.getAppWidgetOptions(id);
-        int h = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 110), w = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 250);
+        boolean vert = c.getResources().getConfiguration().orientation != android.content.res.Configuration.ORIENTATION_LANDSCAPE;  // in verticale la misura giusta è l'altezza massima e la larghezza minima
+        int h = o.getInt(vert ? AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT : AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 110), w = o.getInt(vert ? AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH : AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 250);
         if (h <= 0) h = 110;
         if (w <= 0) w = 250;
         // contenuto in base allo spazio: più basso è il widget, meno righe (nessun testo tagliato in basso)
@@ -327,7 +328,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
             v.setViewVisibility(R.id.w_agg, tiny ? View.GONE : View.VISIBLE);
             if (showChart && ss.length >= 2) {
                 float dens = c.getResources().getDisplayMetrics().density;
-                int chartH = Math.round((h - 28 - 16 - 30 - 20 - (mid ? 0 : 18) - 12 - 14) * dens);
+                int chartH = Math.round((h - 2 * pad - (low ? 0 : 16) - 32 - (tiny ? 0 : 20) - (mid ? 0 : 18) - 12 - 8) * dens);
                 int wpx = Math.round((w - 28) * dens);
                 chartH = Math.max(Math.round(44 * dens), Math.min(Math.round(300 * dens), chartH));
                 wpx = Math.max(Math.round(120 * dens), Math.min(1300, wpx));
@@ -354,7 +355,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
         Bitmap b = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(b);
         int sub = ContextCompat.getColor(c, R.color.widget_sub);
-        float ts = dp(c, 7.5f);
+        float ts = dp(c, 6.5f);
         Paint tp = new Paint(Paint.ANTI_ALIAS_FLAG);
         tp.setTextSize(ts);
         tp.setColor(sub);

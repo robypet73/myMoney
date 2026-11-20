@@ -16,7 +16,7 @@
         android:id="@+id/w_row1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="22dp"
+        android:layout_marginEnd="38dp"
         android:orientation="horizontal">
 
         <TextView
@@ -99,7 +99,7 @@
         android:layout_marginTop="6dp"
         android:layout_weight="1"
         android:contentDescription="Andamento del portafoglio"
-        android:scaleType="fitXY" />
+        android:scaleType="fitCenter" />
     <TextView
         android:id="@+id/w_agg"
         android:layout_width="match_parent"
@@ -115,6 +115,8 @@
     android:layout_width="30dp"
     android:layout_height="30dp"
     android:layout_gravity="top|end"
+    android:layout_marginEnd="10dp"
+    android:layout_marginTop="8dp"
     android:contentDescription="Impostazioni del grafico"
     android:padding="6dp"
     android:scaleType="fitCenter" />

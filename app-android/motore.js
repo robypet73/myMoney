@@ -365,7 +365,7 @@
       const val = hasPos ? VAL : sum(pos.map((x) => x.q * x.p));
       let i0 = 0, v = null;  // serie del valore: dai tuoi acquisti se ci sono, altrimenti quella del piano su tutto lo storico
       if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) { v = su.val; i0 = DATES.length - v.length; } }
-      if (!v) v = statistiche(pesiPiano(), 0).v.map((x) => x * IMPORTO());
+      if (!v) { const s0 = statistiche(pesiPiano(), 0).v; v = s0.map((x) => (x / s0[s0.length - 1]) * val); }  // il piano è una rendita relativa: la serie è scalata in modo che oggi valga quanto il valore attuale
       const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [];
       v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
       vs[vs.length - 1] = Math.round(val * 100) / 100;
