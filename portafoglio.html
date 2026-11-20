@@ -328,7 +328,7 @@ const KEY = META.chiave || "pf-mondo-emergenti-v1";  // ogni portafoglio ha i su
 const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (meta.vincoli) oppure, in mancanza, il piano ±10 punti
   const mv = META.vincoli || {}, cw = {}; F.forEach((f) => (cw[f.cls] = (cw[f.cls] || 0) + f.w * 100));
   const lim = (v, d) => (Array.isArray(v) ? { min: v[0], max: v[1] } : d);
-  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: 0, max: Math.min(100, Math.round(f.w * 100 + 10)) })])),
+  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: Math.min(100, Math.round(f.w * 100 + 10)) })])),
     classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
 };
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
