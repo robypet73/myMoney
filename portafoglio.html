@@ -1,0 +1,851 @@
+<title>portafoglio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Impianto: una colonna larga al massimo 1080px; sopra il riepilogo e le posizioni da inserire, sotto composizione, frontiera, storici e anagrafica. Aspetto scuro, scelto. */
+:root {
+  color-scheme: dark;
+  --bg: #0d1219; --surface: #141b25; --raised: #1a2330; --line: #263242; --fg: #e7edf5; --muted: #8e9bb0;
+  --accent: #6ab0ff; --good: #41c07a; --bad: #f0605d; --warn: #e0a83a; --oro: #e0b04a;
+  --c1: #6ab0ff; --c2: #b08cf5; --c3: #47c2b8; --c4: #f08a6b; --c5: #7bd88f; --c6: #e38fc4; --c7: #c9d36a; --c8: #8e9bb0; --bond2: #9be0d9;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --text: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--text); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 34px; }
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(24px, 4vw, 32px); letter-spacing: -0.01em; } h2 { font-size: 20px; } h3 { font-size: 15px; font-family: var(--text); } h4 { font-size: 13px; font-family: var(--text); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 500; }
+p { margin: 0; } .muted { color: var(--muted); } .num { font-variant-numeric: tabular-nums; } .up { color: var(--good); } .down { color: var(--bad); }
+header.top { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end; justify-content: space-between; } header.top > div { min-width: 0; }
+.sub { color: var(--muted); max-width: 64ch; margin-top: 6px; }
+.agg { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 46ch; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.btn { background: var(--accent); color: #06121f; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; }
+.btn.sec { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn:focus-visible, .seg button:focus-visible, .flink:focus-visible, .pt:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+#stato { font-size: 13px; color: var(--muted); } #stato.err { color: var(--warn); }
+.banner { background: var(--raised); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; font-size: 14px; }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.kpi > div { background: var(--surface); padding: 14px 16px; min-width: 0; }
+.kpi .l { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; } .kpi .v { font-family: var(--display); font-size: 24px; margin-top: 2px; font-variant-numeric: tabular-nums; } .kpi .n { font-size: 12px; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sec-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 9px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .03em; text-transform: uppercase; background: var(--surface); }
+th.l, td.l { text-align: left; white-space: normal; } th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 200px; } tr:last-child td { border-bottom: 0; } tfoot td { font-weight: 600; background: var(--surface); }
+.flink { background: none; border: 0; padding: 0; color: var(--fg); font-weight: 500; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.flink:hover { text-decoration-color: var(--accent); color: var(--accent); }
+.fsub { font-size: 12px; color: var(--muted); } .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; } .seg button { background: transparent; border: 0; padding: 6px 12px; font-size: 13px; color: var(--muted); } .seg button[aria-pressed="true"] { background: var(--raised); color: var(--fg); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.fhead { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; }
+.tag { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 10px 0 0; font-size: 13px; } dt { color: var(--muted); } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+.chart { position: relative; width: 100%; } .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tip { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; } .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .pies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.years { display: grid; grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); gap: 8px; } .years div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; } .years .y { font-size: 12px; color: var(--muted); }
+.pie svg { display: block; width: 100%; max-width: 200px; height: auto; margin: 4px auto 12px; }
+.pleg { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; } .pleg li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; } .pleg i { width: 10px; height: 10px; border-radius: 2px; display: block; margin-top: 5px; align-self: start; } .pleg small { display: block; color: var(--muted); font-size: 12px; }
+.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; } .bars li { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1fr) 3.6em; gap: 10px; align-items: center; font-size: 13px; } .bars .t { overflow-wrap: anywhere; } .bars .b { height: 10px; background: var(--raised); border-radius: 3px; overflow: hidden; } .bars .b span { display: block; height: 100%; border-radius: 3px; } .bars .v { text-align: right; font-variant-numeric: tabular-nums; }
+/* posizioni */
+.cards.pos { grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); }
+.fcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.fcard .res { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; font-size: 13px; } .fcard .res div { min-width: 0; } .fcard .res .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+.lot { display: grid; grid-template-columns: minmax(70px, .7fr) minmax(130px, 1.2fr) minmax(100px, 1fr) auto; gap: 6px; align-items: end; } .lot label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); min-width: 0; }
+input, select, textarea { box-sizing: border-box; }
+input[type="number"], input[type="date"], select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0; width: 100%; color-scheme: dark; }
+input.bad { border-color: var(--bad); } .lerr { font-size: 12px; color: var(--warn); }
+.x { background: transparent; border: 1px solid var(--line); border-radius: 6px; width: 32px; height: 32px; color: var(--muted); }
+.vinc { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px 14px; } .vinc .r { display: grid; grid-template-columns: minmax(0, 1fr) 56px 56px; gap: 6px; align-items: center; font-size: 13px; } .vinc .h { font-size: 11px; color: var(--muted); text-align: center; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; } details > summary { cursor: pointer; font-weight: 500; } details[open] > summary { margin-bottom: 10px; } textarea { width: 100%; min-height: 90px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font: 12px ui-monospace, monospace; padding: 8px; }
+ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; max-width: 80ch; }
+.leg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); } .leg i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
+.pt { cursor: pointer; }
+#fcomp table th:first-child, #fcomp table td:first-child { min-width: 0; } #fcomp table th, #fcomp table td { padding: 6px 8px; }
+.ovl { position: fixed; inset: 0; z-index: 50; background: rgba(5, 9, 14, .72); display: flex; align-items: flex-start; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.ovl[hidden] { display: none; } .ovl .box { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; width: 100%; max-width: 940px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 16px; margin: auto 0; }
+.ovl .top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; } .ovl .top h2 { font-size: 20px; }
+/* intestazione: scelta del portafoglio e versione */
+.pfsel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; } .pfsel span { color: var(--muted); } .pfsel select { width: auto; max-width: 100%; }
+.vtag { font-family: var(--text); font-size: 13px; font-weight: 500; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); vertical-align: middle; }
+.pfsel[hidden] { display: none; }
+/* modello vuoto e caricamento JSON */
+.agg-btn { display: flex; flex-wrap: wrap; gap: 8px; } .agg-btn[hidden], #start[hidden] { display: none; }
+body.vuoto .wrap > :not(header):not(#start):not(#banner) { display: none; } #start { display: flex; flex-direction: column; gap: 14px; }
+pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.55 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; overflow-x: auto; }
+/* importo da ripartire */
+#invest { display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 8px 18px; align-items: end; } #invest label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } #invest .azioni { margin: 0; } #invest .lerr { grid-column: 1 / -1; }
+@media (max-width: 760px) { #invest { grid-template-columns: minmax(0, 1fr); } }
+/* cursore del rischio sulla frontiera */
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+#rischio { display: flex; flex-direction: column; gap: 8px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0; height: 28px; cursor: pointer; }
+.rs-lab { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); } .rs-btn { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+#fcomp .cmp { width: 100%; margin: 8px 0; font-size: 13px; } #fcomp .cmp th, #fcomp .cmp td { padding: 4px 8px; }
+#fcomp .azioni { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+/* salvataggio di un nuovo portafoglio */
+#salva [hidden] { display: none !important; } #salva .box { gap: 14px; } #salva label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); } #salva label small { font-size: 12px; }
+.sv-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; }
+.sv-v { display: flex; align-items: center; gap: 6px; color: var(--fg); font-weight: 600; }
+#salva input[type="text"], #salva textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%; color: var(--fg); } #salva textarea { resize: vertical; min-height: 70px; }
+#salva input.bad, #salva textarea.bad { border-color: var(--bad); }
+/* finestra di scarico dei prezzi: clessidra e testo che scorre */
+#scar { align-items: center; } #scar .box { max-width: 580px; gap: 14px; padding-bottom: 18px; }
+.scar-top { display: flex; align-items: center; gap: 16px; } .scar-top h2 { font-size: 19px; } .scar-top p { font-size: 13px; margin-top: 2px; }
+.clessidra { width: 42px; height: 56px; flex: none; color: var(--accent); animation: cl-giro 3.2s ease-in-out infinite; }
+.clessidra .s-su { transform-box: fill-box; transform-origin: bottom; animation: cl-su 3.2s linear infinite; }
+.clessidra .s-giu { transform-box: fill-box; transform-origin: bottom; animation: cl-giu 3.2s linear infinite; }
+.clessidra .filo { stroke-dasharray: 3 4; animation: cl-filo .5s linear infinite; }
+@keyframes cl-giro { 0%, 86% { transform: rotate(0); } 100% { transform: rotate(180deg); } }
+@keyframes cl-su { 0% { transform: scaleY(1); } 84%, 100% { transform: scaleY(0); } }
+@keyframes cl-giu { 0% { transform: scaleY(0); } 84%, 100% { transform: scaleY(1); } }
+@keyframes cl-filo { to { stroke-dashoffset: -7; } }
+.clessidra.fatto { animation: none; color: var(--good); } .clessidra.fatto .s-su, .clessidra.fatto .s-giu, .clessidra.fatto .filo { animation: none; } .clessidra.fatto .s-su { transform: scaleY(0); } .clessidra.fatto .filo { display: none; }
+.clessidra.err { animation: none; color: var(--warn); }
+.scar-bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; } .scar-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .35s ease; }
+.scar-log { height: 232px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.6 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px); mask-image: linear-gradient(to bottom, transparent 0, #000 30px); }
+.scar-log .ln { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); } .scar-log .ln b { color: var(--fg); font-weight: 500; } .scar-log .ln.t { color: var(--accent); margin-top: 4px; } .scar-log .ln.w { color: var(--warn); } .scar-log .ln.ok { color: var(--good); }
+.scar-foot { display: flex; justify-content: flex-end; min-height: 0; } .scar-foot[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .clessidra, .clessidra .s-su, .clessidra .s-giu, .clessidra .filo { animation: none; } .clessidra .s-su { transform: scaleY(.5); } .clessidra .s-giu { transform: scaleY(.5); } }
+@media (max-width: 860px) { .pies { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .sv-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .two, .grid { grid-template-columns: minmax(0, 1fr); } .lot { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } .lot .x { justify-self: start; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select></label>
+      <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
+      <p class="sub" id="sub" hidden>Portafoglio Mondo Emergenti · 40.000 € in otto ETF ed ETC ad accumulazione, a replica fisica, quotati a Borsa Italiana e senza commissioni di acquisto su Fineco fino a marzo 2027. 70% azioni, 20% obbligazioni, 10% oro, con il 15% in mercati emergenti.</p>
+    </div>
+    <div class="agg">
+      <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
+      <div class="agg-btn"><button class="btn sec small js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec small" id="scarica-json" type="button">Scarica JSON</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
+      <div id="stato" role="status"></div>
+    </div>
+  </header>
+
+  <section id="start" hidden>
+    <h2>Carica un portafoglio</h2>
+    <p class="muted" style="max-width:70ch">Questo è il modello vuoto. Scegli un file <b>.json</b> con la definizione del portafoglio: il programma scarica i dati dei titoli (prezzi, caratteristiche, composizione) e crea una pagina <b class="num">nome_V1.html</b> con tutto dentro. Puoi anche aprire un portafoglio già creato dal menu «Portafoglio» in alto.</p>
+    <div><button class="btn js-carica" type="button">Carica portafoglio (JSON)</button></div>
+    <details open><summary>Formato del file JSON</summary>
+      <pre class="fmt">{
+  "nome": "mioPortafoglio",
+  "versione": "V1",
+  "descrizione": "Una frase che spiega il portafoglio",
+  "valore": 40000,
+  "titoli": [
+    { "isin": "IE00B4L5Y983", "peso": 60 },
+    { "isin": "IE00B1FZS798", "peso": 40 }
+  ]
+}</pre>
+      <ul class="note"><li><b>nome</b>: solo lettere e cifre, niente spazi né simboli (diventa il nome del file).</li><li><b>versione</b>: V1, V2, V3…</li><li><b>titoli</b>: ISIN e peso in percentuale; i pesi devono dare 100.</li><li><b>valore</b>: facoltativo, l'investimento totale in euro da ripartire (se manca: 10.000).</li></ul>
+    </details>
+  </section>
+
+  <div id="banner"></div>
+  <div class="kpi" id="kpi"></div>
+
+  <section>
+    <div class="sec-head"><h2>Storico del portafoglio</h2>
+      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
+    </div>
+    <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
+    <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
+    <div class="panel"><div class="fhead"><h3>Guadagno rispetto al minimo precedente</h3><span class="num" id="pfgm"></span></div><div class="chart" id="gm"></div></div>
+    <div class="years" id="anni"></div>
+    <p class="muted" style="max-width:80ch">Ricostruzione con i pesi attuali tenuti costanti (portafoglio ribilanciato ogni giorno) sui prezzi giornalieri; non è un risultato realmente ottenuto.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
+    <div class="panel" id="invest">
+      <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
+      <p class="muted" id="imp-n"></p>
+      <div class="azioni"><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
+      <p class="lerr" id="imp-msg"></p>
+    </div>
+    <div class="scroll"><table id="tab"></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Dentro il portafoglio</h2><span class="muted" id="espnota"></span></div>
+    <div class="pies">
+      <div class="panel pie"><div class="fhead"><h3>Tipo di investimento</h3></div><div id="p-tipo"></div></div>
+      <div class="panel pie"><div class="fhead"><h3>Area geografica</h3></div><div id="p-aree"></div></div>
+      <div class="panel pie"><div class="fhead"><h3>Settori</h3><span class="muted" id="e-az"></span></div><div id="p-settori"></div></div>
+    </div>
+    <div class="grid">
+      <div class="panel"><div class="fhead"><h3>Paesi principali</h3><span class="muted">parte azionaria</span></div><ul class="bars" id="e-paesi"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Valute dei titoli</h3></div><ul class="bars" id="e-valute"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Primi titoli azionari</h3><span class="muted" id="e-n"></span></div><ul class="bars" id="e-titoli"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Obbligazioni per paese dell'emittente</h3><span class="muted" id="e-ob"></span></div><ul class="bars" id="e-obbl"></ul></div>
+    </div>
+    <p class="muted" style="max-width:80ch" id="nota-comp">Ogni valore è una quota del portafoglio intero, calcolata sui pesi attuali (o sul piano, se non hai inserito acquisti) guardando dentro ai fondi, con le composizioni pubblicate. Per i titoli sono considerati i primi dieci di ogni fondo.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Frontiera efficiente</h2><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
+    <details id="vincoli"><summary>Vincoli della frontiera (peso minimo e massimo per fondo e per classe)</summary>
+      <div class="vinc" id="vinc"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><button class="btn sec small" id="vreset" type="button">Ripristina i vincoli</button><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="prud"> Rendimenti prudenti (media tra il fondo e tutti i fondi)</label><span class="lerr" id="vmsg"></span></div>
+    </details>
+    <div class="panel" id="rischio">
+      <div class="fhead"><h3>Quanta incertezza vuoi accettare?</h3><span class="num" id="rs-v"></span></div>
+      <input type="range" id="rs" min="0" max="200" step="1" value="0" aria-label="Livello di rischio sulla frontiera" disabled>
+      <div class="rs-lab"><span>meno incertezza, rendimento più basso</span><span>più incertezza, rendimento più alto</span></div>
+      <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button></div>
+    </div>
+    <div class="stack">
+      <div class="panel"><div class="chart" id="front"></div><div class="leg" id="fleg" style="margin-top:8px"></div></div>
+      <div class="panel" id="fcomp"></div>
+    </div>
+    <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli sopra. Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Il tuo andamento</h2><span class="muted" id="and-n"></span></div>
+    <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)</h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
+    <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato</h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
+  </section>
+
+  <section>
+    <h2>Anagrafica</h2>
+    <div class="cards" id="ana"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Le tue posizioni</h2><span class="muted">Inserisci quote e data di ogni acquisto: tutto si ricalcola</span></div>
+    <div class="cards pos" id="pos"></div>
+    <details>
+      <summary>Salva o trasferisci i tuoi dati</summary>
+      <p class="muted" style="margin-bottom:8px">I dati restano solo in questo browser. Copia il testo per conservarli o spostarli su un altro dispositivo, poi incollalo qui e premi «Importa».</p>
+      <textarea id="export" aria-label="Dati delle posizioni"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sec small" id="copia" type="button">Copia</button><button class="btn sec small" id="importa" type="button">Importa</button><span class="muted" id="exstato"></span></div>
+    </details>
+  </section>
+
+
+  <section>
+    <div class="sec-head"><h2>Ribilanciamento</h2><span class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</span></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
+      </div>
+      <div class="scroll"><table id="rb"></table></div>
+      <p class="muted" id="rb-n"></p>
+    </div>
+  </section>
+
+
+  <section>
+    <div class="sec-head"><h2>Storico di ciascun titolo</h2><span class="muted">Clicca sul nome per la scheda completa</span></div>
+    <div class="grid" id="fondi"></div>
+  </section>
+
+  <section>
+    <h2>Da sapere</h2>
+    <ul class="note">
+      <li>I rendimenti sono storici (<span id="per2"></span>) e non sono previsioni: la selezione dei fondi e la frontiera guardano a quel periodo.</li>
+      <li>La perdita massima storica del piano è stata del <span id="ddtxt"></span> (<span id="ddper"></span>); non è un limite garantito.</li>
+      <span id="note-extra" style="display:contents"></span>
+      <li>Fonti: prezzi in euro e caratteristiche dei fondi da justETF (per i titoli con un simbolo di Borsa Italiana l'aggiornamento arriva da Yahoo Finance); composizioni pubblicate da justETF o dagli emittenti, che possono riferirsi a date diverse.</li>
+      <li>Costo di acquisto di un lotto: quote per prezzo di chiusura del giorno (o dell'ultimo giorno di borsa aperta prima della data), oppure il prezzo che indichi tu. Non sono considerati commissioni, imposte e spread.</li>
+      <li>Analisi tecnica sui dati, non consulenza personalizzata.</li>
+    </ul>
+  </section>
+</div>
+
+<div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
+<div class="ovl" id="salva" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="sv-t" style="max-width:600px">
+  <div class="top"><h2 id="sv-t">Salva come nuovo portafoglio</h2><button class="x" id="sv-x" type="button" aria-label="Chiudi">×</button></div>
+  <form id="sv-f" novalidate style="display:flex;flex-direction:column;gap:14px">
+    <p class="muted" id="sv-w"></p>
+    <div class="sv-grid">
+      <label>Nome<input id="sv-n" type="text" maxlength="30" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="per esempio francescaCresci"><small>solo lettere e cifre, niente spazi né simboli</small></label>
+      <label>Versione<span class="sv-v"><span aria-hidden="true">V</span><input id="sv-ver" type="number" min="1" max="999" step="1" inputmode="numeric"></span><small>1, 2, 3…</small></label>
+    </div>
+    <label>Descrizione<textarea id="sv-d" rows="3" maxlength="300"></textarea><small>una o due frasi: cosa cambia rispetto agli altri portafogli</small></label>
+    <p class="muted">Nuovo file: <b id="sv-file" class="num"></b></p>
+    <div class="lerr" id="sv-err" role="alert"></div>
+    <div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-ann" type="button">Annulla</button><button class="btn" id="sv-ok" type="submit">Salva il portafoglio</button></div>
+  </form>
+  <div id="sv-fatto" hidden style="display:flex;flex-direction:column;gap:14px"><p id="sv-fm"></p><div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-resta" type="button">Resta qui</button><button class="btn" id="sv-apri" type="button">Apri il nuovo portafoglio</button></div></div>
+</div></div>
+<div class="ovl" id="scar" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="scar-t" aria-describedby="scar-s">
+  <div class="scar-top">
+    <svg class="clessidra" id="scar-cl" viewBox="0 0 48 64" aria-hidden="true">
+      <defs><clipPath id="scar-vetro"><path d="M12 9H36V14C36 23 28 28 26 32C28 36 36 41 36 50V55H12V50C12 41 20 36 22 32C20 28 12 23 12 14Z"/></clipPath></defs>
+      <g clip-path="url(#scar-vetro)"><rect class="s-su" x="10" y="10" width="28" height="22" fill="currentColor" opacity=".8"/><rect class="s-giu" x="10" y="34" width="28" height="21" fill="currentColor" opacity=".8"/><line class="filo" x1="24" x2="24" y1="30" y2="54" stroke="currentColor" stroke-width="1.6"/></g>
+      <path d="M12 9H36V14C36 23 28 28 26 32C28 36 36 41 36 50V55H12V50C12 41 20 36 22 32C20 28 12 23 12 14Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <rect x="7" y="4" width="34" height="5" rx="2" fill="currentColor"/><rect x="7" y="55" width="34" height="5" rx="2" fill="currentColor"/>
+    </svg>
+    <div><h2 id="scar-t">Scarico i prezzi…</h2><p class="muted" id="scar-s" role="status"></p></div>
+  </div>
+  <div class="scar-bar" aria-hidden="true"><i id="scar-b"></i></div>
+  <div class="scar-log" id="scar-log" aria-hidden="true"></div>
+  <div class="scar-foot" id="scar-foot" hidden><button class="btn sec small" id="scar-x" type="button">Chiudi</button></div>
+</div></div>
+<script type="application/json" id="dati">{"meta":{"nome":"portafoglio","modello":true,"descrizione":"Modello vuoto: carica un file JSON con la definizione di un portafoglio.","base":"","amount":10000,"rf":0.02},"funds":[],"dates":[],"px":{}}</script>
+<script>
+const D = JSON.parse(document.getElementById("dati").textContent);
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const nf = (v, d = 0) => v.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: "always" });
+const eur = (v, d = 0) => nf(v, d) + " €", pct = (v, d = 1) => nf(v * 100, d) + "%", sgn = (v, d = 1) => (v > 0.00005 ? "+" : "") + pct(v, d), sgnE = (v, d = 0) => (v > 0.5 / Math.pow(10, d) ? "+" : "") + eur(v, d);
+const cls = (v) => (v > 0.00005 ? "up" : v < -0.00005 ? "down" : "");
+const dataIt = (d) => d.slice(8, 10) + "/" + d.slice(5, 7) + "/" + d.slice(0, 4);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const META = D.meta, NOMEPF = META.nome || "francesca", VERS = META.versione || "V1";
+const VUOTO = !(D.funds && D.funds.length);  // modello senza portafoglio: si mostra solo il caricamento del JSON
+$("#titolo").textContent = NOMEPF; $("#vtag").textContent = META.modello ? "modello" : VERS; document.title = NOMEPF + (META.modello ? "" : " · " + VERS);
+if (META.descrizione) { $("#sub").textContent = META.descrizione; $("#sub").hidden = false; }
+if (VUOTO) { document.body.classList.add("vuoto"); $("#start").hidden = false; $("#scarica-json").hidden = true; }
+(D.funds || []).forEach((f) => { f.ter = f.ter ?? 0; f.mix = Object.assign({ aree: {}, settori: {}, valute: {}, paesi: [], top: [], nt: 0 }, f.mix || {}); f.cls = f.cls || "Azionario"; f.ruolo = f.ruolo || "Satellite"; f.tipo = f.tipo || f.cls; });
+$("#nfondi").textContent = (D.funds || []).length; if (META.nota_composizione) $("#nota-comp").textContent += " " + META.nota_composizione;
+(META.note || []).forEach((n) => { const li = document.createElement("li"); li.textContent = n; $("#note-extra").appendChild(li); });
+const F = D.funds, NF = F.length, BASE = D.meta.base, RF = D.meta.rf, AMT = D.meta.amount;
+const COLR = new Proxy({ Nucleo: "var(--c1)", Emergenti: "var(--c4)", Satellite: "var(--c2)", Obbligazioni: "var(--c3)", Oro: "var(--oro)", "Materie prime": "var(--oro)" }, { get: (o, k) => o[k] || "var(--c8)" });
+const flink = (i, t) => `<button type="button" class="flink" data-f="${i}">${esc(t ?? F[i].name)}</button>`;
+const sum = (a) => a.reduce((x, y) => x + y, 0);
+
+/* ---------- stato salvato nel browser ---------- */
+const KEY = META.chiave || "pf-mondo-emergenti-v1";  // ogni portafoglio ha i suoi acquisti salvati nel browser
+const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (meta.vincoli) oppure, in mancanza, il piano ±10 punti
+  const mv = META.vincoli || {}, cw = {}; F.forEach((f) => (cw[f.cls] = (cw[f.cls] || 0) + f.w * 100));
+  const lim = (v, d) => (Array.isArray(v) ? { min: v[0], max: v[1] } : d);
+  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: 0, max: Math.min(100, Math.round(f.w * 100 + 10)) })])),
+    classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
+};
+const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
+const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: false, periodo: 3, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+let ST = statoDef();
+try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
+const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+
+/* ---------- serie, rendimenti, covarianze ---------- */
+let DATES = [], PX = [], RD = [], MU = [], COV = [], LMAX = 1, LIVE = null;
+function costruisci() {
+  DATES = D.dates.slice(); PX = F.map((f) => D.px[f.s].slice());
+  const st = (LIVE && LIVE.storico) || {};
+  Object.keys(st).filter((d) => d > BASE).sort().forEach((d) => { DATES.push(d); F.forEach((f, i) => { const v = st[d] && st[d][f.s]; PX[i].push(v > 0 ? v : PX[i][PX[i].length - 1]); }); });
+  const T = DATES.length; RD = new Array(T); RD[0] = F.map(() => 0);
+  for (let t = 1; t < T; t++) RD[t] = F.map((_, i) => PX[i][t] / PX[i][t - 1] - 1);
+  const R5 = []; for (let t = 5; t < T; t++) R5.push(F.map((_, i) => PX[i][t] / PX[i][t - 5] - 1));
+  const n5 = R5.length, m = F.map((_, i) => sum(R5.map((r) => r[i])) / n5), k = 252 / 5;
+  MU = m.map((x) => x * k);
+  COV = F.map((_, a) => F.map((_, b) => { let s = 0; for (let t = 0; t < n5; t++) s += (R5[t][a] - m[a]) * (R5[t][b] - m[b]); return (s / (n5 - 1)) * k; }));
+  let v = F.map(() => 1); for (let it = 0; it < 60; it++) { const u = COV.map((r) => sum(r.map((c, j) => c * v[j]))); const nrm = Math.hypot(...u) || 1; v = u.map((x) => x / nrm); LMAX = nrm; }
+}
+function serie(w, i0 = 0) { const out = [1]; let v = 1; for (let t = i0 + 1; t < DATES.length; t++) { const rd = RD[t]; let r = 0; for (let i = 0; i < NF; i++) r += w[i] * rd[i]; v *= 1 + r; out.push(v); } return out; }
+function statistiche(w, i0 = 0) {
+  const v = serie(w, i0), n = v.length; let mx = 0, dd = 0, t0 = 0, t1 = 0, tm = 0;
+  for (let t = 0; t < n; t++) { if (v[t] > mx) { mx = v[t]; tm = t; } const d = v[t] / mx - 1; if (d < dd) { dd = d; t1 = t; t0 = tm; } }
+  const r5 = []; for (let t = 5; t < n; t++) r5.push(v[t] / v[t - 5] - 1);
+  const mean = sum(r5) / r5.length, sd = Math.sqrt(sum(r5.map((x) => (x - mean) * (x - mean))) / (r5.length - 1)), vol = sd * Math.sqrt(252 / 5);
+  const cagr = Math.pow(v[n - 1], 252 / (n - 1)) - 1;
+  return { v, cagr, vol, sharpe: vol ? (cagr - RF) / vol : 0, dd, da: DATES[i0 + t0], a: DATES[i0 + t1] };
+}
+function ddIn(v, i0, da, a) { let mx = 0, dd = 0; for (let t = 0; t < v.length; t++) { const d = DATES[i0 + t]; if (d < da || d > a) continue; if (v[t] > mx) mx = v[t]; dd = Math.min(dd, v[t] / mx - 1); } return dd; }
+function anniRend(v, i0 = 0) { const out = {}; const last = DATES[DATES.length - 1].slice(0, 4); for (let y = +DATES[i0].slice(0, 4); y <= +last; y++) { const fine = lastIdx(y + "-12-31"), ini = lastIdx((y - 1) + "-12-31"); if (fine < 0) continue; const a = ini >= i0 ? v[ini - i0] : v[0], b = v[Math.min(fine, DATES.length - 1) - i0]; if (b != null && a) out[y] = b / a - 1; } return out; }
+function lastIdx(d) { let lo = 0, hi = DATES.length - 1, r = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (DATES[m] <= d) { r = m; lo = m + 1; } else hi = m - 1; } return r; }
+
+/* ---------- posizioni e acquisti ---------- */
+const pesiPiano = () => F.map((f) => f.w);
+function infoLotto(i, lot) {
+  const q = +lot.q; if (!(q > 0)) return null; if (!lot.d) return { err: "manca la data" };
+  const t = lastIdx(lot.d); if (t < 0) return { err: "prima dell'inizio dello storico (" + dataIt(DATES[0]) + ")" };
+  const pr = +lot.p > 0 ? +lot.p : PX[i][t]; return { q, t, pr, costo: q * pr, avv: lot.d > DATES[DATES.length - 1] ? "data oltre l'ultimo prezzo: uso l'ultimo" : "" };
+}
+function posizioni() {
+  const last = DATES.length - 1;
+  return F.map((f, i) => { let q = 0, costo = 0, err = []; const L = ST.lots[f.s].map((lot) => { const x = infoLotto(i, lot); if (x && x.err) err.push(x.err); else if (x) { q += x.q; costo += x.costo; } return x; }); const prezzo = PX[i][last], valore = q * prezzo; return { q, costo, valore, pl: valore - costo, prezzo, lots: L, err }; });
+}
+function xirr(fl) { if (fl.length < 2) return null; const t0 = fl[0].t, f = (r) => fl.reduce((a, x) => a + x.v / Math.pow(1 + r, (x.t - t0) / (365 * 864e5)), 0); let lo = -0.95, hi = 20; if (f(lo) * f(hi) > 0) return null; for (let k = 0; k < 120; k++) { const m = (lo + hi) / 2; if (f(m) * f(lo) > 0) lo = m; else hi = m; } return (lo + hi) / 2; }
+let POS = [], VAL = 0, INV = 0, WCUR = pesiPiano();
+function calcolaPos() {
+  POS = posizioni(); VAL = sum(POS.map((p) => p.valore)); INV = sum(POS.map((p) => p.costo));
+  WCUR = VAL > 0 ? POS.map((p) => p.valore / VAL) : pesiPiano();
+}
+function serieUtente() {
+  let i0 = Infinity; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) i0 = Math.min(i0, x.t); }));
+  if (!isFinite(i0)) return null; const T = DATES.length, val = [], inv = [];
+  for (let t = i0; t < T; t++) { let v = 0, c = 0; F.forEach((f, i) => POS[i].lots.forEach((x) => { if (x && !x.err && x.t <= t) { v += x.q * PX[i][t]; c += x.costo; } })); val.push(v); inv.push(c); }
+  return { i0, val, inv };
+}
+
+/* ---------- ottimizzazione: proiezione su {limiti per fondo, somme per classe, somma = 1} ---------- */
+const CLASSI = ["Azionario", "Obbligazionario", "Materie prime"], CNOME = { Azionario: "Azionario", Obbligazionario: "Obbligazionario", "Materie prime": "Oro" };
+function vincoli() {
+  const v = ST.vinc; return { lo: F.map((f) => v.fondi[f.s].min / 100), hi: F.map((f) => v.fondi[f.s].max / 100), G: CLASSI.map((c) => F.map((f, i) => (f.cls === c ? i : -1)).filter((i) => i >= 0)), GL: CLASSI.map((c) => v.classi[c].min / 100), GU: CLASSI.map((c) => v.classi[c].max / 100) };
+}
+function verifica(V) {
+  for (let i = 0; i < NF; i++) { if (!(V.lo[i] >= 0) || !(V.hi[i] >= V.lo[i] - 1e-9) || V.hi[i] > 1.0001) return "Per " + F[i].s + " il massimo deve essere almeno il minimo (valori tra 0 e 100)."; }
+  let a = 0, b = 0;
+  for (let g = 0; g < V.G.length; g++) { const lo = sum(V.G[g].map((i) => V.lo[i])), hi = sum(V.G[g].map((i) => V.hi[i])); if (V.GL[g] > V.GU[g] + 1e-9) return "Per " + CNOME[CLASSI[g]] + " il massimo di classe deve essere almeno il minimo."; if (V.GL[g] > hi + 1e-9 || V.GU[g] < lo - 1e-9) return "I limiti dei fondi non permettono di rispettare quelli di " + CNOME[CLASSI[g]] + "."; a += Math.max(V.GL[g], lo); b += Math.min(V.GU[g], hi); }
+  if (a > 1 + 1e-9 || b < 1 - 1e-9) return "I vincoli non permettono di arrivare al 100%: somma minima " + nf(a * 100, 0) + "%, somma massima " + nf(b * 100, 0) + "%.";
+  return null;
+}
+function proietta(y, V) {
+  const R = Math.max(...y.map(Math.abs)) + 2, G = V.G, w = new Array(NF);
+  const sg = (g, sh) => { let s = 0; for (const i of G[g]) s += Math.min(V.hi[i], Math.max(V.lo[i], y[i] - sh)); return s; };
+  const shiftG = (g, nu) => {
+    const s0 = sg(g, nu);
+    if (s0 > V.GU[g] + 1e-13) { let a = 0, b = R; for (let k = 0; k < 36; k++) { const m = (a + b) / 2; if (sg(g, nu + m) > V.GU[g]) a = m; else b = m; } return (a + b) / 2; }
+    if (s0 < V.GL[g] - 1e-13) { let a = -R, b = 0; for (let k = 0; k < 36; k++) { const m = (a + b) / 2; if (sg(g, nu + m) < V.GL[g]) b = m; else a = m; } return (a + b) / 2; }
+    return 0;
+  };
+  const tot = (nu) => { let s = 0; for (let g = 0; g < G.length; g++) s += sg(g, nu + shiftG(g, nu)); return s; };
+  let a = -R, b = R; for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (tot(m) > 1) a = m; else b = m; }
+  const nu = (a + b) / 2;
+  for (let g = 0; g < G.length; g++) { const m = shiftG(g, nu); for (const i of G[g]) w[i] = Math.min(V.hi[i], Math.max(V.lo[i], y[i] - nu - m)); }
+  return w;
+}
+function risolvi(gamma, w0, V, mu) {
+  const step = 1 / Math.max(gamma * LMAX, 0.05); let x = w0.slice(), y = x.slice(), tk = 1;
+  for (let it = 0; it < 300; it++) {
+    const yy = y.map((v, i) => { let s = 0; for (let j = 0; j < NF; j++) s += COV[i][j] * y[j]; return v + step * (mu[i] - gamma * s); });
+    const z = proietta(yy, V), tn = (1 + Math.sqrt(1 + 4 * tk * tk)) / 2; let d = 0;
+    for (let i = 0; i < NF; i++) d += Math.abs(z[i] - x[i]);
+    y = z.map((v, i) => v + ((tk - 1) / tn) * (v - x[i])); x = z; tk = tn; if (d < 1e-9) break;
+  }
+  return x;
+}
+let FRONT = null, FRSEQ = 0;
+async function calcolaFrontiera() {
+  const seq = ++FRSEQ, V = vincoli(), err = verifica(V); $("#vmsg").textContent = err || "";
+  if (err) { FRONT = { err, pts: [] }; disegnaFrontiera(); return; }
+  $("#frstato").textContent = "Calcolo della frontiera…";
+  await new Promise((r) => setTimeout(r, 20));
+  const mm = sum(MU) / NF, mu = ST.prud ? MU.map((x) => 0.5 * x + 0.5 * mm) : MU, pts = []; let w = proietta(F.map(() => 1 / NF), V); const NP = 200;
+  for (let k = 0; k < NP; k++) {
+    const gamma = Math.exp(Math.log(3000) - (k * Math.log(3000 / 0.03)) / (NP - 1)); w = risolvi(gamma, w, V, mu); const s = statistiche(w);
+    pts.push({ w: w.slice(), ret: s.cagr, vol: s.vol, sharpe: s.sharpe, dd: s.dd });
+    if (k % 20 === 19) { await new Promise((r) => setTimeout(r, 0)); if (seq !== FRSEQ) return; }
+  }
+  pts.sort((a, b) => a.vol - b.vol); const full = []; for (const p of pts) if (!full.length || p.ret > full[full.length - 1].ret + 1e-5) full.push(p);
+  const shF = full.reduce((a, p, i) => (p.sharpe > full[a].sharpe ? i : a), 0), span = full[full.length - 1].vol - full[0].vol, eff = []; full.forEach((p, i) => { if (!eff.length || i === full.length - 1 || i === shF || p.vol - eff[eff.length - 1].vol >= span / 60) eff.push(p); });
+  if (seq !== FRSEQ) return;
+  FRONT = { pts: eff, sharpe: eff.reduce((a, p, i) => (p.sharpe > eff[a].sharpe ? i : a), 0), minvar: 0 }; $("#frstato").textContent = ""; disegnaFrontiera(); aggiornaRib();
+}
+
+/* ---------- grafici ---------- */
+let UID = 0;
+function lineChart(box, t, y, o = {}) {
+  const W = Math.max(300, Math.round(box.clientWidth || 640)), H = o.h || 210, L = 58, R = 8, T = 10, B = 22, id = "g" + (++UID);
+  if (!y || y.length < 2) { box.innerHTML = '<p class="muted">Dati insufficienti.</p>'; return; }
+  const ref = o.ref ?? y[0], f = o.f || ((v) => v.toFixed(2)), y2 = o.line2 || null;
+  let lo = Math.min(...y, ref, ...(y2 || [])), hi = Math.max(...y, ref, ...(y2 || [])); const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += o.ref === 0 && !o.padTop ? 0 : pad;
+  const X = (i) => L + (i / (y.length - 1)) * (W - L - R), Y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B), step = Math.max(1, Math.floor(y.length / 320)); const pts = [];
+  for (let i = 0; i < y.length; i += step) pts.push(i); if (pts[pts.length - 1] !== y.length - 1) pts.push(y.length - 1);
+  const mk = (a) => pts.map((i, k) => (k ? "L" : "M") + X(i).toFixed(1) + " " + Y(a[i]).toFixed(1)).join(" "), path = mk(y), yr = Y(ref), area = path + ` L${X(y.length - 1).toFixed(1)} ${yr.toFixed(1)} L${X(0).toFixed(1)} ${yr.toFixed(1)} Z`;
+  let g = ""; for (let k = 0; k <= 3; k++) { const v = lo + ((hi - lo) * k) / 3; g += `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--muted)">${f(v)}</text>`; }
+  const lab = [0, Math.floor((y.length - 1) / 2), y.length - 1].map((i, k) => `<text x="${X(i).toFixed(1)}" y="${H - 5}" font-size="11" fill="var(--muted)" text-anchor="${["start", "middle", "end"][k]}">${dataIt(t[i])}</text>`).join("");
+  const up = y[y.length - 1] >= ref, stroke = o.color || (up ? "var(--good)" : "var(--bad)"), sty = 'fill="none" stroke-width="1.8" stroke-linejoin="round"';
+  const linea = o.color ? `<path d="${path}" ${sty} stroke="${o.color}"/>` : `<path d="${path}" ${sty} stroke="var(--good)" clip-path="url(#${id}a)"/><path d="${path}" ${sty} stroke="var(--bad)" clip-path="url(#${id}b)"/>`;  // la linea cambia colore dove attraversa il riferimento
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label || "Andamento")}"><defs><clipPath id="${id}a"><rect x="${L}" y="${T}" width="${W - L - R}" height="${Math.max(0, yr - T).toFixed(1)}"/></clipPath><clipPath id="${id}b"><rect x="${L}" y="${yr.toFixed(1)}" width="${W - L - R}" height="${Math.max(0, H - B - yr).toFixed(1)}"/></clipPath>
+    <linearGradient id="${id}u" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--good)" stop-opacity=".38"/><stop offset="1" stop-color="var(--good)" stop-opacity="0"/></linearGradient><linearGradient id="${id}d" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--bad)" stop-opacity=".38"/><stop offset="1" stop-color="var(--bad)" stop-opacity="0"/></linearGradient></defs>
+    ${g}<path d="${area}" fill="url(#${id}u)" clip-path="url(#${id}a)"/><path d="${area}" fill="url(#${id}d)" clip-path="url(#${id}b)"/><line x1="${L}" x2="${W - R}" y1="${yr.toFixed(1)}" y2="${yr.toFixed(1)}" stroke="var(--muted)" stroke-dasharray="3 4"/>
+    ${y2 ? `<path d="${mk(y2)}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4"/>` : ""}${linea}<circle cx="${X(y.length - 1).toFixed(1)}" cy="${Y(y[y.length - 1]).toFixed(1)}" r="3.2" fill="${stroke}"/>
+    <line class="cur" y1="${T}" y2="${H - B}" stroke="var(--muted)" visibility="hidden"/><circle class="curp" r="3.5" fill="var(--fg)" visibility="hidden"/>${lab}</svg><div class="tip" hidden></div>`;
+  const svg = box.querySelector("svg"), tip = box.querySelector(".tip"), cur = box.querySelector(".cur"), cp = box.querySelector(".curp");
+  const move = (e) => { const r = svg.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * W, i = Math.max(0, Math.min(y.length - 1, Math.round(((x - L) / (W - L - R)) * (y.length - 1))));
+    cur.setAttribute("x1", X(i)); cur.setAttribute("x2", X(i)); cur.setAttribute("visibility", "visible"); cp.setAttribute("cx", X(i)); cp.setAttribute("cy", Y(y[i])); cp.setAttribute("visibility", "visible");
+    tip.hidden = false; tip.textContent = dataIt(t[i]) + " · " + f(y[i]); const px = (X(i) / W) * r.width; tip.style.transform = `translate(${Math.max(0, Math.min(r.width - tip.offsetWidth, px - tip.offsetWidth / 2))}px, -4px)`; };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", () => { tip.hidden = true; cur.setAttribute("visibility", "hidden"); cp.setAttribute("visibility", "hidden"); });
+}
+const PAL = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)", "var(--c8)"];
+function pie(id, rows, o) {
+  rows = rows.filter((r) => r[1] > 0.0005); const tot = sum(rows.map((r) => r[1])); if (!tot) { $(id).innerHTML = '<p class="muted">Nessun dato.</p>'; return; }
+  const R = 92, r0 = 54, C = 100; let a = -Math.PI / 2, g = ""; const pt = (ang, rad) => (C + rad * Math.cos(ang)).toFixed(2) + " " + (C + rad * Math.sin(ang)).toFixed(2);
+  rows.forEach((r, i) => { r[2] = r[2] || PAL[i % PAL.length]; const b = a + (r[1] / tot) * 2 * Math.PI - 1e-6, big = b - a > Math.PI ? 1 : 0; g += `<path d="M${pt(a, R)} A${R} ${R} 0 ${big} 1 ${pt(b, R)} L${pt(b, r0)} A${r0} ${r0} 0 ${big} 0 ${pt(a, r0)} Z" fill="${r[2]}" stroke="var(--surface)" stroke-width="1.5"><title>${esc(r[0])} ${pct(r[1] / tot)}</title></path>`; a = b + 1e-6; });
+  $(id).innerHTML = `<svg viewBox="0 0 200 200" role="img" aria-label="${esc(o.label)}">${g}<text x="100" y="100" text-anchor="middle" font-size="24" font-weight="600" fill="var(--fg)" style="font-family:var(--display)">${esc(o.c1)}</text><text x="100" y="118" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(o.c2)}</text></svg><ul class="pleg">` +
+    rows.map((r) => `<li><i style="background:${r[2]}"></i><span>${esc(r[0])}${r[3] ? `<small>${esc(r[3])}</small>` : ""}</span><span class="num">${pct(r[1] / tot)}</span></li>`).join("") + "</ul>";
+}
+function barre(id, rows, color) { rows = rows.filter((r) => r[1] >= 0.0005); if (!rows.length) { $(id).innerHTML = '<li class="muted">Nessun dato.</li>'; return; } const mx = Math.max(...rows.map((r) => r[1])); $(id).innerHTML = rows.map((r) => `<li><span class="t">${esc(r[0])}</span><span class="b"><span style="width:${((r[1] / mx) * 100).toFixed(1)}%;background:${r[0].startsWith("Oro") ? "var(--oro)" : color}"></span></span><span class="v">${pct(r[1])}</span></li>`).join(""); }
+
+/* ---------- composizione interna ---------- */
+const AREA_COL = { "Stati Uniti": "var(--c1)", "Area euro": "var(--c2)", "Europa fuori dall'euro": "var(--c3)", "Mercati emergenti": "var(--c4)", Giappone: "var(--c5)", "Altri sviluppati": "var(--c6)", Oro: "var(--oro)", Altro: "var(--c8)" };
+const TIPO_COL = { "Azioni · mondo ed Europa": "var(--c1)", "Azioni · emergenti": "var(--c4)", "Azioni · settoriali": "var(--c2)", "Obbligazioni · titoli di Stato": "var(--c3)", "Obbligazioni · societarie": "var(--bond2)", Oro: "var(--oro)" };
+function mixPort(w) {
+  const acc = (key, filt) => { const m = {}; F.forEach((f, i) => { if (filt && !filt(f)) return; const mm = f.mix[key]; for (const k in mm) m[k] = (m[k] || 0) + w[i] * Math.max(0, mm[k]); }); return m; };
+  const eq = (f) => f.cls === "Azionario", bd = (f) => f.cls === "Obbligazionario"; const tipo = {}; F.forEach((f, i) => (tipo[f.tipo] = (tipo[f.tipo] || 0) + w[i]));
+  const paesi = {}, obb = {}, top = {}; F.forEach((f, i) => { f.mix.paesi.forEach(([k, v]) => { if (eq(f)) paesi[k] = (paesi[k] || 0) + w[i] * v; else if (bd(f)) obb[k] = (obb[k] || 0) + w[i] * v; }); if (eq(f)) f.mix.top.forEach(([n, , v, k]) => { const e = top[k] || (top[k] = { n, v: 0 }); e.v += w[i] * v; }); });
+  const ord = (m, n) => Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, n);
+  return { tipo, aree: acc("aree"), settori: acc("settori", eq), valute: acc("valute"), paesi: ord(paesi, 10), obb: ord(obb, 8), top: Object.values(top).sort((a, b) => b.v - a.v).slice(0, 10).map((e) => [e.n, e.v]), eqq: sum(F.map((f, i) => (eq(f) ? w[i] : 0))), obq: sum(F.map((f, i) => (bd(f) ? w[i] : 0))) };
+}
+function altri(m, soglia, nome) { const e = Object.entries(m).sort((a, b) => b[1] - a[1]); const a = e.filter((x) => x[1] >= soglia), r = sum(e.filter((x) => x[1] < soglia).map((x) => x[1])); if (r > 0.0005) a.push([nome, r]); return a; }
+function disegnaMix() {
+  const M = mixPort(WCUR), usePos = VAL > 0;
+  $("#espnota").textContent = usePos ? "Sui tuoi pesi attuali" : "Sul piano di partenza";
+  pie("#p-tipo", Object.entries(M.tipo).map(([k, v]) => [k, v, TIPO_COL[k]]), { c1: pct(M.eqq, 0), c2: "azioni", label: "Portafoglio per tipo di investimento" });
+  const aree = Object.entries(M.aree).sort((a, b) => b[1] - a[1]); pie("#p-aree", aree.map(([k, v]) => [k, v, AREA_COL[k]]), { c1: aree.length ? pct(aree[0][1], 0) : "—", c2: aree.length ? aree[0][0] : "", label: "Portafoglio per area geografica" });
+  const se = altri(M.settori, 0.02, "Altri settori"), sm = Object.entries(M.settori).sort((a, b) => b[1] - a[1]); pie("#p-settori", se.map((r) => [r[0], r[1], r[0] === "Altri settori" ? "var(--c8)" : undefined]), { c1: sm.length ? pct(sm[0][1] / (M.eqq || 1), 0) : "—", c2: sm.length ? sm[0][0].toLowerCase() : "", label: "Parte azionaria per settore" });
+  $("#e-az").textContent = "parte azionaria, " + pct(M.eqq, 0);
+  barre("#e-paesi", M.paesi, "var(--c1)"); barre("#e-valute", Object.entries(M.valute).sort((a, b) => b[1] - a[1]).slice(0, 8), "var(--accent)"); barre("#e-titoli", M.top, "var(--c2)"); barre("#e-obbl", M.obb, "var(--c3)");
+  $("#e-n").textContent = "dai primi 10 di ogni fondo"; $("#e-ob").textContent = pct(M.obq, 0) + " del portafoglio";
+}
+
+/* ---------- riepilogo, posizioni, tabella ---------- */
+function disegnaKpi() {
+  const s = statistiche(WCUR), ter = sum(F.map((f, i) => WCUR[i] * f.ter)) / 100, pl = VAL - INV, last = DATES[DATES.length - 1];
+  const fl = []; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) fl.push({ t: new Date(DATES[x.t]).getTime(), v: -x.costo }); })); fl.sort((a, b) => a.t - b.t); let xi = null;
+  if (fl.length && VAL > 0 && new Date(last).getTime() - fl[0].t > 30 * 864e5) { fl.push({ t: new Date(last).getTime(), v: VAL }); xi = xirr(fl); }
+  const hasPos = VAL > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
+  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
+    ["Rendimento annuo dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
+    ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
+  { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per1").textContent = $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
+  $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
+  const az = $("#azzera"); if (az) az.onclick = () => { F.forEach((f) => (ST.lots[f.s] = [])); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); };
+}
+function disegnaPosizioni() {
+  $("#pos").innerHTML = F.map((f, i) => `<div class="fcard" data-s="${f.s}"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s + " · " + f.name)}</h3><span class="tag">${f.ruolo} · piano ${pct(f.w, 0)}</span></div>
+    <div class="lots" id="lots-${f.s}">${ST.lots[f.s].map((lot, k) => `<div class="lot" data-k="${k}"><label>Quote<input type="number" min="0" step="1" inputmode="decimal" data-c="q" value="${esc(lot.q)}"></label><label>Data acquisto<input type="date" data-c="d" value="${esc(lot.d)}"></label><label>Prezzo (facoltativo)<input type="number" min="0" step="0.0001" inputmode="decimal" data-c="p" placeholder="chiusura" value="${esc(lot.p)}"></label><button type="button" class="x" data-del="${k}" aria-label="Togli questo acquisto">×</button></div>`).join("") || '<p class="muted">Nessun acquisto inserito.</p>'}</div>
+    <div class="lerr" id="err-${f.s}"></div><div><button type="button" class="btn sec small" data-add="${f.s}">+ Aggiungi acquisto</button></div><div class="res" id="res-${f.s}"></div></div>`).join("");
+}
+function disegnaRisPos() {
+  F.forEach((f, i) => { const p = POS[i]; const e = $("#res-" + f.s); if (!e) return; const eEl = $("#err-" + f.s); eEl.textContent = p.err.length ? p.err.join("; ") : p.lots.some((x) => x && x.avv) ? p.lots.find((x) => x && x.avv).avv : "";
+    e.innerHTML = [["Quote", nf(p.q, p.q % 1 ? 2 : 0)], ["Costo medio", p.q ? eur(p.costo / p.q, 3) : "—"], ["Valore", p.q ? eur(p.valore) : "—"], ["Risultato", p.q ? `<span class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</span>` : "—"], ["Peso attuale", VAL > 0 ? pct(WCUR[i]) + ` <span class="muted">/ ${pct(f.w, 0)}</span>` : "—"]].map((r) => `<div><div class="l">${r[0]}</div><div class="num">${r[1]}</div></div>`).join(""); });
+}
+function disegnaTabella() {
+  const last = DATES[DATES.length - 1]; $("#prezzial").textContent = "Prezzi al " + dataIt(last);
+  // senza acquisti inseriti si mostra il piano (quote del piano ai prezzi correnti, rendita dal prezzo del giorno base), così il valore attuale c'è sempre
+  const ib = lastIdx(BASE), piano = VAL <= 0, riga = (f, i) => { const p = POS[i], pr = p.prezzo; if (!piano) return p.q ? { q: p.q, val: p.valore, pl: p.pl, costo: p.costo } : null; const q = f.q0, c = q * PX[i][ib]; return { q, val: q * pr, pl: q * pr - c, costo: c }; };
+  const rend = (r) => (r ? `<span class="${cls(r.pl)}">${sgnE(r.pl)}</span>` + (r.costo ? `<div class="fsub ${cls(r.pl)}">${sgn(r.pl / r.costo, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—");
+  const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))), totC = sum(RR.map((r) => (r ? r.costo : 0)));
+  const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
+  $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(r)}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${eur(usato)}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—"}</td></tr></tfoot>`;
+}
+
+/* ---------- frontiera: disegno e dettaglio ---------- */
+let SEL = "tuo";
+function disegnaFrontiera(dalCursore) {
+  const box = $("#front"); if (!FRONT) return; if (FRONT.err) { box.innerHTML = `<p class="lerr">${esc(FRONT.err)}</p>`; $("#fcomp").innerHTML = ""; $("#fleg").innerHTML = ""; return; }
+  const P = FRONT.pts, tuo = statistiche(WCUR), ob = statistiche(pesiPiano()), sh = P[FRONT.sharpe], mv = P[0];
+  const W = Math.max(300, Math.round(box.clientWidth || 640)), H = Math.round(Math.min(360, Math.max(250, W * 0.58))), L = 44, R = 14, T = 16, B = 36;
+  const xs = P.map((p) => p.vol).concat([tuo.vol, ob.vol]), ys = P.map((p) => p.ret).concat([tuo.cagr, ob.cagr]);
+  const x0 = Math.min(...xs) - 0.004, x1 = Math.max(...xs) + 0.004, y0 = Math.min(...ys) - 0.006, y1 = Math.max(...ys) + 0.006, X = (v) => L + ((v - x0) / (x1 - x0)) * (W - L - R), Y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  let g = ""; for (let v = Math.ceil(x0 * 100); v <= Math.floor(x1 * 100); v++) g += `<line x1="${X(v / 100)}" x2="${X(v / 100)}" y1="${T}" y2="${H - B}" stroke="var(--line)"/><text x="${X(v / 100)}" y="${H - B + 15}" font-size="11" fill="var(--muted)" text-anchor="middle">${v}%</text>`;
+  for (let v = Math.ceil(y0 * 100); v <= Math.floor(y1 * 100); v++) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v / 100)}" y2="${Y(v / 100)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v / 100) + 4}" font-size="11" fill="var(--muted)" text-anchor="end">${v}%</text>`;
+  const line = P.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" "), rombo = (v, r, c, k, tt) => { const x = X(v), y = Y(r); return `<path class="pt" tabindex="0" data-k="${k}" d="M${x} ${y - 9} L${x + 9} ${y} L${x} ${y + 9} L${x - 9} ${y} Z" fill="${c}" stroke="var(--bg)" stroke-width="1.5"><title>${tt}</title></path>`; };
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente: rischio e rendimento storico">${g}<text x="${(L + W - R) / 2}" y="${H - 3}" font-size="11" fill="var(--muted)" text-anchor="middle">Rischio (volatilità annua)</text><text x="12" y="${(T + H - B) / 2}" font-size="11" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 12 ${(T + H - B) / 2})">Rendimento annuo</text>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/>${P.map((p, i) => `<circle class="pt" tabindex="0" data-k="${i}" cx="${X(p.vol).toFixed(1)}" cy="${Y(p.ret).toFixed(1)}" r="${SEL === i ? 7 : 4.5}" fill="${SEL === i ? "var(--accent)" : "var(--bg)"}" stroke="var(--accent)" stroke-width="2"><title>Rischio ${pct(p.vol)} · rendimento ${pct(p.ret)}</title></circle>`).join("")}
+    <circle class="pt" tabindex="0" data-k="sharpe" cx="${X(sh.vol).toFixed(1)}" cy="${Y(sh.ret).toFixed(1)}" r="8" fill="none" stroke="var(--warn)" stroke-width="2.5"><title>Massimo Sharpe</title></circle>
+    ${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Il tuo portafoglio")}
+    <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Tuo</text></svg>`;
+  $("#fleg").innerHTML = `<span><i style="background:var(--good)"></i>tuo portafoglio</span><span><i style="background:var(--c2)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn)"></i>massimo Sharpe</span><span><i style="background:var(--accent)"></i>frontiera</span>`;
+  $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
+  const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr), c = statistiche(WCUR), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : "Portafoglio proposto";
+  sincRischio(P, tuo, ob, dalCursore);
+  let gap = ""; if (tuo.vol >= P[0].vol && tuo.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < tuo.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (tuo.vol - a.vol)) / (b.vol - a.vol || 1); gap = `<p class="muted" style="margin:6px 0">A pari rischio (${pct(tuo.vol)}) la frontiera rende ${pct(rr)}: ${rr >= tuo.cagr ? `<span class="up">${nf((rr - tuo.cagr) * 100, 1)} punti</span> in più del tuo portafoglio` : "il tuo portafoglio sta sopra la curva (curva con i tuoi vincoli)"}.</p>`; }
+  const riga = (n, a, b, f, bene) => { const d = a - b; return `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td><td class="num ${Math.abs(d) < 0.0005 ? "" : (d > 0) === bene ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "—" : (d > 0 ? "+" : "") + f(d)}</td></tr>`; };
+  $("#fcomp").innerHTML = `<h3>${tit}</h3>${SEL === "tuo" ? '<p class="muted" style="margin:4px 0">Sposta il cursore del rischio: qui compare il portafoglio proposto.</p>' : ""}${gap}<table class="cmp"><thead><tr><th></th><th>${SEL === "tuo" ? "Tuo" : "Proposto"}</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>${riga("Rendimento annuo", s.cagr, c.cagr, (x) => pct(x), true)}${riga("Rischio (volatilità)", s.vol, c.vol, (x) => pct(x), false)}${riga("Sharpe", s.sharpe, c.sharpe, (x) => nf(x, 2), true)}${riga("Perdita massima", s.dd, c.dd, (x) => pct(x), true)}</tbody></table>
+    <div class="scroll"><table style="font-size:13px"><thead><tr><th>Fondo</th><th>ISIN</th><th>Proposto</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>` +
+    F.map((f, i) => ({ f, i, w: wr[i] })).sort((a, b) => b.w - a.w).map(({ f, i, w }) => { const d = w - WCUR[i]; return `<tr><td>${flink(i, f.s)}</td><td class="num" style="white-space:nowrap">${f.isin}</td><td class="num">${pct(w)}</td><td class="num">${VAL > 0 ? pct(WCUR[i]) : pct(f.w)}</td><td class="num ${cls(d)}">${Math.abs(d) < 0.0005 ? "—" : sgn(d)}</td></tr>`; }).join("") + `</tbody></table></div>
+    <div class="azioni"><button class="btn small" id="salvapf" type="button">Salva come nuovo portafoglio…</button><button class="btn sec small" id="usasel" type="button">Usa per il ribilanciamento</button></div><p class="lerr" id="sv-nosrv"></p>`;
+  $("#usasel").onclick = () => { ST.rib.t = "sel"; ST.rib.w = wr.slice(); $("#rb-t").value = "sel"; salva(); aggiornaRib(); $("#rb-t").scrollIntoView({ behavior: "smooth", block: "center" }); };
+  $("#salvapf").onclick = () => apriSalva(wr, s, tit);
+}
+/* pesi in multipli di 0,1%, con la somma esattamente 100% (il resto va al fondo più grande): sono quelli salvati nel nuovo portafoglio */
+function arrotonda(w) { const r = w.map((x) => Math.round(x * 1000) / 1000), d = Math.round((1 - sum(r)) * 1000); if (d) { const k = r.indexOf(Math.max(...r)); r[k] = Math.round((r[k] + d / 1000) * 1000) / 1000; } return r; }
+/* cursore: sceglie un punto della frontiera (indice nella curva, dal rischio più basso al più alto) */
+function sincRischio(P, tuo, ob, dalCursore) {
+  const rs = $("#rs"); rs.disabled = false; const v0 = P[0].vol, v1 = P[P.length - 1].vol;
+  const x = typeof SEL === "number" ? P[SEL] : SEL === "sharpe" ? P[FRONT.sharpe] : SEL === "obiettivo" ? { vol: ob.vol, ret: ob.cagr } : { vol: tuo.vol, ret: tuo.cagr };
+  if (!dalCursore) rs.value = Math.round(Math.max(0, Math.min(1, (x.vol - v0) / (v1 - v0 || 1))) * +rs.max);  // se si sta trascinando, il cursore resta dove lo metti
+  rs.setAttribute("aria-valuetext", "rischio " + pct(x.vol) + ", rendimento " + pct(x.ret));
+  $("#rs-v").innerHTML = `rischio <b>${pct(x.vol)}</b> · rendimento <b>${pct(x.ret)}</b>` + (typeof SEL === "number" || SEL === "sharpe" ? "" : ` <span class="muted">(${SEL === "obiettivo" ? "piano" : "il tuo"})</span>`);
+}
+$("#rs").addEventListener("input", (e) => { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const v = P[0].vol + (+e.target.value / +e.target.max) * (P[P.length - 1].vol - P[0].vol); SEL = P.reduce((a, p, i) => (Math.abs(p.vol - v) < Math.abs(P[a].vol - v) ? i : a), 0); disegnaFrontiera(true); });  // il cursore è sul rischio: sceglie il punto della frontiera più vicino
+$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); }));
+function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (SEL === "tuo") return { w: WCUR }; if (SEL === "obiettivo") return { w: pesiPiano() }; if (SEL === "sharpe" && P) return { w: P[FRONT.sharpe].w }; if (typeof SEL === "number" && P && P[SEL]) return { w: P[SEL].w }; return { w: WCUR }; }
+
+/* ---------- ribilanciamento ---------- */
+function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
+function aggiornaRib() {
+  $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = !!ST.rib.v;
+  const wt = pesiObiettivo(), cash = Math.max(0, +ST.rib.c || 0), tot = VAL + cash, vend = !!ST.rib.v;
+  if (tot <= 0) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci i tuoi acquisti oppure un versamento: il piano mostrerà quante quote comprare."; return; }
+  const tgt = wt.map((w) => w * tot), diff = tgt.map((t, i) => t - POS[i].valore); let x;
+  if (vend) x = diff.slice(); else { const sh = diff.map((d) => Math.max(0, d)), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * cash : 0)); }
+  const ops = F.map((f, i) => { const pr = POS[i].prezzo; let n = Math.round(x[i] / pr); if (n < 0) n = -Math.min(-n, Math.floor(POS[i].q)); return { n, imp: n * pr }; }), speso = sum(ops.map((o) => o.imp)), dopoV = VAL + speso;
+  $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}</td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
+  $("#rb-n").textContent = (vend ? "Con vendite: porta il portafoglio al punto scelto." : "Solo acquisti: il versamento va ai fondi sotto l'obiettivo, in proporzione al divario.") + " Quote arrotondate all'intero, prezzi di chiusura del " + dataIt(DATES[DATES.length - 1]) + (cash - speso > 0.5 && !vend ? "; restano circa " + eur(cash - speso) + " del versamento." : ".") + " Commissioni e imposte non incluse.";
+}
+
+/* ---------- andamento e storici ---------- */
+let PERIODO = ST.periodo;
+function iniziale() { if (!PERIODO) return 0; const d = new Date(DATES[DATES.length - 1]); d.setFullYear(d.getFullYear() - PERIODO); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i); }
+function disegnaAndamento() {
+  const su = serieUtente(), box1 = $("#c-ris"), box2 = $("#c-val");
+  if (!su) { box1.innerHTML = box2.innerHTML = '<p class="muted">Inserisci almeno un acquisto per vedere l\'andamento.</p>'; $("#and-r").textContent = $("#and-v").textContent = ""; $("#and-n").textContent = ""; return; }
+  const t = DATES.slice(su.i0), ris = su.val.map((v, k) => v - su.inv[k]), last = ris[ris.length - 1];
+  $("#and-n").textContent = "dal " + dataIt(t[0]); $("#and-r").innerHTML = `<span class="${cls(last)}">${sgnE(last)}</span>`; $("#and-v").textContent = eur(su.val[su.val.length - 1]);
+  if (t.length < 2) { box1.innerHTML = box2.innerHTML = '<p class="muted">Serve almeno un secondo giorno di prezzi per il grafico.</p>'; return; }
+  lineChart(box1, t, ris, { ref: 0, padTop: true, f: (x) => nf(x, 0) + " €", h: 190, label: "Risultato dei tuoi acquisti" });
+  lineChart(box2, t, su.val, { ref: su.inv[0], line2: su.inv, f: (x) => nf(x, 0) + " €", h: 190, label: "Valore e capitale versato" });
+}
+function disegnaStorici() {
+  const i0 = iniziale(), t = DATES.slice(i0), s = statistiche(WCUR, i0), v = s.v.map((x) => x * IMPORTO());
+  $("#pf-imp").textContent = eur(IMPORTO()); lineChart($("#pf"), t, v, { f: (x) => nf(x, 0) + " €", h: 240, label: "Valore del portafoglio" }); const r = v[v.length - 1] / v[0] - 1; $("#pfret").innerHTML = `<span class="${cls(r)}">${sgn(r)}</span> nel periodo`;
+  let mx = 0; const dd = v.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 170, color: "var(--bad)", label: "Perdita dal massimo" }); $("#pfdd").textContent = "peggiore " + nf(Math.min(...dd), 1) + "%";
+  let mn = Infinity; const gm = v.map((x) => { mn = Math.min(mn, x); return (x / mn - 1) * 100; }); lineChart($("#gm"), t, gm, { ref: 0, f: (x) => (x > 0 ? "+" : "") + x.toFixed(1).replace(".", ",") + "%", h: 170, label: "Guadagno dal minimo precedente" }); $("#pfgm").textContent = "ora " + (gm[gm.length - 1] > 0 ? "+" : "") + nf(gm[gm.length - 1], 1) + "% · massimo +" + nf(Math.max(...gm), 1) + "%";
+  const an = anniRend(statistiche(WCUR).v); $("#anni").innerHTML = Object.entries(an).map(([y, x]) => `<div><div class="y">${y}${y === DATES[DATES.length - 1].slice(0, 4) ? " (parziale)" : ""}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("");
+  $("#fondi").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s)} <span class="muted" style="font-weight:400">${esc(f.name)}</span></h3><span class="num" id="r-${f.s}"></span></div><div class="chart" id="c-${f.s}"></div></div>`).join("");
+  F.forEach((f, i) => { const y = PX[i].slice(i0), rr = y[y.length - 1] / y[0] - 1; lineChart($("#c-" + f.s), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 170, label: "Prezzo di " + f.s }); $("#r-" + f.s).innerHTML = `<span class="${cls(rr)}">${sgn(rr)}</span>`; });
+  $$("#periodo button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === PERIODO)));
+}
+function disegnaAnagrafica() {
+  $("#ana").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3>${flink(i)}</h3><span class="tag">${f.ruolo}</span></div><dl><dt>Simbolo · ISIN</dt><dd>${f.s} · ${f.isin}</dd><dt>Emittente</dt><dd>${esc(f.emittente)}</dd><dt>Tipo</dt><dd>${esc(f.tipo)}</dd><dt>Costo annuo (TER)</dt><dd>${pct(f.ter / 100, 2)}</dd><dt>Patrimonio</dt><dd>${f.aum != null ? nf(Math.round(f.aum)) + " mln €" : "n.d."}</dd><dt>Scambi medi a Milano</dt><dd>${f.adv != null ? nf(f.adv, 2) + " mln €/giorno" : "n.d."}</dd><dt>Replica</dt><dd>${esc(f.repl || "n.d.")}</dd><dt>Domicilio</dt><dd>${esc(f.dom || "n.d.")}</dd><dt>Lancio</dt><dd>${f.lancio ? dataIt(f.lancio) : "n.d."}</dd><dt>Proventi</dt><dd>Accumulazione</dd></dl></div>`).join("");
+}
+
+/* ---------- scheda di un fondo ---------- */
+let FOC = null, SP = 3;
+function statFondo(i) {
+  const y = PX[i], n = y.length, at = (d) => { const k = lastIdx(d); return k >= 0 ? y[k] : null; }, last = y[n - 1], day = DATES[n - 1];
+  const sub = (m) => { const d = new Date(day); d.setMonth(d.getMonth() - m); const p = at(d.toISOString().slice(0, 10)); return p ? last / p - 1 : null; };
+  const ann = (a) => { const d = new Date(day); d.setFullYear(d.getFullYear() - a); const k = lastIdx(d.toISOString().slice(0, 10)); if (k < 0 || DATES[k] > day || (new Date(day) - new Date(DATES[k])) / 864e5 > a * 365 + 10 || DATES[0] > d.toISOString().slice(0, 10)) return null; return Math.pow(last / y[k], 1 / a) - 1; };
+  const ytd = at(day.slice(0, 4) - 1 + "-12-31"); const r5 = []; for (let t = Math.max(5, n - 260); t < n; t++) r5.push(y[t] / y[t - 5] - 1); const mm = sum(r5) / r5.length, vol1 = Math.sqrt(sum(r5.map((x) => (x - mm) * (x - mm))) / (r5.length - 1)) * Math.sqrt(252 / 5);
+  let mx = 0, dd = 0; const dds = y.map((x) => { mx = Math.max(mx, x); const d = x / mx - 1; dd = Math.min(dd, d); return d * 100; });
+  const anni = {}; for (let a = +DATES[0].slice(0, 4); a <= +day.slice(0, 4); a++) { const f = lastIdx(a + "-12-31"), s0 = lastIdx(a - 1 + "-12-31"); if (f >= 0) anni[a] = y[f] / (s0 >= 0 ? y[s0] : y[0]) - 1; }
+  return { last, m1: sub(1), m3: sub(3), m6: sub(6), ytd: ytd ? last / ytd - 1 : null, a1: sub(12), a3: ann(3), a5: ann(5), vol1, dd, dds, anni };
+}
+function apri(i) {
+  FOC = document.activeElement; const f = F[i], s = statFondo(i), p = POS[i], box = $("#ovl-box"); const cell = (l, v, c) => `<div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><div class="fsub">${l}</div><div class="num ${c || ""}" style="font-size:16px;font-family:var(--display)">${v}</div></div>`; const rv = (v) => (v == null ? "—" : `${sgn(v)}`);
+  const mix = f.mix, lista = (m) => Object.entries(m).sort((a, b) => b[1] - a[1]).filter((r) => r[1] > 0.0005).slice(0, 8);
+  box.innerHTML = `<div class="top"><div><h2 id="ovl-t">${esc(f.name)}</h2><p class="muted">${f.s} · ${f.isin} · ${esc(f.emittente)} · <span class="tag">${f.ruolo}</span></p></div><button class="btn sec small" id="ovl-x" type="button">Chiudi</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">${cell("Prezzo", eur(s.last, s.last < 20 ? 3 : 2))}${cell("1 mese", rv(s.m1), cls(s.m1))}${cell("3 mesi", rv(s.m3), cls(s.m3))}${cell("Da inizio anno", rv(s.ytd), cls(s.ytd))}${cell("1 anno", rv(s.a1), cls(s.a1))}${cell("3 anni (annuo)", rv(s.a3), cls(s.a3))}${cell("5 anni (annuo)", rv(s.a5), cls(s.a5))}${cell("Volatilità 1 anno", pct(s.vol1))}${cell("Perdita massima", nf(s.dd * 100, 1) + "%", "down")}</div>
+    <div><div class="fhead"><h3>Prezzo</h3><div class="seg" id="sp" role="group" aria-label="Periodo del grafico"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div></div><div class="panel"><div class="chart" id="s-px"></div></div></div>
+    <div class="panel"><div class="fhead"><h3>Perdita dal massimo precedente</h3></div><div class="chart" id="s-dd"></div></div>
+    <div><h4>Rendimento per anno solare</h4><div class="years" style="margin-top:8px">${Object.entries(s.anni).map(([y, x]) => `<div><div class="y">${y}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("")}</div></div>
+    <div class="grid"><div class="panel"><div class="fhead"><h3>Area geografica</h3></div><ul class="bars" id="s-aree"></ul></div>${f.cls === "Azionario" ? `<div class="panel"><div class="fhead"><h3>Settori</h3></div><ul class="bars" id="s-sett"></ul></div>` : ""}<div class="panel"><div class="fhead"><h3>Valute</h3></div><ul class="bars" id="s-val"></ul></div>${mix.top.length ? `<div class="panel"><div class="fhead"><h3>Primi titoli</h3></div><ul class="bars" id="s-top"></ul></div>` : ""}${mix.paesi.length ? `<div class="panel"><div class="fhead"><h3>Paesi</h3></div><ul class="bars" id="s-paesi"></ul></div>` : ""}</div>
+    <div class="grid"><div class="panel"><h3>Anagrafica</h3><dl><dt>Classe</dt><dd>${esc(f.cls)}</dd><dt>Tipo</dt><dd>${esc(f.tipo)}</dd><dt>Costo annuo (TER)</dt><dd>${pct(f.ter / 100, 2)}</dd><dt>Patrimonio</dt><dd>${f.aum != null ? nf(Math.round(f.aum)) + " mln €" : "n.d."}</dd><dt>Scambi medi a Milano</dt><dd>${f.adv != null ? nf(f.adv, 2) + " mln €/giorno" : "n.d."}</dd><dt>Replica</dt><dd>${esc(f.repl || "n.d.")}</dd><dt>Domicilio</dt><dd>${esc(f.dom || "n.d.")}</dd><dt>Lancio</dt><dd>${f.lancio ? dataIt(f.lancio) : "n.d."}</dd><dt>Valuta del fondo</dt><dd>${esc(f.valuta || "n.d.")}</dd><dt>Titoli in portafoglio</dt><dd>${f.n ? nf(f.n) : "n.d."}</dd><dt>Proventi</dt><dd>Accumulazione</dd></dl>
+      <p style="margin-top:10px;font-size:13px"><a href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener">Scheda su justETF</a> · <a href="https://finance.yahoo.com/quote/${f.sym}" target="_blank" rel="noopener">Yahoo Finance</a></p></div>
+      <div class="panel"><h3>La tua posizione</h3>${p.q ? `<dl><dt>Quote</dt><dd>${nf(p.q, p.q % 1 ? 2 : 0)}</dd><dt>Costo medio</dt><dd>${eur(p.costo / p.q, 3)}</dd><dt>Capitale versato</dt><dd>${eur(p.costo)}</dd><dt>Valore</dt><dd>${eur(p.valore)}</dd><dt>Risultato</dt><dd class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</dd><dt>Peso attuale / piano</dt><dd>${pct(WCUR[i])} / ${pct(f.w, 0)}</dd></dl>` : '<p class="muted" style="margin-top:8px">Nessun acquisto inserito per questo fondo.</p>'}</div></div>`;
+  $("#ovl").hidden = false; document.body.style.overflow = "hidden";
+  barre("#s-aree", lista(mix.aree), "var(--c1)"); if ($("#s-sett")) barre("#s-sett", lista(mix.settori), "var(--c2)"); barre("#s-val", lista(mix.valute), "var(--accent)"); if ($("#s-top")) barre("#s-top", mix.top.map((r) => [r[0] + (r[1] ? " · " + r[1] : ""), r[2]]), "var(--c2)"); if ($("#s-paesi")) barre("#s-paesi", mix.paesi, "var(--c3)");
+  const disegna = () => { const i0 = !SP ? 0 : (() => { const d = new Date(DATES[DATES.length - 1]); d.setFullYear(d.getFullYear() - SP); const k = DATES.findIndex((x) => x >= d.toISOString().slice(0, 10)); return Math.max(0, k); })(), t = DATES.slice(i0), y = PX[i].slice(i0);
+    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === SP))); };
+  $$("#sp button").forEach((b) => b.addEventListener("click", () => { SP = +b.dataset.p; disegna(); })); disegna(); $("#ovl-x").onclick = chiudi; $("#ovl-x").focus(); $("#ovl").scrollTop = 0;
+}
+function chiudi() { $("#ovl").hidden = true; document.body.style.overflow = ""; if (FOC && FOC.focus && document.contains(FOC)) FOC.focus(); }
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#ovl").hidden) chiudi(); });
+$("#ovl").addEventListener("click", (e) => { if (e.target === $("#ovl")) chiudi(); });
+document.addEventListener("click", (e) => { const b = e.target.closest(".flink"); if (b) apri(+b.dataset.f); });
+
+/* ---------- vincoli ---------- */
+function disegnaVincoli() {
+  const v = ST.vinc, r = (id, nome, mn, mx, kind) => `<div class="r"><span>${nome}</span><input type="number" min="0" max="100" step="1" data-v="${kind}" data-id="${id}" data-b="min" value="${mn}" aria-label="Minimo ${nome}"><input type="number" min="0" max="100" step="1" data-v="${kind}" data-id="${id}" data-b="max" value="${mx}" aria-label="Massimo ${nome}"></div>`;
+  $("#vinc").innerHTML = `<div class="r"><span class="h" style="text-align:left">Per fondo (%)</span><span class="h">min</span><span class="h">max</span></div>` + F.map((f) => r(f.s, f.s, v.fondi[f.s].min, v.fondi[f.s].max, "f")).join("") + `<div class="r"><span class="h" style="text-align:left">Per classe (%)</span><span class="h">min</span><span class="h">max</span></div>` + CLASSI.map((c) => r(c, CNOME[c], v.classi[c].min, v.classi[c].max, "c")).join("");
+  $("#prud").checked = !!ST.prud;
+}
+let tf = null; const richiediFrontiera = () => { clearTimeout(tf); tf = setTimeout(calcolaFrontiera, 350); };
+$("#vinc").addEventListener("input", (e) => { const t = e.target; if (!t.dataset.v) return; const x = +t.value; t.classList.toggle("bad", !(x >= 0 && x <= 100)); if (!(x >= 0 && x <= 100)) return; (t.dataset.v === "f" ? ST.vinc.fondi : ST.vinc.classi)[t.dataset.id][t.dataset.b] = x; salva(); richiediFrontiera(); });
+$("#vreset").onclick = () => { ST.vinc = vincDef(); salva(); disegnaVincoli(); richiediFrontiera(); };
+$("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFrontiera(); };
+
+/* ---------- eventi dell'interfaccia ---------- */
+let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaRisPos(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); $("#export").value = JSON.stringify({ versione: 1, lots: ST.lots }); };
+const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
+const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
+$("#pos").addEventListener("input", (e) => { const inp = e.target, lot = inp.closest(".lot"); if (!lot) return; const s = inp.closest(".fcard").dataset.s, k = +lot.dataset.k, c = inp.dataset.c; ST.lots[s][k][c] = inp.value; ST.esempio = false; inp.classList.toggle("bad", c === "q" && inp.value !== "" && !(+inp.value > 0)); salva(); aggiornaRitardo(); });
+$("#pos").addEventListener("click", (e) => { const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"); if (add) { ST.lots[add.dataset.add].push({ q: "", d: DATES[DATES.length - 1], p: "" }); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); const rr = $$(`#lots-${add.dataset.add} .lot`); if (rr.length) rr[rr.length - 1].querySelector("input").focus(); } if (del) { const s = del.closest(".fcard").dataset.s; ST.lots[s].splice(+del.dataset.del, 1); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); } });
+$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
+$$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = +b.dataset.p; ST.periodo = PERIODO; salva(); disegnaStorici(); }));
+$("#copia").onclick = async () => { const t = $("#export"); try { await navigator.clipboard.writeText(t.value); $("#exstato").textContent = "Copiato."; } catch (e) { t.select(); $("#exstato").textContent = "Selezionato: premi Ctrl+C."; } };
+$("#importa").onclick = () => { try { const o = JSON.parse($("#export").value); if (!o || !o.lots) throw 0; const L = {}; F.forEach((f) => { L[f.s] = (Array.isArray(o.lots[f.s]) ? o.lots[f.s] : []).map((x) => ({ q: x.q ?? "", d: String(x.d || "").slice(0, 10), p: x.p ?? "" })); }); ST.lots = L; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#exstato").textContent = "Importato."; } catch (e) { $("#exstato").textContent = "Il testo non è valido."; } };
+let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
+
+/* ---------- prezzi aggiornati: programma locale oppure archivio della pagina ---------- */
+const stato = (t, err) => { const e = $("#stato"); e.textContent = t; e.classList.toggle("err", !!err); };
+let ULTIMO = null, MODO = null, DB = null;
+function ricevi(d) {
+  if (!d || !d.prezzi || d.at === ULTIMO) return; ULTIMO = d.at; LIVE = d; costruisci(); aggiornaSubito(); richiediFrontiera();
+  const n = Object.keys(d.prezzi).length, av = d.avvisi && d.avvisi.length, quando = new Date(d.at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+  if (!(d.risposte ?? n)) { stato("Alle " + quando + " non sono riuscito a scaricare i prezzi" + (av ? ": " + d.avvisi.join("; ") : ".") + " Restano i prezzi del " + dataIt(BASE) + ".", true); return; }
+  if (!n) { stato("Scaricato alle " + quando + " da " + d.fonte + ": nessuna quotazione dopo il " + dataIt(BASE) + " (borsa chiusa o seduta non ancora iniziata)." + (av ? " Avvisi: " + d.avvisi.join("; ") : ""), !!av); return; }
+  stato("Aggiornato alle " + quando + " · prezzi del " + dataIt(DATES[DATES.length - 1]) + ". Fonte: " + d.fonte + "." + (av ? " Avvisi: " + d.avvisi.join("; ") : ""), !!av);
+}
+async function leggi() { try { const r = await fetch("/api/prezzi", { cache: "no-store" }); if (!r.ok) throw 0; ricevi(await r.json()); } catch (e) { stato("Il programma locale non risponde: restano i prezzi del " + dataIt(BASE) + ". Riavvia avvia.cmd.", true); } }
+async function avvia() {
+  caricaPortafogli();
+  if (VUOTO) { stato("Nessun portafoglio caricato."); return; }
+  stato("Prezzi di riferimento: chiusura del " + dataIt(BASE) + ".");
+  try { const r = await fetch("/api/prezzi", { cache: "no-store" }); if (r.ok) { const j = await r.json(); if (j && j.prezzi) { MODO = "locale"; ricevi(j); setInterval(leggi, 15000); } } } catch (e) {}
+  if (!MODO && window.claude && window.claude.use) { try { DB = await window.claude.use("db"); } catch (e) { DB = null; } if (DB) { MODO = "pagina"; DB.doc("mercato/ultimo").onSnapshot((s) => { if (s.exists) ricevi(s.data()); }, () => {}); } }
+  if (MODO) $("#aggiorna").hidden = false; else stato("Prezzi di riferimento: chiusura del " + dataIt(BASE) + ". Per prezzi aggiornati avvia avvia.cmd.");
+}
+/* finestra di scarico: clessidra, avanzamento e testo che scorre con i dati man mano che arrivano */
+const SC = { q: [], timer: null, fine: null, aperta: false, k: 0, n: 0 };
+const scTesto = (id, s) => { $(id).textContent = s; };
+const scRiga = (html, c = "") => { SC.q.push([html, c]); if (!SC.timer) SC.timer = setInterval(scPasso, 30); };
+function scPasso() {
+  const log = $("#scar-log"), n = Math.max(1, Math.ceil(SC.q.length / 24));  // più righe in coda, più va veloce: la finestra non resta mai molto indietro
+  for (let i = 0; i < n && SC.q.length; i++) { const [h, c] = SC.q.shift(), d = document.createElement("div"); d.className = "ln " + c; d.innerHTML = h; log.appendChild(d); }
+  while (log.childElementCount > 120) log.firstChild.remove();
+  log.scrollTop = log.scrollHeight;
+  if (!SC.q.length) { clearInterval(SC.timer); SC.timer = null; if (SC.fine) { const f = SC.fine; SC.fine = null; f(); } }
+}
+const scSvuotata = () => new Promise((ok) => { if (!SC.q.length) ok(); else SC.fine = ok; });
+function scApri(titolo) {
+  SC.q = []; SC.k = 0; SC.n = 0; clearInterval(SC.timer); SC.timer = null; SC.aperta = true; $("#scar-log").innerHTML = ""; $("#scar-b").style.width = "0";
+  $("#scar-cl").setAttribute("class", "clessidra"); $("#scar-foot").hidden = true; scTesto("#scar-t", titolo); scTesto("#scar-s", "");
+  $("#scar").hidden = false; document.body.style.overflow = "hidden";
+}
+function scChiudi() { SC.aperta = false; $("#scar").hidden = true; document.body.style.overflow = ""; $("#aggiorna").focus(); }
+$("#scar-x").onclick = scChiudi;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && SC.aperta && !$("#scar-foot").hidden) scChiudi(); });
+const scPrezzo = (p) => nf(p, p < 20 ? 3 : 2) + " €";
+function scDati(s, isin, fonte, righe) {
+  const rr = righe.slice().sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  rr.forEach(([d, p]) => scRiga(`<b>${esc(s)}</b> ${esc(isin || "")} ${dataIt(d)} ${scPrezzo(p)}${fonte ? " · " + esc(fonte) : ""}`));
+}
+function scEvento(ev) {
+  if (ev.t === "inizio") { SC.n = ev.n; scTesto("#scar-s", "Collegamento alle fonti dei prezzi…"); scRiga("Avvio dello scarico di " + ev.n + " titoli", "t"); }
+  else if (ev.t === "riuso") { scRiga("Scarico fatto pochi secondi fa: riuso quei prezzi", "t"); }
+  else if (ev.t === "titolo") { SC.k = ev.k; scTesto("#scar-s", ev.s + " · titolo " + ev.k + " di " + ev.n); $("#scar-b").style.width = ((ev.k - 1) / ev.n) * 100 + "%"; scRiga("▸ " + esc(ev.s) + " · " + esc(ev.isin) + " — richiesta in corso", "t"); }
+  else if (ev.t === "dati") { $("#scar-b").style.width = (SC.k / (SC.n || 1)) * 100 + "%"; scDati(ev.s, ev.isin, ev.fonte, ev.righe); }
+  else if (ev.t === "avviso" || ev.t === "errore") { scRiga("⚠ " + esc(ev.testo), "w"); }
+  else if (ev.t === "salvato") { scRiga("Prezzi salvati", "ok"); }
+  else if (ev.t === "testo") { scRiga(esc(ev.testo), ev.c || ""); }
+}
+async function scFlusso(url, corpo, finali) {  // POST con risposta a flusso: una riga JSON per passo; ritorna l'evento finale (uno di `finali`)
+  const r = await fetch(url, { method: "POST", cache: "no-store", headers: corpo ? { "Content-Type": "application/json" } : {}, body: corpo ? JSON.stringify(corpo) : undefined }); if (!r.ok) throw new Error("HTTP " + r.status);
+  let fine = null, visti = 0; const riga = (l) => { if (!l.trim()) return; const ev = JSON.parse(l); visti++; if (finali.includes(ev.t)) fine = ev; else if (!ev.t && ev.prezzi) fine = { t: "fine", dati: ev }; else scEvento(ev); };  // ev.prezzi senza t: risposta del programma vecchio
+  if (r.body && r.body.getReader) { const rd = r.body.getReader(), dec = new TextDecoder(); let buf = ""; for (;;) { const { done, value } = await rd.read(); if (done) break; buf += dec.decode(value, { stream: true }); let i; while ((i = buf.indexOf("\n")) >= 0) { riga(buf.slice(0, i)); buf = buf.slice(i + 1); } } riga(buf); }
+  else (await r.text()).split("\n").forEach(riga);
+  if (!fine) throw new Error(visti ? "il programma si è fermato a metà: riavvia avvia.cmd e riprova" : "risposta vuota dal programma: chiudilo e rilancia avvia.cmd");
+  return fine;
+}
+const scScarica = async () => (await scFlusso("/api/aggiorna", null, ["fine"])).dati;  // programma locale: prezzi aggiornati
+async function scArchivio() {  // pagina senza programma locale: legge l'archivio e ne mostra il contenuto
+  scTesto("#scar-s", "Lettura dell'archivio della pagina…"); scRiga("Lettura dell'archivio della pagina", "t");
+  const s = await DB.doc("mercato/ultimo").get(); if (!s.exists) return null; const d = s.data();
+  F.forEach((f) => { const righe = Object.keys(d.storico || {}).sort().map((g) => [g, d.storico[g][f.s]]).filter((x) => x[1] > 0); if (!righe.length && d.prezzi && d.prezzi[f.s]) righe.push([d.prezzi[f.s].d, d.prezzi[f.s].p]); if (righe.length) { scRiga("▸ " + esc(f.s) + " · " + esc(f.isin), "t"); scDati(f.s, f.isin, "", righe); } });
+  return d;
+}
+$("#aggiorna").addEventListener("click", async () => {
+  const b = $("#aggiorna"); b.disabled = true; scApri("Scarico i prezzi…"); let d = null, errore = "";
+  try { d = MODO === "locale" ? await scScarica() : DB ? await scArchivio() : null; } catch (e) { errore = e.message || "errore"; }
+  await scSvuotata();
+  if (d) {
+    ULTIMO = null; ricevi(d); const n = Object.keys(d.prezzi || {}).length, av = d.avvisi && d.avvisi.length; $("#scar-b").style.width = "100%";
+    if (!(d.risposte ?? n)) { errore = "nessun prezzo scaricato" + (av ? ": " + d.avvisi.join("; ") : ""); d = null; }
+    else { $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Prezzi aggiornati"); scTesto("#scar-s", n ? "Prezzi al " + dataIt(DATES[DATES.length - 1]) + (av ? " · con avvisi" : "") : "Nessuna quotazione dopo il " + dataIt(BASE) + " (borsa chiusa?)"); scRiga("Fatto.", "ok"); await scSvuotata(); if (av) $("#scar-foot").hidden = false; else await new Promise((r) => setTimeout(r, 1100)); }
+  } else if (!errore) errore = "nessun prezzo più recente nell'archivio della pagina: chiedi a Claude in chat di aggiornarli";
+  if (errore) { $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Scarico non riuscito"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); stato("Non sono riuscito a scaricare i prezzi (" + errore + "). Controlla che il programma sia in esecuzione.", true); $("#scar-foot").hidden = false; }
+  if ($("#scar-foot").hidden) scChiudi(); else $("#scar-x").focus();
+  b.disabled = false;
+});
+
+$("#imp").value = IMPORTO();
+$("#imp").addEventListener("input", (e) => { const x = +e.target.value; e.target.classList.toggle("bad", !(x > 0)); if (!(x > 0)) return; ST.importo = x; salva(); aggiornaRitardo(); });
+$("#imp-uso").onclick = () => {
+  const ha = !ST.esempio && F.some((f) => ST.lots[f.s].some((l) => +l.q > 0));
+  if (ha && !confirm("Sostituisco gli acquisti che hai inserito con questa ripartizione?")) return;
+  const imp = IMPORTO(), d = DATES[DATES.length - 1]; F.forEach((f, i) => { const n = Math.floor((imp * f.w) / PX[i][PX[i].length - 1]); ST.lots[f.s] = n > 0 ? [{ q: n, d, p: "" }] : []; });
+  ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#imp-msg").textContent = "";
+};
+$("#imp-salva").onclick = () => apriSalva(pesiPiano(), statistiche(pesiPiano()), "Composizione del portafoglio", "imp-msg");
+
+/* ---------- definizione JSON: carica, scarica i dati dei titoli, crea nome_Vn.html ---------- */
+$$(".js-carica").forEach((b) => b.addEventListener("click", () => $("#file-json").click()));
+$("#file-json").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  let def; try { def = JSON.parse(await f.text()); } catch (er) { stato("Il file non è un JSON valido.", true); return; }
+  if (!def || typeof def !== "object" || !Array.isArray(def.titoli)) { stato("Il JSON non ha la forma attesa: servono nome, versione, descrizione e l'elenco «titoli» con isin e peso.", true); return; }
+  if (!PF.server) { stato("Per scaricare i dati dei titoli serve il programma locale: avvia avvia.cmd e apri la pagina da lì.", true); return; }
+  creaDaDefinizione(def);
+});
+async function creaDaDefinizione(def) {
+  scApri("Creo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
+  try { ev = await scFlusso("/api/crea", def, ["creato", "esiste", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  await scSvuotata();
+  if (ev && ev.t === "creato") {
+    $("#scar-b").style.width = "100%"; $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Portafoglio creato"); scTesto("#scar-s", ev.file); scRiga("Creato " + esc(ev.file), "ok"); await scSvuotata();
+    await new Promise((r) => setTimeout(r, 1100)); location.href = "/" + encodeURIComponent(ev.file); return;
+  }
+  if (ev && ev.t === "esiste") { scChiudi(); if (confirm(ev.testo + "\nVuoi aprirlo?")) location.href = "/" + encodeURIComponent(ev.file); return; }
+  errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Portafoglio non creato"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();
+}
+$("#scarica-json").addEventListener("click", () => {  // la definizione minimale del portafoglio aperto
+  const def = { nome: NOMEPF, versione: VERS, descrizione: META.descrizione || "", valore: IMPORTO(), titoli: F.map((f) => ({ isin: f.isin, peso: Math.round(f.w * 10000) / 100 })) };
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(def, null, 2) + "\n"], { type: "application/json" })); a.download = NOMEPF + "_" + VERS + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+
+/* ---------- portafogli: elenco nella cartella del programma, scelta e salvataggio di uno nuovo ---------- */
+const PF = { server: false, lista: [], file: decodeURIComponent(location.pathname.split("/").pop() || "") };
+const nVers = (v) => +String(v).replace(/^V/i, "") || 0;
+async function caricaPortafogli() {
+  try {
+    const r = await fetch("/api/portafogli", { cache: "no-store" }); if (!r.ok) throw 0; const j = await r.json();
+    PF.server = true; PF.lista = j.lista || []; if (!/\.html$/i.test(PF.file)) PF.file = j.ultimo || "";
+  } catch (e) { PF.server = false; return; }
+  const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""}>${esc(x.nome)} · ${esc(x.versione)}${x.descrizione ? " — " + esc(x.descrizione.length > 60 ? x.descrizione.slice(0, 58) + "…" : x.descrizione) : ""}</option>`).join("");
+  $("#pfsel-w").hidden = PF.lista.length === 0;
+}
+$("#pfsel").addEventListener("change", (e) => { if (e.target.value && e.target.value !== PF.file) location.href = "/" + encodeURIComponent(e.target.value); });
+
+let SV = { w: null, tocca: false, opener: null };
+const svNome = () => $("#sv-n").value.trim(), svVer = () => parseInt($("#sv-ver").value, 10);
+function svProponi() {  // versione successiva per il nome scritto
+  const n = svNome(), vs = PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione)); if (!SV.tocca) $("#sv-ver").value = (vs.length ? Math.max(...vs) : 0) + 1;
+}
+function svControlla(mostra) {
+  const n = svNome(), v = svVer(), d = $("#sv-d").value.trim(); let err = "";
+  if (!/^[A-Za-z0-9]{1,30}$/.test(n)) err = n ? "Il nome può avere solo lettere e cifre, senza spazi né simboli." : "Scrivi il nome del portafoglio.";
+  else if (!(v >= 1 && v <= 999)) err = "La versione deve essere un numero da 1 a 999.";
+  else if (!d) err = "Scrivi una breve descrizione.";
+  else if (PF.lista.some((x) => x.file === n + "_V" + v + ".html")) err = "Esiste già " + n + "_V" + v + ".html: scegli un'altra versione.";
+  $("#sv-file").textContent = /^[A-Za-z0-9]{1,30}$/.test(n) && v >= 1 ? n + "_V" + v + ".html" : "—";
+  $("#sv-n").classList.toggle("bad", !!n && !/^[A-Za-z0-9]{1,30}$/.test(n));
+  if (mostra) $("#sv-err").textContent = err; else if (!err) $("#sv-err").textContent = "";
+  return !err;
+}
+function apriSalva(w, s, tit, msg = "sv-nosrv") {
+  if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
+  $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement };
+  $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
+  $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
+  const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
+  $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + pct(az, 0) + " azioni, " + pct(ob, 0) + " obbligazioni, " + pct(oro, 0) + " oro. Rischio " + pct(s.vol) + ", rendimento storico " + pct(s.cagr) + ".";
+  $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
+  $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
+}
+function chiudiSalva() { $("#salva").hidden = true; document.body.style.overflow = ""; const o = SV.opener && document.contains(SV.opener) ? SV.opener : $("#imp-salva"); if (o) o.focus(); }
+$("#sv-x").onclick = $("#sv-ann").onclick = $("#sv-resta").onclick = chiudiSalva;
+$("#salva").addEventListener("mousedown", (e) => { if (e.target.id === "salva") chiudiSalva(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#salva").hidden) chiudiSalva(); });
+$("#sv-n").addEventListener("input", () => { svProponi(); svControlla(false); });
+$("#sv-ver").addEventListener("input", () => { SV.tocca = true; svControlla(false); });
+$("#sv-d").addEventListener("input", () => svControlla(false));
+$("#sv-f").addEventListener("submit", async (e) => {
+  e.preventDefault(); if (!svControlla(true)) return;
+  const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
+  try {
+    const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
+    $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella del programma. Lo trovi anche nel menu «Portafoglio» in alto.`;
+    $("#sv-apri").onclick = () => { location.href = "/" + encodeURIComponent(j.file); }; $("#sv-apri").focus(); caricaPortafogli();
+  } catch (er) { $("#sv-err").textContent = er.message || "Non sono riuscito a salvare."; }
+  b.disabled = false;
+});
+
+/* ---------- avvio ---------- */
+if (!VUOTO) { costruisci(); disegnaVincoli(); disegnaPosizioni(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }
+avvia();
+</script>

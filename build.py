@@ -25,15 +25,18 @@ import threading
 import time
 import urllib.request
 import webbrowser
+
+import fonti
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+MODELLO = "portafoglio.html"  # il modello: stesso codice di ogni portafoglio, senza dati
 HTML = "francesca.html"  # portafoglio aperto la prima volta, se nessun altro è stato aperto prima
 NOME = "myMoney"  # nome del programma e della sua cartella dati: non è quello di un portafoglio
 NOME_VECCHIO = "francesca"  # cartella dati delle versioni precedenti: se c'è, se ne copia il contenuto
 NOME_PF = re.compile(r"^[A-Za-z0-9]{1,30}$")  # nome di un portafoglio: solo lettere e cifre
 FILE_PF = re.compile(r"^[A-Za-z0-9_-]{1,80}\.html$")
 RE_DATI = re.compile(r'(<script type="application/json" id="dati">)(.*?)(</script>)', re.S)
-RE_META = re.compile(r'<script type="application/json" id="dati">\{"meta":(\{[^{}]*\})', re.S)
+RE_META = re.compile(r'<script type="application/json" id="dati">\{"meta":')  # il primo oggetto dei dati è «meta»
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}
 FONTE_YAHOO = "Yahoo Finance (Borsa Italiana)"
 FONTE_JETF = "justETF (quotazione di riferimento: può differire di qualche centesimo da Borsa Italiana)"
@@ -64,7 +67,7 @@ def carica_config(percorso):
     if not m:
         raise RuntimeError("Nella pagina non trovo i dati dei fondi.")
     d = json.loads(m.group(1))
-    return {f["s"]: {"isin": f["isin"], "sym": f["sym"], "p0": float(f["p0"])} for f in d["funds"]}, d["meta"]["base"]
+    return {f["s"]: {"isin": f["isin"], "sym": f.get("sym") or "", "p0": float(f["p0"])} for f in d["funds"]}, d["meta"].get("base") or ""
 
 
 # ---- orario di borsa
@@ -115,8 +118,8 @@ def yahoo(simbolo):
 
 
 def justetf(isin):
-    q = get(f"https://www.justetf.com/api/etfs/{isin}/quote?locale=it&currency=EUR&isin={isin}")
-    return [(q["latestQuoteDate"], round(float(q["latestQuote"]["raw"]), 4))]
+    """[(data, prezzo in euro)] degli ultimi giorni feriali da justETF; l'ultimo è il valore in corso."""
+    return fonti.serie(isin, dal=(datetime.date.today() - datetime.timedelta(days=12)).isoformat())
 
 
 class Prezzi:
@@ -134,6 +137,14 @@ class Prezzi:
                 self.dati.update(d)
         except Exception:
             pass
+
+    def aggiungi(self, titoli, base):
+        """Titoli di un portafoglio nuovo: da ora si scaricano anche i loro prezzi."""
+        with self.scarico:
+            for sigla, t in titoli.items():
+                self.titoli.setdefault(sigla, t)
+            if base and (not self.base or base < self.base):
+                self.base = base
 
     def leggi(self):
         with self.lock:
@@ -157,7 +168,7 @@ class Prezzi:
             for k, (sigla, t) in enumerate(self.titoli.items(), 1):
                 serie, fonte = None, ""
                 say(t="titolo", s=sigla, isin=t["isin"], k=k, n=len(self.titoli))
-                if yahoo_ok:
+                if yahoo_ok and t.get("sym"):  # senza simbolo di Borsa Italiana si va direttamente da justETF
                     try:
                         serie = self.yahoo(t["sym"])
                         fonti.add(FONTE_YAHOO)
@@ -213,12 +224,75 @@ def _num_versione(v):
     return int(m.group(1)) if m else 0
 
 
+class Esiste(Exception):
+    """Il portafoglio (stesso nome e versione) c'è già: .file è il suo file."""
+
+    def __init__(self, file, testo):
+        super().__init__(testo)
+        self.file = file
+
+
+def valida_definizione(d):
+    """Controlla il JSON minimale di un portafoglio. Ritorna (nome, numero versione, descrizione, valore, [(isin, peso 0-1)]); ValueError con un messaggio chiaro se non va."""
+    if not isinstance(d, dict):
+        raise ValueError("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.")
+    nome = d.get("nome")
+    if not isinstance(nome, str) or not NOME_PF.match(nome):
+        raise ValueError("«nome»: solo lettere e cifre, niente spazi né simboli, al massimo 30 caratteri.")
+    try:
+        v = int(str(d.get("versione")).strip().lstrip("Vv"))
+    except ValueError:
+        v = 0
+    if not 1 <= v <= 999:
+        raise ValueError("«versione»: V1, V2, V3… (un numero da 1 a 999).")
+    descrizione = " ".join(str(d.get("descrizione") or "").split())
+    if not descrizione:
+        raise ValueError("«descrizione»: scrivi una breve descrizione.")
+    if len(descrizione) > 300:
+        raise ValueError("«descrizione»: al massimo 300 caratteri.")
+    valore = d.get("valore")
+    if valore is None:
+        amount = 10000
+    else:
+        try:
+            amount = round(float(valore), 2)
+        except (TypeError, ValueError):
+            raise ValueError("«valore»: un numero in euro (facoltativo).")
+        if not 100 <= amount <= 1e9:
+            raise ValueError("«valore»: tra 100 e 1.000.000.000 euro.")
+        amount = int(amount) if amount == int(amount) else amount
+    tit = d.get("titoli")
+    if not isinstance(tit, list) or not 1 <= len(tit) <= 30:
+        raise ValueError("«titoli»: da 1 a 30 elementi {\"isin\": …, \"peso\": …}.")
+    visti, righe = set(), []
+    for x in tit:
+        isin = str(x.get("isin") or "").strip().upper() if isinstance(x, dict) else ""
+        if not fonti.isin_valido(isin):
+            raise ValueError(f"ISIN non valido: «{isin or x}».")
+        if isin in visti:
+            raise ValueError(f"ISIN ripetuto: {isin}.")
+        visti.add(isin)
+        try:
+            peso = float(x.get("peso"))
+        except (TypeError, ValueError):
+            raise ValueError(f"{isin}: «peso» deve essere un numero (percentuale).")
+        if not 0 < peso <= 100:
+            raise ValueError(f"{isin}: il peso deve essere maggiore di 0 e al massimo 100.")
+        righe.append((isin, peso))
+    tot = sum(p for _, p in righe)
+    if abs(tot - 100) > 0.5:
+        raise ValueError(f"I pesi danno {round(tot, 2)}%: devono dare 100%.")
+    return nome, v, descrizione, amount, [(i, round(p / tot, 4)) for i, p in righe]
+
+
 class Portafogli:
     """Elenco dei file HTML che sono portafogli, ultimo aperto (ricordato nella cartella dell'utente) e salvataggio di un nuovo portafoglio."""
 
-    def __init__(self, cartella, file_ultimo, predefinito=HTML):
+    def __init__(self, cartella, file_ultimo, predefinito=HTML, dati=None):
         self.dir, self.file_ultimo, self.predefinito = cartella, file_ultimo, predefinito
+        self.cache = os.path.join(dati or os.path.dirname(file_ultimo), "titoli")  # una scheda JSON per ISIN già scaricato
         self.lock = threading.Lock()
+        self.prezzi = None  # impostato da avvia_app: riceve i titoli dei portafogli nuovi
 
     def percorso(self, nomefile):
         return os.path.join(self.dir, nomefile)
@@ -229,13 +303,16 @@ class Portafogli:
             return None
         try:
             with open(self.percorso(nomefile), encoding="utf-8") as fh:
-                m = RE_META.search(fh.read())
+                testo = fh.read()
+            m = RE_META.search(testo)
             if not m:
                 return None
-            meta = json.loads(m.group(1))
+            meta = json.JSONDecoder().raw_decode(testo, m.end())[0]  # solo l'oggetto «meta», non tutti i dati
         except (OSError, ValueError):
             return None
-        return {"file": nomefile, "nome": meta.get("nome") or nomefile[:-5], "versione": meta.get("versione") or "V1", "descrizione": meta.get("descrizione") or ""}
+        if not isinstance(meta, dict):
+            return None
+        return {"file": nomefile, "nome": meta.get("nome") or nomefile[:-5], "versione": "modello" if meta.get("modello") else meta.get("versione") or "V1", "descrizione": meta.get("descrizione") or ""}
 
     def elenco(self):
         try:
@@ -264,6 +341,193 @@ class Portafogli:
                 json.dump({"file": nomefile}, fh)
         except OSError:
             pass
+
+    # ---- pagine: il codice è sempre quello del modello, i dati sono quelli del portafoglio
+    def _leggi(self, nomefile):
+        with open(self.percorso(nomefile), encoding="utf-8") as fh:
+            return fh.read()
+
+    def pagina(self, corpo_json, nome, ripiego=None):
+        """Testo HTML del modello con `corpo_json` al posto dei dati (se il modello manca, il codice è quello di `ripiego`)."""
+        try:
+            base = self._leggi(MODELLO)
+        except OSError:
+            base = ripiego
+        if not base or not RE_DATI.search(base):
+            raise ValueError(f"Manca il modello {MODELLO}.")
+        m = RE_DATI.search(base)
+        t = base[:m.start()] + m.group(1) + corpo_json + m.group(3) + base[m.end():]
+        return re.sub(r"<title>.*?</title>", lambda _: f"<title>{html.escape(nome)}</title>", t, count=1, flags=re.S)
+
+    def rigenera(self):
+        """Riscrive ogni portafoglio con il codice attuale del modello, tenendo i suoi dati. Ritorna i file riscritti."""
+        fatti = []
+        for i in self.elenco():
+            if i["versione"] == "modello":
+                continue
+            t = self._leggi(i["file"])
+            nuovo = self.pagina(RE_DATI.search(t).group(2), i["nome"], t)
+            if nuovo != t:
+                with open(self.percorso(i["file"]), "w", encoding="utf-8") as fh:
+                    fh.write(nuovo)
+                fatti.append(i["file"])
+        return fatti
+
+    def titoli_noti(self):
+        """(titoli per lo scarico dei prezzi, data base) di tutti i portafogli della cartella."""
+        titoli, base = {}, ""
+        for i in self.elenco():
+            if i["versione"] == "modello":
+                continue
+            try:
+                tt, b = carica_config(self.percorso(i["file"]))
+            except (OSError, ValueError, RuntimeError, KeyError):
+                continue
+            for k, v in tt.items():
+                titoli.setdefault(k, v)
+            base = b if not base or (b and b < base) else base
+        return titoli, base
+
+    # ---- dati dei titoli: dai portafogli già presenti, dalla cache o da justETF
+    def _semi(self):
+        """{isin: (record del fondo, serie [(data, prezzo)], file)} dei portafogli già creati: dati completi, con le composizioni."""
+        out = {}
+        for i in self.elenco():
+            if i["versione"] == "modello":
+                continue
+            try:
+                d = json.loads(RE_DATI.search(self._leggi(i["file"])).group(2))
+            except (OSError, ValueError, AttributeError):
+                continue
+            for f in d.get("funds", []):
+                px = (d.get("px") or {}).get(f["s"])
+                if px and len(px) == len(d.get("dates", [])) and f["isin"] not in out:
+                    out[f["isin"]] = (f, list(zip(d["dates"], px)), i["file"])
+        return out
+
+    def _scheda(self, isin):
+        try:
+            with open(os.path.join(self.cache, isin + ".json"), encoding="utf-8") as fh:
+                return json.load(fh)
+        except (OSError, ValueError):
+            return None
+
+    def _salva_scheda(self, isin, scheda):
+        try:
+            os.makedirs(self.cache, exist_ok=True)
+            tmp = os.path.join(self.cache, isin + ".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump(scheda, fh, ensure_ascii=False)
+            os.replace(tmp, os.path.join(self.cache, isin + ".json"))
+        except OSError:
+            pass
+
+    def _sigle_usate(self, semi):
+        usate = {f["s"] for f, _, _ in semi.values()}
+        try:
+            for n in os.listdir(self.cache):
+                sc = self._scheda(n[:-5]) if n.endswith(".json") else None
+                if sc and sc.get("fondo"):
+                    usate.add(sc["fondo"]["s"])
+        except OSError:
+            pass
+        return usate
+
+    def titolo(self, isin, semi, usate, say):
+        """(record del fondo, serie) di un ISIN."""
+        oggi = datetime.date.today().isoformat()
+        if isin in semi:
+            f, serie, file = semi[isin]
+            say(t="testo", testo=f"{isin}: già nei dati di {file} ({len(serie)} prezzi, fino al {serie[-1][0]})")
+            return dict(f), serie
+        sc = self._scheda(isin)
+        if sc and sc.get("scaricato") == oggi:
+            say(t="testo", testo=f"{isin}: dati scaricati oggi, li riuso ({len(sc['serie'])} prezzi)")
+            return sc["fondo"], [tuple(x) for x in sc["serie"]]
+        if sc and sc.get("fondo"):  # profilo già noto: si aggiorna solo la serie dei prezzi
+            fondo = sc["fondo"]
+            say(t="testo", testo=f"{isin}: profilo già noto ({fondo['name']}), aggiorno i prezzi")
+        else:
+            say(t="testo", testo=f"{isin}: scarico la scheda del fondo da justETF…")
+            p = fonti.profilo(isin)
+            sigla, k = fonti.sigla_proposta(p), 1
+            base_sigla = sigla
+            while sigla in usate:
+                k += 1
+                sigla = f"{base_sigla[:6]}{k}"
+            usate.add(sigla)
+            fondo = fonti.costruisci_fondo(p, sigla)
+            say(t="testo", testo=f"{fondo['name']} · {fondo['tipo']} · TER {fondo['ter']}% · patrimonio {fondo['aum']} mln €", c="t")
+        say(t="testo", testo=f"{isin}: scarico lo storico dei prezzi in euro…")
+        serie = fonti.serie(isin)
+        self._salva_scheda(isin, {"scaricato": oggi, "fondo": fondo, "serie": serie})
+        return fondo, serie
+
+    def crea(self, definizione, avanza=None):
+        """Crea nome_Vn.html dalla definizione JSON {nome, versione, descrizione, valore?, titoli: [{isin, peso}]} scaricando i dati che mancano. Ritorna info del file."""
+        def say(**ev):
+            if avanza:
+                try:
+                    avanza(ev)
+                except Exception:
+                    pass
+        nome, v, descrizione, amount, pesi = valida_definizione(definizione)
+        versione = f"V{v}"
+        for i in self.elenco():
+            if i["nome"] == nome and i["versione"] == versione:
+                raise Esiste(i["file"], f"Esiste già il portafoglio {nome} {versione} ({i['file']}). Cambia la versione nel JSON per crearne uno nuovo.")
+        nuovo = f"{nome}_{versione}.html"
+        if os.path.exists(self.percorso(nuovo)):
+            raise Esiste(nuovo, f"Esiste già il file {nuovo}. Cambia la versione nel JSON per crearne uno nuovo.")
+        say(t="inizio", n=len(pesi))
+        semi = self._semi()
+        usate = self._sigle_usate(semi)
+        fondi, serie_tot = [], {}
+        for k, (isin, w) in enumerate(pesi, 1):
+            say(t="titolo", s=isin, isin=isin, k=k, n=len(pesi))
+            try:
+                f, serie = self.titolo(isin, semi, usate, say)
+            except (LookupError, RuntimeError) as e:
+                raise ValueError(f"{isin}: {e}")
+            if f["s"] in {x["s"] for x in fondi}:
+                raise ValueError(f"{isin}: sigla {f['s']} già usata nel portafoglio")
+            f["w"] = w
+            fondi.append(f)
+            serie_tot[f["s"]] = serie
+            say(t="dati", s=f["s"], isin=isin, fonte="justETF", righe=[list(x) for x in serie[-40:]])
+        # calendario comune: dal più recente degli inizi al più vecchio delle fini; i giorni mancanti ripetono l'ultimo prezzo
+        inizio = max(x[0][0] for x in serie_tot.values())
+        fine = min(x[-1][0] for x in serie_tot.values())
+        date = sorted({d for x in serie_tot.values() for d, _ in x if inizio <= d <= fine})
+        if len(date) < 60:
+            raise ValueError(f"Lo storico in comune è troppo breve ({len(date)} giorni, dal {inizio} al {fine}): togli il titolo più recente.")
+        px = {}
+        for sigla, x in serie_tot.items():
+            ultimo, j, col = None, 0, []
+            xs = sorted(x)
+            for d in date:
+                while j < len(xs) and xs[j][0] <= d:
+                    ultimo = xs[j][1]
+                    j += 1
+                col.append(ultimo)
+            px[sigla] = col
+        for f in fondi:
+            f["p0"] = px[f["s"]][-1]
+            f["q0"] = int(amount * f["w"] / f["p0"])
+        meta = {"nome": nome, "versione": versione, "descrizione": descrizione, "chiave": f"pf-{nome}-{versione}", "base": date[-1], "from": date[0], "amount": amount, "rf": 0.02,
+                "creato": datetime.date.today().isoformat(), "origine": "json"}
+        corpo = json.dumps({"meta": meta, "funds": fondi, "dates": date, "px": px}, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+        testo = self.pagina(corpo, nome)
+        with self.lock:
+            try:
+                with open(self.percorso(nuovo), "x", encoding="utf-8") as fh:
+                    fh.write(testo)
+            except FileExistsError:
+                raise Esiste(nuovo, f"Esiste già il file {nuovo}.")
+        if self.prezzi is not None:
+            self.prezzi.aggiungi({f["s"]: {"isin": f["isin"], "sym": f.get("sym") or "", "p0": f["p0"]} for f in fondi}, date[-1])
+        say(t="salvato", n=len(fondi))
+        return self.info(nuovo)
 
     def salva(self, da, nome, versione, descrizione, pesi, importo=None):
         """Crea nome_V<n>.html partendo dal portafoglio `da` con i nuovi pesi. Ritorna info del nuovo file; ValueError con un messaggio per l'utente se qualcosa non va."""
@@ -314,8 +578,7 @@ class Portafogli:
         meta.update({k: x for k, x in d["meta"].items() if k not in meta})
         d["meta"] = meta
         corpo = json.dumps(d, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-        t = t[:m.start()] + m.group(1) + corpo + m.group(3) + t[m.end():]
-        t = re.sub(r"<title>.*?</title>", lambda _: f"<title>{html.escape(nome)}</title>", t, count=1, flags=re.S)
+        t = self.pagina(corpo, nome, t)
         with self.lock:
             try:
                 with open(self.percorso(nuovo), "x", encoding="utf-8") as fh:
@@ -399,23 +662,27 @@ def crea_server(prezzi, porta, portafogli):
                 except OSError as e:
                     return self.invia(500, {"errore": f"file non scritto: {e}"})
                 return self.invia(200, nuovo)
+            if percorso == "/api/crea":
+                n = int(self.headers.get("Content-Length") or 0)
+                if n > 65536:
+                    return self.invia(413, {"errore": "richiesta troppo grande"})
+                corpo = self.rfile.read(n)
+
+                def crea(riga):
+                    try:
+                        info = portafogli.crea(json.loads(corpo), riga)
+                    except Esiste as e:
+                        return riga({"t": "esiste", "file": e.file, "testo": str(e)})
+                    except (ValueError, LookupError, RuntimeError, OSError) as e:  # include i JSON non validi e gli errori di rete
+                        return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
+                    riga({"t": "creato", **info})
+
+                return self.flusso(crea)
             if percorso != "/api/aggiorna":
                 return self.invia(404, {"errore": "non trovato"})
             self.rfile.read(int(self.headers.get("Content-Length") or 0))
-            # risposta a flusso: una riga JSON per ogni passo dello scarico, l'ultima {"t": "fine", "dati": {...}}
-            self.send_response(200)
-            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("X-Content-Type-Options", "nosniff")
-            self.send_header("Connection", "close")
-            self.end_headers()
-            self.close_connection = True
 
-            def riga(ev):
-                self.wfile.write(json.dumps(ev, ensure_ascii=False).encode() + b"\n")
-                self.wfile.flush()
-
-            try:
+            def aggiorna(riga):
                 if time.time() - prezzi.ultimo_tentativo < 15:  # clic ravvicinati: si riusa l'ultimo scarico
                     riga({"t": "riuso"})
                     dati = prezzi.leggi()
@@ -431,8 +698,27 @@ def crea_server(prezzi, porta, portafogli):
                         dati["avvisi"] = list(dati.get("avvisi") or []) + [f"errore nello scarico: {e}"]
                         dati["risposte"] = 0
                 riga({"t": "fine", "dati": dati})
+
+            self.flusso(aggiorna)
+
+        def flusso(self, lavoro):
+            """Risposta a flusso: una riga JSON per ogni passo di `lavoro(riga)`; l'ultima riga è l'evento finale."""
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+
+            def riga(ev):
+                self.wfile.write(json.dumps(ev, ensure_ascii=False).encode() + b"\n")
+                self.wfile.flush()
+
+            try:
+                lavoro(riga)
             except (BrokenPipeError, ConnectionError):
-                pass  # la pagina ha chiuso la finestra: lo scarico è già salvato
+                pass  # la pagina ha chiuso la finestra: quello che era già salvato resta
 
     return ThreadingHTTPServer(("127.0.0.1", porta), H)
 
@@ -457,11 +743,16 @@ def avvia_app():
     ap.add_argument("--minuti", type=float, default=5, help="ogni quanti minuti scaricare con la borsa aperta (fuori orario ogni 60)")
     ap.add_argument("--porta", type=int, default=8800)
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--rigenera", action="store_true", help=f"riscrive i portafogli con il codice attuale di {MODELLO}, senza toccare i loro dati, ed esce")
     ap.add_argument("--file", help="apre questo portafoglio (file HTML nella cartella) invece dell'ultimo aperto")
     a = ap.parse_args()
     cartella = os.path.dirname(os.path.abspath(__file__))
     dati = cartella_dati()
-    pf = Portafogli(cartella, os.path.join(dati, "ultimo.json"))
+    pf = Portafogli(cartella, os.path.join(dati, "ultimo.json"), dati=dati)
+    if a.rigenera:
+        fatti = pf.rigenera()
+        print("Riscritti con il codice di", MODELLO + ":", ", ".join(fatti) if fatti else "nessun file (erano già aggiornati)")
+        return
     if a.file:
         if not pf.info(os.path.basename(a.file)):
             sys.exit(f"{a.file} non è un portafoglio presente nella cartella del programma.")
@@ -469,9 +760,10 @@ def avvia_app():
     aperto = pf.ultimo()
     if not aperto:
         sys.exit(f"Nella cartella non c'è nessun portafoglio ({HTML} manca).")
-    titoli, base = carica_config(pf.percorso(aperto))
+    titoli, base = pf.titoli_noti()  # i titoli di tutti i portafogli della cartella
     file_prezzi = os.path.join(dati, "prezzi.json")
     prezzi = Prezzi(titoli, base, file_prezzi)
+    pf.prezzi = prezzi
     srv = None
     for porta in range(a.porta, a.porta + 20):  # se la porta è occupata prova la successiva
         try:
