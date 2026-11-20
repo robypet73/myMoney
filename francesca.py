@@ -122,29 +122,43 @@ class Prezzi:
         with self.lock:
             return json.loads(json.dumps(self.dati))
 
-    def aggiorna(self):
-        """Un giro di scarico. Ritorna il documento aggiornato."""
+    def aggiorna(self, avanza=None):
+        """Un giro di scarico. Ritorna il documento aggiornato.
+        avanza(evento) riceve l'avanzamento: {"t": "inizio"|"titolo"|"dati"|"errore"|"avviso", ...}; la pagina lo mostra nella finestra di scarico."""
+        def say(**ev):
+            if avanza:
+                try:
+                    avanza(ev)
+                except Exception:  # chi ascolta se n'è andato: lo scarico continua comunque
+                    pass
         with self.scarico:  # un solo scarico alla volta
             vecchi = self.leggi()
             prezzi = dict(vecchi["prezzi"])
             storico = {d: dict(v) for d, v in vecchi["storico"].items()}
             avvisi, fonti, yahoo_ok, risposte = [], set(), True, 0
-            for sigla, t in self.titoli.items():
-                serie = None
+            say(t="inizio", n=len(self.titoli))
+            for k, (sigla, t) in enumerate(self.titoli.items(), 1):
+                serie, fonte = None, ""
+                say(t="titolo", s=sigla, isin=t["isin"], k=k, n=len(self.titoli))
                 if yahoo_ok:
                     try:
                         serie = self.yahoo(t["sym"])
                         fonti.add(FONTE_YAHOO)
-                    except Exception:
+                        fonte = "Yahoo Finance"
+                    except Exception as e:
                         yahoo_ok = False  # Yahoo blocca: per gli altri titoli si passa subito a justETF
+                        say(t="avviso", testo=f"Yahoo non risponde ({e}): passo a justETF")
                 if serie is None:
                     try:
                         serie = self.justetf(t["isin"])
                         fonti.add(FONTE_JETF)
+                        fonte = "justETF"
                     except Exception:
                         avvisi.append(f"{sigla}: prezzo non scaricato")
+                        say(t="errore", s=sigla, testo=f"{sigla}: prezzo non scaricato")
                         continue
                 risposte += 1
+                say(t="dati", s=sigla, isin=t["isin"], fonte=fonte, righe=[[d, p] for d, p in serie])
                 prec = (prezzi.get(sigla) or {}).get("p") or t["p0"]
                 ok = True
                 for d, p in serie:
@@ -152,6 +166,7 @@ class Prezzi:
                         continue
                     if not 0.6 < p / prec < 1.6:
                         avvisi.append(f"{sigla}: prezzo anomalo il {d} ({p}), ignorato")
+                        say(t="avviso", testo=avvisi[-1])
                         ok = False
                         break
                     storico.setdefault(d, {})[sigla] = p
@@ -171,6 +186,7 @@ class Prezzi:
             except OSError as e:
                 nuovo["avvisi"].append(f"prezzi.json non salvato: {e}")
             self.ultimo_tentativo = time.time()
+            say(t="salvato", n=len(prezzi))
             return self.leggi()
 
 
@@ -220,9 +236,28 @@ def crea_server(prezzi, porta, percorso_html):
             if self.path.split("?")[0] != "/api/aggiorna":
                 return self.invia(404, {"errore": "non trovato"})
             self.rfile.read(int(self.headers.get("Content-Length") or 0))
-            if time.time() - prezzi.ultimo_tentativo < 15:  # clic ravvicinati: si riusa l'ultimo scarico
-                return self.invia(200, prezzi.leggi())
-            self.invia(200, prezzi.aggiorna())
+            # risposta a flusso: una riga JSON per ogni passo dello scarico, l'ultima {"t": "fine", "dati": {...}}
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+
+            def riga(ev):
+                self.wfile.write(json.dumps(ev, ensure_ascii=False).encode() + b"\n")
+                self.wfile.flush()
+
+            try:
+                if time.time() - prezzi.ultimo_tentativo < 15:  # clic ravvicinati: si riusa l'ultimo scarico
+                    riga({"t": "riuso"})
+                    dati = prezzi.leggi()
+                else:
+                    dati = prezzi.aggiorna(riga)
+                riga({"t": "fine", "dati": dati})
+            except (BrokenPipeError, ConnectionError):
+                pass  # la pagina ha chiuso la finestra: lo scarico è già salvato
 
     return ThreadingHTTPServer(("127.0.0.1", porta), H)
 
