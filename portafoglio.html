@@ -83,6 +83,7 @@ body.vuoto .wrap > :not(header):not(#start):not(#banner) { display: none; } #sta
 pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.55 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; overflow-x: auto; }
 /* importo da ripartire */
 #invest { display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 8px 18px; align-items: end; } #invest label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } #invest .azioni { margin: 0; } #invest .lerr { grid-column: 1 / -1; }
+.ext { display: block; width: fit-content; margin-left: auto; font-size: 12px; line-height: 1; padding: 4px 6px; color: var(--muted); text-decoration: none; border-radius: 6px; } .ext:hover, .ext:focus-visible { color: var(--accent); background: var(--raised); }
 .solo-stampa { display: none; }
 @media print {
   @page { size: A4; margin: 12mm; }
@@ -91,7 +92,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
   body { background: #fff; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .wrap { max-width: none; padding: 0; gap: 18px; }
   .solo-stampa { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
-  .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del] { display: none !important; }
+  .ext, .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del] { display: none !important; }
   .panel, .kpi, .fcard, .chart, table, h2, h3 { break-inside: avoid; }
   .sec-head, h2 { break-after: avoid; }
   section { break-inside: auto; }
@@ -574,7 +575,7 @@ function disegnaTabella() {
   const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))), totC = sum(RR.map((r) => (r ? r.costo : 0)));
   const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(r)}</td></tr>`; }).join("") +
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
     `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${eur(usato)}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—"}</td></tr></tfoot>`;
 }
 
