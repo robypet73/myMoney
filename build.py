@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""francesca: apre la pagina del portafoglio nel browser e scarica i prezzi aggiornati dei fondi.
+"""build: apre la pagina di un portafoglio nel browser e scarica i prezzi aggiornati dei fondi.
 
-Ogni portafoglio è un file HTML nella cartella del programma (francesca.html, e quelli salvati dalla pagina con «Salva come nuovo portafoglio»).
+Ogni portafoglio è un file HTML nella cartella del programma (per esempio francesca.html, e quelli salvati dalla pagina con «Salva come nuovo portafoglio»).
 All'avvio si apre l'ultimo aperto; dal menu in alto nella pagina si passa a qualsiasi altro.
 
 Prezzi da Yahoo Finance (quotazioni di Borsa Italiana); se Yahoo non risponde, da justETF. Solo libreria standard di Python (3.9 o più recente).
 
-Avvio:  avvia.cmd  (doppio clic su Windows)   oppure   python francesca.py
+Avvio:  avvia.cmd  (doppio clic su Windows)   oppure   python build.py
 Opzioni: --minuti 5  --porta 8800  --no-browser  --file nome.html (apre quel portafoglio invece dell'ultimo)
 
 Il programma ascolta solo su 127.0.0.1 e serve soltanto i file HTML dei portafogli nella sua cartella. L'ultimo scarico è salvato nella cartella dell'utente
-(Windows: %LOCALAPPDATA%\\francesca\\prezzi.json), non accanto ai file del programma.
+(Windows: %LOCALAPPDATA%\\myMoney\\prezzi.json), non accanto ai file del programma.
 """
 import argparse
 import datetime
@@ -18,6 +18,7 @@ import html
 import json
 import os
 import re
+import shutil
 import tempfile
 import sys
 import threading
@@ -26,8 +27,9 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HTML = "francesca.html"  # portafoglio di partenza
-NOME = "francesca"
+HTML = "francesca.html"  # portafoglio aperto la prima volta, se nessun altro è stato aperto prima
+NOME = "myMoney"  # nome del programma e della sua cartella dati: non è quello di un portafoglio
+NOME_VECCHIO = "francesca"  # cartella dati delle versioni precedenti: se c'è, se ne copia il contenuto
 NOME_PF = re.compile(r"^[A-Za-z0-9]{1,30}$")  # nome di un portafoglio: solo lettere e cifre
 FILE_PF = re.compile(r"^[A-Za-z0-9_-]{1,80}\.html$")
 RE_DATI = re.compile(r'(<script type="application/json" id="dati">)(.*?)(</script>)', re.S)
@@ -40,9 +42,16 @@ FONTE_JETF = "justETF (quotazione di riferimento: può differire di qualche cent
 def cartella_dati():
     """Dove salvare l'ultimo scarico: cartella dell'utente, così il repository non si sporca."""
     base = os.environ.get("LOCALAPPDATA")
-    d = os.path.join(base, NOME) if base else os.path.join(os.path.expanduser("~"), "." + NOME)
+    cartella = lambda n: os.path.join(base, n) if base else os.path.join(os.path.expanduser("~"), "." + n)
+    d, vecchia = cartella(NOME), cartella(NOME_VECCHIO)
     try:
         os.makedirs(d, exist_ok=True)
+        if os.path.isdir(vecchia) and not os.listdir(d):  # una volta sola: porta con sé prezzi.json (e l'ultimo portafoglio aperto) dalla cartella di prima
+            for f in os.listdir(vecchia):
+                try:
+                    shutil.copy2(os.path.join(vecchia, f), os.path.join(d, f))
+                except OSError:
+                    pass
         return d
     except OSError:
         return tempfile.gettempdir()
