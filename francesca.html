@@ -76,6 +76,9 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
 .pfsel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; } .pfsel span { color: var(--muted); } .pfsel select { width: auto; max-width: 100%; }
 .vtag { font-family: var(--text); font-size: 13px; font-weight: 500; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); vertical-align: middle; }
 .pfsel[hidden] { display: none; }
+/* importo da ripartire */
+#invest { display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 8px 18px; align-items: end; } #invest label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } #invest .azioni { margin: 0; } #invest .lerr { grid-column: 1 / -1; }
+@media (max-width: 760px) { #invest { grid-template-columns: minmax(0, 1fr); } }
 /* cursore del rischio sulla frontiera */
 .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 #rischio { display: flex; flex-direction: column; gap: 8px; }
@@ -132,14 +135,21 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="sec-head"><h2>Storico del portafoglio</h2>
       <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
     </div>
-    <div class="panel"><div class="fhead"><h3>Valore di 40.000 € investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
+    <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
     <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
+    <div class="panel"><div class="fhead"><h3>Guadagno rispetto al minimo precedente</h3><span class="num" id="pfgm"></span></div><div class="chart" id="gm"></div></div>
     <div class="years" id="anni"></div>
     <p class="muted" style="max-width:80ch">Ricostruzione con i pesi attuali tenuti costanti (portafoglio ribilanciato ogni giorno) sui prezzi giornalieri; non è un risultato realmente ottenuto.</p>
   </section>
 
   <section>
     <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
+    <div class="panel" id="invest">
+      <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
+      <p class="muted" id="imp-n"></p>
+      <div class="azioni"><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
+      <p class="lerr" id="imp-msg"></p>
+    </div>
     <div class="scroll"><table id="tab"></table></div>
   </section>
 
@@ -282,6 +292,7 @@ const sum = (a) => a.reduce((x, y) => x + y, 0);
 /* ---------- stato salvato nel browser ---------- */
 const KEY = META.chiave || "pf-mondo-emergenti-v1";  // ogni portafoglio ha i suoi acquisti salvati nel browser
 const vincDef = () => ({ fondi: Object.fromEntries(F.map((f) => [f.s, { min: 0, max: ({ SWDA: 40, EMSRI: 20, CEU: 25, CHIP: 10, BNKE: 10, EM13: 10, AFRN: 10, GOLD: 10 })[f.s] ?? 25 }])), classi: { Azionario: { min: 70, max: 80 }, Obbligazionario: { min: 10, max: 20 }, "Materie prime": { min: 5, max: 10 } } });
+const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
 const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: false, periodo: 3, rib: { t: "obiettivo", c: 0, v: false, w: null } });
 let ST = statoDef();
 try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
@@ -405,11 +416,12 @@ function lineChart(box, t, y, o = {}) {
   const mk = (a) => pts.map((i, k) => (k ? "L" : "M") + X(i).toFixed(1) + " " + Y(a[i]).toFixed(1)).join(" "), path = mk(y), yr = Y(ref), area = path + ` L${X(y.length - 1).toFixed(1)} ${yr.toFixed(1)} L${X(0).toFixed(1)} ${yr.toFixed(1)} Z`;
   let g = ""; for (let k = 0; k <= 3; k++) { const v = lo + ((hi - lo) * k) / 3; g += `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--muted)">${f(v)}</text>`; }
   const lab = [0, Math.floor((y.length - 1) / 2), y.length - 1].map((i, k) => `<text x="${X(i).toFixed(1)}" y="${H - 5}" font-size="11" fill="var(--muted)" text-anchor="${["start", "middle", "end"][k]}">${dataIt(t[i])}</text>`).join("");
-  const up = y[y.length - 1] >= ref, stroke = o.color || (up ? "var(--good)" : "var(--bad)");
+  const up = y[y.length - 1] >= ref, stroke = o.color || (up ? "var(--good)" : "var(--bad)"), sty = 'fill="none" stroke-width="1.8" stroke-linejoin="round"';
+  const linea = o.color ? `<path d="${path}" ${sty} stroke="${o.color}"/>` : `<path d="${path}" ${sty} stroke="var(--good)" clip-path="url(#${id}a)"/><path d="${path}" ${sty} stroke="var(--bad)" clip-path="url(#${id}b)"/>`;  // la linea cambia colore dove attraversa il riferimento
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label || "Andamento")}"><defs><clipPath id="${id}a"><rect x="${L}" y="${T}" width="${W - L - R}" height="${Math.max(0, yr - T).toFixed(1)}"/></clipPath><clipPath id="${id}b"><rect x="${L}" y="${yr.toFixed(1)}" width="${W - L - R}" height="${Math.max(0, H - B - yr).toFixed(1)}"/></clipPath>
     <linearGradient id="${id}u" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--good)" stop-opacity=".38"/><stop offset="1" stop-color="var(--good)" stop-opacity="0"/></linearGradient><linearGradient id="${id}d" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--bad)" stop-opacity=".38"/><stop offset="1" stop-color="var(--bad)" stop-opacity="0"/></linearGradient></defs>
     ${g}<path d="${area}" fill="url(#${id}u)" clip-path="url(#${id}a)"/><path d="${area}" fill="url(#${id}d)" clip-path="url(#${id}b)"/><line x1="${L}" x2="${W - R}" y1="${yr.toFixed(1)}" y2="${yr.toFixed(1)}" stroke="var(--muted)" stroke-dasharray="3 4"/>
-    ${y2 ? `<path d="${mk(y2)}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4"/>` : ""}<path d="${path}" fill="none" stroke="${stroke}" stroke-width="1.8" stroke-linejoin="round"/><circle cx="${X(y.length - 1).toFixed(1)}" cy="${Y(y[y.length - 1]).toFixed(1)}" r="3.2" fill="${stroke}"/>
+    ${y2 ? `<path d="${mk(y2)}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4"/>` : ""}${linea}<circle cx="${X(y.length - 1).toFixed(1)}" cy="${Y(y[y.length - 1]).toFixed(1)}" r="3.2" fill="${stroke}"/>
     <line class="cur" y1="${T}" y2="${H - B}" stroke="var(--muted)" visibility="hidden"/><circle class="curp" r="3.5" fill="var(--fg)" visibility="hidden"/>${lab}</svg><div class="tip" hidden></div>`;
   const svg = box.querySelector("svg"), tip = box.querySelector(".tip"), cur = box.querySelector(".cur"), cp = box.querySelector(".curp");
   const move = (e) => { const r = svg.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * W, i = Math.max(0, Math.min(y.length - 1, Math.round(((x - L) / (W - L - R)) * (y.length - 1))));
@@ -459,7 +471,7 @@ function disegnaKpi() {
     ["Rendimento annuo dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   $("#ddtxt").textContent = pct(statistiche(pesiPiano()).dd, 1); $("#per1").textContent = $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
-  $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da 40.000 € ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
+  $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
   const az = $("#azzera"); if (az) az.onclick = () => { F.forEach((f) => (ST.lots[f.s] = [])); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); };
 }
 function disegnaPosizioni() {
@@ -474,8 +486,10 @@ function disegnaRisPos() {
 function disegnaTabella() {
   const last = DATES[DATES.length - 1]; $("#prezzial").textContent = "Prezzi al " + dataIt(last);
   const rend = (p) => (p.q ? `<span class="${cls(p.pl)}">${sgnE(p.pl)}</span>` + (p.costo ? `<div class="fsub ${cls(p.pl)}">${sgn(p.pl / p.costo, 2)} sul versato</div>` : "") : "—");
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${p.q ? eur(p.valore) : "—"}${p.q ? `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(p)}</td></tr>`; }).join("") +
-    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${VAL > 0 ? eur(VAL) : "—"}</td><td class="num ${cls(VAL - INV)}">${VAL > 0 ? sgnE(VAL - INV) + (INV > 0 ? `<div class="fsub ${cls(VAL - INV)}">${sgn((VAL - INV) / INV, 2)} sul versato</div>` : "") : "—"}</td></tr></tfoot>`;
+  const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
+  $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${p.q ? eur(p.valore) : "—"}${p.q ? `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(p)}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${eur(usato)}</td><td class="num">${VAL > 0 ? eur(VAL) : "—"}</td><td class="num ${cls(VAL - INV)}">${VAL > 0 ? sgnE(VAL - INV) + (INV > 0 ? `<div class="fsub ${cls(VAL - INV)}">${sgn((VAL - INV) / INV, 2)} sul versato</div>` : "") : "—"}</td></tr></tfoot>`;
 }
 
 /* ---------- frontiera: disegno e dettaglio ---------- */
@@ -547,9 +561,10 @@ function disegnaAndamento() {
   lineChart(box2, t, su.val, { ref: su.inv[0], line2: su.inv, f: (x) => nf(x, 0) + " €", h: 190, label: "Valore e capitale versato" });
 }
 function disegnaStorici() {
-  const i0 = iniziale(), t = DATES.slice(i0), s = statistiche(WCUR, i0), v = s.v.map((x) => x * AMT);
-  lineChart($("#pf"), t, v, { f: (x) => nf(x, 0) + " €", h: 240, label: "Valore del portafoglio" }); const r = v[v.length - 1] / v[0] - 1; $("#pfret").innerHTML = `<span class="${cls(r)}">${sgn(r)}</span> nel periodo`;
+  const i0 = iniziale(), t = DATES.slice(i0), s = statistiche(WCUR, i0), v = s.v.map((x) => x * IMPORTO());
+  $("#pf-imp").textContent = eur(IMPORTO()); lineChart($("#pf"), t, v, { f: (x) => nf(x, 0) + " €", h: 240, label: "Valore del portafoglio" }); const r = v[v.length - 1] / v[0] - 1; $("#pfret").innerHTML = `<span class="${cls(r)}">${sgn(r)}</span> nel periodo`;
   let mx = 0; const dd = v.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 170, color: "var(--bad)", label: "Perdita dal massimo" }); $("#pfdd").textContent = "peggiore " + nf(Math.min(...dd), 1) + "%";
+  let mn = Infinity; const gm = v.map((x) => { mn = Math.min(mn, x); return (x / mn - 1) * 100; }); lineChart($("#gm"), t, gm, { ref: 0, f: (x) => (x > 0 ? "+" : "") + x.toFixed(1).replace(".", ",") + "%", h: 170, label: "Guadagno dal minimo precedente" }); $("#pfgm").textContent = "ora " + (gm[gm.length - 1] > 0 ? "+" : "") + nf(gm[gm.length - 1], 1) + "% · massimo +" + nf(Math.max(...gm), 1) + "%";
   const an = anniRend(statistiche(WCUR).v); $("#anni").innerHTML = Object.entries(an).map(([y, x]) => `<div><div class="y">${y}${y === DATES[DATES.length - 1].slice(0, 4) ? " (parziale)" : ""}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("");
   $("#fondi").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s)} <span class="muted" style="font-weight:400">${esc(f.name)}</span></h3><span class="num" id="r-${f.s}"></span></div><div class="chart" id="c-${f.s}"></div></div>`).join("");
   F.forEach((f, i) => { const y = PX[i].slice(i0), rr = y[y.length - 1] / y[0] - 1; lineChart($("#c-" + f.s), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 170, label: "Prezzo di " + f.s }); $("#r-" + f.s).innerHTML = `<span class="${cls(rr)}">${sgn(rr)}</span>`; });
@@ -695,6 +710,16 @@ $("#aggiorna").addEventListener("click", async () => {
   b.disabled = false;
 });
 
+$("#imp").value = IMPORTO();
+$("#imp").addEventListener("input", (e) => { const x = +e.target.value; e.target.classList.toggle("bad", !(x > 0)); if (!(x > 0)) return; ST.importo = x; salva(); aggiornaRitardo(); });
+$("#imp-uso").onclick = () => {
+  const ha = !ST.esempio && F.some((f) => ST.lots[f.s].some((l) => +l.q > 0));
+  if (ha && !confirm("Sostituisco gli acquisti che hai inserito con questa ripartizione?")) return;
+  const imp = IMPORTO(), d = DATES[DATES.length - 1]; F.forEach((f, i) => { const n = Math.floor((imp * f.w) / PX[i][PX[i].length - 1]); ST.lots[f.s] = n > 0 ? [{ q: n, d, p: "" }] : []; });
+  ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#imp-msg").textContent = "";
+};
+$("#imp-salva").onclick = () => apriSalva(pesiPiano(), statistiche(pesiPiano()), "Composizione del portafoglio", "imp-msg");
+
 /* ---------- portafogli: elenco nella cartella del programma, scelta e salvataggio di uno nuovo ---------- */
 const PF = { server: false, lista: [], file: decodeURIComponent(location.pathname.split("/").pop() || "") };
 const nVers = (v) => +String(v).replace(/^V/i, "") || 0;
@@ -724,17 +749,17 @@ function svControlla(mostra) {
   if (mostra) $("#sv-err").textContent = err; else if (!err) $("#sv-err").textContent = "";
   return !err;
 }
-function apriSalva(w, s, tit) {
-  if (!PF.server) { $("#sv-nosrv").textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
-  $("#sv-nosrv").textContent = ""; SV = { w, tocca: false, opener: document.activeElement };
-  $("#sv-w").textContent = tit + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
+function apriSalva(w, s, tit, msg = "sv-nosrv") {
+  if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
+  $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement };
+  $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
   $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + pct(az, 0) + " azioni, " + pct(ob, 0) + " obbligazioni, " + pct(oro, 0) + " oro. Rischio " + pct(s.vol) + ", rendimento storico " + pct(s.cagr) + ".";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
 }
-function chiudiSalva() { $("#salva").hidden = true; document.body.style.overflow = ""; const o = SV.opener && document.contains(SV.opener) ? SV.opener : $("#salvapf"); if (o) o.focus(); }
+function chiudiSalva() { $("#salva").hidden = true; document.body.style.overflow = ""; const o = SV.opener && document.contains(SV.opener) ? SV.opener : $("#imp-salva"); if (o) o.focus(); }
 $("#sv-x").onclick = $("#sv-ann").onclick = $("#sv-resta").onclick = chiudiSalva;
 $("#salva").addEventListener("mousedown", (e) => { if (e.target.id === "salva") chiudiSalva(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#salva").hidden) chiudiSalva(); });
@@ -746,7 +771,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
   const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
   try {
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi }) });
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella del programma. Lo trovi anche nel menu «Portafoglio» in alto.`;
     $("#sv-apri").onclick = () => { location.href = "/" + encodeURIComponent(j.file); }; $("#sv-apri").focus(); caricaPortafogli();

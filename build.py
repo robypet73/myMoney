@@ -265,7 +265,7 @@ class Portafogli:
         except OSError:
             pass
 
-    def salva(self, da, nome, versione, descrizione, pesi):
+    def salva(self, da, nome, versione, descrizione, pesi, importo=None):
         """Crea nome_V<n>.html partendo dal portafoglio `da` con i nuovi pesi. Ritorna info del nuovo file; ValueError con un messaggio per l'utente se qualcosa non va."""
         if not self.info(da):
             raise ValueError("Portafoglio di partenza non trovato.")
@@ -294,9 +294,19 @@ class Portafogli:
             raise ValueError("Pesi non validi.")
         if min(w.values()) < 0 or abs(sum(w.values()) - 1) > 0.0015:
             raise ValueError("I pesi devono essere positivi e dare 100%.")
+        amount = d["meta"]["amount"]
+        if importo is not None:  # investimento totale del nuovo portafoglio: le quote del piano si ricalcolano su questo
+            try:
+                amount = round(float(importo), 2)
+            except (TypeError, ValueError):
+                raise ValueError("Importo non valido.")
+            if not 100 <= amount <= 1e9:
+                raise ValueError("L'importo deve essere tra 100 e 1.000.000.000 euro.")
+            amount = int(amount) if amount == int(amount) else amount
+            d["meta"]["amount"] = amount
         versione = f"V{v}"
         nuovo = f"{nome}_{versione}.html"
-        amount, chiave = d["meta"]["amount"], f"pf-{nome}-{versione}"
+        chiave = f"pf-{nome}-{versione}"
         for f in d["funds"]:
             f["w"] = w[f["s"]]
             f["q0"] = int(amount * f["w"] / f["p0"])  # quote del piano d'esempio: il piano diviso il prezzo, per difetto
@@ -383,7 +393,7 @@ def crea_server(prezzi, porta, portafogli):
                     r = json.loads(self.rfile.read(n))
                     if not isinstance(r, dict):
                         raise ValueError("richiesta non valida")
-                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"))
+                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"))
                 except ValueError as e:  # include json.JSONDecodeError
                     return self.invia(400, {"errore": str(e) or "richiesta non valida"})
                 except OSError as e:
