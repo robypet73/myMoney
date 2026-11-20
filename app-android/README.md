@@ -18,7 +18,7 @@ Stessa pagina `portafoglio.html` del programma per PC, dentro un involucro [Capa
 
 ## Cartella dei portafogli (telefono o Google Drive)
 
-Pulsante **Cartella…** in alto: scrivi `1` per scegliere una cartella del telefono, `2` per una cartella su **Google Drive** (si apre il selettore di Android, con Drive tra le posizioni), `3` per tornare alla memoria dell'app. Quando la cartella è collegata:
+Pulsante **Cartella…** in alto: si apre direttamente il selettore di cartelle di Android, dove scegli la memoria interna, la scheda SD o Google Drive. **Scollega** (compare con una cartella collegata) torna alla memoria dell'app. Quando la cartella è collegata:
 - all'apertura i JSON della cartella diventano i portafogli dell'app; se la cartella è vuota riceve quelli dell'app (e `schema.json`);
 - «Salva come nuovo portafoglio» e «Carica JSON» scrivono lì un `nome_Vn.json`; «Elimina» sposta il file nella sottocartella `_eliminati`.
 
