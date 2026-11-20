@@ -196,6 +196,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 
   <section>
     <div class="sec-head"><h2>Frontiera efficiente</h2><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px"><span class="muted" style="font-size:13px">Dati della frontiera:</span><div class="seg" id="frper" role="group" aria-label="Periodo dei dati della frontiera"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button></div><span class="muted" id="frper-n" style="font-size:12px"></span></div>
     <details id="vincoli"><summary>Vincoli della frontiera (peso minimo e massimo per fondo e per classe)</summary>
       <div class="vinc" id="vinc"></div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><button class="btn sec small" id="vreset" type="button">Ripristina i vincoli</button><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="prud"> Rendimenti prudenti (media tra il fondo e tutti i fondi)</label><span class="lerr" id="vmsg"></span></div>
@@ -331,13 +332,13 @@ const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (me
     classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
 };
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
-const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: false, periodo: 3, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: false, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
 let ST = statoDef();
 try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
 const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
 
 /* ---------- serie, rendimenti, covarianze ---------- */
-let DATES = [], PX = [], RD = [], MU = [], COV = [], LMAX = 1, LIVE = null;
+let DATES = [], PX = [], RD = [], MU = [], COV = [], MUW = [], COVW = [], LMAX = 1, LIVE = null;
 function costruisci() {
   DATES = D.dates.slice(); PX = F.map((f) => D.px[f.s].slice());
   const st = (LIVE && LIVE.storico) || {};
@@ -348,7 +349,20 @@ function costruisci() {
   const n5 = R5.length, m = F.map((_, i) => sum(R5.map((r) => r[i])) / n5), k = 252 / 5;
   MU = m.map((x) => x * k);
   COV = F.map((_, a) => F.map((_, b) => { let s = 0; for (let t = 0; t < n5; t++) s += (R5[t][a] - m[a]) * (R5[t][b] - m[b]); return (s / (n5 - 1)) * k; }));
-  let v = F.map(() => 1); for (let it = 0; it < 60; it++) { const u = COV.map((r) => sum(r.map((c, j) => c * v[j]))); const nrm = Math.hypot(...u) || 1; v = u.map((x) => x / nrm); LMAX = nrm; }
+  momenti();
+}
+/* frontiera parametrica: 1, 3 o 5 anni di dati (rendimenti medi, covarianze e statistiche sulla stessa finestra) */
+function FRI0() {
+  const d = new Date(DATES[DATES.length - 1]); d.setFullYear(d.getFullYear() - (ST.frper || 5));
+  const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s);
+  return DATES.length - i > 30 ? Math.max(0, i) : 0;
+}
+function momenti() {
+  const i0 = FRI0(), R5 = []; for (let t = i0 + 5; t < DATES.length; t++) R5.push(F.map((_, i) => PX[i][t] / PX[i][t - 5] - 1));
+  const n5 = R5.length, m = F.map((_, i) => sum(R5.map((r) => r[i])) / n5), k = 252 / 5;
+  MUW = m.map((x) => x * k);
+  COVW = F.map((_, a) => F.map((_, b) => { let s = 0; for (let t = 0; t < n5; t++) s += (R5[t][a] - m[a]) * (R5[t][b] - m[b]); return (s / (n5 - 1)) * k; }));
+  let v = F.map(() => 1); for (let it = 0; it < 60; it++) { const u = COVW.map((r) => sum(r.map((c, j) => c * v[j]))); const nrm = Math.hypot(...u) || 1; v = u.map((x) => x / nrm); LMAX = nrm; }
 }
 function serie(w, i0 = 0) { const out = [1]; let v = 1; for (let t = i0 + 1; t < DATES.length; t++) { const rd = RD[t]; let r = 0; for (let i = 0; i < NF; i++) r += w[i] * rd[i]; v *= 1 + r; out.push(v); } return out; }
 function statistiche(w, i0 = 0) {
@@ -417,7 +431,7 @@ function proietta(y, V) {
 function risolvi(gamma, w0, V, mu) {
   const step = 1 / Math.max(gamma * LMAX, 0.05); let x = w0.slice(), y = x.slice(), tk = 1;
   for (let it = 0; it < 300; it++) {
-    const yy = y.map((v, i) => { let s = 0; for (let j = 0; j < NF; j++) s += COV[i][j] * y[j]; return v + step * (mu[i] - gamma * s); });
+    const yy = y.map((v, i) => { let s = 0; for (let j = 0; j < NF; j++) s += COVW[i][j] * y[j]; return v + step * (mu[i] - gamma * s); });
     const z = proietta(yy, V), tn = (1 + Math.sqrt(1 + 4 * tk * tk)) / 2; let d = 0;
     for (let i = 0; i < NF; i++) d += Math.abs(z[i] - x[i]);
     y = z.map((v, i) => v + ((tk - 1) / tn) * (v - x[i])); x = z; tk = tn; if (d < 1e-9) break;
@@ -426,13 +440,13 @@ function risolvi(gamma, w0, V, mu) {
 }
 let FRONT = null, FRSEQ = 0;
 async function calcolaFrontiera() {
-  const seq = ++FRSEQ, V = vincoli(), err = verifica(V); $("#vmsg").textContent = err || "";
+  const seq = ++FRSEQ, V = vincoli(), err = verifica(V); $("#vmsg").textContent = err || ""; segFr(); $("#per1").textContent = dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]);
   if (err) { FRONT = { err, pts: [] }; disegnaFrontiera(); return; }
   $("#frstato").textContent = "Calcolo della frontiera…";
   await new Promise((r) => setTimeout(r, 20));
-  const mm = sum(MU) / NF, mu = ST.prud ? MU.map((x) => 0.5 * x + 0.5 * mm) : MU, pts = []; let w = proietta(F.map(() => 1 / NF), V); const NP = 200;
+  const i0f = FRI0(), mm = sum(MUW) / NF, mu = ST.prud ? MUW.map((x) => 0.5 * x + 0.5 * mm) : MUW, pts = []; let w = proietta(F.map(() => 1 / NF), V); const NP = 200;
   for (let k = 0; k < NP; k++) {
-    const gamma = Math.exp(Math.log(3000) - (k * Math.log(3000 / 0.03)) / (NP - 1)); w = risolvi(gamma, w, V, mu); const s = statistiche(w);
+    const gamma = Math.exp(Math.log(3000) - (k * Math.log(3000 / 0.03)) / (NP - 1)); w = risolvi(gamma, w, V, mu); const s = statistiche(w, i0f);
     pts.push({ w: w.slice(), ret: s.cagr, vol: s.vol, sharpe: s.sharpe, dd: s.dd });
     if (k % 20 === 19) { await new Promise((r) => setTimeout(r, 0)); if (seq !== FRSEQ) return; }
   }
@@ -509,7 +523,7 @@ function disegnaKpi() {
   $("#kpi").innerHTML = [["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF + " · da 1 (nessun beneficio) in su"], ["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
     ["Rendimento annuo dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
-  { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per1").textContent = $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
+  { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
   $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
   const az = $("#azzera"); if (az) az.onclick = () => { F.forEach((f) => (ST.lots[f.s] = [])); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); };
 }
@@ -538,7 +552,7 @@ function disegnaTabella() {
 let SEL = "tuo";
 function disegnaFrontiera(dalCursore) {
   const box = $("#front"); if (!FRONT) return; if (FRONT.err) { box.innerHTML = `<p class="lerr">${esc(FRONT.err)}</p>`; $("#fcomp").innerHTML = ""; $("#fleg").innerHTML = ""; return; }
-  const P = FRONT.pts, tuo = statistiche(WCUR), ob = statistiche(pesiPiano()), sh = P[FRONT.sharpe], mv = P[0];
+  const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiPiano(), FRI0()), sh = P[FRONT.sharpe], mv = P[0];
   const W = Math.max(300, Math.round(box.clientWidth || 640)), H = Math.round(Math.min(360, Math.max(250, W * 0.58))), L = 44, R = 14, T = 16, B = 36;
   const xs = P.map((p) => p.vol).concat([tuo.vol, ob.vol]), ys = P.map((p) => p.ret).concat([tuo.cagr, ob.cagr]);
   const x0 = Math.min(...xs) - 0.004, x1 = Math.max(...xs) + 0.004, y0 = Math.min(...ys) - 0.006, y1 = Math.max(...ys) + 0.006, X = (v) => L + ((v - x0) / (x1 - x0)) * (W - L - R), Y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
@@ -552,7 +566,7 @@ function disegnaFrontiera(dalCursore) {
     <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Tuo</text></svg>`;
   $("#fleg").innerHTML = `<span><i style="background:var(--good)"></i>tuo portafoglio</span><span><i style="background:var(--c2)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn)"></i>massimo Sharpe</span><span><i style="background:var(--accent)"></i>frontiera</span>`;
   $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
-  const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr), c = statistiche(WCUR), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : "Portafoglio proposto";
+  const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr, FRI0()), c = statistiche(WCUR, FRI0()), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : "Portafoglio proposto";
   sincRischio(P, tuo, ob, dalCursore);
   let gap = ""; if (tuo.vol >= P[0].vol && tuo.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < tuo.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (tuo.vol - a.vol)) / (b.vol - a.vol || 1); gap = `<p class="muted" style="margin:6px 0">A pari rischio (${pct(tuo.vol)}) la frontiera rende ${pct(rr)}: ${rr >= tuo.cagr ? `<span class="up">${nf((rr - tuo.cagr) * 100, 1)} punti</span> in più del tuo portafoglio` : "il tuo portafoglio sta sopra la curva (curva con i tuoi vincoli)"}.</p>`; }
   const riga = (n, a, b, f, bene) => { const d = a - b; return `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td><td class="num ${Math.abs(d) < 0.0005 ? "" : (d > 0) === bene ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "—" : (d > 0 ? "+" : "") + f(d)}</td></tr>`; };
@@ -669,6 +683,8 @@ function disegnaVincoli() {
   $("#vinc").innerHTML = `<div class="r"><span class="h" style="text-align:left">Per fondo (%)</span><span class="h">min</span><span class="h">max</span></div>` + F.map((f) => r(f.s, f.s, v.fondi[f.s].min, v.fondi[f.s].max, "f")).join("") + `<div class="r"><span class="h" style="text-align:left">Per classe (%)</span><span class="h">min</span><span class="h">max</span></div>` + CLASSI.map((c) => r(c, CNOME[c], v.classi[c].min, v.classi[c].max, "c")).join("");
   $("#prud").checked = !!ST.prud;
 }
+const segFr = () => { $$("#frper button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === (ST.frper || 5)))); $("#frper-n").textContent = (ST.frper || 5) === 1 ? "Con un solo anno la curva è instabile: poche osservazioni per tanti fondi." : ""; };
+$$("#frper button").forEach((b) => b.addEventListener("click", () => { ST.frper = +b.dataset.p; salva(); momenti(); richiediFrontiera(); segFr(); }));
 let tf = null; const richiediFrontiera = () => { clearTimeout(tf); tf = setTimeout(calcolaFrontiera, 350); };
 $("#vinc").addEventListener("input", (e) => { const t = e.target; if (!t.dataset.v) return; const x = +t.value; t.classList.toggle("bad", !(x >= 0 && x <= 100)); if (!(x >= 0 && x <= 100)) return; (t.dataset.v === "f" ? ST.vinc.fondi : ST.vinc.classi)[t.dataset.id][t.dataset.b] = x; salva(); richiediFrontiera(); });
 $("#vreset").onclick = () => { ST.vinc = vincDef(); salva(); disegnaVincoli(); richiediFrontiera(); };
