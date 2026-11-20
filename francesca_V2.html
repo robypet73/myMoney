@@ -332,9 +332,10 @@ const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (me
     classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
 };
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
-const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+const VSIG = JSON.stringify(META.vincoli || null);  // se i limiti scritti nel file cambiano, quelli salvati nel browser non valgono più
 let ST = statoDef();
-try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
+try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; ST.vincSig = VSIG; if (o.vincSig !== VSIG) ST.vinc = d.vinc; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
 let BOZZA = null;  // simulazione di un punto della frontiera: { w, q0, lots, esempio, wcur } con i valori originali
 const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(BOZZA && ST.esempio ? { ...ST, lots: BOZZA.lots } : ST)); } catch (e) {} };
 
