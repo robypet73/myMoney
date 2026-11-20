@@ -208,7 +208,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="fmin" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rischio minimo</button><button class="btn sec small" type="button" data-rs="fmax" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rendimento massimo</button></div>
     </div>
     <div class="stack">
-      <div class="panel"><div class="chart" id="front"></div><div class="leg" id="fleg" style="margin-top:8px"></div></div>
+      <div class="panel"><div id="bozza"></div><div class="chart" id="front"></div><div class="leg" id="fleg" style="margin-top:8px"></div></div>
       <div class="panel" id="fcomp"></div>
     </div>
     <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli sopra. Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
@@ -335,7 +335,8 @@ const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento to
 const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
 let ST = statoDef();
 try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
-const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} };
+let BOZZA = null;  // simulazione di un punto della frontiera: { w, q0, lots, esempio, wcur } con i valori originali
+const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(BOZZA && ST.esempio ? { ...ST, lots: BOZZA.lots } : ST)); } catch (e) {} };
 
 /* ---------- serie, rendimenti, covarianze ---------- */
 let DATES = [], PX = [], RD = [], MU = [], COV = [], MUW = [], COVW = [], LMAX = 1, LIVE = null;
@@ -379,6 +380,7 @@ function lastIdx(d) { let lo = 0, hi = DATES.length - 1, r = -1; while (lo <= hi
 
 /* ---------- posizioni e acquisti ---------- */
 const pesiPiano = () => F.map((f) => f.w);
+const pesiOrig = () => (BOZZA ? BOZZA.w : pesiPiano());
 function infoLotto(i, lot) {
   const q = +lot.q; if (!(q > 0)) return null; if (!lot.d) return { err: "manca la data" };
   const t = lastIdx(lot.d); if (t < 0) return { err: "prima dell'inizio dello storico (" + dataIt(DATES[0]) + ")" };
@@ -441,7 +443,7 @@ function risolvi(gamma, w0, V, mu) {
 let FRONT = null, FRSEQ = 0, FIXC = null;
 /* due casi con la composizione attuale per classe (azioni / obbligazioni / materie prime) tenuta ferma: rischio minimo e rendimento massimo, con i limiti per fondo dei vincoli */
 function fissa() {
-  const cw = CLASSI.map((c) => sum(F.map((f, i) => (f.cls === c ? WCUR[i] : 0)))), key = FRSEQ + "|" + ST.frper + "|" + ST.prud + "|" + cw.map((x) => x.toFixed(4)).join(",") + "|" + JSON.stringify(ST.vinc.fondi);
+  const wb = BOZZA ? BOZZA.wcur : WCUR, cw = CLASSI.map((c) => sum(F.map((f, i) => (f.cls === c ? wb[i] : 0)))), key = FRSEQ + "|" + ST.frper + "|" + ST.prud + "|" + cw.map((x) => x.toFixed(4)).join(",") + "|" + JSON.stringify(ST.vinc.fondi);
   if (FIXC && FIXC.key === key) return FIXC;
   const V = vincoli(); V.GL = cw.map((x) => Math.max(0, x - 0.005)); V.GU = cw.map((x) => Math.min(1, x + 0.005));  // composizione ferma a meno di mezzo punto (le quote intere non danno mai pesi esatti)
   const err = verifica(V); if (err) return (FIXC = { key, err: "con i limiti per fondo non si può mantenere la composizione attuale (" + err.replace(/\.$/, "") + ")." });
@@ -563,7 +565,7 @@ function disegnaTabella() {
 let SEL = "tuo";
 function disegnaFrontiera(dalCursore) {
   const box = $("#front"); if (!FRONT) return; if (FRONT.err) { box.innerHTML = `<p class="lerr">${esc(FRONT.err)}</p>`; $("#fcomp").innerHTML = ""; $("#fleg").innerHTML = ""; return; }
-  const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiPiano(), FRI0()), sh = P[FRONT.sharpe], mv = P[0], fx = fissa(), fxp = fx.pts || [];
+  const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiOrig(), FRI0()), sh = P[FRONT.sharpe], mv = P[0], fx = fissa(), fxp = fx.pts || [];
   const W = Math.max(300, Math.round(box.clientWidth || 640)), H = Math.round(Math.min(360, Math.max(250, W * 0.58))), L = 44, R = 14, T = 16, B = 36;
   const xs = P.map((p) => p.vol).concat([tuo.vol, ob.vol], fxp.map((p) => p.vol)), ys = P.map((p) => p.ret).concat([tuo.cagr, ob.cagr], fxp.map((p) => p.ret));
   const x0 = Math.min(...xs) - 0.004, x1 = Math.max(...xs) + 0.004, y0 = Math.min(...ys) - 0.006, y1 = Math.max(...ys) + 0.006, X = (v) => L + ((v - x0) / (x1 - x0)) * (W - L - R), Y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
@@ -576,7 +578,7 @@ function disegnaFrontiera(dalCursore) {
     ${fxp.map((p) => `<rect class="pt" tabindex="0" data-k="${p.k}" x="${(X(p.vol) - 7).toFixed(1)}" y="${(Y(p.ret) - 7).toFixed(1)}" width="14" height="14" rx="2" fill="var(--c5)" stroke="${SEL === p.k ? "var(--fg)" : "var(--bg)"}" stroke-width="${SEL === p.k ? 2.5 : 1.5}"><title>${p.nome}</title></rect>`).join("")}${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Il tuo portafoglio")}
     <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Tuo</text></svg>`;
   $("#fleg").innerHTML = `<span><i style="background:var(--good)"></i>tuo portafoglio</span><span><i style="background:var(--c2)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn)"></i>massimo Sharpe</span><span><i style="background:var(--accent)"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c5);border-radius:2px"></i>stessa composizione per classe</span>` : ""}`;
-  $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
+  $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); proponi(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
   const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr, FRI0()), c = statistiche(WCUR, FRI0()), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : SEL === "fmin" || SEL === "fmax" ? (fxp.find((p) => p.k === SEL) || {}).nome || "Portafoglio proposto" : "Portafoglio proposto";
   sincRischio(P, tuo, ob, dalCursore);
   let gap = ""; if (tuo.vol >= P[0].vol && tuo.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < tuo.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (tuo.vol - a.vol)) / (b.vol - a.vol || 1); gap = `<p class="muted" style="margin:6px 0">A pari rischio (${pct(tuo.vol)}) la frontiera rende ${pct(rr)}: ${rr >= tuo.cagr ? `<span class="up">${nf((rr - tuo.cagr) * 100, 1)} punti</span> in più del tuo portafoglio` : "il tuo portafoglio sta sopra la curva (curva con i tuoi vincoli)"}.</p>`; }
@@ -585,6 +587,7 @@ function disegnaFrontiera(dalCursore) {
     <div class="scroll"><table style="font-size:13px"><thead><tr><th>Fondo</th><th>ISIN</th><th>Proposto</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>` +
     F.map((f, i) => ({ f, i, w: wr[i] })).sort((a, b) => b.w - a.w).map(({ f, i, w }) => { const d = w - WCUR[i]; return `<tr><td>${flink(i, f.s)}</td><td class="num" style="white-space:nowrap">${f.isin}</td><td class="num">${pct(w)}</td><td class="num">${VAL > 0 ? pct(WCUR[i]) : pct(f.w)}</td><td class="num ${cls(d)}">${Math.abs(d) < 0.0005 ? "—" : sgn(d)}</td></tr>`; }).join("") + `</tbody></table></div>
     <div class="azioni"><button class="btn small" id="salvapf" type="button">Salva come nuovo portafoglio…</button><button class="btn sec small" id="usasel" type="button">Usa per il ribilanciamento</button></div><p class="lerr" id="sv-nosrv"></p>`;
+  { const b = $("#bozza"); if (!BOZZA) b.innerHTML = ""; else { const so = statistiche(BOZZA.w, FRI0()); b.innerHTML = `<div class="banner" style="margin-bottom:10px"><span><b>Simulazione:</b> la pagina mostra il portafoglio scelto sulla frontiera (rischio ${pct(s.vol)}, rendimento ${pct(s.cagr)}). Originale: rischio ${pct(so.vol)}, rendimento ${pct(so.cagr)}. Non è ancora salvato.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="bz-salva" type="button">Salva come nuovo portafoglio…</button><button class="btn sec small" id="bz-ann" type="button">Annulla</button></span></div>`; $("#bz-ann").onclick = annullaBozza; $("#bz-salva").onclick = () => apriSalva(F.map((f) => f.w), s, "Portafoglio dalla frontiera"); } }
   $("#usasel").onclick = () => { ST.rib.t = "sel"; ST.rib.w = wr.slice(); $("#rb-t").value = "sel"; salva(); aggiornaRib(); $("#rb-t").scrollIntoView({ behavior: "smooth", block: "center" }); };
   $("#salvapf").onclick = () => apriSalva(wr, s, tit);
 }
@@ -598,9 +601,25 @@ function sincRischio(P, tuo, ob, dalCursore) {
   rs.setAttribute("aria-valuetext", "rischio " + pct(x.vol) + ", rendimento " + pct(x.ret));
   $("#rs-v").innerHTML = `rischio <b>${pct(x.vol)}</b> · rendimento <b>${pct(x.ret)}</b>` + (typeof SEL === "number" || SEL === "sharpe" ? "" : ` <span class="muted">(${SEL === "obiettivo" ? "piano" : SEL === "fmin" || SEL === "fmax" ? "stessa composizione" : "il tuo"})</span>`);
 }
-$("#rs").addEventListener("input", (e) => { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const v = P[0].vol + (+e.target.value / +e.target.max) * (P[P.length - 1].vol - P[0].vol); SEL = P.reduce((a, p, i) => (Math.abs(p.vol - v) < Math.abs(P[a].vol - v) ? i : a), 0); disegnaFrontiera(true); });  // il cursore è sul rischio: sceglie il punto della frontiera più vicino
-$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); }));
-function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (SEL === "tuo") return { w: WCUR }; if (SEL === "obiettivo") return { w: pesiPiano() }; if (SEL === "sharpe" && P) return { w: P[FRONT.sharpe].w }; if (typeof SEL === "number" && P && P[SEL]) return { w: P[SEL].w }; if (SEL === "fmin" || SEL === "fmax") { const q = (fissa().pts || []).find((p) => p.k === SEL); if (q) return { w: q.w }; } return { w: WCUR }; }
+$("#rs").addEventListener("input", (e) => { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const v = P[0].vol + (+e.target.value / +e.target.max) * (P[P.length - 1].vol - P[0].vol); SEL = P.reduce((a, p, i) => (Math.abs(p.vol - v) < Math.abs(P[a].vol - v) ? i : a), 0); disegnaFrontiera(true); proponiRitardo(); });  // il cursore è sul rischio: sceglie il punto della frontiera più vicino
+$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); proponi(); }));
+function applicaBozza(w) {
+  if (!BOZZA) BOZZA = { w: F.map((f) => f.w), q0: F.map((f) => f.q0), lots: JSON.parse(JSON.stringify(ST.lots)), esempio: ST.esempio, wcur: WCUR.slice() };
+  F.forEach((f, i) => { f.w = w[i]; f.q0 = Math.floor((IMPORTO() * w[i]) / f.p0); });
+  if (BOZZA.esempio && ST.esempio) F.forEach((f) => (ST.lots[f.s] = f.q0 > 0 ? [{ q: f.q0, d: BASE, p: "" }] : []));
+}
+function annullaBozza() {
+  if (!BOZZA) return;
+  F.forEach((f, i) => { f.w = BOZZA.w[i]; f.q0 = BOZZA.q0[i]; });
+  if (BOZZA.esempio && ST.esempio) ST.lots = BOZZA.lots;
+  BOZZA = null; SEL = "tuo"; disegnaPosizioni(); aggiorna();
+}
+function proponi() {  // tutta la pagina si aggiorna con il portafoglio scelto sulla frontiera; «Annulla» torna all'originale
+  if (SEL === "tuo" || SEL === "obiettivo") { annullaBozza(); return; }
+  applicaBozza(arrotonda(pesoSel().w)); disegnaPosizioni(); aggiorna();
+}
+let tb = null; const proponiRitardo = () => { clearTimeout(tb); tb = setTimeout(proponi, 300); };
+function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (SEL === "tuo") return { w: WCUR }; if (SEL === "obiettivo") return { w: pesiOrig() }; if (SEL === "sharpe" && P) return { w: P[FRONT.sharpe].w }; if (typeof SEL === "number" && P && P[SEL]) return { w: P[SEL].w }; if (SEL === "fmin" || SEL === "fmax") { const q = (fissa().pts || []).find((p) => p.k === SEL); if (q) return { w: q.w }; } return { w: WCUR }; }
 
 /* ---------- ribilanciamento ---------- */
 function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
@@ -882,7 +901,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
     const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
-    $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella del programma. Lo trovi anche nel menu «Portafoglio» in alto.`;
+    $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella del programma. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = "/" + encodeURIComponent(j.file); }; $("#sv-apri").focus(); caricaPortafogli();
   } catch (er) { $("#sv-err").textContent = er.message || "Non sono riuscito a salvare."; }
   b.disabled = false;
