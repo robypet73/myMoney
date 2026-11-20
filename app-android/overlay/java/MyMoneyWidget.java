@@ -16,6 +16,13 @@ import android.graphics.Path;
 import android.graphics.Shader;
 import android.net.Uri;
 import android.os.Build;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
 import androidx.core.content.ContextCompat;
 import android.os.PowerManager;
 import android.text.SpannableStringBuilder;
@@ -58,6 +65,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
     @Override
     public void onEnabled(Context c) {
         schedule(c);
+        scheduleWork(c);
     }
 
     @Override
@@ -95,27 +103,38 @@ public class MyMoneyWidget extends AppWidgetProvider {
         }
     }
 
+    static Constraints rete() {
+        return new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+    }
+
+    /** Aggiornamento automatico ogni ora in background (WorkManager: parte anche con l'app chiusa, dopo il riavvio e con il telefono in standby). */
+    static void scheduleWork(Context c) {
+        try {
+            WorkManager.getInstance(c).enqueueUniquePeriodicWork("mymoney-widget", ExistingPeriodicWorkPolicy.KEEP,
+                    new PeriodicWorkRequest.Builder(MyMoneyWidgetWorker.class, 60, TimeUnit.MINUTES).setConstraints(rete()).build());
+        } catch (Exception e) {
+            // WorkManager non disponibile: resta l'allarme
+        }
+    }
+
+    /** Un aggiornamento subito, in background. */
     static void refreshAsync(final Context c, final PendingResult pr) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    refreshData(c);
-                    refreshAll(c);
-                } catch (Exception e) {
-                    // rete assente: resta l'ultimo dato
-                } finally {
-                    if (pr != null) pr.finish();
-                }
-            }
-        }).start();
+        try {
+            scheduleWork(c);
+            WorkManager.getInstance(c).enqueue(new OneTimeWorkRequest.Builder(MyMoneyWidgetWorker.class).setConstraints(rete()).build());
+        } catch (Exception e) {
+            // rete assente o WorkManager non disponibile
+        } finally {
+            if (pr != null) pr.finish();
+        }
     }
 
     static String http(String u) throws Exception {
         HttpURLConnection h = (HttpURLConnection) new URL(u).openConnection();
         h.setConnectTimeout(6000);
         h.setReadTimeout(8000);
-        h.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; myMoney/1.0)");
+        h.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36");
+        h.setRequestProperty("Accept-Language", "en-GB");
         InputStream in = h.getInputStream();
         try {
             ByteArrayOutputStream o = new ByteArrayOutputStream();

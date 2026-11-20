@@ -374,5 +374,10 @@
     } catch (e) {}
   }
   setInterval(pubblicaWidget, 15000); setTimeout(pubblicaWidget, 3000); document.addEventListener("visibilitychange", () => { if (document.hidden) pubblicaWidget(); });
+  // quando si torna nell'app (o ogni 5 minuti se resta aperta) i prezzi si riscaricano da justETF: non restano quelli di quando l'hai aperta
+  let ultimoAuto = Date.now();
+  const rinfresca = () => { if (typeof scaricaAuto === "function" && typeof SC !== "undefined" && !SC.aperta && Date.now() - ultimoAuto > 120000) { ultimoAuto = Date.now(); scaricaAuto(); } };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) rinfresca(); });
+  setInterval(() => { if (!document.hidden) rinfresca(); }, 300000);
   window.MOTORE = { doc, app: true, sincronizza };
 })();

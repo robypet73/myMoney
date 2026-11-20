@@ -17,6 +17,7 @@ public class MyMoneyWidgetPlugin extends Plugin {
             return;
         }
         getContext().getSharedPreferences(MyMoneyWidget.PREFS, 0).edit().putString(MyMoneyWidget.KEY, data).apply();
+        MyMoneyWidget.scheduleWork(getContext());  // da ora il widget si aggiorna da solo ogni ora
         MyMoneyWidget.refreshAll(getContext());
         call.resolve(new JSObject());
     }
