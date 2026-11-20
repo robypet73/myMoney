@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""francesca: apre la pagina del portafoglio (francesca.html) nel browser e scarica i prezzi aggiornati dei fondi.
+"""francesca: apre la pagina del portafoglio nel browser e scarica i prezzi aggiornati dei fondi.
+
+Ogni portafoglio è un file HTML nella cartella del programma (francesca.html, e quelli salvati dalla pagina con «Salva come nuovo portafoglio»).
+All'avvio si apre l'ultimo aperto; dal menu in alto nella pagina si passa a qualsiasi altro.
 
 Prezzi da Yahoo Finance (quotazioni di Borsa Italiana); se Yahoo non risponde, da justETF. Solo libreria standard di Python (3.9 o più recente).
 
 Avvio:  avvia.cmd  (doppio clic su Windows)   oppure   python francesca.py
-Opzioni: --minuti 5  --porta 8800  --no-browser
+Opzioni: --minuti 5  --porta 8800  --no-browser  --file nome.html (apre quel portafoglio invece dell'ultimo)
 
-Il programma ascolta solo su 127.0.0.1 e serve soltanto francesca.html. L'ultimo scarico è salvato nella cartella dell'utente
+Il programma ascolta solo su 127.0.0.1 e serve soltanto i file HTML dei portafogli nella sua cartella. L'ultimo scarico è salvato nella cartella dell'utente
 (Windows: %LOCALAPPDATA%\\francesca\\prezzi.json), non accanto ai file del programma.
 """
 import argparse
 import datetime
+import html
 import json
 import os
 import re
@@ -22,8 +26,12 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HTML = "francesca.html"
+HTML = "francesca.html"  # portafoglio di partenza
 NOME = "francesca"
+NOME_PF = re.compile(r"^[A-Za-z0-9]{1,30}$")  # nome di un portafoglio: solo lettere e cifre
+FILE_PF = re.compile(r"^[A-Za-z0-9_-]{1,80}\.html$")
+RE_DATI = re.compile(r'(<script type="application/json" id="dati">)(.*?)(</script>)', re.S)
+RE_META = re.compile(r'<script type="application/json" id="dati">\{"meta":(\{[^{}]*\})', re.S)
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}
 FONTE_YAHOO = "Yahoo Finance (Borsa Italiana)"
 FONTE_JETF = "justETF (quotazione di riferimento: può differire di qualche centesimo da Borsa Italiana)"
@@ -190,8 +198,117 @@ class Prezzi:
             return self.leggi()
 
 
-# ---- server locale: solo 127.0.0.1, un solo file servito
-def crea_server(prezzi, porta, percorso_html):
+# ---- portafogli: un file HTML ciascuno nella cartella del programma
+def _num_versione(v):
+    m = re.fullmatch(r"V(\d+)", str(v))
+    return int(m.group(1)) if m else 0
+
+
+class Portafogli:
+    """Elenco dei file HTML che sono portafogli, ultimo aperto (ricordato nella cartella dell'utente) e salvataggio di un nuovo portafoglio."""
+
+    def __init__(self, cartella, file_ultimo, predefinito=HTML):
+        self.dir, self.file_ultimo, self.predefinito = cartella, file_ultimo, predefinito
+        self.lock = threading.Lock()
+
+    def percorso(self, nomefile):
+        return os.path.join(self.dir, nomefile)
+
+    def info(self, nomefile):
+        """{file, nome, versione, descrizione} se nomefile è un portafoglio della cartella, altrimenti None."""
+        if not FILE_PF.match(nomefile or ""):
+            return None
+        try:
+            with open(self.percorso(nomefile), encoding="utf-8") as fh:
+                m = RE_META.search(fh.read())
+            if not m:
+                return None
+            meta = json.loads(m.group(1))
+        except (OSError, ValueError):
+            return None
+        return {"file": nomefile, "nome": meta.get("nome") or nomefile[:-5], "versione": meta.get("versione") or "V1", "descrizione": meta.get("descrizione") or ""}
+
+    def elenco(self):
+        try:
+            nomi = [n for n in os.listdir(self.dir) if FILE_PF.match(n)]
+        except OSError:
+            return []
+        r = [i for i in (self.info(n) for n in nomi) if i]
+        return sorted(r, key=lambda i: (i["nome"].lower(), _num_versione(i["versione"]), i["file"]))
+
+    def ultimo(self):
+        try:
+            with open(self.file_ultimo, encoding="utf-8") as fh:
+                f = json.load(fh).get("file")
+            if self.info(f):
+                return f
+        except (OSError, ValueError, AttributeError):
+            pass
+        if self.info(self.predefinito):
+            return self.predefinito
+        e = self.elenco()
+        return e[0]["file"] if e else None
+
+    def segna(self, nomefile):
+        try:
+            with open(self.file_ultimo, "w", encoding="utf-8") as fh:
+                json.dump({"file": nomefile}, fh)
+        except OSError:
+            pass
+
+    def salva(self, da, nome, versione, descrizione, pesi):
+        """Crea nome_V<n>.html partendo dal portafoglio `da` con i nuovi pesi. Ritorna info del nuovo file; ValueError con un messaggio per l'utente se qualcosa non va."""
+        if not self.info(da):
+            raise ValueError("Portafoglio di partenza non trovato.")
+        if not isinstance(nome, str) or not NOME_PF.match(nome):
+            raise ValueError("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.")
+        try:
+            v = int(str(versione).lstrip("Vv"))
+        except ValueError:
+            v = 0
+        if not 1 <= v <= 999:
+            raise ValueError("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).")
+        descrizione = " ".join(str(descrizione or "").split())
+        if not descrizione:
+            raise ValueError("Scrivi una breve descrizione.")
+        if len(descrizione) > 300:
+            raise ValueError("La descrizione può avere al massimo 300 caratteri.")
+        with open(self.percorso(da), encoding="utf-8") as fh:
+            t = fh.read()
+        m = RE_DATI.search(t)
+        d = json.loads(m.group(2))
+        if not isinstance(pesi, dict) or set(pesi) != {f["s"] for f in d["funds"]}:
+            raise ValueError("I pesi non corrispondono ai fondi del portafoglio.")
+        try:
+            w = {k: round(float(x), 3) for k, x in pesi.items()}
+        except (TypeError, ValueError):
+            raise ValueError("Pesi non validi.")
+        if min(w.values()) < 0 or abs(sum(w.values()) - 1) > 0.0015:
+            raise ValueError("I pesi devono essere positivi e dare 100%.")
+        versione = f"V{v}"
+        nuovo = f"{nome}_{versione}.html"
+        amount, chiave = d["meta"]["amount"], f"pf-{nome}-{versione}"
+        for f in d["funds"]:
+            f["w"] = w[f["s"]]
+            f["q0"] = int(amount * f["w"] / f["p0"])  # quote del piano d'esempio: il piano diviso il prezzo, per difetto
+        meta = {"nome": nome, "versione": versione, "descrizione": descrizione, "chiave": chiave, "da": da, "creato": datetime.date.today().isoformat()}
+        meta.update({k: x for k, x in d["meta"].items() if k not in meta})
+        d["meta"] = meta
+        corpo = json.dumps(d, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+        t = t[:m.start()] + m.group(1) + corpo + m.group(3) + t[m.end():]
+        t = re.sub(r"<title>.*?</title>", lambda _: f"<title>{html.escape(nome)}</title>", t, count=1, flags=re.S)
+        with self.lock:
+            try:
+                with open(self.percorso(nuovo), "x", encoding="utf-8") as fh:
+                    fh.write(t)
+            except FileExistsError:
+                libere = max([_num_versione(i["versione"]) for i in self.elenco() if i["nome"] == nome] + [v]) + 1
+                raise ValueError(f"Esiste già {nuovo}: usa la versione V{libere}.")
+        return self.info(nuovo)
+
+
+# ---- server locale: solo 127.0.0.1, solo i file dei portafogli
+def crea_server(prezzi, porta, portafogli):
     ammessi = {f"127.0.0.1:{porta}", f"localhost:{porta}"}
 
     class H(BaseHTTPRequestHandler):
@@ -223,17 +340,47 @@ def crea_server(prezzi, porta, percorso_html):
             p = self.path.split("?")[0]
             if p == "/api/prezzi":
                 return self.invia(200, prezzi.leggi())
-            if p in ("/", "/" + HTML):
+            if p == "/api/portafogli":
+                return self.invia(200, {"ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
+            if p == "/":  # apre l'ultimo portafoglio aperto
+                f = portafogli.ultimo()
+                if not f:
+                    return self.invia(404, {"errore": "nessun portafoglio nella cartella"})
+                self.send_response(302)
+                self.send_header("Location", "/" + f)
+                self.send_header("Content-Length", "0")
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                return
+            f = p[1:]
+            if portafogli.info(f):
                 try:
-                    return self.invia(200, open(percorso_html, "rb").read(), "text/html; charset=utf-8")
+                    corpo = open(portafogli.percorso(f), "rb").read()
                 except OSError:
-                    return self.invia(404, {"errore": HTML + " manca"})
+                    return self.invia(404, {"errore": f + " manca"})
+                portafogli.segna(f)
+                return self.invia(200, corpo, "text/html; charset=utf-8")
             return self.invia(404, {"errore": "non trovato"})
 
         def do_POST(self):
             if not (self.host_ok() and self.origine_ok()):
                 return self.invia(403, {"errore": "richiesta non ammessa"})
-            if self.path.split("?")[0] != "/api/aggiorna":
+            percorso = self.path.split("?")[0]
+            if percorso == "/api/salva":
+                n = int(self.headers.get("Content-Length") or 0)
+                if n > 65536:
+                    return self.invia(413, {"errore": "richiesta troppo grande"})
+                try:
+                    r = json.loads(self.rfile.read(n))
+                    if not isinstance(r, dict):
+                        raise ValueError("richiesta non valida")
+                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"))
+                except ValueError as e:  # include json.JSONDecodeError
+                    return self.invia(400, {"errore": str(e) or "richiesta non valida"})
+                except OSError as e:
+                    return self.invia(500, {"errore": f"file non scritto: {e}"})
+                return self.invia(200, nuovo)
+            if percorso != "/api/aggiorna":
                 return self.invia(404, {"errore": "non trovato"})
             self.rfile.read(int(self.headers.get("Content-Length") or 0))
             # risposta a flusso: una riga JSON per ogni passo dello scarico, l'ultima {"t": "fine", "dati": {...}}
@@ -282,17 +429,25 @@ def avvia_app():
     ap.add_argument("--minuti", type=float, default=5, help="ogni quanti minuti scaricare con la borsa aperta (fuori orario ogni 60)")
     ap.add_argument("--porta", type=int, default=8800)
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--file", help="apre questo portafoglio (file HTML nella cartella) invece dell'ultimo aperto")
     a = ap.parse_args()
-    percorso = os.path.join(os.path.dirname(os.path.abspath(__file__)), HTML)
-    if not os.path.exists(percorso):
-        sys.exit(f"Manca {HTML}.")
-    titoli, base = carica_config(percorso)
-    file_prezzi = os.path.join(cartella_dati(), "prezzi.json")
+    cartella = os.path.dirname(os.path.abspath(__file__))
+    dati = cartella_dati()
+    pf = Portafogli(cartella, os.path.join(dati, "ultimo.json"))
+    if a.file:
+        if not pf.info(os.path.basename(a.file)):
+            sys.exit(f"{a.file} non è un portafoglio presente nella cartella del programma.")
+        pf.segna(os.path.basename(a.file))
+    aperto = pf.ultimo()
+    if not aperto:
+        sys.exit(f"Nella cartella non c'è nessun portafoglio ({HTML} manca).")
+    titoli, base = carica_config(pf.percorso(aperto))
+    file_prezzi = os.path.join(dati, "prezzi.json")
     prezzi = Prezzi(titoli, base, file_prezzi)
     srv = None
     for porta in range(a.porta, a.porta + 20):  # se la porta è occupata prova la successiva
         try:
-            srv = crea_server(prezzi, porta, percorso)
+            srv = crea_server(prezzi, porta, pf)
             break
         except OSError:
             continue
@@ -302,6 +457,7 @@ def avvia_app():
     threading.Thread(target=ciclo, args=(prezzi, a.minuti, ferma), daemon=True).start()
     url = f"http://127.0.0.1:{porta}/"
     print("Pagina:", url, "- lascia aperta questa finestra; chiudila o premi Ctrl+C per fermare i prezzi.", flush=True)
+    print("Portafoglio aperto:", aperto, "- nella pagina puoi passare agli altri:", ", ".join(i["file"] for i in pf.elenco()), flush=True)
     print("Ultimo scarico salvato in:", file_prezzi, flush=True)
     if not a.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
