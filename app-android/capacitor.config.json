@@ -1,0 +1,8 @@
+{
+  "appId": "it.robypet73.mymoneyportafogli",
+  "appName": "myMoney Portafogli",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": { "CapacitorHttp": { "enabled": true } },
+  "android": { "backgroundColor": "#0D1219" }
+}

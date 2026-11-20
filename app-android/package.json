@@ -1,0 +1,10 @@
+{
+  "name": "mymoney-portafogli-android",
+  "private": true,
+  "description": "Involucro Capacitor di portafoglio.html: il motore JavaScript (motore.js) sostituisce il programma Python",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

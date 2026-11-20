@@ -1,0 +1,318 @@
+/* motore.js — il programma Python (build.py + fonti.py) riscritto per girare dentro l'app Android.
+   Fa le stesse cose del server locale: elenco e salvataggio dei portafogli (nella memoria dell'app), scarico da justETF, scheda dei titoli,
+   costruzione dei dati della pagina. La pagina continua a chiamare /api/...: qui le richieste vengono intercettate e risolte in locale.
+   Le chiamate verso justETF passano da fetch, che in Capacitor (CapacitorHttp) è nativo e quindi senza limiti CORS. */
+(function () {
+  "use strict";
+  const SEED = window.SEED_APP || { portafogli: {}, titoli: {}, tab: {} };
+  const T = SEED.tab;
+  const LS = window.localStorage;
+  const FETCH = window.fetch.bind(window);
+  const PROFILO = "https://www.justetf.com/en/etf-profile.html?isin=";
+  const GRAFICO = (isin, dal, al) => `https://www.justetf.com/api/etfs/${isin}/performance-chart?locale=en&currency=EUR&valuesType=MARKET_VALUE&reduceData=false&includeDividends=false&features=DIVIDENDS&dateFrom=${dal}&dateTo=${al}`;
+  const FONTE = "justETF";
+  const CLASSI = ["Azionario", "Obbligazionario", "Materie prime"];
+  const NOME_PF = /^[A-Za-z0-9]{1,30}$/, FILE_PF = /^[A-Za-z0-9]{1,30}_V[0-9]{1,3}\.json$/, ISIN_RE = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const oggi = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const sommaGiorni = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const feriale = (iso) => { const g = new Date(iso + "T12:00:00Z").getUTCDay(); return g >= 1 && g <= 5; };
+  const r4 = (x) => Math.round(x * 1e4) / 1e4;
+  const sum = (a) => a.reduce((s, x) => s + x, 0);
+  const Err = (m) => Object.assign(new Error(m), { utente: true });
+
+  // ---- memoria dell'app (localStorage)
+  const leggiLS = (k) => { try { const v = LS.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+  const scriviLS = (k, v) => { try { LS.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+  if (!LS.getItem("mm:init")) {  // prima apertura: i portafogli e le schede note che vengono con l'app
+    Object.entries(SEED.portafogli).forEach(([f, d]) => scriviLS("mm:pf:" + f, d));
+    LS.setItem("mm:init", "1");
+  }
+  const files = () => Object.keys(LS).filter((k) => k.startsWith("mm:pf:")).map((k) => k.slice(6)).filter((f) => FILE_PF.test(f));
+  const definizione = (f) => (FILE_PF.test(f || "") ? leggiLS("mm:pf:" + f) : null);
+  const numVers = (v) => { const m = /^V(\d+)$/.exec(String(v)); return m ? +m[1] : 0; };
+  const info = (f) => {
+    const d = definizione(f); if (!d || !Array.isArray(d.titoli)) return null;
+    const m = /^([A-Za-z0-9]+)_V(\d+)\.json$/.exec(f);
+    return { file: f, nome: d.nome || m[1], versione: "V" + String(d.versione || m[2]).replace(/^[Vv]/, ""), descrizione: d.descrizione || "" };
+  };
+  const elenco = () => files().map(info).filter(Boolean).sort((a, b) => (a.nome.toLowerCase() < b.nome.toLowerCase() ? -1 : a.nome.toLowerCase() > b.nome.toLowerCase() ? 1 : numVers(a.versione) - numVers(b.versione)));
+  const ultimo = () => { const u = LS.getItem("mm:ultimo"); if (u && info(u)) return u; const e = elenco(); return e.length ? e[e.length - 1].file : null; };
+  const segna = (f) => LS.setItem("mm:ultimo", f);
+
+  // ---- rete
+  async function scarica(url, json) {
+    let ultimoErr = null;
+    for (let k = 0; k < 4; k++) {
+      try {
+        const r = await FETCH(url, { headers: { "Accept-Language": "en-GB" } });
+        if (r.status === 404) throw Object.assign(new Error("titolo non trovato su justETF"), { fatale: true });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return json ? await r.json() : await r.text();
+      } catch (e) { if (e.fatale) throw e; ultimoErr = e; }
+      await sleep(1500 * (k + 1));
+    }
+    throw new Error("justETF non risponde (" + (ultimoErr && ultimoErr.message) + ")");
+  }
+  function isinValido(s) {
+    if (typeof s !== "string" || !ISIN_RE.test(s)) return false;
+    const cifre = [...s].map((c) => parseInt(c, 36)).join(""); let tot = 0;
+    [...cifre].reverse().forEach((c, i) => { let d = +c; if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; } tot += d; });
+    return tot % 10 === 0;
+  }
+  async function serie(isin, dal) {
+    const j = await scarica(GRAFICO(isin, dal || sommaGiorni(oggi(), -(365 * 10 + 3)), oggi()), true), out = [];
+    ((j && j.series) || []).forEach((x) => { const v = x.value && x.value.raw; if (v && feriale(x.date)) out.push([x.date, Math.round(parseFloat(v) * 1e4) / 1e4]); });
+    if (!out.length) throw new Error(isin + ": nessun prezzo su justETF");
+    return out;
+  }
+
+  // ---- pagina del fondo di justETF -> record del fondo (stessa logica di fonti.py)
+  const unescapeHtml = (s) => { const t = document.createElement("textarea"); t.innerHTML = s; return t.value; };
+  const testo = (s) => unescapeHtml((s || "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+  const campo = (t, id) => { const m = new RegExp('data-testid="' + id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '"[^>]*>([\\s\\S]*?)</').exec(t); return m ? testo(m[1]) : ""; };
+  const num = (s) => { const m = /-?\d[\d,]*\.?\d*/.exec(s || ""); if (!m) return null; const x = parseFloat(m[0].replace(/,/g, "")); return isNaN(x) ? null : x; };
+  const dataIt = (s) => { const m = /^(\d{1,2}) (\w+) (\d{4})/.exec(s || ""); return m && T.MESI[m[2]] ? m[3] + "-" + String(T.MESI[m[2]]).padStart(2, "0") + "-" + String(+m[1]).padStart(2, "0") : null; };
+  function righe(t, pref) {
+    const out = [], re = new RegExp('<tr data-testid="etf-holdings_' + pref + '_row">([\\s\\S]*?)</tr>', "g"); let b;
+    while ((b = re.exec(t))) {
+      const blocco = b[1], peso = num(campo(blocco, "tl_etf-holdings_" + pref + "_value_percentage"));
+      let nome = campo(blocco, "tl_etf-holdings_" + pref + "_value_name"), isin = null;
+      if (!nome) { const m = /href="([^"]*)"[^>]*title="([^"]*)"/.exec(blocco); if (m) { nome = unescapeHtml(m[2]); const mi = /\/([A-Z]{2}[A-Z0-9]{9}\d)(?:[/?]|$)/.exec(m[1]); isin = mi ? mi[1] : null; } }
+      if (nome && peso !== null) out.push([nome, peso / 100, isin]);
+    }
+    return out;
+  }
+  function parseProfilo(t, isin) {
+    let nome = campo(t, "etf-profile-header_etf-name"); if (!nome) { const h = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(t); nome = h ? testo(h[1]) : ""; }
+    if (!nome) throw new Error(isin + ": pagina del fondo non riconosciuta");
+    let repl = campo(t, "tl_etf-basics_value_replication-method") || campo(t, "tl_etf-basics_value_replication"); const r = repl.toLowerCase();
+    repl = /swap|synth/.test(r) ? "Sintetica" : r.includes("sampl") ? "Fisica a campione" : r.includes("full") ? "Fisica completa" : r.includes("phys") ? "Fisica" : (repl || null);
+    return { isin, name: nome, ticker: campo(t, "etf-profile-header_identifier-button-ticker") || null, ter: num(campo(t, "tl_etf-basics_value_ter")), aum: num(campo(t, "etf-profile-header_fund-size-value-wrapper")),
+      focus: campo(t, "tl_etf-basics_value_investment-focus"), repl, dom: campo(t, "tl_etf-basics_value_domicile-country") || null, emittente: campo(t, "tl_etf-basics_value_fund-provider") || null,
+      lancio: dataIt(campo(t, "tl_etf-basics_value_launch-date")), valuta: campo(t, "tl_etf-basics_value_fund-currency") || null, n: Math.round(num(campo(t, "etf-profile-header_holdings-value")) || 0) || null,
+      top: righe(t, "top-holdings"), paesi: righe(t, "countries"), settori: righe(t, "sectors") };
+  }
+  const classe = (focus) => { const f = (focus || "").split(",")[0].trim().toLowerCase(); return /^(bond|money)/.test(f) ? "Obbligazionario" : /^(commod|precious|crypto)/.test(f) ? "Materie prime" : "Azionario"; };
+  const eOro = (nome, focus) => /\bgold\b|\boro\b|precious/i.test(nome + " " + focus);
+  function tipoRuolo(cls, focus, nome) {
+    const f = (focus || "").toLowerCase(), n = (nome || "").toLowerCase();
+    if (cls === "Obbligazionario") return [/corporate|credit|high yield/.test(f + " " + n) ? "Obbligazioni · societarie" : /govern|treasur|sovereign|state/.test(f + " " + n) ? "Obbligazioni · titoli di Stato" : "Obbligazioni", "Obbligazioni"];
+    if (cls === "Materie prime") return eOro(nome, focus) ? ["Oro", "Oro"] : ["Materie prime", "Materie prime"];
+    const sec = f.includes(",") ? f.split(",").slice(1).join(",").trim() : "";
+    if (/\b(emerging|asia|china|india|latin america|africa|brazil|korea|taiwan)\b/.test(sec + " " + n)) return ["Azioni · emergenti", "Emergenti"];
+    if (["world", "europe", "north america", "usa", "united states", "developed", "eurozone", "euro area", "global"].includes(sec) || (/\b(world|all[- ]country|global)\b/.test(n) && ["", "world"].includes(sec))) return ["Azioni · mondo ed Europa", "Nucleo"];
+    return ["Azioni · settoriali", "Satellite"];
+  }
+  const chiave = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  function costruisciMix(p, cls) {
+    const insEuro = new Set(T.EURO), insNoEuro = new Set(T.EUROPA_NO_EURO), insEm = new Set(T.EMERGENTI), insAltri = new Set(T.ALTRI_SVILUPPATI);
+    const paesiEn = p.paesi.map(([n, w]) => [n, w]);
+    const paesi = paesiEn.filter(([n]) => n !== "Other" && n !== "Others").slice(0, 8).map(([n, w]) => [T.PAESI[n] || n, r4(w)]);
+    if (cls === "Materie prime") { const oro = eOro(p.name, p.focus), k = oro ? "Oro" : "Materie prime"; return { aree: { [k]: 1.0 }, settori: {}, valute: { [k + " (prezzato in USD)"]: 1.0 }, paesi: [], top: [], nt: 0 }; }
+    let aree = {}, valute = {};
+    paesiEn.forEach(([n, w]) => {
+      const a = n === "United States" ? "Stati Uniti" : insEuro.has(n) ? "Area euro" : insNoEuro.has(n) ? "Europa fuori dall'euro" : n === "Japan" ? "Giappone" : insEm.has(n) ? "Mercati emergenti" : insAltri.has(n) ? "Altri sviluppati" : "Altro";
+      aree[a] = (aree[a] || 0) + w;
+      const v = insEuro.has(n) ? "EUR" : T.VALUTE[n] || "Altre valute"; valute[v] = (valute[v] || 0) + w;
+    });
+    if (cls === "Obbligazionario") valute = { [p.valuta || "EUR"]: 1.0 };
+    [[aree, "Altro"], [valute, "Altre valute"]].forEach(([d, k]) => { const resto = 1 - sum(Object.values(d)); if (resto > 0.0005 && Object.keys(d).length) d[k] = (d[k] || 0) + resto; });
+    let settori = {};
+    if (cls === "Azionario") { p.settori.forEach(([n, w]) => { const k = T.SETTORI[n] || "Altro"; settori[k] = (settori[k] || 0) + w; }); const resto = 1 - sum(Object.values(settori)); if (Object.keys(settori).length && resto > 0.0005) settori["Altro"] = (settori["Altro"] || 0) + resto; }
+    const top = []; if (cls === "Azionario") p.top.forEach(([n, w, isin]) => { const en = T.ISO2[(isin || "").slice(0, 2)]; top.push([n, T.PAESI[en] || en || "", r4(w), chiave(n)]); });
+    const rd = (d) => Object.fromEntries(Object.entries(d).map(([k, v]) => [k, r4(v)]));
+    return { aree: rd(aree), settori: rd(settori), valute: rd(valute), paesi, top, nt: top.length };
+  }
+  function costruisciFondo(p, sigla) {
+    const cls = classe(p.focus), [tipo, ruolo] = tipoRuolo(cls, p.focus, p.name);
+    return { s: sigla, isin: p.isin, name: p.name, cls, ruolo, tipo, w: 0, q0: 0, p0: 0, ter: p.ter, aum: p.aum, adv: null, emittente: p.emittente, repl: p.repl, dom: p.dom, lancio: p.lancio, valuta: p.valuta, n: p.n, mix: costruisciMix(p, cls) };
+  }
+  function siglaProposta(p) {
+    let s = (p.ticker || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase(); if (s) return s.slice(0, 8);
+    const ban = new Set(["UCITS", "ETF", "ETC", "ETN", "ACC", "DIST", "EUR", "USD", "ACCUMULATING", "DISTRIBUTING", "C", "D"]);
+    const parole = (p.name.match(/[A-Za-z0-9]+/g) || []).filter((w) => !ban.has(w.toUpperCase()));
+    return parole.slice(0, 5).map((w) => w[0]).join("").toUpperCase() || p.isin.replace(/[^A-Z0-9]/g, "").slice(-6);
+  }
+
+  // ---- definizione del portafoglio
+  function intervallo(x, cosa) { if (!(Array.isArray(x) && x.length === 2 && x.every((v) => typeof v === "number") && 0 <= x[0] && x[0] <= x[1] && x[1] <= 100)) throw Err("«vincoli»: " + cosa + " deve essere [minimo, massimo] in percentuale, da 0 a 100."); return [x[0], x[1]]; }
+  function validaDefinizione(d) {
+    if (!d || typeof d !== "object" || Array.isArray(d)) throw Err("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.");
+    const nome = d.nome; if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("«nome»: solo lettere e cifre, niente spazi né simboli, al massimo 30 caratteri.");
+    const v = parseInt(String(d.versione).trim().replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("«versione»: V1, V2, V3… (un numero da 1 a 999).");
+    const descrizione = String(d.descrizione || "").split(/\s+/).filter(Boolean).join(" ");
+    if (!descrizione) throw Err("«descrizione»: scrivi una breve descrizione."); if (descrizione.length > 300) throw Err("«descrizione»: al massimo 300 caratteri.");
+    let amount = 10000; if (d.valore !== undefined && d.valore !== null) { amount = Math.round(parseFloat(d.valore) * 100) / 100; if (isNaN(amount)) throw Err("«valore»: un numero in euro (facoltativo)."); if (!(amount >= 100 && amount <= 1e9)) throw Err("«valore»: tra 100 e 1.000.000.000 euro."); }
+    const tit = d.titoli; if (!Array.isArray(tit) || tit.length < 1 || tit.length > 30) throw Err("«titoli»: da 1 a 30 elementi {\"isin\": …, \"peso\": …}.");
+    const visti = new Set(), rr = [];
+    tit.forEach((x) => {
+      const isin = x && typeof x === "object" ? String(x.isin || "").trim().toUpperCase() : "";
+      if (!isinValido(isin)) throw Err("ISIN non valido: «" + (isin || JSON.stringify(x)) + "».");
+      if (visti.has(isin)) throw Err("ISIN ripetuto: " + isin + "."); visti.add(isin);
+      const peso = parseFloat(x.peso); if (isNaN(peso)) throw Err(isin + ": «peso» deve essere un numero (percentuale).");
+      if (!(peso > 0 && peso <= 100)) throw Err(isin + ": il peso deve essere maggiore di 0 e al massimo 100.");
+      rr.push([isin, peso]);
+    });
+    const tot = sum(rr.map((x) => x[1])); if (Math.abs(tot - 100) > 0.5) throw Err("I pesi danno " + Math.round(tot * 100) / 100 + "%: devono dare 100%.");
+    let vincoli = null;
+    if (d.vincoli !== undefined && d.vincoli !== null) {
+      const vv = d.vincoli; if (typeof vv !== "object" || Array.isArray(vv)) throw Err("«vincoli»: un oggetto con «fondi» (per ISIN) e «classi».");
+      const fondi = {}, classi = {};
+      Object.entries(vv.fondi || {}).forEach(([i, x]) => { if (!visti.has(i)) throw Err("«vincoli»: " + i + " non è tra i titoli del portafoglio."); fondi[i] = intervallo(x, i); });
+      Object.entries(vv.classi || {}).forEach(([c, x]) => { if (!CLASSI.includes(c)) throw Err("«vincoli»: classe «" + c + "» sconosciuta (ammesse: " + CLASSI.join(", ") + ")."); classi[c] = intervallo(x, c); });
+      vincoli = { fondi, classi };
+    }
+    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli };
+  }
+
+  // ---- dati dei titoli: schede note (con l'app), memoria dell'app, justETF
+  const scheda = (isin) => leggiLS("mm:scheda:" + isin);
+  const fondoNoto = (isin) => { const s = SEED.titoli[isin]; if (s && s.fondo) return JSON.parse(JSON.stringify(s.fondo)); const c = scheda(isin); return c && c.fondo ? JSON.parse(JSON.stringify(c.fondo)) : null; };
+  const sigleUsate = () => { const u = new Set(Object.values(SEED.titoli).map((s) => s.fondo && s.fondo.s)); Object.keys(LS).filter((k) => k.startsWith("mm:scheda:")).forEach((k) => { const s = leggiLS(k); if (s && s.fondo) u.add(s.fondo.s); }); return u; };
+  async function titoloScarica(isin, usate, say) {  // scarica ciò che manca per un ISIN e lo mette nella memoria dell'app
+    const sc = scheda(isin); let fondo = fondoNoto(isin);
+    if (sc && sc.scaricato === oggi() && sc.serie && fondo) { say({ t: "testo", testo: isin + ": dati scaricati oggi, li riuso (" + sc.serie.length + " prezzi)" }); return; }
+    if (fondo) say({ t: "testo", testo: isin + ": profilo già noto (" + fondo.name + "), aggiorno i prezzi" });
+    else {
+      say({ t: "testo", testo: isin + ": scarico la scheda del fondo da justETF…" });
+      const p = parseProfilo(await scarica(PROFILO + isin, false), isin); let sigla = siglaProposta(p), k = 1; const base = sigla;
+      while (usate.has(sigla)) { k++; sigla = base.slice(0, 6) + k; } usate.add(sigla);
+      fondo = costruisciFondo(p, sigla);
+      say({ t: "testo", testo: fondo.name + " · " + fondo.tipo + " · TER " + fondo.ter + "% · patrimonio " + fondo.aum + " mln €", c: "t" });
+    }
+    say({ t: "testo", testo: isin + ": scarico lo storico dei prezzi in euro da justETF…" });
+    const s = await serie(isin);
+    if (!scriviLS("mm:scheda:" + isin, { scaricato: oggi(), fondo, serie: s })) throw Err("Memoria dell'app piena: elimina qualche portafoglio.");
+  }
+  function costruisciDaCache(nomefile, avanza) {  // documento {meta, funds, dates, px}; LookupError se mancano dati di oggi
+    const say = avanza || (() => {}), d = definizione(nomefile); if (!d) throw Err("Portafoglio non trovato.");
+    const df = validaDefinizione(d), versione = "V" + df.v; say({ t: "inizio", n: df.pesi.length });
+    const fondi = [], serieTot = {}, siglaDi = {};
+    df.pesi.forEach(([isin, w], k) => {
+      say({ t: "titolo", s: isin, isin, k: k + 1, n: df.pesi.length });
+      const sc = scheda(isin), f = fondoNoto(isin);
+      if (!(sc && sc.scaricato === oggi() && sc.serie && f)) throw Object.assign(new Error(isin + ": dati da scaricare"), { mancano: true });
+      if (fondi.some((x) => x.s === f.s)) throw Err(isin + ": sigla " + f.s + " già usata nel portafoglio");
+      delete f.sym; f.w = w; fondi.push(f); serieTot[f.s] = sc.serie; siglaDi[isin] = f.s;
+      say({ t: "dati", s: f.s, isin, fonte: FONTE, righe: sc.serie.slice(-40) });
+    });
+    const inizio = Object.values(serieTot).map((x) => x[0][0]).sort().pop();
+    const fine = Object.values(serieTot).map((x) => x[x.length - 1][0]).sort()[0];
+    const set = new Set(); Object.values(serieTot).forEach((x) => x.forEach(([dd]) => { if (dd >= inizio && dd <= fine) set.add(dd); }));
+    const date = [...set].sort(); if (date.length < 60) throw Err("Lo storico in comune è troppo breve (" + date.length + " giorni, dal " + inizio + " al " + fine + "): togli il titolo più recente.");
+    const px = {};
+    Object.entries(serieTot).forEach(([sigla, x]) => { const xs = x.slice().sort((a, b) => (a[0] < b[0] ? -1 : 1)); let ult = null, j = 0; px[sigla] = date.map((dd) => { while (j < xs.length && xs[j][0] <= dd) { ult = xs[j][1]; j++; } return ult; }); });
+    fondi.forEach((f) => { f.p0 = px[f.s][px[f.s].length - 1]; f.q0 = Math.floor(df.amount * f.w / f.p0); });
+    const meta = { nome: df.nome, versione, descrizione: df.descrizione, chiave: "pf-" + df.nome + "-" + versione, file: nomefile, base: date[date.length - 1], from: date[0], amount: df.amount, rf: 0.02, origine: "json" };
+    if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
+    say({ t: "salvato", n: fondi.length });
+    return { meta, funds: fondi, dates: date, px };
+  }
+  async function prepara(nomefile, avanza) {
+    const say = avanza || (() => {}), df = validaDefinizione(definizione(nomefile)), usate = sigleUsate();
+    say({ t: "inizio", n: df.pesi.length });
+    for (let k = 0; k < df.pesi.length; k++) { const isin = df.pesi[k][0]; say({ t: "titolo", s: isin, isin, k: k + 1, n: df.pesi.length }); await titoloScarica(isin, usate, say); }
+    costruisciDaCache(nomefile, say);
+    return info(nomefile);
+  }
+  const titoliNoti = () => {
+    const titoli = {}; let base = "";
+    elenco().forEach((i) => { try { validaDefinizione(definizione(i.file)).pesi.forEach(([isin]) => { const f = fondoNoto(isin), sc = scheda(isin); if (f && sc && sc.serie) { titoli[f.s] = titoli[f.s] || { isin, p0: sc.serie[sc.serie.length - 1][1] }; const b = sc.serie[sc.serie.length - 1][0]; if (!base || b < base) base = b; } }); } catch (e) {} });
+    return { titoli, base };
+  };
+
+  // ---- scrittura dei portafogli
+  async function crea(def, avanza) {
+    if (def && typeof def === "object" && Object.keys(def).length === 1 && def.file) { if (!info(def.file)) throw Err("Portafoglio non trovato."); return prepara(def.file, avanza); }
+    const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
+    if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
+    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
+    try { return await prepara(nuovo, avanza); } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
+  }
+  function salva(da, nome, versione, descrizione, pesi, importo) {
+    const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
+    if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
+    const v = parseInt(String(versione).replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).");
+    descrizione = String(descrizione || "").split(/\s+/).filter(Boolean).join(" "); if (!descrizione) throw Err("Scrivi una breve descrizione."); if (descrizione.length > 300) throw Err("La descrizione può avere al massimo 300 caratteri.");
+    const doc = costruisciDaCache(da), siglaIsin = Object.fromEntries(doc.funds.map((f) => [f.s, f.isin]));
+    if (!pesi || typeof pesi !== "object" || Object.keys(pesi).sort().join() !== Object.keys(siglaIsin).sort().join()) throw Err("I pesi non corrispondono ai fondi del portafoglio.");
+    const w = Object.fromEntries(Object.entries(pesi).map(([k, x]) => [k, Math.round(parseFloat(x) * 1000) / 1000]));
+    if (Object.values(w).some((x) => isNaN(x) || x < 0) || Math.abs(sum(Object.values(w)) - 1) > 0.0015) throw Err("I pesi devono essere positivi e dare 100%.");
+    let amount = origine.valore || doc.meta.amount;
+    if (importo !== undefined && importo !== null) { amount = Math.round(parseFloat(importo) * 100) / 100; if (isNaN(amount)) throw Err("Importo non valido."); if (!(amount >= 100 && amount <= 1e9)) throw Err("L'importo deve essere tra 100 e 1.000.000.000 euro."); }
+    const versioneT = "V" + v, nuovo = nome + "_" + versioneT + ".json";
+    if (info(nuovo)) { const libere = Math.max(...elenco().filter((i) => i.nome === nome).map((i) => numVers(i.versione)), v) + 1; throw Err("Esiste già " + nuovo + ": usa la versione V" + libere + "."); }
+    const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([, x]) => x > 0).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
+    const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
+    if (origine.vincoli) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(origine.vincoli.fondi || {}).filter(([i]) => amm.has(i))), classi: origine.vincoli.classi || {} }; }
+    scriviLS("mm:pf:" + nuovo, nd);
+    return info(nuovo);
+  }
+  function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); return { eliminato: f, ultimo: ultimo() }; }
+
+  // ---- prezzi
+  let ultimoTentativo = 0;
+  const prezziVuoti = () => ({ at: null, fonte: "", prezzi: {}, storico: {}, avvisi: [], risposte: 0 });
+  const leggiPrezzi = () => leggiLS("mm:prezzi") || prezziVuoti();
+  async function aggiornaPrezzi(say) {
+    const { titoli, base } = titoliNoti(), vecchi = leggiPrezzi(), prezzi = { ...vecchi.prezzi }, storico = JSON.parse(JSON.stringify(vecchi.storico || {})), avvisi = []; let risposte = 0;
+    const nt = Object.keys(titoli).length; say({ t: "inizio", n: nt });
+    let k = 0;
+    for (const [sigla, t] of Object.entries(titoli)) {
+      k++; say({ t: "titolo", s: sigla, isin: t.isin, k, n: nt });
+      let s; try { s = await serie(t.isin, sommaGiorni(oggi(), -12)); } catch (e) { avvisi.push(sigla + ": prezzo non scaricato"); say({ t: "errore", s: sigla, testo: sigla + ": prezzo non scaricato" }); continue; }
+      risposte++; say({ t: "dati", s: sigla, isin: t.isin, fonte: FONTE, righe: s });
+      let prec = (prezzi[sigla] && prezzi[sigla].p) || t.p0, ok = true;
+      for (const [d, p] of s) { if (d <= base) continue; if (!(p / prec > 0.6 && p / prec < 1.6)) { avvisi.push(sigla + ": prezzo anomalo il " + d + " (" + p + "), ignorato"); say({ t: "avviso", testo: avvisi[avvisi.length - 1] }); ok = false; break; } (storico[d] = storico[d] || {})[sigla] = p; prec = p; }
+      const ultime = s.filter((x) => x[0] > base); if (ok && ultime.length) prezzi[sigla] = { p: ultime[ultime.length - 1][1], d: ultime[ultime.length - 1][0] };
+      await sleep(300);
+    }
+    const nuovo = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), fonte: risposte ? FONTE : vecchi.fonte || "", prezzi, storico, avvisi, risposte };
+    scriviLS("mm:prezzi", nuovo); ultimoTentativo = Date.now(); say({ t: "salvato", n: Object.keys(prezzi).length });
+    return nuovo;
+  }
+
+  // ---- le risposte alle chiamate /api della pagina
+  const json = (corpo, status) => new Response(JSON.stringify(corpo), { status: status || 200, headers: { "Content-Type": "application/json; charset=utf-8" } });
+  function flusso(lavoro) {
+    const enc = new TextEncoder();
+    return new Response(new ReadableStream({ async start(c) { const riga = (ev) => { try { c.enqueue(enc.encode(JSON.stringify(ev) + "\n")); } catch (e) {} }; try { await lavoro(riga); } catch (e) { riga({ t: "fallito", testo: String(e.message || e) }); } try { c.close(); } catch (e) {} } }), { status: 200, headers: { "Content-Type": "application/x-ndjson; charset=utf-8" } });
+  }
+  async function api(percorso, metodo, corpo) {
+    if (metodo === "GET") {
+      if (percorso === "/api/prezzi") return json(leggiPrezzi());
+      if (percorso === "/api/portafogli") return json({ ultimo: ultimo(), lista: elenco() });
+      return json({ errore: "non trovato" }, 404);
+    }
+    let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
+    if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
+    if (percorso === "/api/aggiorna") return flusso(async (riga) => {
+      let dati;
+      if (Date.now() - ultimoTentativo < 15000) { riga({ t: "riuso" }); dati = leggiPrezzi(); }
+      else { try { dati = await aggiornaPrezzi(riga); } catch (e) { riga({ t: "errore", testo: "errore nello scarico: " + e.message }); dati = leggiPrezzi(); dati.avvisi = (dati.avvisi || []).concat(["errore nello scarico: " + e.message]); dati.risposte = 0; } }
+      riga({ t: "fine", dati });
+    });
+    return json({ errore: "non trovato" }, 404);
+  }
+  window.fetch = function (url, opts) {
+    const u = typeof url === "string" ? url : url && url.url ? url.url : String(url);
+    let p = null; try { const x = new URL(u, location.href); if (x.origin === location.origin && x.pathname.startsWith("/api/")) p = x.pathname; } catch (e) {}
+    if (!p) return FETCH(url, opts);
+    return api(p, ((opts && opts.method) || "GET").toUpperCase(), opts && opts.body);
+  };
+
+  // ---- il documento che la pagina riceve all'apertura (come /portafoglio.html del server)
+  const MODELLO = { meta: { nome: "portafoglio", modello: true, descrizione: "Modello vuoto: carica un file JSON con la definizione di un portafoglio.", base: "", amount: 10000, rf: 0.02 }, funds: [], dates: [], px: {} };
+  function doc() {
+    const modello = () => JSON.parse(JSON.stringify(MODELLO));
+    let pf = new URLSearchParams(location.search).get("pf") || ultimo();
+    if (!pf || !info(pf)) return modello();
+    segna(pf);
+    try { const d = costruisciDaCache(pf); document.title = d.meta.nome + " · " + d.meta.versione; return d; }
+    catch (e) { if (!e.mancano) { const m = modello(); m.meta.descrizione = "Errore: " + e.message; return m; } const m = modello(); m.meta.autocarica = pf; return m; }
+  }
+  window.MOTORE = { doc, app: true };
+})();
