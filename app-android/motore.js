@@ -40,6 +40,44 @@
   const ultimo = () => { const u = LS.getItem("mm:ultimo"); if (u && info(u)) return u; const e = elenco(); return e.length ? e[e.length - 1].file : null; };
   const segna = (f) => LS.setItem("mm:ultimo", f);
 
+  // ---- cartella dei portafogli scelta con il selettore di Android (memoria del telefono o Google Drive); la memoria dell'app resta la copia di lavoro
+  const plug = (n) => { const C = window.Capacitor; if (!C || !(C.isNativePlatform ? C.isNativePlatform() : true)) return null; try { return (C.Plugins && C.Plugins[n]) || (C.registerPlugin && C.registerPlugin(n)) || null; } catch (e) { return null; } };
+  const cartellaAttiva = () => leggiLS("mm:cartella");
+  function formatta(d) {  // come formatta_definizione di build.py: un titolo per riga
+    const j = (x) => JSON.stringify(x), r = [], tutto = { $schema: "schema.json", ...Object.fromEntries(Object.entries(d).filter(([k]) => k !== "$schema")) };
+    Object.entries(tutto).forEach(([k, v]) => {
+      if (k === "titoli") r.push('  "titoli": [\n' + v.map((x) => "    " + j(x)).join(",\n") + "\n  ]");
+      else if (k === "vincoli") r.push('  "vincoli": {\n' + Object.entries(v).map(([kk, vv]) => "    " + j(kk) + ": {" + (Object.keys(vv).length ? "\n" + Object.entries(vv).map(([a, c]) => "      " + j(a) + ": " + j(c)).join(",\n") + "\n    }" : "}")).join(",\n") + "\n  }");
+      else r.push("  " + j(k) + ": " + j(v));
+    });
+    return "{\n" + r.join(",\n") + "\n}\n";
+  }
+  function rispecchia(op) {  // ciò che cambia nella memoria dell'app si riflette nella cartella scelta (senza bloccare la pagina)
+    const F = cartellaAttiva() && plug("MyMoneyFolder"); if (!F) return;
+    F.apply(op).catch((e) => console.error("cartella non aggiornata:", e && e.message));
+  }
+  const scriviFile = (f) => ({ name: f, text: formatta(definizione(f)) });
+  async function sincronizza() {  // all'avvio: i portafogli della cartella diventano quelli dell'app; una cartella vuota riceve quelli dell'app
+    const F = plug("MyMoneyFolder"); if (!F) return;
+    let i; try { i = await F.info(); } catch (e) { return; }
+    if (!i || !i.uri) { LS.removeItem("mm:cartella"); return; }
+    scriviLS("mm:cartella", { label: i.label || "cartella" });
+    let l; try { l = await F.list(); } catch (e) { return; }  // cartella non raggiungibile: restano i portafogli già nell'app
+    const nella = (l.files || []).filter((f) => FILE_PF.test(f.name));
+    if (!nella.length) { try { await F.apply({ write: [...files().map(scriviFile), { name: "schema.json", text: SEED.schema || "{}" }] }); } catch (e) {} return; }
+    files().forEach((f) => LS.removeItem("mm:pf:" + f));
+    nella.forEach((f) => { try { const d = JSON.parse(f.text); if (d && Array.isArray(d.titoli)) { delete d.$schema; scriviLS("mm:pf:" + f.name, d); } } catch (e) {} });
+  }
+  async function cartellaApi(r) {  // risposta di /api/cartella
+    const F = plug("MyMoneyFolder"); if (!F) return null;
+    if (r && r.azione) {
+      if (r.azione === "reset") { try { await F.forget(); } catch (e) {} LS.removeItem("mm:cartella"); }
+      else { let i = {}; try { i = await F.pick({ drive: r.azione === "drive" }); } catch (e) { throw Err("Selezione della cartella non riuscita: " + (e && e.message)); } if (i && i.uri) await sincronizza(); }
+    }
+    const c = cartellaAttiva();
+    return { cartella: c ? c.label : "memoria dell'app", predefinita: "memoria dell'app", personalizzata: !!c, nativo: true, ultimo: ultimo(), lista: elenco() };
+  }
+
   // ---- rete
   async function scarica(url, json) {
     let ultimoErr = null;
@@ -228,7 +266,7 @@
     const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
     scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
-    try { return await prepara(nuovo, avanza); } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
+    try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
   }
   function salva(da, nome, versione, descrizione, pesi, importo) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
@@ -247,9 +285,10 @@
     const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
     if (origine.vincoli) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(origine.vincoli.fondi || {}).filter(([i]) => amm.has(i))), classi: origine.vincoli.classi || {} }; }
     scriviLS("mm:pf:" + nuovo, nd);
+    rispecchia({ write: [scriviFile(nuovo)] });
     return info(nuovo);
   }
-  function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); return { eliminato: f, ultimo: ultimo() }; }
+  function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); rispecchia({ trash: [f] }); return { eliminato: f, ultimo: ultimo() }; }
 
   // ---- prezzi
   let ultimoTentativo = 0;
@@ -283,9 +322,11 @@
     if (metodo === "GET") {
       if (percorso === "/api/prezzi") return json(leggiPrezzi());
       if (percorso === "/api/portafogli") return json({ ultimo: ultimo(), lista: elenco() });
+      if (percorso === "/api/cartella") { const c = await cartellaApi(null); return c ? json(c) : json({ errore: "non trovato" }, 404); }
       return json({ errore: "non trovato" }, 404);
     }
     let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
+    if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
@@ -314,5 +355,22 @@
     try { const d = costruisciDaCache(pf); document.title = d.meta.nome + " · " + d.meta.versione; return d; }
     catch (e) { if (!e.mancano) { const m = modello(); m.meta.descrizione = "Errore: " + e.message; return m; } const m = modello(); m.meta.autocarica = pf; return m; }
   }
-  window.MOTORE = { doc, app: true };
+  // ---- widget: la pagina passa a Android valore, rendita e andamento; il widget li aggiorna da solo con i prezzi di justETF
+  let ultimoWidget = "";
+  function pubblicaWidget() {
+    const W = plug("MyMoneyWidget"); if (!W || typeof F === "undefined" || typeof DATES === "undefined" || !F.length) return;
+    try {
+      const last = DATES.length - 1, hasPos = VAL > 0, q = (i) => (hasPos ? POS[i].q : F[i].q0);
+      const pos = F.map((f, i) => ({ q: q(i), isin: f.isin, p: PX[i][last] })).filter((x) => x.q > 0);
+      let val = hasPos ? VAL : sum(pos.map((x) => x.q * x.p)), serie = null;
+      if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) serie = su.val; }
+      if (!serie) serie = statistiche(pesiPiano(), Math.max(0, last - 365)).v.map((x) => x * IMPORTO());
+      const n = serie.length, giorno = n > 1 ? serie[n - 1] / serie[n - 2] - 1 : null, passo = Math.max(1, Math.ceil(n / 100)), pochi = serie.filter((_, i) => i % passo === 0 || i === n - 1);
+      pochi[pochi.length - 1] = val;
+      const ref = hasPos && INV > 0 ? INV : pochi[0], d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, ref, roi: val / ref - 1, profit: Math.round((val - ref) * 100) / 100, roiL: hasPos && INV > 0 ? "sull'investito" : "ultimo anno", day: giorno, series: pochi, pos, at: Date.now() };
+      const s = JSON.stringify(d); if (s === ultimoWidget) return; ultimoWidget = s; W.update({ data: s }).catch(() => {});
+    } catch (e) {}
+  }
+  setInterval(pubblicaWidget, 15000); setTimeout(pubblicaWidget, 3000); document.addEventListener("visibilitychange", () => { if (document.hidden) pubblicaWidget(); });
+  window.MOTORE = { doc, app: true, sincronizza };
 })();

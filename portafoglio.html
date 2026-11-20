@@ -894,7 +894,18 @@ $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo 
   window.addEventListener("afterprint", fine); window.print();
 };
 $("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o di Google Drive per desktop (per esempio G:\Il mio Drive\portafogli)
-  const c = PF.cartella || {}, n = prompt("Cartella dei portafogli (percorso sul computer; con Google Drive per desktop è la cartella sincronizzata, per esempio G:\\Il mio Drive\\portafogli).\nLascia vuoto per usare quella del programma.\n\nAttuale: " + (c.cartella || ""), c.personalizzata ? c.cartella : "");
+  const c = PF.cartella || {};
+  if (c.nativo) {  // app Android: la cartella si sceglie con il selettore di Android (telefono o Google Drive)
+    const sc = prompt("Cartella dei portafogli: " + c.cartella + "\n\nScrivi 1 = scegli una cartella del telefono, 2 = scegli una cartella su Google Drive, 3 = usa la memoria dell'app", "1");
+    const azione = { 1: "scegli", 2: "drive", 3: "reset" }[(sc || "").trim()]; if (!azione) return;
+    try {
+      const r = await fetch("/api/cartella", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ azione }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
+      location.href = "/";
+    } catch (e) { stato("Cartella non cambiata: " + e.message, true); }
+    return;
+  }
+  const n = prompt("Cartella dei portafogli (percorso sul computer; con Google Drive per desktop è la cartella sincronizzata, per esempio G:\\Il mio Drive\\portafogli).\nLascia vuoto per usare quella del programma.\n\nAttuale: " + (c.cartella || ""), c.personalizzata ? c.cartella : "");
   if (n === null) return;
   try {
     const r = await fetch("/api/cartella", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartella: n }) });

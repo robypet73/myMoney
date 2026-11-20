@@ -33,7 +33,12 @@ def main():
     t = '<!doctype html>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' + t  # nell'app la pagina è sola: serve il tipo di documento, la codifica e la vista per il telefono
     open(os.path.join(WWW, "portafoglio.html"), "w", encoding="utf-8").write(t)
     shutil.copy(os.path.join(QUI, "motore.js"), os.path.join(WWW, "motore.js"))
-    open(os.path.join(WWW, "index.html"), "w", encoding="utf-8").write('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=portafoglio.html"><title>myMoney</title>\n')
+    # prima di aprire la pagina si allineano i portafogli con la cartella scelta (telefono o Google Drive), se c'è
+    open(os.path.join(WWW, "index.html"), "w", encoding="utf-8").write(
+        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>myMoney</title>'
+        '<body style="background:#0d1219;color:#8e9bb0;font:15px system-ui;padding:24px">Apro i portafogli…'
+        '<script src="seed.js"></script><script src="motore.js"></script>'
+        '<script>const va = () => location.replace("portafoglio.html"); setTimeout(va, 8000); window.MOTORE.sincronizza().then(va, va);</script>\n')
     pf, titoli = {}, {}
     cart = os.path.join(RADICE, "portafogli")
     for n in sorted(os.listdir(cart)):
@@ -47,7 +52,7 @@ def main():
             titoli[n[:-5]] = json.load(open(os.path.join(sd, n), encoding="utf-8"))
     tab = {"PAESI": fonti.PAESI, "EURO": sorted(fonti.EURO), "EUROPA_NO_EURO": sorted(fonti.EUROPA_NO_EURO), "EMERGENTI": sorted(fonti.EMERGENTI), "ALTRI_SVILUPPATI": sorted(fonti.ALTRI_SVILUPPATI),
            "VALUTE": fonti.VALUTE, "SETTORI": fonti.SETTORI, "ISO2": fonti.ISO2, "MESI": fonti.MESI}
-    open(os.path.join(WWW, "seed.js"), "w", encoding="utf-8").write("window.SEED_APP = " + json.dumps({"portafogli": pf, "titoli": titoli, "tab": tab}, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    open(os.path.join(WWW, "seed.js"), "w", encoding="utf-8").write("window.SEED_APP = " + json.dumps({"portafogli": pf, "titoli": titoli, "tab": tab, "schema": open(os.path.join(cart, "schema.json"), encoding="utf-8").read()}, ensure_ascii=False, separators=(",", ":")) + ";\n")
     shutil.copy(os.path.join(RADICE, "icons", "icon-192.png"), os.path.join(WWW, "icon.png"))
     print("www pronta:", WWW, "-", len(pf), "portafogli,", len(titoli), "schede note")
 
