@@ -48,7 +48,43 @@ import org.json.JSONObject;
 /** Widget: valore, rendita, variazione di oggi e grafico (con assi) del portafoglio aperto; la rotellina apre la scelta del periodo del grafico. */
 public class MyMoneyWidget extends AppWidgetProvider {
     static final String PREFS = "mymoney_widget";
-    static final String KEY = "data";
+    static final String ACT_PREV = "it.robypet73.mymoneyportafogli.PREV";
+    static final String ACT_NEXT = "it.robypet73.mymoneyportafogli.NEXT";
+
+    /** I dati di ogni portafoglio passato dalla pagina stanno in una voce «d_nomefile». */
+    static String chiave(String file) {
+        return "d_" + file;
+    }
+
+    static java.util.ArrayList<String> portafogli(Context c) {
+        java.util.ArrayList<String> out = new java.util.ArrayList<String>();
+        for (String k : c.getSharedPreferences(PREFS, 0).getAll().keySet()) if (k.startsWith("d_")) out.add(k.substring(2));
+        java.util.Collections.sort(out, String.CASE_INSENSITIVE_ORDER);
+        return out;
+    }
+
+    /** Il portafoglio mostrato da un widget: l'ultimo scelto con le frecce, altrimenti l'ultimo aperto nell'app. */
+    static String corrente(Context c, int id) {
+        java.util.ArrayList<String> l = portafogli(c);
+        if (l.isEmpty()) return null;
+        android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, 0);
+        String f = sp.getString("pf_" + id, null);
+        if (f != null && l.contains(f)) return f;
+        String u = sp.getString("ultimo", null);
+        return u != null && l.contains(u) ? u : l.get(0);
+    }
+
+    static void sposta(Context c, int id, int passo) {
+        java.util.ArrayList<String> l = portafogli(c);
+        if (l.size() < 2) return;
+        int i = (l.indexOf(corrente(c, id)) + passo + l.size()) % l.size();
+        c.getSharedPreferences(PREFS, 0).edit().putString("pf_" + id, l.get(i)).apply();
+    }
+
+    static PendingIntent azione(Context c, int id, String a) {
+        Intent i = new Intent(c, MyMoneyWidget.class).setAction(a).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).setData(Uri.parse("mymoney://widget/" + id + "/" + a));
+        return PendingIntent.getBroadcast(c, id * 4 + (ACT_PREV.equals(a) ? 2 : 3), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
     static final int UP = Color.parseColor("#1F9D6B");
     static final int DOWN = Color.parseColor("#D6453D");
 
@@ -66,12 +102,15 @@ public class MyMoneyWidget extends AppWidgetProvider {
 
     /** Aggiornamento richiesto dal sistema (circa ogni ora): si scarica solo se è passato il tempo scelto dall'ultimo. */
     static void refreshIfStale(Context c) {
-        long at = 0;
-        try {
-            at = new JSONObject(c.getSharedPreferences(PREFS, 0).getString(KEY, "{}")).optLong("at", 0);
-        } catch (Exception e) {
-            // nessun dato salvato
+        long at = Long.MAX_VALUE;
+        for (String f : portafogli(c)) {
+            try {
+                at = Math.min(at, new JSONObject(c.getSharedPreferences(PREFS, 0).getString(chiave(f), "{}")).optLong("at", 0));
+            } catch (Exception e) {
+                at = 0;
+            }
         }
+        if (at == Long.MAX_VALUE) return;  // nessun portafoglio ancora passato dall'app
         if (System.currentTimeMillis() - at >= everyMs(c) - 5 * 60 * 1000L) refreshAsync(c, null);
     }
 
@@ -99,6 +138,14 @@ public class MyMoneyWidget extends AppWidgetProvider {
         if (TICK.equals(i.getAction())) {
             schedule(c);
             refreshAsync(c, goAsync());
+            return;
+        }
+        if (ACT_PREV.equals(i.getAction()) || ACT_NEXT.equals(i.getAction())) {
+            int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                sposta(c, id, ACT_NEXT.equals(i.getAction()) ? 1 : -1);
+                draw(c, AppWidgetManager.getInstance(c), id);
+            }
             return;
         }
         super.onReceive(c, i);
@@ -191,41 +238,49 @@ public class MyMoneyWidget extends AppWidgetProvider {
     /** Ricalcola valore e rendita con i prezzi attuali delle posizioni salvate dalla pagina (anche con l'app chiusa). */
     static void refreshData(Context c) throws Exception {
         android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, 0);
-        String raw = sp.getString(KEY, null);
-        if (raw == null) return;
-        JSONObject d = new JSONObject(raw);
-        JSONArray pos = d.optJSONArray("pos");
-        if (pos == null || pos.length() == 0) return;
-        double val = 0;
-        boolean any = false;
-        for (int i = 0; i < pos.length(); i++) {
-            JSONObject p = pos.getJSONObject(i);
-            double price = p.optDouble("p", 0);
-            String isin = p.optString("isin", "");
-            if (!isin.isEmpty()) {
-                Double e = eurPrice(isin);
-                if (e != null) {
-                    price = e;
-                    p.put("p", e);
-                    any = true;
+        android.content.SharedPreferences.Editor ed = sp.edit();
+        java.util.HashMap<String, Double> prezzi = new java.util.HashMap<String, Double>();
+        boolean cambiato = false;
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        for (String f : portafogli(c)) {
+            String raw = sp.getString(chiave(f), null);
+            if (raw == null) continue;
+            JSONObject d = new JSONObject(raw);
+            JSONArray pos = d.optJSONArray("pos");
+            if (pos == null || pos.length() == 0) continue;
+            double val = 0;
+            boolean any = false;
+            for (int i = 0; i < pos.length(); i++) {
+                JSONObject p = pos.getJSONObject(i);
+                double price = p.optDouble("p", 0);
+                String isin = p.optString("isin", "");
+                if (!isin.isEmpty()) {
+                    if (!prezzi.containsKey(isin)) prezzi.put(isin, eurPrice(isin));
+                    Double e = prezzi.get(isin);
+                    if (e != null) {
+                        price = e;
+                        p.put("p", e);
+                        any = true;
+                    }
+                }
+                val += p.getDouble("q") * price;
+            }
+            if (!any) continue;
+            d.put("val", Math.round(val * 100) / 100.0);
+            JSONArray vs = d.optJSONArray("vs"), ds = d.optJSONArray("ds");
+            if (vs != null && ds != null && vs.length() > 0 && vs.length() == ds.length()) {
+                if (ds.getString(ds.length() - 1).compareTo(today) < 0) {
+                    ds.put(today);
+                    vs.put(val);
+                } else {
+                    vs.put(vs.length() - 1, val);
                 }
             }
-            val += p.getDouble("q") * price;
+            d.put("at", System.currentTimeMillis());
+            ed.putString(chiave(f), d.toString());
+            cambiato = true;
         }
-        if (!any) return;
-        d.put("val", Math.round(val * 100) / 100.0);
-        JSONArray vs = d.optJSONArray("vs"), ds = d.optJSONArray("ds");
-        if (vs != null && ds != null && vs.length() > 0 && vs.length() == ds.length()) {
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
-            if (ds.getString(ds.length() - 1).compareTo(today) < 0) {
-                ds.put(today);
-                vs.put(val);
-            } else {
-                vs.put(vs.length() - 1, val);
-            }
-        }
-        d.put("at", System.currentTimeMillis());
-        sp.edit().putString(KEY, d.toString()).apply();
+        if (cambiato) ed.apply();
     }
 
     @Override
@@ -314,10 +369,16 @@ public class MyMoneyWidget extends AppWidgetProvider {
         v.setImageViewBitmap(R.id.w_gear, gear(dp(c, 18), ContextCompat.getColor(c, R.color.widget_sub)));
         Intent set = new Intent(c, MyMoneyWidgetSettings.class).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).setData(Uri.parse("mymoney://widget/" + id));
         v.setOnClickPendingIntent(R.id.w_gear, PendingIntent.getActivity(c, id, set, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-        String raw = c.getSharedPreferences(PREFS, 0).getString(KEY, null);
+        boolean molti = portafogli(c).size() > 1;  // le frecce compaiono solo con più di un portafoglio
+        v.setViewVisibility(R.id.w_prev, molti ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.w_next, molti ? View.VISIBLE : View.GONE);
+        v.setOnClickPendingIntent(R.id.w_prev, azione(c, id, ACT_PREV));
+        v.setOnClickPendingIntent(R.id.w_next, azione(c, id, ACT_NEXT));
+        String file = corrente(c, id);
+        String raw = file == null ? null : c.getSharedPreferences(PREFS, 0).getString(chiave(file), null);
         try {
             JSONObject d = new JSONObject(raw);
-            double val = d.getDouble("val"), cost = d.optDouble("cost", 0), inc = d.optDouble("inc", 0);
+            double val = d.getDouble("val"), cost = d.optDouble("cost", 0), real = d.optDouble("real", 0);
             String[] per = periodo(c, id);
             JSONArray ds = d.optJSONArray("ds"), vs = d.optJSONArray("vs");
             int n = ds == null || vs == null ? 0 : Math.min(ds.length(), vs.length());
@@ -337,8 +398,8 @@ public class MyMoneyWidget extends AppWidgetProvider {
             v.setTextViewText(R.id.w_name, d.optString("name", "Portafoglio") + " · " + per[1]);
             String vt = eur(val);
             boolean hasRoi = cost > 0 || ss.length >= 2;
-            double roi = cost > 0 ? (val + inc) / cost - 1 : ss.length >= 2 && ss[0] > 0 ? val / ss[0] - 1 : 0;
-            double profit = cost > 0 ? val + inc - cost : ss.length >= 2 ? val - ss[0] : 0;
+            double roi = cost > 0 ? (val - cost + real) / cost : ss.length >= 2 && ss[0] > 0 ? val / ss[0] - 1 : 0;
+            double profit = cost > 0 ? val - cost + real : ss.length >= 2 ? val - ss[0] : 0;
             if (tiny && hasRoi) {
                 SpannableStringBuilder sb = new SpannableStringBuilder(vt + "  " + pct(roi));
                 sb.setSpan(new ForegroundColorSpan(roi >= 0 ? UP : DOWN), vt.length() + 2, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

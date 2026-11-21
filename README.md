@@ -29,9 +29,9 @@ Serve Python 3.9 o più recente, nient'altro.
 
 ## Sintesi e grafici
 
-- **Valore attuale** e **Investito**: l'investito è la somma di tutti gli acquisti (le vendite non lo riducono); le vendite incassate sono indicate a parte.
-- **Risultato**: valore attuale + incassi delle vendite − investito, in euro e in percentuale **sull'investito** (con il rendimento annuo ponderato nel tempo, XIRR).
-- **Rendita strategia**: come saresti oggi se avessi messo 1 € su ogni titolo acquistato il giorno del suo primo acquisto (media dei titoli): misura la bontà della scelta dei titoli a prescindere dagli importi.
+- **Valore attuale** e **Investito**: l'investito è il costo (a costo medio) di ciò che hai ancora in portafoglio; quello che hai venduto non ne fa parte.
+- **Risultato**: guadagno non realizzato (valore − investito) più guadagno realizzato con le vendite, in euro e in percentuale **sull'investito**, con il rendimento annuo ponderato nel tempo (XIRR).
+- **Rendita strategia**: come saresti oggi se avessi messo 1 € su ogni titolo che hai in portafoglio il giorno del suo primo acquisto (media dei titoli): misura la bontà della scelta dei titoli a prescindere dagli importi.
 - I grafici nel tempo hanno i periodi 1, 3, 5 anni, **YTD** (da inizio anno) e Tutto; anche il grafico del widget Android.
 
 ## Formato di un portafoglio

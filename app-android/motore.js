@@ -403,8 +403,10 @@
       const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [];
       v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
       vs[vs.length - 1] = Math.round(val * 100) / 100;
-      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && ACQ > 0 ? Math.round(ACQ * 100) / 100 : 0, inc: Math.round(INC * 100) / 100, day: giorno, ds, vs, pos, at: Date.now() };
-      const s = JSON.stringify(d); if (s === ultimoWidget) return; ultimoWidget = s; W.update({ data: s }).catch(() => {});
+      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, real: Math.round(REAL * 100) / 100, day: giorno, ds, vs, pos, at: Date.now() };
+      const files = typeof PF !== "undefined" && PF.lista && PF.lista.length ? PF.lista.map((x) => x.file) : null, s = JSON.stringify(d), firma = s + JSON.stringify(files);
+      if (firma === ultimoWidget) return; ultimoWidget = firma;
+      W.update({ data: s, file: (META && META.file) || "portafoglio", ...(files ? { files } : {}) }).catch(() => {});  // un portafoglio per volta; l'elenco serve a togliere dal widget quelli eliminati
     } catch (e) {}
   }
   setInterval(pubblicaWidget, 15000); setTimeout(pubblicaWidget, 3000); document.addEventListener("visibilitychange", () => { if (document.hidden) pubblicaWidget(); });
