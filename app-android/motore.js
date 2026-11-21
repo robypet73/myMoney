@@ -29,7 +29,7 @@
     LS.setItem("mm:init", "1");
   }
   const files = () => Object.keys(LS).filter((k) => k.startsWith("mm:pf:")).map((k) => k.slice(6)).filter((f) => FILE_PF.test(f));
-  const definizione = (f) => (FILE_PF.test(f || "") ? leggiLS("mm:pf:" + f) : null);
+  const definizione = (f) => (typeof f === "string" && f.startsWith("bozza:") ? (/^[\w-]{4,32}$/.test(f.slice(6)) ? leggiLS("mm:bozza:" + f.slice(6)) : null) : FILE_PF.test(f || "") ? leggiLS("mm:pf:" + f) : null);  // «bozza:TOKEN»: titoli cambiati, non ancora salvati
   const numVers = (v) => { const m = /^V(\d+)$/.exec(String(v)); return m ? +m[1] : 0; };
   const info = (f) => {
     const d = definizione(f); if (!d || !Array.isArray(d.titoli)) return null;
@@ -262,6 +262,7 @@
     Object.entries(serieTot).forEach(([sigla, x]) => { const xs = x.slice().sort((a, b) => (a[0] < b[0] ? -1 : 1)); let ult = null, j = 0; px[sigla] = date.map((dd) => { while (j < xs.length && xs[j][0] <= dd) { ult = xs[j][1]; j++; } return ult; }); });
     fondi.forEach((f) => { f.p0 = px[f.s][px[f.s].length - 1]; f.q0 = Math.floor(df.amount * f.w / f.p0); });
     const meta = { nome: df.nome, versione, descrizione: df.descrizione, chiave: "pf-" + df.nome + "-" + versione, file: nomefile, base: date[date.length - 1], from: date[0], amount: df.amount, rf: 0.02, origine: "json" };
+    if (nomefile.startsWith("bozza:")) { meta.chiave += "-bozza-" + nomefile.slice(6); meta.bozza = true; if (d._da) meta.bozza_da = d._da; }  // acquisti e limiti nel browser distinti da quelli del portafoglio di partenza
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
     if (df.transazioni.length) meta.transazioni = df.transazioni.map((x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo }));
     say({ t: "salvato", n: fondi.length });
@@ -287,6 +288,28 @@
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
     scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
+  }
+  async function bozza(da, titoli, avanza) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 0 per un titolo nuovo); i pesi tornano a 100
+    const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
+    if (!Array.isArray(titoli) || titoli.length < 1 || titoli.length > 30) throw Err("Servono da 1 a 30 titoli.");
+    const prima = Object.fromEntries((origine.titoli || []).map((x) => [x.isin, x.peso])), visti = new Set(), nuovi = [];
+    titoli.forEach((x) => {
+      const isin = String((x && x.isin) || "").trim().toUpperCase(); if (!isin) throw Err("C'è un titolo senza ISIN."); if (visti.has(isin)) throw Err(isin + ": ISIN ripetuto."); visti.add(isin);
+      let peso = x.peso; if (peso === undefined || peso === null || peso === "") peso = prima[isin] || 0; peso = parseFloat(peso);
+      if (isNaN(peso)) throw Err(isin + ": peso non valido."); if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100.");
+      nuovi.push([isin, peso]);
+    });
+    const tot = sum(nuovi.map((x) => x[1])); if (!(tot > 0)) throw Err("Almeno un titolo deve avere un peso maggiore di 0.");
+    nuovi.forEach((x) => { x[1] = Math.round(x[1] * 100 / tot * 100) / 100; });
+    const grande = nuovi.reduce((a, x) => (x[1] > a[1] ? x : a), nuovi[0]); grande[1] = Math.round((grande[1] + (100 - sum(nuovi.map((x) => x[1])))) * 100) / 100;
+    const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: origine.valore || 10000, titoli: nuovi.map(([isin, peso]) => ({ isin, peso })), _da: da.startsWith("bozza:") ? origine._da : da };
+    const tr = (origine.transazioni || []).filter((x) => visti.has(x.isin)); if (tr.length) d.transazioni = tr;
+    validaDefinizione(d);
+    const token = Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
+    if (!scriviLS("mm:bozza:" + token, d)) throw Err("Memoria dell'app piena: elimina qualche portafoglio.");
+    try { await prepara("bozza:" + token, avanza); } catch (e) { LS.removeItem("mm:bozza:" + token); throw e; }
+    Object.keys(LS).filter((k) => k.startsWith("mm:bozza:") && k !== "mm:bozza:" + token).slice(0, -9).forEach((k) => LS.removeItem(k));  // poche bozze: le più vecchie vengono dimenticate
+    return { token };
   }
   function salva(da, nome, versione, descrizione, pesi, importo, transazioni) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
@@ -363,6 +386,7 @@
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { return json(modifica(r.file, r.nome, r.versione, r.descrizione)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
       let dati;
@@ -383,6 +407,11 @@
   const MODELLO = { meta: { nome: "portafoglio", modello: true, descrizione: "Modello vuoto: carica un file JSON con la definizione di un portafoglio.", base: "", amount: 10000, rf: 0.02 }, funds: [], dates: [], px: {} };
   function doc() {
     const modello = () => JSON.parse(JSON.stringify(MODELLO));
+    const bz = new URLSearchParams(location.search).get("bozza");
+    if (bz) {  // bozza non salvata: nessun portafoglio segnato come ultimo
+      try { const d = costruisciDaCache("bozza:" + bz); document.title = d.meta.nome + " · " + d.meta.versione + " (bozza)"; return d; }
+      catch (e) { const m = modello(); m.meta.descrizione = e.mancano ? "La bozza non è più valida: riaprila dal portafoglio." : "Errore: " + e.message; return m; }
+    }
     let pf = new URLSearchParams(location.search).get("pf") || ultimo();
     if (!pf || !info(pf)) return modello();
     segna(pf);
@@ -392,7 +421,7 @@
   // ---- widget: la pagina passa a Android valore, rendita e andamento; il widget li aggiorna da solo con i prezzi di justETF
   let ultimoWidget = "";
   function pubblicaWidget() {
-    const W = plug("MyMoneyWidget"); if (!W || typeof F === "undefined" || typeof DATES === "undefined" || !F.length) return;
+    const W = plug("MyMoneyWidget"); if (!W || typeof F === "undefined" || typeof DATES === "undefined" || !F.length || (typeof META !== "undefined" && META.bozza)) return;  // una bozza non va sul widget
     try {
       const last = DATES.length - 1, hasPos = VAL > 0, q = (i) => (hasPos ? POS[i].q : F[i].q0);
       const pos = F.map((f, i) => ({ q: q(i), isin: f.isin, p: PX[i][last] })).filter((x) => x.q > 0);

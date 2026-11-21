@@ -76,7 +76,7 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
 .warn { color: var(--warn); } .soglie { font-size: 14px; border-left: 3px solid var(--line); padding: 4px 0 4px 12px; } .soglie.fuori { border-left-color: var(--warn); } .soglie ul { margin: 6px 0 0; padding-left: 18px; }
 #fcomp table th:first-child, #fcomp table td:first-child { min-width: 0; } #fcomp table th, #fcomp table td { padding: 6px 8px; }
 .ovl { position: fixed; inset: 0; z-index: 50; background: rgba(5, 9, 14, .72); display: flex; align-items: flex-start; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
-.ovl[hidden] { display: none; } .ovl .box { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; width: 100%; max-width: 940px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 16px; margin: auto 0; }
+.ovl[hidden] { display: none; } #tb-bar:not([hidden]) { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; border-color: var(--accent); margin-bottom: 14px; } .ovl .box { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; width: 100%; max-width: 940px; padding: 18px 18px 24px; display: flex; flex-direction: column; gap: 16px; margin: auto 0; }
 .ovl .top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; } .ovl .top h2 { font-size: 20px; }
 /* intestazione: scelta del portafoglio e versione */
 .pfsel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; } .pfsel span { color: var(--muted); } .pfsel select { width: auto; max-width: 100%; }
@@ -174,6 +174,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </details>
   </section>
 
+  <div class="panel" id="tb-bar" hidden><p id="tb-t" style="flex:1 1 280px"><b>Bozza non salvata.</b> I titoli sono cambiati: ribilancia i pesi con la frontiera efficiente (sezione «Frontiera efficiente») e poi salva il portafoglio buono come nuovo o come nuova versione di uno esistente.</p><span class="azioni" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec small" id="tb-mod" type="button">Modifica i titoli…</button><button class="btn small" id="tb-salva" type="button">Salva…</button><a class="btn sec small" id="tb-torna" href="/portafoglio.html" style="text-decoration:none">Scarta la bozza</a></span></div>
   <div id="banner"></div>
   <div class="kpi" id="kpi"></div>
 
@@ -193,7 +194,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="panel" id="invest">
       <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
       <p class="muted" id="imp-n"></p>
-      <div class="azioni"><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
+      <div class="azioni"><button class="btn sec small" id="imp-modtit" type="button" hidden title="Togli titoli o aggiungine con l'ISIN, poi ribilancia con la frontiera efficiente e salva">Modifica i titoli…</button><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
       <p class="lerr" id="imp-msg"></p>
     </div>
     <div class="scroll"><table id="tab"></table></div>
@@ -300,11 +301,21 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="ct-reset" type="button">Cartella del programma</button><button class="btn" id="ct-ok" type="button">Usa questa cartella</button></div>
   </div>
 </div></div>
+<div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:640px">
+  <div class="top"><h2 id="mt-t">Modifica i titoli</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
+  <p class="muted">Togli titoli o aggiungine scrivendo l'ISIN. Un peso lasciato vuoto resta quello di prima (0 per un titolo nuovo); i pesi vengono riportati a 100. Poi li ribilanci con la frontiera efficiente e salvi. Gli acquisti e le vendite dei titoli tolti non vengono portati nella bozza.</p>
+  <div class="scroll"><table id="mt-tab"></table></div>
+  <form id="mt-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 160px">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px">Peso % (facoltativo)<input id="mt-pw" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
+  <p class="muted" id="mt-somma"></p>
+  <div class="lerr" id="mt-err" role="alert"></div>
+  <div class="scar-foot" style="gap:8px"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn" id="mt-ok" type="button">Crea la bozza</button></div>
+</div></div>
 <div class="ovl" id="salva" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="sv-t" style="max-width:600px">
   <div class="top"><h2 id="sv-t">Salva come nuovo portafoglio</h2><button class="x" id="sv-x" type="button" aria-label="Chiudi">×</button></div>
   <form id="sv-f" novalidate style="display:flex;flex-direction:column;gap:14px">
     <p class="muted" id="sv-w"></p>
     <div class="sv-grid">
+      <label id="sv-esist-w">Nuova versione di un portafoglio esistente<select id="sv-esist"></select><small>oppure scrivi qui sotto un nome nuovo</small></label>
       <label>Nome<input id="sv-n" type="text" maxlength="30" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="per esempio francescaCresci"><small>solo lettere e cifre, niente spazi né simboli</small></label>
       <label>Versione<span class="sv-v"><span aria-hidden="true">V</span><input id="sv-ver" type="number" min="1" max="999" step="1" inputmode="numeric"></span><small>1, 2, 3…</small></label>
     </div>
@@ -355,7 +366,7 @@ const KEY = META.chiave || "pf-mondo-emergenti-v1";  // ogni portafoglio ha i su
 const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (meta.vincoli) oppure, in mancanza, il piano ±10 punti
   const mv = META.vincoli || {}, cw = {}; F.forEach((f) => (cw[f.cls] = (cw[f.cls] || 0) + f.w * 100));
   const lim = (v, d) => (Array.isArray(v) ? { min: v[0], max: v[1] } : d);
-  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: f.w > 0 ? Math.min(100, Math.round(f.w * 100 + 10)) : 0 })])),
+  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: f.w > 0 ? Math.min(100, Math.round(f.w * 100 + 10)) : META.bozza && !(META.transazioni || []).some((x) => x.s === f.s) ? 30 : 0 })])),
     classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
 };
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
@@ -994,16 +1005,18 @@ $("#scarica-json").addEventListener("click", () => {  // la definizione minimale
 });
 
 /* ---------- portafogli: elenco nella cartella del programma, scelta e salvataggio di uno nuovo ---------- */
-const PF = { server: false, lista: [], file: new URLSearchParams(location.search).get("pf") || "" };
+const PF = { server: false, lista: [], file: new URLSearchParams(location.search).get("pf") || "", bozza: new URLSearchParams(location.search).get("bozza") || "" };
+const DA = () => (PF.bozza ? "bozza:" + PF.bozza : PF.file);  // portafoglio di partenza per bozza e salvataggio
 const nVers = (v) => +String(v).replace(/^V/i, "") || 0;
 async function caricaPortafogli() {
   try {
     const r = await fetch("/api/portafogli", { cache: "no-store" }); if (!r.ok) throw 0; const j = await r.json();
-    PF.server = true; PF.lista = j.lista || []; if (!/\.json$/i.test(PF.file)) PF.file = j.ultimo || "";
+    PF.server = true; PF.lista = j.lista || []; if (!PF.bozza && !/\.json$/i.test(PF.file)) PF.file = j.ultimo || "";
   } catch (e) { PF.server = false; return; }
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""} title="${esc(x.descrizione || "")}">${esc(x.nome)} · ${esc(x.versione)}</option>`).join("");
   try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
   $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = $("#pf-mod").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
+  $("#imp-modtit").hidden = VUOTO;
 }
 $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo stile da carta; si sceglie «Salva come PDF»
   const t0 = document.title, d = new Date();
@@ -1082,6 +1095,8 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
+  const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
+  se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
   $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + pct(az, 0) + " azioni, " + pct(ob, 0) + " obbligazioni, " + pct(oro, 0) + " oro. Rischio " + pct(s.vol) + ", rendimento storico " + pct(s.cagr) + ".";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
@@ -1090,7 +1105,7 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
 function apriModifica() {  // nome, versione e descrizione del portafoglio aperto: si salvano nello stesso file, o in uno nuovo se nome o versione cambiano
   if (!PF.server) return;
   SV = { w: null, importo: IMPORTO(), tocca: true, opener: document.activeElement, modo: "modifica" };
-  $("#sv-t").textContent = "Modifica il portafoglio"; $("#sv-fl").textContent = "File"; $("#sv-ok").textContent = "Salva le modifiche"; $("#sv-w").hidden = true;
+  $("#sv-esist-w").hidden = true; $("#sv-t").textContent = "Modifica il portafoglio"; $("#sv-fl").textContent = "File"; $("#sv-ok").textContent = "Salva le modifiche"; $("#sv-w").hidden = true;
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = String(VERS).replace(/^V/i, ""); $("#sv-d").value = META.descrizione || "";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus();
@@ -1100,7 +1115,8 @@ function chiudiSalva() { $("#salva").hidden = true; document.body.style.overflow
 $("#sv-x").onclick = $("#sv-ann").onclick = $("#sv-resta").onclick = chiudiSalva;
 $("#salva").addEventListener("mousedown", (e) => { if (e.target.id === "salva") chiudiSalva(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#salva").hidden) chiudiSalva(); });
-$("#sv-n").addEventListener("input", () => { svProponi(); svControlla(false); });
+$("#sv-n").addEventListener("input", () => { $("#sv-esist").value = [...$("#sv-esist").options].some((o) => o.value === svNome()) ? svNome() : ""; svProponi(); svControlla(false); });
+$("#sv-esist").addEventListener("change", (e) => { if (!e.target.value) { $("#sv-n").value = ""; $("#sv-n").focus(); svControlla(false); return; } SV.tocca = false; $("#sv-n").value = e.target.value; svProponi(); svControlla(false); });
 $("#sv-ver").addEventListener("input", () => { SV.tocca = true; svControlla(false); });
 $("#sv-d").addEventListener("input", () => svControlla(false));
 $("#sv-f").addEventListener("submit", async (e) => {
@@ -1114,13 +1130,57 @@ $("#sv-f").addEventListener("submit", async (e) => {
       location.href = urlPf(j.file); return;
     }
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = urlPf(j.file); }; $("#sv-apri").focus(); caricaPortafogli();
   } catch (er) { $("#sv-err").textContent = er.message || "Non sono riuscito a salvare."; }
   b.disabled = false;
 });
+
+/* ---------- modifica dei titoli: si crea una bozza (non salvata) da ribilanciare con la frontiera ---------- */
+let MT = [], MT_FUORI = [];  // MT: righe visibili {isin, s, nome, peso (testo)}; MT_FUORI: titoli usciti dal portafoglio, tenuti a peso 0 per la loro storia
+function mtDisegna() {
+  $("#mt-tab").innerHTML = `<thead><tr><th>Titolo</th><th class="num">Peso %</th><th></th></tr></thead><tbody>` + MT.map((x, i) =>
+    `<tr><td>${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}<div class="fsub num">${esc(x.isin)}</div></td><td class="num"><input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mt="${i}" value="${esc(x.peso)}" placeholder="${x.s ? "" : "0"}" style="width:72px;text-align:right" aria-label="Peso di ${esc(x.isin)}"></td><td><button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></td></tr>`).join("") + `</tbody>`;
+  const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 0) : +x.peso || 0), 0);
+  $("#mt-somma").textContent = MT.length ? "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : ".") : "";
+}
+function apriModTit() {
+  if (!PF.server) { stato("Per cambiare i titoli serve il programma locale (o l'app).", true); return; }
+  const fuori = (i) => POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9;
+  MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: fuori(i) })).filter((x) => !x.fuori);
+  MT_FUORI = F.filter((f, i) => fuori(i)).map((f) => f.isin);
+  $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
+}
+const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
+$("#imp-modtit").onclick = $("#tb-mod").onclick = apriModTit; $("#mt-x").onclick = $("#mt-ann").onclick = chiudiModTit;
+$("#modtit").addEventListener("mousedown", (e) => { if (e.target.id === "modtit") chiudiModTit(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modtit").hidden) chiudiModTit(); });
+$("#mt-tab").addEventListener("input", (e) => { const i = e.target.dataset.mt; if (i != null) { MT[+i].peso = e.target.value; const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 0) : +x.peso || 0), 0); $("#mt-somma").textContent = "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : "."); } });
+$("#mt-tab").addEventListener("click", (e) => { const b = e.target.closest("[data-mt-del]"); if (!b) return; MT.splice(+b.dataset.mtDel, 1); mtDisegna(); });
+$("#mt-add").addEventListener("submit", (e) => {
+  e.preventDefault(); const isin = $("#mt-isin").value.trim().toUpperCase(), err = $("#mt-err"); err.textContent = "";
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) { err.textContent = "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale."; return; }
+  if (MT.some((x) => x.isin === isin) || MT_FUORI.includes(isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
+  MT.push({ isin, s: null, nome: "", w: 0, peso: $("#mt-pw").value.trim() }); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
+});
+$("#mt-ok").onclick = async () => {
+  const err = $("#mt-err"); err.textContent = "";
+  if (!MT.length) { err.textContent = "Lascia almeno un titolo."; return; }
+  if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) { err.textContent = "I pesi devono essere tra 0 e 100."; return; }
+  const titoli = [...MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), ...MT_FUORI.map((isin) => ({ isin, peso: 0 }))];
+  chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
+  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  await scSvuotata();
+  if (ev && ev.t === "pronta") { $("#scar-b").style.width = "100%"; $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Bozza pronta"); await new Promise((r) => setTimeout(r, 500)); location.href = "/portafoglio.html?bozza=" + encodeURIComponent(ev.token); return; }
+  errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Bozza non creata"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();
+};
+if (META.bozza) {  // barra della bozza: salva (nuovo o nuova versione), modifica ancora i titoli o scarta
+  $("#tb-bar").hidden = false; document.title = document.title.replace(/ \(bozza\)$/, "") + " (bozza)";
+  $("#tb-salva").onclick = () => apriSalva(pesiPiano(), statistiche(pesiPiano()), "Bozza del portafoglio", "imp-msg");
+  if (META.bozza_da && /^[\w.-]+\.json$/.test(META.bozza_da)) $("#tb-torna").href = urlPf(META.bozza_da);
+}
 
 /* ---------- avvio ---------- */
 if (!VUOTO) { costruisci(); disegnaVincoli(); disegnaPosizioni(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }

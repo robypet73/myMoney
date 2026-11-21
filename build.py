@@ -18,6 +18,7 @@ import datetime
 import json
 import os
 import re
+import secrets
 import shutil
 import sys
 import tempfile
@@ -389,6 +390,7 @@ class Portafogli:
         self.dir = self.predefinita
         self.semi = os.path.join(self.dir, "titoli")  # schede dei titoli già note, nel repository: composizioni complete
         self.file_ultimo = file_ultimo
+        self.bozze = {}  # token -> definizione di un portafoglio modificato e non ancora salvato
         self.cache = os.path.join(dati or os.path.dirname(file_ultimo), "titoli")  # una scheda JSON per ISIN già scaricato
         self.lock = threading.Lock()
         self.prezzi = None  # impostato da avvia_app: riceve i titoli dei portafogli aperti
@@ -452,7 +454,9 @@ class Portafogli:
 
     # ---- elenco
     def definizione(self, nomefile):
-        """Il JSON del portafoglio (dizionario) o None."""
+        """Il JSON del portafoglio (dizionario) o None. «bozza:TOKEN» è una bozza in memoria (titoli cambiati, non ancora salvata)."""
+        if isinstance(nomefile, str) and nomefile.startswith("bozza:"):
+            return self.bozze.get(nomefile[6:])
         if not FILE_PF.match(nomefile or ""):
             return None
         try:
@@ -633,6 +637,11 @@ class Portafogli:
             f["q0"] = int(amount * f["w"] / f["p0"])
         meta = {"nome": nome, "versione": versione, "descrizione": df["descrizione"], "chiave": f"pf-{nome}-{versione}", "file": nomefile, "base": date[-1], "from": date[0],
                 "amount": amount, "rf": 0.02, "origine": "json"}
+        if nomefile.startswith("bozza:"):  # acquisti e limiti salvati nel browser non devono mescolarsi con quelli del portafoglio da cui si parte
+            meta["chiave"] += "-bozza-" + nomefile[6:]
+            meta["bozza"] = True
+            if d.get("_da"):
+                meta["bozza_da"] = d["_da"]
         if df["vincoli"]:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
         if df["transazioni"]:  # i movimenti reali: la pagina li usa al posto degli acquisti d'esempio
@@ -662,6 +671,14 @@ class Portafogli:
 
     def pagina_portafoglio(self, nomefile):
         """Pagina del portafoglio se i suoi dati di oggi sono già in cache; altrimenti il modello con la richiesta di scaricarli («autocarica»). None se il file non c'è."""
+        if nomefile.startswith("bozza:"):
+            if self.definizione(nomefile) is None:
+                return None
+            try:
+                doc = self.costruisci(nomefile, scarica=False)
+            except LookupError:
+                return None
+            return self.pagina(doc, doc["meta"]["nome"] + " · " + doc["meta"]["versione"] + " (bozza)")
         if not self.info(nomefile):
             return None
         try:
@@ -729,6 +746,58 @@ class Portafogli:
             except OSError:
                 pass
             raise
+
+    def bozza(self, da, titoli, avanza=None):
+        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 0 per un titolo nuovo).
+        I pesi vengono riportati a 100. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
+        origine = self.definizione(da)
+        if origine is None:
+            raise ValueError("Portafoglio di partenza non trovato.")
+        if not isinstance(titoli, list) or not 1 <= len(titoli) <= 30:
+            raise ValueError("Servono da 1 a 30 titoli.")
+        prima = {t.get("isin"): t.get("peso") for t in origine["titoli"] if isinstance(t, dict)}
+        nuovi, visti = [], set()
+        for t in titoli:
+            isin = str((t or {}).get("isin") or "").strip().upper() if isinstance(t, dict) else ""
+            if not isin:
+                raise ValueError("C'è un titolo senza ISIN.")
+            if isin in visti:
+                raise ValueError(f"{isin}: ISIN ripetuto.")
+            visti.add(isin)
+            peso = t.get("peso")
+            if peso in (None, ""):
+                peso = prima.get(isin) or 0
+            try:
+                peso = float(peso)
+            except (TypeError, ValueError):
+                raise ValueError(f"{isin}: peso non valido.")
+            if not 0 <= peso <= 100:
+                raise ValueError(f"{isin}: il peso deve essere tra 0 e 100.")
+            nuovi.append([isin, peso])
+        tot = sum(p for _, p in nuovi)
+        if tot <= 0:
+            raise ValueError("Almeno un titolo deve avere un peso maggiore di 0.")
+        for x in nuovi:
+            x[1] = round(x[1] * 100 / tot, 2)
+        resto = round(100 - sum(p for _, p in nuovi), 2)
+        max(nuovi, key=lambda x: x[1])[1] = round(max(nuovi, key=lambda x: x[1])[1] + resto, 2)
+        d = {"nome": origine.get("nome"), "versione": origine.get("versione"), "descrizione": origine.get("descrizione") or "bozza",
+             "valore": origine.get("valore") or 10000, "titoli": [{"isin": i, "peso": p} for i, p in nuovi],
+             "_da": origine.get("_da") if da.startswith("bozza:") else da}
+        tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
+        if tr:
+            d["transazioni"] = tr
+        valida_definizione(d)
+        token = secrets.token_urlsafe(9)
+        self.bozze[token] = d
+        try:
+            self.costruisci("bozza:" + token, avanza, scarica=True)
+        except Exception:
+            self.bozze.pop(token, None)
+            raise
+        while len(self.bozze) > 20:  # poche bozze in memoria: le più vecchie vengono dimenticate
+            self.bozze.pop(next(iter(self.bozze)))
+        return {"token": token}
 
     def modifica(self, nomefile, nome, versione, descrizione):
         """Cambia nome, versione e descrizione di un portafoglio: stesso file se nome e versione restano, altrimenti il file viene rinominato. Ritorna info (+ chiave per gli acquisti nel browser)."""
@@ -872,6 +941,15 @@ def crea_server(prezzi, porta, portafogli):
             if p == "/":
                 return self.vai("/" + MODELLO)
             if p == "/" + MODELLO:
+                bz = (urllib.parse.parse_qs(u.query).get("bozza") or [""])[0]
+                if bz:  # bozza con i titoli cambiati, non ancora salvata
+                    try:
+                        testo = portafogli.pagina_portafoglio("bozza:" + bz)
+                    except (OSError, ValueError) as e:
+                        return self.invia(500, {"errore": str(e)})
+                    if testo is None:
+                        return self.invia(404, {"errore": "La bozza non c'è più: riaprila dal portafoglio."})
+                    return self.invia(200, testo.encode(), "text/html; charset=utf-8")
                 pf = (urllib.parse.parse_qs(u.query).get("pf") or [""])[0]
                 if not pf:  # nessun portafoglio indicato: l'ultimo aperto
                     ultimo = portafogli.ultimo()
@@ -921,6 +999,21 @@ def crea_server(prezzi, porta, portafogli):
                 except OSError as e:
                     return self.invia(500, {"errore": f"file non scritto: {e}"})
                 return self.invia(200, nuovo)
+            if percorso == "/api/bozza":
+                n = int(self.headers.get("Content-Length") or 0)
+                if n > 65536:
+                    return self.invia(413, {"errore": "richiesta troppo grande"})
+                corpo = self.rfile.read(n)
+
+                def bozza(riga):
+                    try:
+                        r = json.loads(corpo)
+                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga)
+                    except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
+                        return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
+                    riga({"t": "pronta", **info})
+
+                return self.flusso(bozza)
             if percorso == "/api/crea":
                 n = int(self.headers.get("Content-Length") or 0)
                 if n > 65536:
