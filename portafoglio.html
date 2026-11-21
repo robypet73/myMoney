@@ -271,19 +271,6 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="sec-head"><h2>Storico di ciascun titolo</h2><span class="muted">Clicca sul nome per la scheda completa</span></div>
     <div class="grid" id="fondi"></div>
   </section>
-
-  <section>
-    <h2>Da sapere</h2>
-    <ul class="note">
-      <li>I rendimenti sono storici (<span id="per2"></span>) e non sono previsioni: la selezione dei fondi e la frontiera guardano a quel periodo.</li>
-      <li>La perdita massima storica del piano è stata del <span id="ddtxt"></span> (<span id="ddper"></span>); non è un limite garantito.</li>
-      <span id="note-extra" style="display:contents"></span>
-      <li>Fonti: prezzi in euro e caratteristiche dei fondi da justETF; composizioni pubblicate da justETF o dagli emittenti, che possono riferirsi a date diverse.</li>
-      <li>Regola di ribilanciamento: controlla una volta l'anno (gennaio) e riporta ai pesi del piano solo se un fondo si sposta di almeno 5 punti (o del 25% e almeno 2 punti) o una classe di almeno 5 punti. Vendi solo l'eccesso e usa prima i nuovi versamenti, perché le vendite fanno pagare l'imposta sulle plusvalenze.</li>
-      <li>Costo di acquisto di un lotto: quote per prezzo di chiusura del giorno (o dell'ultimo giorno di borsa aperta prima della data), oppure il prezzo che indichi tu. Non sono considerati commissioni, imposte e spread.</li>
-      <li>Analisi tecnica sui dati, non consulenza personalizzata.</li>
-    </ul>
-  </section>
 </div>
 
 <div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
@@ -332,7 +319,6 @@ if (META.descrizione) { $("#sub").textContent = META.descrizione; $("#sub").hidd
 if (VUOTO) { document.body.classList.add("vuoto"); $("#start").hidden = false; $("#scarica-json").hidden = true; $("#report-pdf").hidden = true; }
 (D.funds || []).forEach((f) => { f.ter = f.ter ?? 0; f.mix = Object.assign({ aree: {}, settori: {}, valute: {}, paesi: [], top: [], nt: 0 }, f.mix || {}); f.cls = f.cls || "Azionario"; f.ruolo = f.ruolo || "Satellite"; f.tipo = f.tipo || f.cls; });
 $("#nfondi").textContent = (D.funds || []).length; if (META.nota_composizione) $("#nota-comp").textContent += " " + META.nota_composizione;
-(META.note || []).forEach((n) => { const li = document.createElement("li"); li.textContent = n; $("#note-extra").appendChild(li); });
 const F = D.funds, NF = F.length, BASE = D.meta.base, RF = D.meta.rf, AMT = D.meta.amount;
 const COLR = new Proxy({ Nucleo: "var(--c1)", Emergenti: "var(--c4)", Satellite: "var(--c2)", Obbligazioni: "var(--c3)", Oro: "var(--oro)", "Materie prime": "var(--oro)" }, { get: (o, k) => o[k] || "var(--c8)" });
 const flink = (i, t) => `<button type="button" class="flink" data-f="${i}">${esc(t ?? F[i].name)}</button>`;
@@ -577,7 +563,6 @@ function disegnaKpi() {
     ["Rendita strategia", rs == null ? "—" : `<span class="${cls(rs)}">${sgn(rs)}</span>`, rs == null ? "nessun acquisto inserito" : "1 € su ogni titolo dal primo acquisto · " + strat.length + " titoli"],
     ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
-  { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
   $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
   const az = $("#azzera"); if (az) az.onclick = () => { F.forEach((f) => (ST.lots[f.s] = [])); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); };
 }
