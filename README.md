@@ -32,6 +32,7 @@ Serve Python 3.9 o più recente, nient'altro.
 - **Valore attuale** e **Investito**: l'investito è il costo (a costo medio) di ciò che hai ancora in portafoglio; quello che hai venduto non ne fa parte.
 - **Risultato**: guadagno non realizzato (valore − investito) più guadagno realizzato con le vendite, in euro e in percentuale **sull'investito**, con il rendimento annuo ponderato nel tempo (XIRR).
 - **Rendita strategia**: come saresti oggi se avessi messo 1 € su ogni titolo che hai in portafoglio il giorno del suo primo acquisto (media dei titoli): misura la bontà della scelta dei titoli a prescindere dagli importi.
+- **Zoom orizzontale** sui grafici nel tempo: con la rotellina del mouse (PC) ci si avvicina o allontana attorno al cursore, con il pizzico a due dita (telefono, app Android); trascinando ci si sposta nel tempo; «↺ tutto» o il doppio clic mostrano di nuovo tutto il periodo. A grafico intero la rotellina fa scorrere la pagina.
 - I grafici nel tempo hanno i periodi 1, 3, 5 anni, **YTD** (da inizio anno) e Tutto; anche il grafico del widget Android.
 
 ## Formato di un portafoglio

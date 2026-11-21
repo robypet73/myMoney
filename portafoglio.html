@@ -47,7 +47,7 @@ th.l, td.l { text-align: left; white-space: normal; } th:first-child, td:first-c
 .tag { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 10px 0 0; font-size: 13px; } dt { color: var(--muted); } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 a { color: var(--accent); }
-.chart { position: relative; width: 100%; } .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart { position: relative; width: 100%; } .zreset { position: absolute; top: 2px; right: 4px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 11px; padding: 2px 8px; cursor: pointer; z-index: 2; } .zreset:hover { color: var(--fg); } .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .tip { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; } .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .pies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .years { display: grid; grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); gap: 8px; } .years div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; } .years .y { font-size: 12px; color: var(--muted); }
@@ -93,7 +93,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
   body { background: #fff; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .wrap { max-width: none; padding: 0; gap: 18px; }
   .solo-stampa { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
-  .ext, .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del] { display: none !important; }
+  .zreset, .ext, .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del] { display: none !important; }
   .panel, .kpi, .fcard, .chart, table, h2, h3 { break-inside: avoid; }
   .sec-head, h2 { break-after: avoid; }
   section { break-inside: auto; }
@@ -503,7 +503,45 @@ async function calcolaFrontiera() {
 
 /* ---------- grafici ---------- */
 let UID = 0;
+/* zoom orizzontale dei grafici nel tempo: rotellina del mouse (PC) o pizzico con due dita (telefono); trascinando ci si sposta; ↺ o doppio clic mostrano tutto */
+const ZOOM = new WeakMap();
 function lineChart(box, t, y, o = {}) {
+  const n = y.length; let z = ZOOM.get(box);
+  if (!z || z.t0 !== t[0] || Math.abs(z.n - n) > 2) { z = { a: 0, b: 1, t0: t[0], n }; ZOOM.set(box, z); }
+  z.n = n; box._args = { t, y, o }; if (!box._zoomInit) zoomInit(box);
+  const intero = z.a <= 0 && z.b >= 1, i0 = Math.max(0, Math.floor(z.a * (n - 1))), i1 = Math.min(n - 1, Math.ceil(z.b * (n - 1)));
+  lineChartBase(box, intero ? t : t.slice(i0, i1 + 1), intero ? y : y.slice(i0, i1 + 1), { ...o, ref: o.ref ?? y[0], ...(o.line2 && !intero ? { line2: o.line2.slice(i0, i1 + 1) } : {}) });
+  if (!intero) { const b = document.createElement("button"); b.type = "button"; b.className = "zreset"; b.textContent = "↺ tutto"; b.title = "Mostra tutto il periodo"; b.setAttribute("aria-label", "Zoom: mostra tutto il periodo"); b.onclick = () => zoomImposta(box, 0, 1); box.appendChild(b); }
+}
+function zoomImposta(box, a, b) {
+  const z = ZOOM.get(box), n = z.n, minW = Math.max(8 / Math.max(1, n - 1), 0.01), w = Math.max(minW, Math.min(1, b - a)), a2 = Math.max(0, Math.min(1 - w, a));
+  z.a = a2; z.b = a2 + w; const g = box._args; lineChart(box, g.t, g.y, g.o);
+}
+function zoomInit(box) {
+  box._zoomInit = true; box.style.touchAction = "pan-y";  // il dito in verticale fa scorrere la pagina, in orizzontale e a due dita agisce sul grafico
+  const L = 58, R = 8, frac = (x) => { const r = box.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left - L) / Math.max(1, r.width - L - R))); };
+  const attorno = (f, k) => { const z = ZOOM.get(box), w = z.b - z.a, p = z.a + f * w, w2 = w * k; zoomImposta(box, p - f * w2, p - f * w2 + w2); };  // k < 1 ingrandisce
+  box.addEventListener("wheel", (e) => {
+    const z = ZOOM.get(box), intero = z.a <= 0 && z.b >= 1, k = Math.exp(e.deltaY * 0.0015);
+    if (intero && k > 1) return;  // già tutto visibile: la rotellina fa scorrere la pagina
+    e.preventDefault(); attorno(frac(e.clientX), k);
+  }, { passive: false });
+  const dita = new Map();
+  box.addEventListener("pointerdown", (e) => { dita.set(e.pointerId, e.clientX); });
+  box.addEventListener("pointermove", (e) => {
+    if (!dita.has(e.pointerId)) return; const prima = dita.get(e.pointerId), z = ZOOM.get(box);
+    if (dita.size === 2) {  // pizzico: la distanza tra le dita cambia la larghezza visibile, attorno al punto tra le due dita
+      const altro = [...dita].find(([id]) => id !== e.pointerId)[1], d0 = Math.abs(prima - altro), d1 = Math.abs(e.clientX - altro);
+      dita.set(e.pointerId, e.clientX); if (d0 > 8 && d1 > 8) attorno(frac((e.clientX + altro) / 2), d0 / d1);
+    } else if (dita.size === 1 && !(z.a <= 0 && z.b >= 1) && (e.pointerType !== "mouse" || e.buttons === 1)) {  // un dito (o il mouse premuto) sul grafico ingrandito: sposta
+      const r = box.getBoundingClientRect(), w = z.b - z.a, d = ((e.clientX - prima) / Math.max(1, r.width - L - R)) * w; dita.set(e.pointerId, e.clientX); zoomImposta(box, z.a - d, z.b - d);
+    } else dita.set(e.pointerId, e.clientX);
+  });
+  const fine = (e) => { dita.delete(e.pointerId); };
+  box.addEventListener("pointerup", fine); box.addEventListener("pointercancel", fine); box.addEventListener("pointerleave", fine);
+  box.addEventListener("dblclick", () => zoomImposta(box, 0, 1));
+}
+function lineChartBase(box, t, y, o = {}) {
   const W = Math.max(300, Math.round(box.clientWidth || 640)), H = o.h || 210, L = 58, R = 8, T = 10, B = 22, id = "g" + (++UID);
   if (!y || y.length < 2) { box.innerHTML = '<p class="muted">Dati insufficienti.</p>'; return; }
   const ref = o.ref ?? y[0], f = o.f || ((v) => v.toFixed(2)), y2 = o.line2 || null;
