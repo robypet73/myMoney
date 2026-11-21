@@ -653,6 +653,41 @@ class Portafogli:
                 pass
             raise
 
+    def modifica(self, nomefile, nome, versione, descrizione):
+        """Cambia nome, versione e descrizione di un portafoglio: stesso file se nome e versione restano, altrimenti il file viene rinominato. Ritorna info (+ chiave per gli acquisti nel browser)."""
+        d = self.definizione(nomefile)
+        if d is None:
+            raise ValueError("Portafoglio non trovato.")
+        if not isinstance(nome, str) or not NOME_PF.match(nome):
+            raise ValueError("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.")
+        try:
+            v = int(str(versione).lstrip("Vv"))
+        except ValueError:
+            v = 0
+        if not 1 <= v <= 999:
+            raise ValueError("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).")
+        descrizione = " ".join(str(descrizione or "").split())
+        if not descrizione:
+            raise ValueError("Scrivi una breve descrizione.")
+        if len(descrizione) > 300:
+            raise ValueError("La descrizione può avere al massimo 300 caratteri.")
+        nuovo = f"{nome}_V{v}.json"
+        if nuovo != nomefile and os.path.exists(self.percorso(nuovo)):
+            raise ValueError(f"Esiste già {nuovo}: scegli un'altra versione.")
+        nd = {**d, "nome": nome, "versione": f"V{v}", "descrizione": descrizione}
+        testo = formatta_definizione(nd)
+        valida_definizione(json.loads(testo))  # il file riscritto deve restare valido
+        with self.lock:
+            tmp = self.percorso(nuovo) + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(testo)
+            os.replace(tmp, self.percorso(nuovo))
+            if nuovo != nomefile:
+                os.remove(self.percorso(nomefile))
+        if nuovo != nomefile and self.ultimo() != nuovo:
+            self.segna(nuovo)
+        return {**self.info(nuovo), "chiave": f"pf-{nome}-V{v}"}
+
     def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None):
         """Scrive nome_V<n>.json partendo dal portafoglio `da` con i nuovi pesi (per sigla). Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
         origine = self.definizione(da)
@@ -789,9 +824,11 @@ def crea_server(prezzi, porta, portafogli):
             if not (self.host_ok() and self.origine_ok()):
                 return self.invia(403, {"errore": "richiesta non ammessa"})
             percorso = self.path.split("?")[0]
-            if percorso in ("/api/salva", "/api/elimina", "/api/cartella"):
+            if percorso in ("/api/salva", "/api/elimina", "/api/cartella", "/api/modifica"):
                 try:
                     r = self.corpo_json(65536)
+                    if percorso == "/api/modifica":
+                        return self.invia(200, portafogli.modifica(r.get("file"), r.get("nome"), r.get("versione"), r.get("descrizione")))
                     if percorso == "/api/cartella":
                         info = portafogli.imposta_cartella(r.get("cartella"))
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})

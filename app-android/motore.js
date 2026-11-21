@@ -310,6 +310,17 @@
     rispecchia({ write: [scriviFile(nuovo)] });
     return info(nuovo);
   }
+  function modifica(f, nome, versione, descrizione) {  // nome, versione e descrizione: stesso file, o rinominato se cambiano nome o versione
+    const d = definizione(f); if (!d) throw Err("Portafoglio non trovato.");
+    if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
+    const v = parseInt(String(versione).replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).");
+    descrizione = String(descrizione || "").split(/\s+/).filter(Boolean).join(" "); if (!descrizione) throw Err("Scrivi una breve descrizione."); if (descrizione.length > 300) throw Err("La descrizione può avere al massimo 300 caratteri.");
+    const nuovo = nome + "_V" + v + ".json"; if (nuovo !== f && info(nuovo)) throw Err("Esiste già " + nuovo + ": scegli un'altra versione.");
+    const nd = { ...d, nome, versione: "V" + v, descrizione }; validaDefinizione(nd);
+    scriviLS("mm:pf:" + nuovo, nd);
+    if (nuovo !== f) { LS.removeItem("mm:pf:" + f); if (LS.getItem("mm:ultimo") === f) segna(nuovo); rispecchia({ write: [scriviFile(nuovo)], trash: [f] }); } else rispecchia({ write: [scriviFile(nuovo)] });
+    return { ...info(nuovo), chiave: "pf-" + nome + "-V" + v };
+  }
   function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); rispecchia({ trash: [f] }); return { eliminato: f, ultimo: ultimo() }; }
 
   // ---- prezzi
@@ -350,6 +361,7 @@
     let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/modifica") { try { return json(modifica(r.file, r.nome, r.versione, r.descrizione)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
@@ -391,7 +403,7 @@
       const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [];
       v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
       vs[vs.length - 1] = Math.round(val * 100) / 100;
-      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, day: giorno, ds, vs, pos, at: Date.now() };
+      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && ACQ > 0 ? Math.round(ACQ * 100) / 100 : 0, inc: Math.round(INC * 100) / 100, day: giorno, ds, vs, pos, at: Date.now() };
       const s = JSON.stringify(d); if (s === ultimoWidget) return; ultimoWidget = s; W.update({ data: s }).catch(() => {});
     } catch (e) {}
   }

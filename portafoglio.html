@@ -137,7 +137,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="wrap">
   <header class="top">
     <div>
-      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-cartella" type="button" hidden>Cartella…</button><button class="btn sec small" id="pf-cartella-x" type="button" hidden title="Torna alla memoria dell'app">Scollega</button><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
+      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-cartella" type="button" hidden>Cartella…</button><button class="btn sec small" id="pf-cartella-x" type="button" hidden title="Torna alla memoria dell'app">Scollega</button><button class="btn sec small" id="pf-mod" type="button" hidden title="Cambia nome, versione o descrizione">Modifica</button><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
       <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
       <p class="sub" id="sub" hidden></p>
       <p class="solo-stampa" id="stampa-data"></p>
@@ -173,7 +173,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 
   <section>
     <div class="sec-head"><h2>Storico del portafoglio</h2>
-      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div>
+      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div>
     </div>
     <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
     <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
@@ -296,7 +296,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <label>Versione<span class="sv-v"><span aria-hidden="true">V</span><input id="sv-ver" type="number" min="1" max="999" step="1" inputmode="numeric"></span><small>1, 2, 3…</small></label>
     </div>
     <label>Descrizione<textarea id="sv-d" rows="3" maxlength="300"></textarea><small>una o due frasi: cosa cambia rispetto agli altri portafogli</small></label>
-    <p class="muted">Nuovo file: <b id="sv-file" class="num"></b></p>
+    <p class="muted"><span id="sv-fl">Nuovo file</span>: <b id="sv-file" class="num"></b></p>
     <div class="lerr" id="sv-err" role="alert"></div>
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-ann" type="button">Annulla</button><button class="btn" id="sv-ok" type="submit">Salva il portafoglio</button></div>
   </form>
@@ -411,16 +411,16 @@ function posizioni() {
     L.forEach((x) => { if (x && x.err) err.push(x.err); });
     // in ordine di data (a pari data prima gli acquisti): costo medio ponderato; una vendita toglie quote al costo medio e realizza la differenza di prezzo
     const ord = L.filter((x) => x && !x.err).sort((a, b) => (a.dd < b.dd ? -1 : a.dd > b.dd ? 1 : (a.tipo === "a" ? 0 : 1) - (b.tipo === "a" ? 0 : 1)));
-    let q = 0, costo = 0, acq = 0, inc = 0, real = 0;
+    let q = 0, costo = 0, acq = 0, inc = 0, real = 0, qacq = 0;
     ord.forEach((x) => {
-      if (x.tipo === "a") { q += x.q; costo += x.costo; acq += x.costo; x.qeff = x.q; return; }
+      if (x.tipo === "a") { q += x.q; costo += x.costo; acq += x.costo; qacq += x.q; x.qeff = x.q; return; }
       const v = Math.min(x.q, q); x.qeff = v;
       if (v < x.q - 1e-9) err.push("vendita del " + dataIt(x.dd) + ": " + nf(x.q, x.q % 1 ? 2 : 0) + " quote, ma ne avevi " + nf(q, q % 1 ? 2 : 0));
       if (v > 0) { const med = costo / q; costo -= v * med; real += v * (x.pr - med); inc += v * x.pr; q -= v; }
       if (q < 1e-9) { q = 0; costo = 0; }
     });
     const prezzo = PX[i][last], valore = q * prezzo;
-    return { q, costo, valore, pl: valore - costo, prezzo, lots: L, err, acq, inc, real };
+    return { q, costo, valore, pl: valore - costo, prezzo, lots: L, err, acq, inc, real, qacq };
   });
 }
 function xirr(fl) { if (fl.length < 2) return null; const t0 = fl[0].t, f = (r) => fl.reduce((a, x) => a + x.v / Math.pow(1 + r, (x.t - t0) / (365 * 864e5)), 0); let lo = -0.95, hi = 20; if (f(lo) * f(hi) > 0) return null; for (let k = 0; k < 120; k++) { const m = (lo + hi) / 2; if (f(m) * f(lo) > 0) lo = m; else hi = m; } return (lo + hi) / 2; }
@@ -568,8 +568,14 @@ function disegnaKpi() {
   if (fl.length && VAL > 0 && new Date(last).getTime() - fl[0].t > 30 * 864e5) { fl.push({ t: new Date(last).getTime(), v: VAL }); xi = xirr(fl); }
   const hasPos = VAL > 0 || ACQ > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
   const sdv = COV.map((r, i) => Math.sqrt(r[i])), vp = Math.sqrt(sum(WCUR.map((x, i) => sum(WCUR.map((y, j) => x * y * COV[i][j]))))), dr = vp ? sum(WCUR.map((x, i) => x * sdv[i])) / vp : 1, neff = 1 / sum(WCUR.map((x) => x * x));
-  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(ACQ) + (INC > 0 ? " · incassato " + eur(INC) : "") : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && ACQ > 0 ? `<span class="${cls(pl)}">${sgn(pl / ACQ, 2)}</span> sul versato` : "al " + dataIt(last)],
-    ["Rend. dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
+  // rendita strategia: se avessi messo 1 euro su ogni titolo acquistato, il giorno del suo primo acquisto, come sarei oggi (media dei titoli)
+  const strat = []; POS.forEach((p, i) => { const b = p.lots.filter((x) => x && !x.err && x.tipo === "a"); if (b.length) { const t0 = Math.min(...b.map((x) => x.t)); strat.push(PX[i][PX[i].length - 1] / PX[i][t0] - 1); } });
+  const rs = strat.length ? sum(strat) / strat.length : null;
+  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "oggi, ai prezzi del " + dataIt(last) : "del piano ai prezzi di oggi · nessun acquisto inserito"],
+    ["Investito", hasPos ? eur(ACQ) : "—", hasPos ? "somma degli acquisti" + (INC > 0 ? " · vendite incassate " + eur(INC) : "") : "nessun acquisto inserito"],
+    ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && ACQ > 0 ? `<span class="${cls(pl)}">${sgn(pl / ACQ, 2)}</span> sull'investito` + (xi == null ? "" : ` · <span class="${cls(xi)}">${sgn(xi)}</span> annuo (XIRR)`) : "al " + dataIt(last)],
+    ["Rendita strategia", rs == null ? "—" : `<span class="${cls(rs)}">${sgn(rs)}</span>`, rs == null ? "nessun acquisto inserito" : "1 € su ogni titolo dal primo acquisto · " + strat.length + " titoli"],
+    ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
   $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
@@ -588,12 +594,12 @@ function disegnaTabella() {
   const last = DATES[DATES.length - 1]; $("#prezzial").textContent = "Prezzi al " + dataIt(last);
   // senza acquisti inseriti si mostra il piano (quote del piano ai prezzi correnti, rendita dal prezzo del giorno base), così il valore attuale c'è sempre
   const ib = lastIdx(BASE), piano = VAL <= 0, riga = (f, i) => { const p = POS[i], pr = p.prezzo; if (!piano) return p.q ? { q: p.q, val: p.valore, pl: p.pl, costo: p.costo } : null; const q = f.q0, c = q * PX[i][ib]; return { q, val: q * pr, pl: q * pr - c, costo: c }; };
-  const rend = (r) => (r ? `<span class="${cls(r.pl)}">${sgnE(r.pl)}</span>` + (r.costo ? `<div class="fsub ${cls(r.pl)}">${sgn(r.pl / r.costo, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—");
+  const rend = (r) => (r ? `<span class="${cls(r.pl)}">${sgnE(r.pl)}</span>` + (r.costo ? `<div class="fsub ${cls(r.pl)}">${sgn(r.pl / r.costo, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—");
   const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))) + (piano ? 0 : REAL), totC = piano ? sum(RR.map((r) => (r ? r.costo : 0))) : ACQ;  // con vendite il totale include il realizzato e la percentuale è sul totale acquistato
   const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
-    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${eur(usato)}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—"}</td></tr></tfoot>`;
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${p.acq > 0 ? eur(p.acq) + `<div class="fsub">${nf(p.qacq, p.qacq % 1 ? 2 : 0)} quote · medio ${eur(p.acq / p.qacq, p.acq / p.qacq < 20 ? 3 : 2)}</div>` : "—"}</td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${ACQ > 0 ? eur(ACQ) : "—"}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—"}</td></tr></tfoot>`;
 }
 
 /* ---------- frontiera: disegno e dettaglio ---------- */
@@ -684,7 +690,13 @@ function aggiornaRib() {
 
 /* ---------- andamento e storici ---------- */
 let PERIODO = ST.periodo;
-function iniziale() { if (!PERIODO) return 0; const d = new Date(DATES[DATES.length - 1]); d.setFullYear(d.getFullYear() - PERIODO); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i); }
+function iniPer(p) {  // primo giorno del grafico: 0 = tutto, "ytd" = chiusura dell'ultimo giorno dell'anno scorso, un numero = quegli anni fa
+  if (!p) return 0; const last = DATES[DATES.length - 1];
+  if (p === "ytd") return Math.max(0, lastIdx((+last.slice(0, 4) - 1) + "-12-31"));
+  const d = new Date(last); d.setFullYear(d.getFullYear() - p); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i);
+}
+const perVal = (s) => (s === "ytd" ? "ytd" : +s);
+function iniziale() { return iniPer(PERIODO); }
 function disegnaAndamento() {
   const su = serieUtente(), box1 = $("#c-ris"), box2 = $("#c-val");
   if (!su) { box1.innerHTML = box2.innerHTML = '<p class="muted">Inserisci almeno un acquisto per vedere l\'andamento.</p>'; $("#and-r").textContent = $("#and-v").textContent = ""; $("#and-n").textContent = ""; return; }
@@ -702,7 +714,7 @@ function disegnaStorici() {
   const an = anniRend(statistiche(WCUR).v); $("#anni").innerHTML = Object.entries(an).map(([y, x]) => `<div><div class="y">${y}${y === DATES[DATES.length - 1].slice(0, 4) ? " (parziale)" : ""}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("");
   $("#fondi").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s)} <span class="muted" style="font-weight:400">${esc(f.name)}</span></h3><span class="num" id="r-${f.s}"></span></div><div class="chart" id="c-${f.s}"></div></div>`).join("");
   F.forEach((f, i) => { const y = PX[i].slice(i0), rr = y[y.length - 1] / y[0] - 1; lineChart($("#c-" + f.s), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 170, label: "Prezzo di " + f.s }); $("#r-" + f.s).innerHTML = `<span class="${cls(rr)}">${sgn(rr)}</span>`; });
-  $$("#periodo button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === PERIODO)));
+  $$("#periodo button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(PERIODO))));
 }
 function disegnaAnagrafica() {
   $("#ana").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3>${flink(i)}</h3><span class="tag">${f.ruolo}</span></div><dl><dt>Simbolo · ISIN</dt><dd>${f.s} · ${f.isin}</dd><dt>Emittente</dt><dd>${esc(f.emittente)}</dd><dt>Tipo</dt><dd>${esc(f.tipo)}</dd><dt>Costo annuo (TER)</dt><dd>${pct(f.ter / 100, 2)}</dd><dt>Patrimonio</dt><dd>${f.aum != null ? nf(Math.round(f.aum)) + " mln €" : "n.d."}</dd><dt>Scambi medi a Milano</dt><dd>${f.adv != null ? nf(f.adv, 2) + " mln €/giorno" : "n.d."}</dd><dt>Replica</dt><dd>${esc(f.repl || "n.d.")}</dd><dt>Domicilio</dt><dd>${esc(f.dom || "n.d.")}</dd><dt>Lancio</dt><dd>${f.lancio ? dataIt(f.lancio) : "n.d."}</dd><dt>Proventi</dt><dd>Accumulazione</dd></dl></div>`).join("");
@@ -724,7 +736,7 @@ function apri(i) {
   const mix = f.mix, lista = (m) => Object.entries(m).sort((a, b) => b[1] - a[1]).filter((r) => r[1] > 0.0005).slice(0, 8);
   box.innerHTML = `<div class="top"><div><h2 id="ovl-t">${esc(f.name)}</h2><p class="muted">${f.s} · ${f.isin} · ${esc(f.emittente)} · <span class="tag">${f.ruolo}</span></p></div><button class="btn sec small" id="ovl-x" type="button">Chiudi</button></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">${cell("Prezzo", eur(s.last, s.last < 20 ? 3 : 2))}${cell("1 mese", rv(s.m1), cls(s.m1))}${cell("3 mesi", rv(s.m3), cls(s.m3))}${cell("Da inizio anno", rv(s.ytd), cls(s.ytd))}${cell("1 anno", rv(s.a1), cls(s.a1))}${cell("3 anni (annuo)", rv(s.a3), cls(s.a3))}${cell("5 anni (annuo)", rv(s.a5), cls(s.a5))}${cell("Volatilità 1 anno", pct(s.vol1))}${cell("Perdita massima", nf(s.dd * 100, 1) + "%", "down")}</div>
-    <div><div class="fhead"><h3>Prezzo</h3><div class="seg" id="sp" role="group" aria-label="Periodo del grafico"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="0">Tutto</button></div></div><div class="panel"><div class="chart" id="s-px"></div></div></div>
+    <div><div class="fhead"><h3>Prezzo</h3><div class="seg" id="sp" role="group" aria-label="Periodo del grafico"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div></div><div class="panel"><div class="chart" id="s-px"></div></div></div>
     <div class="panel"><div class="fhead"><h3>Perdita dal massimo precedente</h3></div><div class="chart" id="s-dd"></div></div>
     <div><h4>Rendimento per anno solare</h4><div class="years" style="margin-top:8px">${Object.entries(s.anni).map(([y, x]) => `<div><div class="y">${y}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("")}</div></div>
     <div class="grid"><div class="panel"><div class="fhead"><h3>Area geografica</h3></div><ul class="bars" id="s-aree"></ul></div>${f.cls === "Azionario" ? `<div class="panel"><div class="fhead"><h3>Settori</h3></div><ul class="bars" id="s-sett"></ul></div>` : ""}<div class="panel"><div class="fhead"><h3>Valute</h3></div><ul class="bars" id="s-val"></ul></div>${mix.top.length ? `<div class="panel"><div class="fhead"><h3>Primi titoli</h3></div><ul class="bars" id="s-top"></ul></div>` : ""}${mix.paesi.length ? `<div class="panel"><div class="fhead"><h3>Paesi</h3></div><ul class="bars" id="s-paesi"></ul></div>` : ""}</div>
@@ -733,9 +745,9 @@ function apri(i) {
       <div class="panel"><h3>La tua posizione</h3>${p.q ? `<dl><dt>Quote</dt><dd>${nf(p.q, p.q % 1 ? 2 : 0)}</dd><dt>Costo medio</dt><dd>${eur(p.costo / p.q, 3)}</dd><dt>Capitale versato</dt><dd>${eur(p.costo)}</dd><dt>Valore</dt><dd>${eur(p.valore)}</dd><dt>Risultato</dt><dd class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</dd><dt>Peso attuale / piano</dt><dd>${pct(WCUR[i])} / ${pct(f.w, 0)}</dd></dl>` : '<p class="muted" style="margin-top:8px">Nessun acquisto inserito per questo fondo.</p>'}</div></div>`;
   $("#ovl").hidden = false; document.body.style.overflow = "hidden";
   barre("#s-aree", lista(mix.aree), "var(--c1)"); if ($("#s-sett")) barre("#s-sett", lista(mix.settori), "var(--c2)"); barre("#s-val", lista(mix.valute), "var(--accent)"); if ($("#s-top")) barre("#s-top", mix.top.map((r) => [r[0] + (r[1] ? " · " + r[1] : ""), r[2]]), "var(--c2)"); if ($("#s-paesi")) barre("#s-paesi", mix.paesi, "var(--c3)");
-  const disegna = () => { const i0 = !SP ? 0 : (() => { const d = new Date(DATES[DATES.length - 1]); d.setFullYear(d.getFullYear() - SP); const k = DATES.findIndex((x) => x >= d.toISOString().slice(0, 10)); return Math.max(0, k); })(), t = DATES.slice(i0), y = PX[i].slice(i0);
-    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === SP))); };
-  $$("#sp button").forEach((b) => b.addEventListener("click", () => { SP = +b.dataset.p; disegna(); })); disegna(); $("#ovl-x").onclick = chiudi; $("#ovl-x").focus(); $("#ovl").scrollTop = 0;
+  const disegna = () => { const i0 = iniPer(SP), t = DATES.slice(i0), y = PX[i].slice(i0);
+    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(SP)))); };
+  $$("#sp button").forEach((b) => b.addEventListener("click", () => { SP = perVal(b.dataset.p); disegna(); })); disegna(); $("#ovl-x").onclick = chiudi; $("#ovl-x").focus(); $("#ovl").scrollTop = 0;
 }
 function chiudi() { $("#ovl").hidden = true; document.body.style.overflow = ""; if (FOC && FOC.focus && document.contains(FOC)) FOC.focus(); }
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#ovl").hidden) chiudi(); });
@@ -762,7 +774,7 @@ const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito
 $("#pos").addEventListener("input", (e) => { const inp = e.target, lot = inp.closest(".lot"); if (!lot) return; const s = inp.closest(".fcard").dataset.s, k = +lot.dataset.k, c = inp.dataset.c; ST.lots[s][k][c] = inp.value; ST.esempio = false; inp.classList.toggle("bad", c === "q" && inp.value !== "" && !(+inp.value > 0)); salva(); aggiornaRitardo(); });
 $("#pos").addEventListener("click", (e) => { const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"); if (add) { ST.lots[add.dataset.add].push({ q: "", d: DATES[DATES.length - 1], p: "", t: "a" }); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); const rr = $$(`#lots-${add.dataset.add} .lot`); if (rr.length) rr[rr.length - 1].querySelector("input").focus(); } if (del) { const s = del.closest(".fcard").dataset.s; ST.lots[s].splice(+del.dataset.del, 1); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); } });
 $("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
-$$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = +b.dataset.p; ST.periodo = PERIODO; salva(); disegnaStorici(); }));
+$$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = perVal(b.dataset.p); ST.periodo = PERIODO; salva(); disegnaStorici(); }));
 $("#copia").onclick = async () => { const t = $("#export"); try { await navigator.clipboard.writeText(t.value); $("#exstato").textContent = "Copiato."; } catch (e) { t.select(); $("#exstato").textContent = "Selezionato: premi Ctrl+C."; } };
 $("#importa").onclick = () => { try { const o = JSON.parse($("#export").value); if (!o || !o.lots) throw 0; const L = {}; F.forEach((f) => { L[f.s] = (Array.isArray(o.lots[f.s]) ? o.lots[f.s] : []).map((x) => ({ q: x.q ?? "", d: String(x.d || "").slice(0, 10), p: x.p ?? "", t: x.t === "v" ? "v" : "a" })); }); ST.lots = L; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#exstato").textContent = "Importato."; } catch (e) { $("#exstato").textContent = "Il testo non è valido."; } };
 let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
@@ -902,7 +914,7 @@ async function caricaPortafogli() {
   } catch (e) { PF.server = false; return; }
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""} title="${esc(x.descrizione || "")}">${esc(x.nome)} · ${esc(x.versione)}</option>`).join("");
   try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
-  $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
+  $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = $("#pf-mod").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
 }
 $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo stile da carta; si sceglie «Salva come PDF»
   const t0 = document.title, d = new Date();
@@ -946,7 +958,7 @@ $("#pf-del").onclick = async () => {
 };
 $("#pfsel").addEventListener("change", (e) => { if (e.target.value && e.target.value !== PF.file) location.href = urlPf(e.target.value); });
 
-let SV = { w: null, tocca: false, opener: null };
+let SV = { w: null, tocca: false, opener: null, modo: "nuovo" };
 const svNome = () => $("#sv-n").value.trim(), svVer = () => parseInt($("#sv-ver").value, 10);
 function svProponi() {  // versione successiva per il nome scritto
   const n = svNome(), vs = PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione)); if (!SV.tocca) $("#sv-ver").value = (vs.length ? Math.max(...vs) : 0) + 1;
@@ -956,7 +968,7 @@ function svControlla(mostra) {
   if (!/^[A-Za-z0-9]{1,30}$/.test(n)) err = n ? "Il nome può avere solo lettere e cifre, senza spazi né simboli." : "Scrivi il nome del portafoglio.";
   else if (!(v >= 1 && v <= 999)) err = "La versione deve essere un numero da 1 a 999.";
   else if (!d) err = "Scrivi una breve descrizione.";
-  else if (PF.lista.some((x) => x.file === n + "_V" + v + ".json")) err = "Esiste già " + n + "_V" + v + ".json: scegli un'altra versione.";
+  else if (PF.lista.some((x) => x.file === n + "_V" + v + ".json" && !(SV.modo === "modifica" && x.file === PF.file))) err = "Esiste già " + n + "_V" + v + ".json: scegli un'altra versione.";
   $("#sv-file").textContent = /^[A-Za-z0-9]{1,30}$/.test(n) && v >= 1 ? n + "_V" + v + ".json" : "—";
   $("#sv-n").classList.toggle("bad", !!n && !/^[A-Za-z0-9]{1,30}$/.test(n));
   if (mostra) $("#sv-err").textContent = err; else if (!err) $("#sv-err").textContent = "";
@@ -964,7 +976,8 @@ function svControlla(mostra) {
 }
 function apriSalva(w, s, tit, msg = "sv-nosrv") {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
-  $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement };
+  $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
+  $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
@@ -972,6 +985,15 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
 }
+function apriModifica() {  // nome, versione e descrizione del portafoglio aperto: si salvano nello stesso file, o in uno nuovo se nome o versione cambiano
+  if (!PF.server) return;
+  SV = { w: null, importo: IMPORTO(), tocca: true, opener: document.activeElement, modo: "modifica" };
+  $("#sv-t").textContent = "Modifica il portafoglio"; $("#sv-fl").textContent = "File"; $("#sv-ok").textContent = "Salva le modifiche"; $("#sv-w").hidden = true;
+  $("#sv-n").value = NOMEPF; $("#sv-ver").value = String(VERS).replace(/^V/i, ""); $("#sv-d").value = META.descrizione || "";
+  $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
+  $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus();
+}
+$("#pf-mod").onclick = apriModifica;
 function chiudiSalva() { $("#salva").hidden = true; document.body.style.overflow = ""; const o = SV.opener && document.contains(SV.opener) ? SV.opener : $("#imp-salva"); if (o) o.focus(); }
 $("#sv-x").onclick = $("#sv-ann").onclick = $("#sv-resta").onclick = chiudiSalva;
 $("#salva").addEventListener("mousedown", (e) => { if (e.target.id === "salva") chiudiSalva(); });
@@ -983,6 +1005,12 @@ $("#sv-f").addEventListener("submit", async (e) => {
   e.preventDefault(); if (!svControlla(true)) return;
   const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
   try {
+    if (SV.modo === "modifica") {
+      const r = await fetch("/api/modifica", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
+      if (j.chiave && j.chiave !== KEY) { try { const v = localStorage.getItem(KEY); if (v) localStorage.setItem(j.chiave, v); } catch (e) {} }  // gli acquisti inseriti nel browser seguono il portafoglio col nuovo nome
+      location.href = urlPf(j.file); return;
+    }
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
     const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);

@@ -225,7 +225,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
         return String.format(Locale.ITALY, "%+.2f%%", v * 100);
     }
 
-    static final String[][] PERIODI = {{"1m", "1 mese", "31"}, {"3m", "3 mesi", "92"}, {"6m", "6 mesi", "183"}, {"1a", "1 anno", "365"}, {"3a", "3 anni", "1096"}, {"5a", "5 anni", "1827"}, {"max", "Tutto lo storico", "0"}};
+    static final String[][] PERIODI = {{"1m", "1 mese", "31"}, {"3m", "3 mesi", "92"}, {"6m", "6 mesi", "183"}, {"1a", "1 anno", "365"}, {"3a", "3 anni", "1096"}, {"5a", "5 anni", "1827"}, {"ytd", "Da inizio anno", "-1"}, {"max", "Tutto lo storico", "0"}};
 
     static String[] periodo(Context c, int id) {
         String k = c.getSharedPreferences(PREFS, 0).getString("per_" + id, "1a");
@@ -292,14 +292,15 @@ public class MyMoneyWidget extends AppWidgetProvider {
         String raw = c.getSharedPreferences(PREFS, 0).getString(KEY, null);
         try {
             JSONObject d = new JSONObject(raw);
-            double val = d.getDouble("val"), cost = d.optDouble("cost", 0);
+            double val = d.getDouble("val"), cost = d.optDouble("cost", 0), inc = d.optDouble("inc", 0);
             String[] per = periodo(c, id);
             JSONArray ds = d.optJSONArray("ds"), vs = d.optJSONArray("vs");
             int n = ds == null || vs == null ? 0 : Math.min(ds.length(), vs.length());
             // la parte di serie nel periodo scelto
             int from = 0;
             if (n > 1 && !per[0].equals("max")) {
-                long cut = giorni(ds.getString(n - 1)) - Long.parseLong(per[2]);
+                String ultimaData = ds.getString(n - 1);
+                long cut = per[0].equals("ytd") ? giorni((Integer.parseInt(ultimaData.substring(0, 4)) - 1) + "-12-31") : giorni(ultimaData) - Long.parseLong(per[2]);
                 while (from < n - 2 && giorni(ds.getString(from)) < cut) from++;
             }
             String[] dd = new String[Math.max(0, n - from)];
@@ -311,8 +312,8 @@ public class MyMoneyWidget extends AppWidgetProvider {
             v.setTextViewText(R.id.w_name, d.optString("name", "Portafoglio") + " · " + per[1]);
             String vt = eur(val);
             boolean hasRoi = cost > 0 || ss.length >= 2;
-            double roi = cost > 0 ? val / cost - 1 : ss.length >= 2 && ss[0] > 0 ? val / ss[0] - 1 : 0;
-            double profit = cost > 0 ? val - cost : ss.length >= 2 ? val - ss[0] : 0;
+            double roi = cost > 0 ? (val + inc) / cost - 1 : ss.length >= 2 && ss[0] > 0 ? val / ss[0] - 1 : 0;
+            double profit = cost > 0 ? val + inc - cost : ss.length >= 2 ? val - ss[0] : 0;
             if (tiny && hasRoi) {
                 SpannableStringBuilder sb = new SpannableStringBuilder(vt + "  " + pct(roi));
                 sb.setSpan(new ForegroundColorSpan(roi >= 0 ? UP : DOWN), vt.length() + 2, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

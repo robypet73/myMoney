@@ -22,9 +22,17 @@ Serve Python 3.9 o più recente, nient'altro.
 3. **Aggiorna i valori**: rifà lo scarico dei prezzi quando vuoi (finestra con l'avanzamento).
 4. **Carica portafoglio (JSON)**: scegli un file nel formato qui sotto. Il programma lo salva in `portafogli/` (nome e versione esistenti non si sovrascrivono: cambia la versione), scarica i dati dei titoli e apre il portafoglio.
 5. **Salva**: dalla composizione («Salva il portafoglio…») o dalla frontiera efficiente («Salva come nuovo portafoglio…») si scrive un nuovo `nome_Vn.json` in `portafogli/`, con nome (solo lettere e cifre), versione (1, 2, 3…) e descrizione.
-6. **Elimina**: cancella il JSON del portafoglio aperto (chiede conferma).
-7. **Cartella…**: sceglie dove stanno i JSON dei portafogli, **sul computer o su Google Drive**: con Google Drive per desktop basta indicare la cartella sincronizzata (per esempio `G:\Il mio Drive\portafogli`). Vuoto = la cartella `portafogli/` del programma. La scelta è ricordata (`config.json` nella cartella dell'utente) e si può dare anche da riga di comando: `python build.py --cartella "G:\Il mio Drive\portafogli"` (`--cartella ""` per tornare a quella del programma). Il programma copia `schema.json` nella cartella scelta; i portafogli salvati o caricati finiscono lì. Le schede note dei titoli restano nel programma.
-8. **Scarica JSON**: esporta la definizione del portafoglio aperto (con i vincoli della frontiera).
+6. **Modifica**: cambia nome, versione o descrizione del portafoglio aperto. Se nome e versione restano uguali si riscrive lo stesso file, altrimenti il file viene rinominato (gli acquisti inseriti nel browser lo seguono). Funziona sul PC e nell'app.
+7. **Elimina**: cancella il JSON del portafoglio aperto (chiede conferma).
+8. **Cartella…**: sceglie dove stanno i JSON dei portafogli, **sul computer o su Google Drive**: con Google Drive per desktop basta indicare la cartella sincronizzata (per esempio `G:\Il mio Drive\portafogli`). Vuoto = la cartella `portafogli/` del programma. La scelta è ricordata (`config.json` nella cartella dell'utente) e si può dare anche da riga di comando: `python build.py --cartella "G:\Il mio Drive\portafogli"` (`--cartella ""` per tornare a quella del programma). Il programma copia `schema.json` nella cartella scelta; i portafogli salvati o caricati finiscono lì. Le schede note dei titoli restano nel programma.
+9. **Scarica JSON**: esporta la definizione del portafoglio aperto (con i vincoli della frontiera).
+
+## Sintesi e grafici
+
+- **Valore attuale** e **Investito**: l'investito è la somma di tutti gli acquisti (le vendite non lo riducono); le vendite incassate sono indicate a parte.
+- **Risultato**: valore attuale + incassi delle vendite − investito, in euro e in percentuale **sull'investito** (con il rendimento annuo ponderato nel tempo, XIRR).
+- **Rendita strategia**: come saresti oggi se avessi messo 1 € su ogni titolo acquistato il giorno del suo primo acquisto (media dei titoli): misura la bontà della scelta dei titoli a prescindere dagli importi.
+- I grafici nel tempo hanno i periodi 1, 3, 5 anni, **YTD** (da inizio anno) e Tutto; anche il grafico del widget Android.
 
 ## Formato di un portafoglio
 
