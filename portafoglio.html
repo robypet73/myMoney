@@ -729,7 +729,12 @@ function iniPer(p) {  // primo giorno del grafico: 0 = tutto, "ytd" = chiusura d
   if (p === "ytd") return Math.max(0, lastIdx((+last.slice(0, 4) - 1) + "-12-31"));
   const d = new Date(last); d.setFullYear(d.getFullYear() - p); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i);
 }
-const perVal = (s) => (s === "ytd" ? "ytd" : +s);
+const perVal = (s) => (s === "ytd" || s === "acq" ? s : +s);
+function primoAcquisto(i) {  // indice del primo acquisto valido del titolo, o -1
+  if (ST.esempio) return -1;  // gli acquisti d'esempio del piano non sono acquisti tuoi
+  const x = (POS[i] ? POS[i].lots : []).filter((l) => l && !l.err && l.tipo === "a").map((l) => l.t); return x.length ? Math.min(...x) : -1;
+}
+const iniFondo = (p, i) => { if (p !== "acq") return iniPer(p); const k = primoAcquisto(i); return k < 0 ? iniPer(3) : Math.max(0, Math.min(k, DATES.length - 2)); };
 function iniziale() { return iniPer(PERIODO); }
 function disegnaAndamento() {
   const su = serieUtente(), box1 = $("#c-ris"), box2 = $("#c-val");
@@ -765,12 +770,18 @@ function statFondo(i) {
   const anni = {}; for (let a = +DATES[0].slice(0, 4); a <= +day.slice(0, 4); a++) { const f = lastIdx(a + "-12-31"), s0 = lastIdx(a - 1 + "-12-31"); if (f >= 0) anni[a] = y[f] / (s0 >= 0 ? y[s0] : y[0]) - 1; }
   return { last, m1: sub(1), m3: sub(3), m6: sub(6), ytd: ytd ? last / ytd - 1 : null, a1: sub(12), a3: ann(3), a5: ann(5), vol1, dd, dds, anni };
 }
+function cellaAcq(i, p, cell) {  // rendita della tua posizione dal giorno dell'acquisto (sul costo medio), con il risultato in euro comprese le vendite
+  const k = primoAcquisto(i); if (k < 0 || !p) return cell("Da acquisto", "—");
+  const dal = "dal " + dataIt(DATES[k]);
+  if (p.q > 0 && p.costo > 0) return cell("Da acquisto · " + dal, `${sgn(p.pl / p.costo, 2)}<div class="fsub ${cls(p.pl + p.real)}" style="font-family:var(--text)">${sgnE(p.pl + p.real)}</div>`, cls(p.pl));
+  return cell("Da acquisto · " + dal, `venduto<div class="fsub ${cls(p.real)}" style="font-family:var(--text)">realizzato ${sgnE(p.real)}</div>`);
+}
 function apri(i) {
-  FOC = document.activeElement; const f = F[i], s = statFondo(i), p = POS[i], box = $("#ovl-box"); const cell = (l, v, c) => `<div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><div class="fsub">${l}</div><div class="num ${c || ""}" style="font-size:16px;font-family:var(--display)">${v}</div></div>`; const rv = (v) => (v == null ? "—" : `${sgn(v)}`);
+  FOC = document.activeElement; const f = F[i], s = statFondo(i), p = POS[i], box = $("#ovl-box"); SP = primoAcquisto(i) >= 0 ? "acq" : SP === "acq" ? 3 : SP; /* di default il grafico parte dal primo acquisto */ const cell = (l, v, c) => `<div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><div class="fsub">${l}</div><div class="num ${c || ""}" style="font-size:16px;font-family:var(--display)">${v}</div></div>`; const rv = (v) => (v == null ? "—" : `${sgn(v)}`);
   const mix = f.mix, lista = (m) => Object.entries(m).sort((a, b) => b[1] - a[1]).filter((r) => r[1] > 0.0005).slice(0, 8);
   box.innerHTML = `<div class="top"><div><h2 id="ovl-t">${esc(f.name)}</h2><p class="muted">${f.s} · ${f.isin} · ${esc(f.emittente)} · <span class="tag">${f.ruolo}</span></p></div><button class="btn sec small" id="ovl-x" type="button">Chiudi</button></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">${cell("Prezzo", eur(s.last, s.last < 20 ? 3 : 2))}${cell("1 mese", rv(s.m1), cls(s.m1))}${cell("3 mesi", rv(s.m3), cls(s.m3))}${cell("Da inizio anno", rv(s.ytd), cls(s.ytd))}${cell("1 anno", rv(s.a1), cls(s.a1))}${cell("3 anni (annuo)", rv(s.a3), cls(s.a3))}${cell("5 anni (annuo)", rv(s.a5), cls(s.a5))}${cell("Volatilità 1 anno", pct(s.vol1))}${cell("Perdita massima", nf(s.dd * 100, 1) + "%", "down")}</div>
-    <div><div class="fhead"><h3>Prezzo</h3><div class="seg" id="sp" role="group" aria-label="Periodo del grafico"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div></div><div class="panel"><div class="chart" id="s-px"></div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">${cell("Prezzo", eur(s.last, s.last < 20 ? 3 : 2))}${cellaAcq(i, p, cell)}${cell("1 mese", rv(s.m1), cls(s.m1))}${cell("3 mesi", rv(s.m3), cls(s.m3))}${cell("Da inizio anno", rv(s.ytd), cls(s.ytd))}${cell("1 anno", rv(s.a1), cls(s.a1))}${cell("3 anni (annuo)", rv(s.a3), cls(s.a3))}${cell("5 anni (annuo)", rv(s.a5), cls(s.a5))}${cell("Volatilità 1 anno", pct(s.vol1))}${cell("Perdita massima", nf(s.dd * 100, 1) + "%", "down")}</div>
+    <div><div class="fhead"><h3 id="s-px-t">Prezzo</h3><div class="seg" id="sp" role="group" aria-label="Periodo del grafico">${primoAcquisto(i) >= 0 ? '<button type="button" data-p="acq">Da acquisto</button>' : ""}<button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div></div><div class="panel"><div class="chart" id="s-px"></div></div></div>
     <div class="panel"><div class="fhead"><h3>Perdita dal massimo precedente</h3></div><div class="chart" id="s-dd"></div></div>
     <div><h4>Rendimento per anno solare</h4><div class="years" style="margin-top:8px">${Object.entries(s.anni).map(([y, x]) => `<div><div class="y">${y}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("")}</div></div>
     <div class="grid"><div class="panel"><div class="fhead"><h3>Area geografica</h3></div><ul class="bars" id="s-aree"></ul></div>${f.cls === "Azionario" ? `<div class="panel"><div class="fhead"><h3>Settori</h3></div><ul class="bars" id="s-sett"></ul></div>` : ""}<div class="panel"><div class="fhead"><h3>Valute</h3></div><ul class="bars" id="s-val"></ul></div>${mix.top.length ? `<div class="panel"><div class="fhead"><h3>Primi titoli</h3></div><ul class="bars" id="s-top"></ul></div>` : ""}${mix.paesi.length ? `<div class="panel"><div class="fhead"><h3>Paesi</h3></div><ul class="bars" id="s-paesi"></ul></div>` : ""}</div>
@@ -779,8 +790,8 @@ function apri(i) {
       <div class="panel"><h3>La tua posizione</h3>${p.q ? `<dl><dt>Quote</dt><dd>${nf(p.q, p.q % 1 ? 2 : 0)}</dd><dt>Costo medio</dt><dd>${eur(p.costo / p.q, 3)}</dd><dt>Capitale versato</dt><dd>${eur(p.costo)}</dd><dt>Valore</dt><dd>${eur(p.valore)}</dd><dt>Risultato</dt><dd class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</dd><dt>Peso attuale / piano</dt><dd>${pct(WCUR[i])} / ${pct(f.w, 0)}</dd></dl>` : '<p class="muted" style="margin-top:8px">Nessun acquisto inserito per questo fondo.</p>'}</div></div>`;
   $("#ovl").hidden = false; document.body.style.overflow = "hidden";
   barre("#s-aree", lista(mix.aree), "var(--c1)"); if ($("#s-sett")) barre("#s-sett", lista(mix.settori), "var(--c2)"); barre("#s-val", lista(mix.valute), "var(--accent)"); if ($("#s-top")) barre("#s-top", mix.top.map((r) => [r[0] + (r[1] ? " · " + r[1] : ""), r[2]]), "var(--c2)"); if ($("#s-paesi")) barre("#s-paesi", mix.paesi, "var(--c3)");
-  const disegna = () => { const i0 = iniPer(SP), t = DATES.slice(i0), y = PX[i].slice(i0);
-    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(SP)))); };
+  const disegna = () => { const i0 = iniFondo(SP, i), t = DATES.slice(i0), y = PX[i].slice(i0), conCosto = SP === "acq" && p && p.q > 0 && p.costo > 0; $("#s-px-t").textContent = conCosto ? "Prezzo · linea tratteggiata: costo medio " + eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2) : "Prezzo";
+    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s, ...(conCosto ? { ref: p.costo / p.q } : {}) }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(SP)))); };
   $$("#sp button").forEach((b) => b.addEventListener("click", () => { SP = perVal(b.dataset.p); disegna(); })); disegna(); $("#ovl-x").onclick = chiudi; $("#ovl-x").focus(); $("#ovl").scrollTop = 0;
 }
 function chiudi() { $("#ovl").hidden = true; document.body.style.overflow = ""; if (FOC && FOC.focus && document.contains(FOC)) FOC.focus(); }
