@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -35,7 +36,43 @@ public class MyMoneyWidgetSettings extends Activity {
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
         col.setPadding(p, p, p, p);
-        col.addView(titolo("Periodo del grafico dei rendimenti", 0));
+        col.addView(titolo("Portafoglio mostrato", 0));
+        LinearLayout riga = new LinearLayout(this);
+        riga.setOrientation(LinearLayout.HORIZONTAL);
+        riga.setGravity(Gravity.CENTER_VERTICAL);
+        final TextView nome = new TextView(this);
+        nome.setTextSize(15);
+        nome.setGravity(Gravity.CENTER);
+        final Button prec = new Button(this), succ = new Button(this);
+        prec.setText("‹");
+        succ.setText("›");
+        final Runnable aggiorna = new Runnable() {
+            @Override
+            public void run() {
+                String f = MyMoneyWidget.corrente(MyMoneyWidgetSettings.this, id);
+                nome.setText(f == null ? "Nessun portafoglio: aprilo nell'app" : MyMoneyWidget.nomeDi(MyMoneyWidgetSettings.this, f));
+                boolean piu = MyMoneyWidget.portafogli(MyMoneyWidgetSettings.this).size() > 1;
+                prec.setEnabled(piu);
+                succ.setEnabled(piu);
+            }
+        };
+        View.OnClickListener vai = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyMoneyWidget.sposta(MyMoneyWidgetSettings.this, id, v == succ ? 1 : -1);
+                aggiorna.run();
+                MyMoneyWidget.refreshAll(MyMoneyWidgetSettings.this);
+            }
+        };
+        prec.setOnClickListener(vai);
+        succ.setOnClickListener(vai);
+        riga.addView(prec);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        riga.addView(nome, lp);
+        riga.addView(succ);
+        aggiorna.run();
+        col.addView(riga);
+        col.addView(titolo("Periodo del grafico dei rendimenti", MyMoneyWidget.dp(this, 16)));
         String cur = MyMoneyWidget.periodo(this, id)[0];
         RadioGroup g = new RadioGroup(this);
         for (final String[] o : MyMoneyWidget.PERIODI) {

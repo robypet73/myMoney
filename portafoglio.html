@@ -84,6 +84,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 /* importo da ripartire */
 #invest { display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 8px 18px; align-items: end; } #invest label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } #invest .azioni { margin: 0; } #invest .lerr { grid-column: 1 / -1; }
 .ext { display: block; width: fit-content; margin-left: auto; font-size: 12px; line-height: 1; padding: 4px 6px; color: var(--muted); text-decoration: none; border-radius: 6px; } .ext:hover, .ext:focus-visible { color: var(--accent); background: var(--raised); }
+.ct-s { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; } .ct-s:hover, .ct-s:focus-visible { border-color: var(--accent); } .ct-s span { color: var(--muted); word-break: break-all; }
 .solo-stampa { display: none; }
 @media print {
   @page { size: A4; margin: 12mm; }
@@ -274,6 +275,16 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 </div>
 
 <div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
+<div class="ovl" id="cart" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ct-t" style="max-width:640px">
+  <div class="top"><h2 id="ct-t">Cartella dei portafogli</h2><button class="x" id="ct-x" type="button" aria-label="Chiudi">×</button></div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <p class="muted" id="ct-att"></p>
+    <div id="ct-sugg" style="display:flex;flex-direction:column;gap:6px"></div>
+    <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Percorso della cartella<span style="display:flex;gap:8px"><input id="ct-path" type="text" spellcheck="false" autocomplete="off" placeholder="per esempio G:\Il mio Drive\portafogli" style="flex:1"><button class="btn sec" id="ct-sfoglia" type="button">Sfoglia…</button></span><small>con Google Drive per desktop è la cartella sincronizzata; se non esiste viene creata</small></label>
+    <div class="lerr" id="ct-err" role="alert"></div>
+    <div class="scar-foot" style="gap:8px"><button class="btn sec" id="ct-reset" type="button">Cartella del programma</button><button class="btn" id="ct-ok" type="button">Usa questa cartella</button></div>
+  </div>
+</div></div>
 <div class="ovl" id="salva" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="sv-t" style="max-width:600px">
   <div class="top"><h2 id="sv-t">Salva come nuovo portafoglio</h2><button class="x" id="sv-x" type="button" aria-label="Chiudi">×</button></div>
   <form id="sv-f" novalidate style="display:flex;flex-direction:column;gap:14px">
@@ -919,14 +930,27 @@ $("#pf-cartella-x").onclick = () => { if (confirm("Scollegare la cartella «" + 
 $("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o di Google Drive per desktop (per esempio G:\Il mio Drive\portafogli)
   const c = PF.cartella || {};
   if (c.nativo) { await cartellaApp("scegli"); return; }  // app Android: si apre direttamente il selettore di cartelle di Android (memoria interna, scheda SD, Google Drive…)
-  const n = prompt("Cartella dei portafogli (percorso sul computer; con Google Drive per desktop è la cartella sincronizzata, per esempio G:\\Il mio Drive\\portafogli).\nLascia vuoto per usare quella del programma.\n\nAttuale: " + (c.cartella || ""), c.personalizzata ? c.cartella : "");
-  if (n === null) return;
-  try {
-    const r = await fetch("/api/cartella", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartella: n }) });
-    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
-    location.href = "/";
-  } catch (e) { stato("Cartella non cambiata: " + e.message, true); }
+  apriCartella();
 };
+async function apriCartella() {  // PC: cartelle suggerite (Google Drive per desktop, Documenti), «Sfoglia…» con la finestra del sistema, oppure il percorso scritto a mano
+  let j = PF.cartella || {};
+  try { const r = await fetch("/api/cartella", { cache: "no-store" }); if (r.ok) j = PF.cartella = await r.json(); } catch (e) {}
+  $("#ct-att").textContent = "Attuale: " + (j.cartella || "") + (j.personalizzata ? "" : " (cartella del programma)");
+  const sg = j.suggerite || [];
+  $("#ct-sugg").innerHTML = sg.length ? sg.map((x, i) => `<button type="button" class="ct-s" data-i="${i}"><b>${x.tipo === "drive" ? "Google Drive" : "Documenti"}</b><span class="num">${esc(x.percorso)}</span></button>`).join("") : '<p class="muted">Google Drive per desktop non trovato su questo computer: scrivi il percorso della cartella sincronizzata, oppure usa «Sfoglia…».</p>';
+  $$("#ct-sugg .ct-s").forEach((b) => (b.onclick = () => { $("#ct-path").value = sg[+b.dataset.i].percorso; $("#ct-err").textContent = ""; $("#ct-ok").focus(); }));
+  $("#ct-path").value = j.personalizzata ? j.cartella : ""; $("#ct-err").textContent = ""; $("#cart").hidden = false; document.body.style.overflow = "hidden"; $("#ct-path").focus();
+}
+const chiudiCartella = () => { $("#cart").hidden = true; document.body.style.overflow = ""; };
+$("#ct-x").onclick = chiudiCartella; $("#cart").addEventListener("mousedown", (e) => { if (e.target.id === "cart") chiudiCartella(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#cart").hidden) chiudiCartella(); });
+async function cartellaPost(corpo) {
+  const r = await fetch("/api/cartella", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status); return j;
+}
+$("#ct-sfoglia").onclick = async () => { const b = $("#ct-sfoglia"); b.disabled = true; $("#ct-err").textContent = ""; try { const j = await cartellaPost({ sfoglia: true, iniziale: $("#ct-path").value.trim() }); if (j.scelta) $("#ct-path").value = j.scelta; } catch (e) { $("#ct-err").textContent = e.message; } b.disabled = false; };
+$("#ct-ok").onclick = async () => { const p = $("#ct-path").value.trim(); if (!p) { $("#ct-err").textContent = "Scrivi il percorso, scegli una cartella suggerita o usa «Sfoglia…»."; return; } try { await cartellaPost({ cartella: p, crea: true }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
+$("#ct-reset").onclick = async () => { try { await cartellaPost({ cartella: "" }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
 function movimenti() {  // i movimenti inseriti, nel formato del file JSON (solo quelli completi)
   if (ST.esempio) return [];
   const out = []; F.forEach((f, i) => ST.lots[f.s].forEach((lot, k) => { const x = POS[i] && POS[i].lots[k]; if (x && !x.err) out.push({ isin: f.isin, data: lot.d, tipo: x.tipo === "v" ? "vendita" : "acquisto", quote: x.q, prezzo: Math.round(x.pr * 1e4) / 1e4 }); }));

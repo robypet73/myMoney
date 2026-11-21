@@ -74,6 +74,15 @@ public class MyMoneyWidget extends AppWidgetProvider {
         return u != null && l.contains(u) ? u : l.get(0);
     }
 
+    /** Il nome del portafoglio come l'ha passato la pagina. */
+    static String nomeDi(Context c, String file) {
+        try {
+            return new JSONObject(c.getSharedPreferences(PREFS, 0).getString(chiave(file), "{}")).optString("name", file);
+        } catch (Exception e) {
+            return file;
+        }
+    }
+
     static void sposta(Context c, int id, int passo) {
         java.util.ArrayList<String> l = portafogli(c);
         if (l.size() < 2) return;

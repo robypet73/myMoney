@@ -319,6 +319,66 @@ def formatta_definizione(d):
     return "{\n" + ",\n".join(righe) + "\n}\n"
 
 
+def cartelle_suggerite():
+    """Cartelle dove tenere i portafogli: Google Drive per desktop (Windows: unità virtuale G:, H:…; macOS: CloudStorage; cartella Google Drive nella home) e Documenti."""
+    home = os.path.expanduser("~")
+    nomi = ("Il mio Drive", "My Drive")
+    radici = []
+    if os.name == "nt":
+        for lettera in "DEFGHIJKLMNOPQRSTUVWXYZ":
+            for n in nomi:
+                radici.append(f"{lettera}:\\{n}")
+    cs = os.path.join(home, "Library", "CloudStorage")
+    if os.path.isdir(cs):
+        try:
+            for d in sorted(os.listdir(cs)):
+                if d.startswith("GoogleDrive"):
+                    radici += [os.path.join(cs, d, n) for n in nomi]
+        except OSError:
+            pass
+    for n in ("Google Drive", "GoogleDrive", "My Drive", "Il mio Drive"):
+        base = os.path.join(home, n)
+        sotto = [os.path.join(base, m) for m in nomi if os.path.isdir(os.path.join(base, m))]
+        radici += sotto if sotto else [base]
+    visti, out = set(), []
+    for r in radici:
+        k = os.path.normcase(os.path.abspath(r))
+        if k not in visti and os.path.isdir(r):
+            visti.add(k)
+            out.append({"tipo": "drive", "percorso": os.path.join(os.path.abspath(r), "portafogli")})
+    for n in ("Documents", "Documenti"):
+        d = os.path.join(home, n)
+        if os.path.isdir(d):
+            out.append({"tipo": "documenti", "percorso": os.path.join(d, "portafogli")})
+            break
+    return out
+
+
+_dialogo = threading.Lock()
+
+
+def finestra_cartella(iniziale=""):
+    """Apre la finestra di scelta di una cartella del computer (stessa del sistema); ritorna il percorso scelto, o "" se si annulla."""
+    nonvalida = "La finestra di scelta non è disponibile su questo computer: scrivi il percorso della cartella."
+    try:
+        import tkinter
+        from tkinter import filedialog
+    except Exception:
+        raise ValueError(nonvalida)
+    with _dialogo:
+        try:
+            root = tkinter.Tk()
+        except Exception:
+            raise ValueError(nonvalida)
+        try:
+            root.withdraw()
+            root.attributes("-topmost", True)
+            scelta = filedialog.askdirectory(initialdir=iniziale if iniziale and os.path.isdir(iniziale) else os.path.expanduser("~"), title="Cartella dei portafogli", parent=root)
+        finally:
+            root.destroy()
+    return os.path.normpath(scelta) if scelta else ""
+
+
 class Portafogli:
     """Elenco dei JSON nella cartella «portafogli», ultimo aperto (ricordato nella cartella dell'utente), creazione e salvataggio dei portafogli
     e costruzione dei dati che la pagina riceve (scheda e storico di ogni titolo da justETF, in cache nella cartella dell'utente)."""
@@ -332,15 +392,16 @@ class Portafogli:
         self.cache = os.path.join(dati or os.path.dirname(file_ultimo), "titoli")  # una scheda JSON per ISIN già scaricato
         self.lock = threading.Lock()
         self.prezzi = None  # impostato da avvia_app: riceve i titoli dei portafogli aperti
+        self.copiati = 0  # portafogli copiati nell'ultima cartella scelta
         self.file_config = os.path.join(dati or os.path.dirname(file_ultimo), "config.json")
         scelta = (self._json(self.file_config) or {}).get("cartella")
         if scelta and os.path.isdir(scelta):  # cartella scelta dall'utente (anche di Google Drive per desktop); se non c'è più si torna a quella del programma
             self.dir = scelta
 
     def cartella_info(self):
-        return {"cartella": self.dir, "predefinita": self.predefinita, "personalizzata": os.path.abspath(self.dir) != os.path.abspath(self.predefinita)}
+        return {"cartella": self.dir, "predefinita": self.predefinita, "personalizzata": os.path.abspath(self.dir) != os.path.abspath(self.predefinita), "suggerite": cartelle_suggerite(), "copiati": self.copiati}
 
-    def imposta_cartella(self, percorso):
+    def imposta_cartella(self, percorso, crea=False):
         """Sceglie la cartella dei JSON dei portafogli (percorso del computer, per esempio quello di Google Drive per desktop). Vuoto = quella del programma.
         Ritorna cartella_info(); ValueError con un messaggio per l'utente se non va."""
         percorso = (percorso or "").strip().strip('"')
@@ -348,6 +409,11 @@ class Portafogli:
             nuova = self.predefinita
         else:
             nuova = os.path.abspath(os.path.expanduser(percorso))
+            if crea and not os.path.isdir(nuova) and os.path.isdir(os.path.dirname(nuova)):  # una cartella suggerita (per esempio «portafogli» dentro Google Drive) si crea al primo uso; solo l'ultimo livello
+                try:
+                    os.mkdir(nuova)
+                except OSError as e:
+                    raise ValueError(f"Non riesco a creare la cartella «{nuova}»: {e}")
             if not os.path.isdir(nuova):
                 raise ValueError(f"La cartella «{nuova}» non esiste.")
             if not os.access(nuova, os.R_OK | os.W_OK):
@@ -358,8 +424,19 @@ class Portafogli:
                 shutil.copy2(schema, os.path.join(nuova, "schema.json"))  # i JSON puntano a «schema.json» accanto a loro
             except OSError:
                 pass
+        prima = self.dir
         with self.lock:
             self.dir = nuova
+        copiati = 0
+        try:
+            if os.path.abspath(prima) != os.path.abspath(nuova) and not any(FILE_PF.match(n) for n in os.listdir(nuova)):
+                for n in sorted(os.listdir(prima)):
+                    if FILE_PF.match(n):
+                        shutil.copy2(os.path.join(prima, n), os.path.join(nuova, n))  # i portafogli della cartella di prima restano dove sono: se ne mette una copia
+                        copiati += 1
+        except OSError:
+            pass
+        self.copiati = copiati
         try:
             os.makedirs(os.path.dirname(self.file_config), exist_ok=True)
             with open(self.file_config, "w", encoding="utf-8") as fh:
@@ -830,7 +907,9 @@ def crea_server(prezzi, porta, portafogli):
                     if percorso == "/api/modifica":
                         return self.invia(200, portafogli.modifica(r.get("file"), r.get("nome"), r.get("versione"), r.get("descrizione")))
                     if percorso == "/api/cartella":
-                        info = portafogli.imposta_cartella(r.get("cartella"))
+                        if r.get("sfoglia"):  # solo la scelta con la finestra del sistema: l'applica poi la pagina
+                            return self.invia(200, {"scelta": finestra_cartella(str(r.get("iniziale") or ""))})
+                        info = portafogli.imposta_cartella(r.get("cartella"), bool(r.get("crea")))
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
                         return self.invia(200, portafogli.elimina(r.get("file")))
