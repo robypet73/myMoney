@@ -53,13 +53,33 @@ public class MyMoneyWidget extends AppWidgetProvider {
     static final int DOWN = Color.parseColor("#D6453D");
 
     static final String TICK = "it.robypet73.mymoneyportafogli.TICK";
-    static final long EVERY = 60 * 60 * 1000L;  // aggiornamento automatico ogni ora
+    static final int FREQ_DEFAULT = 60;  // minuti: ogni ora, se non scelto altro dalla rotellina
+
+    /** Frequenza di aggiornamento scelta (minuti). */
+    static int freqMin(Context c) {
+        return c.getSharedPreferences(PREFS, 0).getInt("freq_min", FREQ_DEFAULT);
+    }
+
+    static long everyMs(Context c) {
+        return freqMin(c) * 60 * 1000L;
+    }
+
+    /** Aggiornamento richiesto dal sistema (circa ogni ora): si scarica solo se è passato il tempo scelto dall'ultimo. */
+    static void refreshIfStale(Context c) {
+        long at = 0;
+        try {
+            at = new JSONObject(c.getSharedPreferences(PREFS, 0).getString(KEY, "{}")).optLong("at", 0);
+        } catch (Exception e) {
+            // nessun dato salvato
+        }
+        if (System.currentTimeMillis() - at >= everyMs(c) - 5 * 60 * 1000L) refreshAsync(c, null);
+    }
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
         for (int id : ids) draw(c, m, id);
         schedule(c);
-        refreshAsync(c, null); // prezzi nuovi anche quando l'app è chiusa
+        refreshIfStale(c); // prezzi nuovi anche quando l'app è chiusa, con la frequenza scelta
     }
 
     @Override
@@ -94,7 +114,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         if (AppWidgetManager.getInstance(c).getAppWidgetIds(new ComponentName(c, MyMoneyWidget.class)).length == 0) return;
-        long at = System.currentTimeMillis() + EVERY;
+        long at = System.currentTimeMillis() + everyMs(c);
         try {
             if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC, at, tickIntent(c));
             else am.setAndAllowWhileIdle(AlarmManager.RTC, at, tickIntent(c));
@@ -109,9 +129,14 @@ public class MyMoneyWidget extends AppWidgetProvider {
 
     /** Aggiornamento automatico ogni ora in background (WorkManager: parte anche con l'app chiusa, dopo il riavvio e con il telefono in standby). */
     static void scheduleWork(Context c) {
+        scheduleWork(c, false);
+    }
+
+    /** aggiorna = true: sostituisce il lavoro già programmato con la nuova frequenza (WorkManager non scende sotto i 15 minuti). */
+    static void scheduleWork(Context c, boolean aggiorna) {
         try {
-            WorkManager.getInstance(c).enqueueUniquePeriodicWork("mymoney-widget", ExistingPeriodicWorkPolicy.KEEP,
-                    new PeriodicWorkRequest.Builder(MyMoneyWidgetWorker.class, 60, TimeUnit.MINUTES).setConstraints(rete()).build());
+            WorkManager.getInstance(c).enqueueUniquePeriodicWork("mymoney-widget", aggiorna ? ExistingPeriodicWorkPolicy.UPDATE : ExistingPeriodicWorkPolicy.KEEP,
+                    new PeriodicWorkRequest.Builder(MyMoneyWidgetWorker.class, Math.max(15, freqMin(c)), TimeUnit.MINUTES).setConstraints(rete()).build());
         } catch (Exception e) {
             // WorkManager non disponibile: resta l'allarme
         }
