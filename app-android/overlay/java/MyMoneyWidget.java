@@ -367,8 +367,8 @@ public class MyMoneyWidget extends AppWidgetProvider {
         v.setViewPadding(R.id.w_col, dp(c, 14), dp(c, pad), dp(c, 14), dp(c, pad));
         v.setViewVisibility(R.id.w_row1, low ? View.GONE : View.VISIBLE);
         v.setViewVisibility(R.id.w_row2, tiny ? View.GONE : View.VISIBLE);
-        v.setViewVisibility(R.id.w_row3, mid ? View.GONE : View.VISIBLE);
-        v.setViewVisibility(R.id.w_roi_l, w < 200 ? View.GONE : View.VISIBLE);
+        v.setViewVisibility(R.id.w_row3, View.GONE);  // «Oggi» ora sta sulla riga della rendita
+        v.setViewVisibility(R.id.w_roi_l, w < 280 ? View.GONE : View.VISIBLE);  // con poco spazio resta la rendita e «Oggi»
         v.setTextViewTextSize(R.id.w_value, TypedValue.COMPLEX_UNIT_SP, tiny ? 18 : low ? 22 : 24);
         boolean showChart = h >= 115;
         Intent open = c.getPackageManager().getLaunchIntentForPackage(c.getPackageName());
@@ -441,7 +441,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
             v.setViewVisibility(R.id.w_agg, tiny ? View.GONE : View.VISIBLE);
             if (showChart && ss.length >= 2) {
                 float dens = c.getResources().getDisplayMetrics().density;
-                int chartH = Math.round((h - 2 * pad - (low ? 0 : 16) - 32 - (tiny ? 0 : 20) - (mid ? 0 : 18) - 12 - 8) * dens);
+                int chartH = Math.round((h - 2 * pad - (low ? 0 : 16) - 32 - (tiny ? 0 : 20) - 12 - 8) * dens);
                 int wpx = Math.round((w - 28) * dens);
                 chartH = Math.max(Math.round(44 * dens), Math.min(Math.round(300 * dens), chartH));
                 wpx = Math.max(Math.round(120 * dens), Math.min(1300, wpx));
