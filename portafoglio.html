@@ -188,7 +188,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="panel" id="invest">
       <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
       <p class="muted" id="imp-n"></p>
-      <div class="azioni"><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
+      <div class="azioni"><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
       <p class="lerr" id="imp-msg"></p>
     </div>
     <div class="scroll"><table id="tab"></table></div>
@@ -275,6 +275,16 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 </div>
 
 <div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
+<div class="ovl" id="ordini" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="or-t" style="max-width:760px">
+  <div class="top"><h2 id="or-t">Quante quote comprare</h2><button class="x" id="or-x" type="button" aria-label="Chiudi">×</button></div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);max-width:260px">Totale da investire (€)<input id="or-imp" type="number" min="0" step="100" inputmode="decimal"></label>
+    <div class="scroll"><table id="or-tab" style="font-size:14px"></table></div>
+    <p class="muted" id="or-tot"></p>
+    <p class="muted" style="font-size:12px">Quote intere al prezzo di oggi (ultimo prezzo scaricato da justETF, che può differire da quello della tua borsa); non sono considerati commissioni né spread. Il resto compra una quota in più ai titoli più indietro rispetto al loro peso.</p>
+    <div class="scar-foot" style="gap:8px"><button class="btn sec" id="or-chiudi" type="button">Chiudi</button><button class="btn" id="or-uso" type="button">Usa come miei acquisti</button></div>
+  </div>
+</div></div>
 <div class="ovl" id="cart" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ct-t" style="max-width:640px">
   <div class="top"><h2 id="ct-t">Cartella dei portafogli</h2><button class="x" id="ct-x" type="button" aria-label="Chiudi">×</button></div>
   <div style="display:flex;flex-direction:column;gap:12px">
@@ -630,9 +640,9 @@ function disegnaTabella() {
   const ib = lastIdx(BASE), piano = VAL <= 0, riga = (f, i) => { const p = POS[i], pr = p.prezzo; if (!piano) return p.q ? { q: p.q, val: p.valore, pl: p.pl, costo: p.costo } : null; const q = f.q0, c = q * PX[i][ib]; return { q, val: q * pr, pl: q * pr - c, costo: c }; };
   const rend = (r) => (r ? `<span class="${cls(r.pl)}">${sgnE(r.pl)}</span>` + (r.costo ? `<div class="fsub ${cls(r.pl)}">${sgn(r.pl / r.costo, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—");
   const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))) + (piano ? 0 : REAL), totC = sum(RR.map((r) => (r ? r.costo : 0)));  // con vendite il totale include il realizzato; la percentuale è sull'investito
-  const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
+  const imp = IMPORTO(), usato = ripartisci(imp).spesa; $("#imp-ordini").hidden = !(ST.esempio || ACQ <= 0);  // il pulsante «Quante quote comprare» c'è finché non hai acquisti tuoi
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${p.q > 0 ? eur(p.costo) + `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote · medio ${eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2)}</div>` : "—"}</td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${p.q > 0 ? eur(p.costo) + `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote · medio ${eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2)}</div>` : "—"}</td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
     `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${INV > 0 ? eur(INV) : "—"}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—"}</td></tr></tfoot>`;
 }
 
@@ -918,12 +928,37 @@ $("#aggiorna").addEventListener("click", async () => {
 
 $("#imp").value = IMPORTO();
 $("#imp").addEventListener("input", (e) => { const x = +e.target.value; e.target.classList.toggle("bad", !(x > 0)); if (!(x > 0)) return; ST.importo = x; salva(); aggiornaRitardo(); });
-$("#imp-uso").onclick = () => {
+function ripartisci(imp) {  // quote intere da comprare per titolo: peso × totale diviso il prezzo di oggi (per difetto); poi il resto compra una quota in più ai titoli più indietro rispetto al loro peso
+  const last = DATES.length - 1, pr = F.map((f, i) => PX[i][last]), n = F.map((f, i) => (f.w > 0 ? Math.floor((imp * f.w) / pr[i]) : 0));
+  let resto = imp - sum(n.map((k, i) => k * pr[i]));
+  for (;;) {
+    let best = -1, bd = 0; F.forEach((f, i) => { if (f.w > 0 && pr[i] <= resto + 1e-9) { const d = imp * f.w - n[i] * pr[i]; if (d > pr[i] / 2 && d > bd) { bd = d; best = i; } } });
+    if (best < 0) break; n[best]++; resto -= pr[best];
+  }
+  return { n, pr, spesa: imp - resto, resto };
+}
+function usaComeAcquisti(imp) {
   const ha = !ST.esempio && F.some((f) => ST.lots[f.s].some((l) => +l.q > 0));
-  if (ha && !confirm("Sostituisco gli acquisti che hai inserito con questa ripartizione?")) return;
-  const imp = IMPORTO(), d = DATES[DATES.length - 1]; F.forEach((f, i) => { const n = Math.floor((imp * f.w) / PX[i][PX[i].length - 1]); ST.lots[f.s] = n > 0 ? [{ q: n, d, p: "" }] : []; });
-  ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#imp-msg").textContent = "";
-};
+  if (ha && !confirm("Sostituisco gli acquisti che hai inserito con questa ripartizione?")) return false;
+  const d = DATES[DATES.length - 1], r = ripartisci(imp); F.forEach((f, i) => { ST.lots[f.s] = r.n[i] > 0 ? [{ q: r.n[i], d, p: "" }] : []; });
+  ST.importo = imp; $("#imp").value = imp; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#imp-msg").textContent = ""; return true;
+}
+$("#imp-uso").onclick = () => { usaComeAcquisti(IMPORTO()); };
+/* finestra «Quante quote comprare»: totale da investire → per ogni titolo le quote da comprare al prezzo di oggi */
+function disegnaOrdini() {
+  const imp = +$("#or-imp").value, last = DATES[DATES.length - 1], ok = imp > 0; $("#or-imp").classList.toggle("bad", !ok);
+  if (!ok) { $("#or-tab").innerHTML = ""; $("#or-tot").textContent = "Scrivi il totale da investire."; $("#or-uso").disabled = true; return; }
+  const r = ripartisci(imp); $("#or-uso").disabled = false;
+  $("#or-tab").innerHTML = `<thead><tr><th>Titolo</th><th>Peso</th><th>Prezzo di oggi</th><th>Quote da comprare</th><th>Spesa</th></tr></thead><tbody>` + F.map((f, i) => ({ f, i })).filter(({ f }) => f.w > 0).map(({ f, i }) => `<tr><td><div>${flink(i, f.s)}</div><div class="fsub">${esc(f.name)}</div></td><td class="num">${pct(f.w)}<div class="fsub">${eur(imp * f.w)}</div></td><td class="num">${eur(r.pr[i], r.pr[i] < 20 ? 3 : 2)}</td><td class="num"><b style="font-size:18px">${nf(r.n[i])}</b></td><td class="num">${eur(r.n[i] * r.pr[i])}<div class="fsub">${pct(imp > 0 ? (r.n[i] * r.pr[i]) / imp : 0, 1)} del totale</div></td></tr>`).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">100%</td><td></td><td></td><td class="num">${eur(r.spesa)}</td></tr></tfoot>`;
+  $("#or-tot").innerHTML = `Spesa ${eur(r.spesa)} su ${eur(imp)}: restano <b>${eur(r.resto)}</b> non investiti (le quote sono intere). Prezzi aggiornati al ${dataIt(last)}.`;
+}
+function apriOrdini() { $("#or-imp").value = IMPORTO(); disegnaOrdini(); $("#ordini").hidden = false; document.body.style.overflow = "hidden"; $("#or-imp").focus(); $("#or-imp").select(); }
+const chiudiOrdini = () => { $("#ordini").hidden = true; document.body.style.overflow = ""; };
+$("#imp-ordini").onclick = apriOrdini; $("#or-x").onclick = $("#or-chiudi").onclick = chiudiOrdini;
+$("#ordini").addEventListener("mousedown", (e) => { if (e.target.id === "ordini") chiudiOrdini(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#ordini").hidden) chiudiOrdini(); });
+$("#or-imp").addEventListener("input", disegnaOrdini);
+$("#or-uso").onclick = () => { const imp = +$("#or-imp").value; if (imp > 0 && usaComeAcquisti(imp)) chiudiOrdini(); };
 $("#imp-salva").onclick = () => apriSalva(pesiPiano(), statistiche(pesiPiano()), "Composizione del portafoglio", "imp-msg");
 
 /* ---------- definizione JSON: carica, scarica i dati dei titoli, salva nome_Vn.json in portafogli/ ---------- */
