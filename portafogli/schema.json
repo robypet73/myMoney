@@ -4,10 +4,18 @@
   "title": "Portafoglio myMoney",
   "description": "Definizione di un portafoglio: un file nome_Vn.json in questa cartella. Il programma scarica da justETF i dati dei titoli (scheda, storico, prezzi) e li usa per costruire la pagina portafoglio.html.",
   "type": "object",
-  "required": ["nome", "versione", "descrizione", "titoli"],
+  "required": [
+    "nome",
+    "versione",
+    "descrizione",
+    "titoli"
+  ],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string", "description": "Riferimento allo schema (facoltativo): \"schema.json\"." },
+    "$schema": {
+      "type": "string",
+      "description": "Riferimento allo schema (facoltativo): \"schema.json\"."
+    },
     "nome": {
       "type": "string",
       "pattern": "^[A-Za-z0-9]{1,30}$",
@@ -35,14 +43,71 @@
       "type": "array",
       "minItems": 1,
       "maxItems": 30,
-      "description": "I titoli (ETF/ETC) del portafoglio. I pesi devono dare 100 (tolleranza 0,5).",
+      "description": "I titoli (ETF/ETC) del portafoglio. I pesi devono dare 100 (tolleranza 0,5). Un titolo già venduto resta con peso 0: serve alle sue transazioni.",
       "items": {
         "type": "object",
-        "required": ["isin", "peso"],
+        "required": [
+          "isin",
+          "peso"
+        ],
         "additionalProperties": false,
         "properties": {
-          "isin": { "type": "string", "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$", "description": "ISIN con cifra di controllo valida, non ripetuto." },
-          "peso": { "type": "number", "exclusiveMinimum": 0, "maximum": 100, "description": "Peso in percentuale." }
+          "isin": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$",
+            "description": "ISIN con cifra di controllo valida, non ripetuto."
+          },
+          "peso": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Peso in percentuale (0 per un titolo già venduto)."
+          }
+        }
+      }
+    },
+    "transazioni": {
+      "type": "array",
+      "maxItems": 5000,
+      "description": "Facoltativo. Gli acquisti e le vendite reali. Se ci sono, la pagina li usa al posto degli acquisti d'esempio: quote, costo medio, rendita realizzata e non realizzata, andamento nel tempo. A pari data gli acquisti vengono prima delle vendite; non si può vendere più di quanto si ha.",
+      "items": {
+        "type": "object",
+        "required": [
+          "isin",
+          "data",
+          "tipo",
+          "quote",
+          "prezzo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "isin": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$",
+            "description": "Uno degli ISIN di «titoli»."
+          },
+          "data": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Data dell'operazione, AAAA-MM-GG."
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "acquisto",
+              "vendita"
+            ]
+          },
+          "quote": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Numero di quote, sempre positivo (la vendita si indica con tipo «vendita»)."
+          },
+          "prezzo": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Prezzo unitario in euro."
+          }
         }
       }
     },
@@ -54,16 +119,26 @@
         "fondi": {
           "type": "object",
           "description": "Per ISIN (uno dei titoli del portafoglio).",
-          "propertyNames": { "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" },
-          "additionalProperties": { "$ref": "#/$defs/intervallo" }
+          "propertyNames": {
+            "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/intervallo"
+          }
         },
         "classi": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "Azionario": { "$ref": "#/$defs/intervallo" },
-            "Obbligazionario": { "$ref": "#/$defs/intervallo" },
-            "Materie prime": { "$ref": "#/$defs/intervallo" }
+            "Azionario": {
+              "$ref": "#/$defs/intervallo"
+            },
+            "Obbligazionario": {
+              "$ref": "#/$defs/intervallo"
+            },
+            "Materie prime": {
+              "$ref": "#/$defs/intervallo"
+            }
           }
         }
       }
@@ -74,7 +149,11 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
-      "items": { "type": "number", "minimum": 0, "maximum": 100 },
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 100
+      },
       "description": "[minimo, massimo] in percentuale."
     }
   }

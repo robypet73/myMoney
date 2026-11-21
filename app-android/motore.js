@@ -46,7 +46,7 @@
   function formatta(d) {  // come formatta_definizione di build.py: un titolo per riga
     const j = (x) => JSON.stringify(x), r = [], tutto = { $schema: "schema.json", ...Object.fromEntries(Object.entries(d).filter(([k]) => k !== "$schema")) };
     Object.entries(tutto).forEach(([k, v]) => {
-      if (k === "titoli") r.push('  "titoli": [\n' + v.map((x) => "    " + j(x)).join(",\n") + "\n  ]");
+      if (k === "titoli" || k === "transazioni") r.push("  " + j(k) + ": [\n" + v.map((x) => "    " + j(x)).join(",\n") + "\n  ]");
       else if (k === "vincoli") r.push('  "vincoli": {\n' + Object.entries(v).map(([kk, vv]) => "    " + j(kk) + ": {" + (Object.keys(vv).length ? "\n" + Object.entries(vv).map(([a, c]) => "      " + j(a) + ": " + j(c)).join(",\n") + "\n    }" : "}")).join(",\n") + "\n  }");
       else r.push("  " + j(k) + ": " + j(v));
     });
@@ -175,6 +175,24 @@
 
   // ---- definizione del portafoglio
   function intervallo(x, cosa) { if (!(Array.isArray(x) && x.length === 2 && x.every((v) => typeof v === "number") && 0 <= x[0] && x[0] <= x[1] && x[1] <= 100)) throw Err("«vincoli»: " + cosa + " deve essere [minimo, massimo] in percentuale, da 0 a 100."); return [x[0], x[1]]; }
+  function validaTransazioni(tr, ammessi) {  // [{isin, data, tipo: acquisto|vendita, quote, prezzo}] come in build.py
+    if (tr === undefined || tr === null) return [];
+    if (!Array.isArray(tr) || tr.length > 5000) throw Err("«transazioni»: un elenco (al massimo 5000) di {\"isin\", \"data\", \"tipo\", \"quote\", \"prezzo\"}.");
+    const out = tr.map((x, k) => {
+      if (!x || typeof x !== "object") throw Err("«transazioni» n. " + (k + 1) + ": deve essere un oggetto.");
+      const isin = String(x.isin || "").trim().toUpperCase(), n = k + 1;
+      if (!ammessi.has(isin)) throw Err("«transazioni» n. " + n + ": l'ISIN «" + isin + "» non è tra i titoli del portafoglio (aggiungilo con peso 0 se l'hai già venduto).");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(x.data)) || isNaN(new Date(x.data + "T12:00:00Z"))) throw Err("«transazioni» n. " + n + " (" + isin + "): «data» deve essere AAAA-MM-GG.");
+      if (x.tipo !== "acquisto" && x.tipo !== "vendita") throw Err("«transazioni» n. " + n + " (" + isin + "): «tipo» deve essere «acquisto» o «vendita».");
+      const quote = parseFloat(x.quote), prezzo = parseFloat(x.prezzo);
+      if (!(quote > 0 && prezzo > 0)) throw Err("«transazioni» n. " + n + " (" + isin + "): «quote» e «prezzo» devono essere numeri maggiori di 0 (la vendita ha tipo «vendita», non quote negative).");
+      return { isin, data: String(x.data), tipo: x.tipo, quote: Number.isInteger(quote) ? quote : Math.round(quote * 1e6) / 1e6, prezzo: Math.round(prezzo * 1e6) / 1e6 };
+    });
+    out.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.tipo === "acquisto" ? 0 : 1) - (b.tipo === "acquisto" ? 0 : 1)));
+    const pos = {};
+    out.forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
+    return out;
+  }
   function validaDefinizione(d) {
     if (!d || typeof d !== "object" || Array.isArray(d)) throw Err("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.");
     const nome = d.nome; if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("«nome»: solo lettere e cifre, niente spazi né simboli, al massimo 30 caratteri.");
@@ -189,10 +207,11 @@
       if (!isinValido(isin)) throw Err("ISIN non valido: «" + (isin || JSON.stringify(x)) + "».");
       if (visti.has(isin)) throw Err("ISIN ripetuto: " + isin + "."); visti.add(isin);
       const peso = parseFloat(x.peso); if (isNaN(peso)) throw Err(isin + ": «peso» deve essere un numero (percentuale).");
-      if (!(peso > 0 && peso <= 100)) throw Err(isin + ": il peso deve essere maggiore di 0 e al massimo 100.");
+      if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100 (0 per un titolo già venduto, che serve solo alle transazioni).");
       rr.push([isin, peso]);
     });
     const tot = sum(rr.map((x) => x[1])); if (Math.abs(tot - 100) > 0.5) throw Err("I pesi danno " + Math.round(tot * 100) / 100 + "%: devono dare 100%.");
+    const transazioni = validaTransazioni(d.transazioni, visti);
     let vincoli = null;
     if (d.vincoli !== undefined && d.vincoli !== null) {
       const vv = d.vincoli; if (typeof vv !== "object" || Array.isArray(vv)) throw Err("«vincoli»: un oggetto con «fondi» (per ISIN) e «classi».");
@@ -201,7 +220,7 @@
       Object.entries(vv.classi || {}).forEach(([c, x]) => { if (!CLASSI.includes(c)) throw Err("«vincoli»: classe «" + c + "» sconosciuta (ammesse: " + CLASSI.join(", ") + ")."); classi[c] = intervallo(x, c); });
       vincoli = { fondi, classi };
     }
-    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli };
+    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni };
   }
 
   // ---- dati dei titoli: schede note (con l'app), memoria dell'app, justETF
@@ -244,6 +263,7 @@
     fondi.forEach((f) => { f.p0 = px[f.s][px[f.s].length - 1]; f.q0 = Math.floor(df.amount * f.w / f.p0); });
     const meta = { nome: df.nome, versione, descrizione: df.descrizione, chiave: "pf-" + df.nome + "-" + versione, file: nomefile, base: date[date.length - 1], from: date[0], amount: df.amount, rf: 0.02, origine: "json" };
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
+    if (df.transazioni.length) meta.transazioni = df.transazioni.map((x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo }));
     say({ t: "salvato", n: fondi.length });
     return { meta, funds: fondi, dates: date, px };
   }
@@ -265,10 +285,10 @@
     if (def && typeof def === "object" && Object.keys(def).length === 1 && def.file) { if (!info(def.file)) throw Err("Portafoglio non trovato."); return prepara(def.file, avanza); }
     const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
-    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
+    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
   }
-  function salva(da, nome, versione, descrizione, pesi, importo) {
+  function salva(da, nome, versione, descrizione, pesi, importo, transazioni) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
     const v = parseInt(String(versione).replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).");
@@ -281,8 +301,10 @@
     if (importo !== undefined && importo !== null) { amount = Math.round(parseFloat(importo) * 100) / 100; if (isNaN(amount)) throw Err("Importo non valido."); if (!(amount >= 100 && amount <= 1e9)) throw Err("L'importo deve essere tra 100 e 1.000.000.000 euro."); }
     const versioneT = "V" + v, nuovo = nome + "_" + versioneT + ".json";
     if (info(nuovo)) { const libere = Math.max(...elenco().filter((i) => i.nome === nome).map((i) => numVers(i.versione)), v) + 1; throw Err("Esiste già " + nuovo + ": usa la versione V" + libere + "."); }
-    const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([, x]) => x > 0).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
+    const tr = validaTransazioni(transazioni === undefined || transazioni === null ? origine.transazioni : transazioni, new Set(Object.values(siglaIsin))), conMov = new Set(tr.map((x) => x.isin));  // un titolo già venduto resta con peso 0: serve ai suoi movimenti
+    const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([s, x]) => x > 0 || conMov.has(siglaIsin[s])).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
     const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
+    if (tr.length) nd.transazioni = tr;
     if (origine.vincoli) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(origine.vincoli.fondi || {}).filter(([i]) => amm.has(i))), classi: origine.vincoli.classi || {} }; }
     scriviLS("mm:pf:" + nuovo, nd);
     rispecchia({ write: [scriviFile(nuovo)] });
@@ -328,7 +350,7 @@
     let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
       let dati;

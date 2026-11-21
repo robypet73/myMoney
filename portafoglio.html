@@ -58,7 +58,7 @@ a { color: var(--accent); }
 .cards.pos { grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); }
 .fcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .fcard .res { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; font-size: 13px; } .fcard .res div { min-width: 0; } .fcard .res .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
-.lot { display: grid; grid-template-columns: minmax(70px, .7fr) minmax(130px, 1.2fr) minmax(100px, 1fr) auto; gap: 6px; align-items: end; } .lot label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); min-width: 0; }
+.lot { display: grid; grid-template-columns: minmax(84px, .8fr) minmax(70px, .7fr) minmax(130px, 1.2fr) minmax(100px, 1fr) auto; gap: 6px; align-items: end; } .lot label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); min-width: 0; }
 input, select, textarea { box-sizing: border-box; }
 input[type="number"], input[type="date"], select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0; width: 100%; color-scheme: dark; }
 input.bad { border-color: var(--bad); } .lerr { font-size: 12px; color: var(--warn); }
@@ -131,7 +131,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 @media (prefers-reduced-motion: reduce) { .clessidra, .clessidra .s-su, .clessidra .s-giu, .clessidra .filo { animation: none; } .clessidra .s-su { transform: scaleY(.5); } .clessidra .s-giu { transform: scaleY(.5); } }
 @media (max-width: 860px) { .pies { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .sv-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 760px) { .two, .grid { grid-template-columns: minmax(0, 1fr); } .lot { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } .lot .x { justify-self: start; } }
+@media (max-width: 760px) { .two, .grid { grid-template-columns: minmax(0, 1fr); } .lot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .lot .x { justify-self: start; } }
 </style>
 
 <div class="wrap">
@@ -343,14 +343,16 @@ const KEY = META.chiave || "pf-mondo-emergenti-v1";  // ogni portafoglio ha i su
 const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (meta.vincoli) oppure, in mancanza, il piano ±10 punti
   const mv = META.vincoli || {}, cw = {}; F.forEach((f) => (cw[f.cls] = (cw[f.cls] || 0) + f.w * 100));
   const lim = (v, d) => (Array.isArray(v) ? { min: v[0], max: v[1] } : d);
-  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: Math.min(100, Math.round(f.w * 100 + 10)) })])),
+  return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: f.w > 0 ? Math.min(100, Math.round(f.w * 100 + 10)) : 0 })])),
     classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
 };
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
-const statoDef = () => ({ lots: Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: true, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+const lotsDaFile = () => Object.fromEntries(F.map((f) => [f.s, (META.transazioni || []).filter((x) => x.s === f.s).map((x) => ({ q: x.q, d: x.d, p: x.p, t: x.t }))]));  // movimenti reali scritti nel file
+const TSIG = JSON.stringify(META.transazioni || null);  // se i movimenti del file cambiano, quelli salvati nel browser non valgono più
+const statoDef = () => ({ lots: META.transazioni ? lotsDaFile() : Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: !META.transazioni, tsig: TSIG, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
 const VSIG = JSON.stringify(META.vincoli || null);  // se i limiti scritti nel file cambiano, quelli salvati nel browser non valgono più
 let ST = statoDef();
-try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; ST.vincSig = VSIG; if (o.vincSig !== VSIG) ST.vinc = d.vinc; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
+try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; if (META.transazioni && o.tsig !== TSIG) { ST.lots = d.lots; ST.esempio = false; } ST.tsig = TSIG; ST.vincSig = VSIG; if (o.vincSig !== VSIG) ST.vinc = d.vinc; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
 let BOZZA = null;  // simulazione di un punto della frontiera: { w, q0, lots, esempio, wcur } con i valori originali
 const salva = () => { try { localStorage.setItem(KEY, JSON.stringify(BOZZA && ST.esempio ? { ...ST, lots: BOZZA.lots } : ST)); } catch (e) {} };
 
@@ -400,22 +402,37 @@ const pesiOrig = () => (BOZZA ? BOZZA.w : pesiPiano());
 function infoLotto(i, lot) {
   const q = +lot.q; if (!(q > 0)) return null; if (!lot.d) return { err: "manca la data" };
   const t = lastIdx(lot.d); if (t < 0) return { err: "prima dell'inizio dello storico (" + dataIt(DATES[0]) + ")" };
-  const pr = +lot.p > 0 ? +lot.p : PX[i][t]; return { q, t, pr, costo: q * pr, avv: lot.d > DATES[DATES.length - 1] ? "data oltre l'ultimo prezzo: uso l'ultimo" : "" };
+  const pr = +lot.p > 0 ? +lot.p : PX[i][t]; return { q, t, pr, costo: q * pr, tipo: lot.t === "v" ? "v" : "a", dd: lot.d, avv: lot.d > DATES[DATES.length - 1] ? "data oltre l'ultimo prezzo: uso l'ultimo" : "" };
 }
 function posizioni() {
   const last = DATES.length - 1;
-  return F.map((f, i) => { let q = 0, costo = 0, err = []; const L = ST.lots[f.s].map((lot) => { const x = infoLotto(i, lot); if (x && x.err) err.push(x.err); else if (x) { q += x.q; costo += x.costo; } return x; }); const prezzo = PX[i][last], valore = q * prezzo; return { q, costo, valore, pl: valore - costo, prezzo, lots: L, err }; });
+  return F.map((f, i) => {
+    const L = ST.lots[f.s].map((lot) => infoLotto(i, lot)), err = [];
+    L.forEach((x) => { if (x && x.err) err.push(x.err); });
+    // in ordine di data (a pari data prima gli acquisti): costo medio ponderato; una vendita toglie quote al costo medio e realizza la differenza di prezzo
+    const ord = L.filter((x) => x && !x.err).sort((a, b) => (a.dd < b.dd ? -1 : a.dd > b.dd ? 1 : (a.tipo === "a" ? 0 : 1) - (b.tipo === "a" ? 0 : 1)));
+    let q = 0, costo = 0, acq = 0, inc = 0, real = 0;
+    ord.forEach((x) => {
+      if (x.tipo === "a") { q += x.q; costo += x.costo; acq += x.costo; x.qeff = x.q; return; }
+      const v = Math.min(x.q, q); x.qeff = v;
+      if (v < x.q - 1e-9) err.push("vendita del " + dataIt(x.dd) + ": " + nf(x.q, x.q % 1 ? 2 : 0) + " quote, ma ne avevi " + nf(q, q % 1 ? 2 : 0));
+      if (v > 0) { const med = costo / q; costo -= v * med; real += v * (x.pr - med); inc += v * x.pr; q -= v; }
+      if (q < 1e-9) { q = 0; costo = 0; }
+    });
+    const prezzo = PX[i][last], valore = q * prezzo;
+    return { q, costo, valore, pl: valore - costo, prezzo, lots: L, err, acq, inc, real };
+  });
 }
 function xirr(fl) { if (fl.length < 2) return null; const t0 = fl[0].t, f = (r) => fl.reduce((a, x) => a + x.v / Math.pow(1 + r, (x.t - t0) / (365 * 864e5)), 0); let lo = -0.95, hi = 20; if (f(lo) * f(hi) > 0) return null; for (let k = 0; k < 120; k++) { const m = (lo + hi) / 2; if (f(m) * f(lo) > 0) lo = m; else hi = m; } return (lo + hi) / 2; }
-let POS = [], VAL = 0, INV = 0, WCUR = pesiPiano();
+let POS = [], VAL = 0, INV = 0, ACQ = 0, INC = 0, REAL = 0, WCUR = pesiPiano();
 function calcolaPos() {
-  POS = posizioni(); VAL = sum(POS.map((p) => p.valore)); INV = sum(POS.map((p) => p.costo));
+  POS = posizioni(); VAL = sum(POS.map((p) => p.valore)); INV = sum(POS.map((p) => p.costo)); ACQ = sum(POS.map((p) => p.acq)); INC = sum(POS.map((p) => p.inc)); REAL = sum(POS.map((p) => p.real));
   WCUR = VAL > 0 ? POS.map((p) => p.valore / VAL) : pesiPiano();
 }
 function serieUtente() {
   let i0 = Infinity; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) i0 = Math.min(i0, x.t); }));
   if (!isFinite(i0)) return null; const T = DATES.length, val = [], inv = [];
-  for (let t = i0; t < T; t++) { let v = 0, c = 0; F.forEach((f, i) => POS[i].lots.forEach((x) => { if (x && !x.err && x.t <= t) { v += x.q * PX[i][t]; c += x.costo; } })); val.push(v); inv.push(c); }
+  for (let t = i0; t < T; t++) { let v = 0, c = 0; F.forEach((f, i) => POS[i].lots.forEach((x) => { if (x && !x.err && x.t <= t) { const s = x.tipo === "v" ? -1 : 1, qe = x.qeff ?? x.q; v += s * qe * PX[i][t]; c += s * (x.tipo === "v" ? qe * x.pr : x.costo); } })); val.push(v); inv.push(c); }  // capitale versato = acquisti meno incassi delle vendite
   return { i0, val, inv };
 }
 
@@ -546,12 +563,12 @@ function disegnaMix() {
 
 /* ---------- riepilogo, posizioni, tabella ---------- */
 function disegnaKpi() {
-  const s = statistiche(WCUR), ter = sum(F.map((f, i) => WCUR[i] * f.ter)) / 100, pl = VAL - INV, last = DATES[DATES.length - 1];
-  const fl = []; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) fl.push({ t: new Date(DATES[x.t]).getTime(), v: -x.costo }); })); fl.sort((a, b) => a.t - b.t); let xi = null;
+  const s = statistiche(WCUR), ter = sum(F.map((f, i) => WCUR[i] * f.ter)) / 100, pl = VAL + INC - ACQ, last = DATES[DATES.length - 1];
+  const fl = []; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) fl.push({ t: new Date(x.dd).getTime(), v: x.tipo === "v" ? (x.qeff ?? x.q) * x.pr : -x.costo }); })); fl.sort((a, b) => a.t - b.t); let xi = null;
   if (fl.length && VAL > 0 && new Date(last).getTime() - fl[0].t > 30 * 864e5) { fl.push({ t: new Date(last).getTime(), v: VAL }); xi = xirr(fl); }
-  const hasPos = VAL > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
+  const hasPos = VAL > 0 || ACQ > 0, planVal = sum(F.map((f, i) => f.q0 * PX[i][PX[i].length - 1]));  // senza acquisti: il piano d'esempio ai prezzi correnti
   const sdv = COV.map((r, i) => Math.sqrt(r[i])), vp = Math.sqrt(sum(WCUR.map((x, i) => sum(WCUR.map((y, j) => x * y * COV[i][j]))))), dr = vp ? sum(WCUR.map((x, i) => x * sdv[i])) / vp : 1, neff = 1 / sum(WCUR.map((x) => x * x));
-  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(INV) : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sul versato` : "al " + dataIt(last)],
+  $("#kpi").innerHTML = [["Valore attuale", hasPos ? eur(VAL) : eur(planVal), hasPos ? "versato " + eur(ACQ) + (INC > 0 ? " · incassato " + eur(INC) : "") : "del piano ai prezzi di oggi · nessun acquisto inserito"], ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && ACQ > 0 ? `<span class="${cls(pl)}">${sgn(pl / ACQ, 2)}</span> sul versato` : "al " + dataIt(last)],
     ["Rend. dei tuoi acquisti", xi == null ? "—" : `<span class="${cls(xi)}">${sgn(xi)}</span>`, xi == null ? "serve almeno un mese di storia" : "ponderato nel tempo (XIRR)"], ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
     ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   { const sp = statistiche(pesiPiano()); $("#ddtxt").textContent = pct(sp.dd, 1); $("#ddper").textContent = "dal " + dataIt(sp.da) + " al " + dataIt(sp.a); } $("#per2").textContent = dataIt(DATES[0]) + " – " + dataIt(last);
@@ -560,19 +577,19 @@ function disegnaKpi() {
 }
 function disegnaPosizioni() {
   $("#pos").innerHTML = F.map((f, i) => `<div class="fcard" data-s="${f.s}"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s + " · " + f.name)}</h3><span class="tag">${f.ruolo} · piano ${pct(f.w, 0)}</span></div>
-    <div class="lots" id="lots-${f.s}">${ST.lots[f.s].map((lot, k) => `<div class="lot" data-k="${k}"><label>Quote<input type="number" min="0" step="1" inputmode="decimal" data-c="q" value="${esc(lot.q)}"></label><label>Data acquisto<input type="date" data-c="d" value="${esc(lot.d)}"></label><label>Prezzo (facoltativo)<input type="number" min="0" step="0.0001" inputmode="decimal" data-c="p" placeholder="chiusura" value="${esc(lot.p)}"></label><button type="button" class="x" data-del="${k}" aria-label="Togli questo acquisto">×</button></div>`).join("") || '<p class="muted">Nessun acquisto inserito.</p>'}</div>
-    <div class="lerr" id="err-${f.s}"></div><div><button type="button" class="btn sec small" data-add="${f.s}">+ Aggiungi acquisto</button></div><div class="res" id="res-${f.s}"></div></div>`).join("");
+    <div class="lots" id="lots-${f.s}">${ST.lots[f.s].map((lot, k) => `<div class="lot" data-k="${k}"><label>Tipo<select data-c="t"><option value="a"${lot.t === "v" ? "" : " selected"}>Acquisto</option><option value="v"${lot.t === "v" ? " selected" : ""}>Vendita</option></select></label><label>Quote<input type="number" min="0" step="1" inputmode="decimal" data-c="q" value="${esc(lot.q)}"></label><label>Data<input type="date" data-c="d" value="${esc(lot.d)}"></label><label>Prezzo (facoltativo)<input type="number" min="0" step="0.0001" inputmode="decimal" data-c="p" placeholder="chiusura" value="${esc(lot.p)}"></label><button type="button" class="x" data-del="${k}" aria-label="Togli questo movimento">×</button></div>`).join("") || '<p class="muted">Nessun movimento inserito.</p>'}</div>
+    <div class="lerr" id="err-${f.s}"></div><div><button type="button" class="btn sec small" data-add="${f.s}">+ Aggiungi movimento</button></div><div class="res" id="res-${f.s}"></div></div>`).join("");
 }
 function disegnaRisPos() {
   F.forEach((f, i) => { const p = POS[i]; const e = $("#res-" + f.s); if (!e) return; const eEl = $("#err-" + f.s); eEl.textContent = p.err.length ? p.err.join("; ") : p.lots.some((x) => x && x.avv) ? p.lots.find((x) => x && x.avv).avv : "";
-    e.innerHTML = [["Quote", nf(p.q, p.q % 1 ? 2 : 0)], ["Costo medio", p.q ? eur(p.costo / p.q, 3) : "—"], ["Valore", p.q ? eur(p.valore) : "—"], ["Risultato", p.q ? `<span class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</span>` : "—"], ["Peso attuale", VAL > 0 ? pct(WCUR[i]) + ` <span class="muted">/ ${pct(f.w, 0)}</span>` : "—"]].map((r) => `<div><div class="l">${r[0]}</div><div class="num">${r[1]}</div></div>`).join(""); });
+    e.innerHTML = [["Quote", nf(p.q, p.q % 1 ? 2 : 0)], ["Costo medio", p.q ? eur(p.costo / p.q, 3) : "—"], ["Valore", p.q ? eur(p.valore) : "—"], ["Risultato", p.q ? `<span class="${cls(p.pl)}">${sgnE(p.pl)}${p.costo ? " (" + sgn(p.pl / p.costo, 1) + ")" : ""}</span>` : "—"], ...(p.inc > 0 ? [["Realizzato", `<span class="${cls(p.real)}">${sgnE(p.real)}</span>`]] : []), ["Peso attuale", VAL > 0 ? pct(WCUR[i]) + ` <span class="muted">/ ${pct(f.w, 0)}</span>` : "—"]].map((r) => `<div><div class="l">${r[0]}</div><div class="num">${r[1]}</div></div>`).join(""); });
 }
 function disegnaTabella() {
   const last = DATES[DATES.length - 1]; $("#prezzial").textContent = "Prezzi al " + dataIt(last);
   // senza acquisti inseriti si mostra il piano (quote del piano ai prezzi correnti, rendita dal prezzo del giorno base), così il valore attuale c'è sempre
   const ib = lastIdx(BASE), piano = VAL <= 0, riga = (f, i) => { const p = POS[i], pr = p.prezzo; if (!piano) return p.q ? { q: p.q, val: p.valore, pl: p.pl, costo: p.costo } : null; const q = f.q0, c = q * PX[i][ib]; return { q, val: q * pr, pl: q * pr - c, costo: c }; };
   const rend = (r) => (r ? `<span class="${cls(r.pl)}">${sgnE(r.pl)}</span>` + (r.costo ? `<div class="fsub ${cls(r.pl)}">${sgn(r.pl / r.costo, 2)} ${piano ? "dal " + dataIt(BASE) : "sul versato"}</div>` : "") : "—");
-  const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))), totC = sum(RR.map((r) => (r ? r.costo : 0)));
+  const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))) + (piano ? 0 : REAL), totC = piano ? sum(RR.map((r) => (r ? r.costo : 0))) : ACQ;  // con vendite il totale include il realizzato e la percentuale è sul totale acquistato
   const imp = IMPORTO(), alloc = F.map((f, i) => { const pr = POS[i].prezzo, n = Math.floor((imp * f.w) / pr); return { n, pr, cifra: n * pr, target: imp * f.w }; }), usato = sum(alloc.map((x) => x.cifra));
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
   $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Da investire</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], x = alloc[i], r = RR[i]; return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${eur(x.cifra)}<div class="fsub">${nf(x.n)} quote × ${eur(x.pr, x.pr < 20 ? 3 : 2)}</div></td><td class="num">${r ? eur(r.val) : "—"}${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a></td><td class="num">${rend(r)}</td></tr>`; }).join("") +
@@ -743,11 +760,11 @@ let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegn
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
 $("#pos").addEventListener("input", (e) => { const inp = e.target, lot = inp.closest(".lot"); if (!lot) return; const s = inp.closest(".fcard").dataset.s, k = +lot.dataset.k, c = inp.dataset.c; ST.lots[s][k][c] = inp.value; ST.esempio = false; inp.classList.toggle("bad", c === "q" && inp.value !== "" && !(+inp.value > 0)); salva(); aggiornaRitardo(); });
-$("#pos").addEventListener("click", (e) => { const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"); if (add) { ST.lots[add.dataset.add].push({ q: "", d: DATES[DATES.length - 1], p: "" }); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); const rr = $$(`#lots-${add.dataset.add} .lot`); if (rr.length) rr[rr.length - 1].querySelector("input").focus(); } if (del) { const s = del.closest(".fcard").dataset.s; ST.lots[s].splice(+del.dataset.del, 1); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); } });
+$("#pos").addEventListener("click", (e) => { const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"); if (add) { ST.lots[add.dataset.add].push({ q: "", d: DATES[DATES.length - 1], p: "", t: "a" }); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); const rr = $$(`#lots-${add.dataset.add} .lot`); if (rr.length) rr[rr.length - 1].querySelector("input").focus(); } if (del) { const s = del.closest(".fcard").dataset.s; ST.lots[s].splice(+del.dataset.del, 1); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); } });
 $("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
 $$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = +b.dataset.p; ST.periodo = PERIODO; salva(); disegnaStorici(); }));
 $("#copia").onclick = async () => { const t = $("#export"); try { await navigator.clipboard.writeText(t.value); $("#exstato").textContent = "Copiato."; } catch (e) { t.select(); $("#exstato").textContent = "Selezionato: premi Ctrl+C."; } };
-$("#importa").onclick = () => { try { const o = JSON.parse($("#export").value); if (!o || !o.lots) throw 0; const L = {}; F.forEach((f) => { L[f.s] = (Array.isArray(o.lots[f.s]) ? o.lots[f.s] : []).map((x) => ({ q: x.q ?? "", d: String(x.d || "").slice(0, 10), p: x.p ?? "" })); }); ST.lots = L; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#exstato").textContent = "Importato."; } catch (e) { $("#exstato").textContent = "Il testo non è valido."; } };
+$("#importa").onclick = () => { try { const o = JSON.parse($("#export").value); if (!o || !o.lots) throw 0; const L = {}; F.forEach((f) => { L[f.s] = (Array.isArray(o.lots[f.s]) ? o.lots[f.s] : []).map((x) => ({ q: x.q ?? "", d: String(x.d || "").slice(0, 10), p: x.p ?? "", t: x.t === "v" ? "v" : "a" })); }); ST.lots = L; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#exstato").textContent = "Importato."; } catch (e) { $("#exstato").textContent = "Il testo non è valido."; } };
 let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
 
 /* ---------- prezzi aggiornati: programma locale oppure archivio della pagina ---------- */
@@ -871,7 +888,7 @@ async function creaDaDefinizione(def, apertura) {  // apertura: il JSON c'è gi�
   errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", apertura ? "Dati non scaricati" : "Portafoglio non creato"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();
 }
 $("#scarica-json").addEventListener("click", () => {  // la definizione minimale del portafoglio aperto
-  const def = { nome: NOMEPF, versione: VERS, descrizione: META.descrizione || "", valore: IMPORTO(), titoli: F.map((f) => ({ isin: f.isin, peso: Math.round(f.w * 10000) / 100 })), vincoli: { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(Object.entries(ST.vinc.classi).map(([c, x]) => [c, [x.min, x.max]])) } };
+  const def = { nome: NOMEPF, versione: VERS, descrizione: META.descrizione || "", valore: IMPORTO(), titoli: F.map((f) => ({ isin: f.isin, peso: Math.round(f.w * 10000) / 100 })), ...(movimenti().length ? { transazioni: movimenti() } : {}), vincoli: { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(Object.entries(ST.vinc.classi).map(([c, x]) => [c, [x.min, x.max]])) } };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(def, null, 2) + "\n"], { type: "application/json" })); a.download = NOMEPF + "_" + VERS + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 });
 
@@ -913,6 +930,11 @@ $("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o 
     location.href = "/";
   } catch (e) { stato("Cartella non cambiata: " + e.message, true); }
 };
+function movimenti() {  // i movimenti inseriti, nel formato del file JSON (solo quelli completi)
+  if (ST.esempio) return [];
+  const out = []; F.forEach((f, i) => ST.lots[f.s].forEach((lot, k) => { const x = POS[i] && POS[i].lots[k]; if (x && !x.err) out.push({ isin: f.isin, data: lot.d, tipo: x.tipo === "v" ? "vendita" : "acquisto", quote: x.q, prezzo: Math.round(x.pr * 1e4) / 1e4 }); }));
+  return out.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
+}
 $("#pf-del").onclick = async () => {
   const x = PF.lista.find((y) => y.file === PF.file); if (!x) return;
   if (!confirm("Eliminare «" + x.nome + " · " + x.versione + "»?\nIl file portafogli/" + x.file + " viene cancellato e non si può recuperare.")) return;
@@ -962,7 +984,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
   const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
   try {
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo }) });
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = urlPf(j.file); }; $("#sv-apri").focus(); caricaPortafogli();

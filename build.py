@@ -191,6 +191,47 @@ def _intervallo(x, cosa):
     return [x[0], x[1]]
 
 
+TIPI_TRANSAZIONE = ("acquisto", "vendita")
+
+
+def valida_transazioni(tr, isin_ammessi):
+    """Controlla le transazioni (facoltative): [{isin, data, tipo: acquisto|vendita, quote, prezzo}]. Ritorna la lista normalizzata e in ordine di data; ValueError con un messaggio chiaro se non va."""
+    if tr is None:
+        return []
+    if not isinstance(tr, list) or len(tr) > 5000:
+        raise ValueError("«transazioni»: un elenco (al massimo 5000) di {\"isin\", \"data\", \"tipo\", \"quote\", \"prezzo\"}.")
+    out = []
+    for k, x in enumerate(tr, 1):
+        if not isinstance(x, dict):
+            raise ValueError(f"«transazioni» n. {k}: deve essere un oggetto.")
+        isin = str(x.get("isin") or "").strip().upper()
+        if isin not in isin_ammessi:
+            raise ValueError(f"«transazioni» n. {k}: l'ISIN «{isin}» non è tra i titoli del portafoglio (aggiungilo con peso 0 se l'hai già venduto).")
+        data = x.get("data")
+        try:
+            datetime.date.fromisoformat(str(data))
+        except ValueError:
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «data» deve essere AAAA-MM-GG.")
+        tipo = x.get("tipo")
+        if tipo not in TIPI_TRANSAZIONE:
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «tipo» deve essere «acquisto» o «vendita».")
+        try:
+            quote, prezzo = float(x.get("quote")), float(x.get("prezzo"))
+        except (TypeError, ValueError):
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere numeri.")
+        if not (quote > 0 and prezzo > 0):
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere maggiori di 0 (la vendita ha tipo «vendita», non quote negative).")
+        out.append({"isin": isin, "data": str(data), "tipo": tipo, "quote": int(quote) if quote == int(quote) else round(quote, 6), "prezzo": round(prezzo, 6)})
+    out.sort(key=lambda t: (t["data"], 0 if t["tipo"] == "acquisto" else 1))  # a pari data prima gli acquisti
+    possedute = {}
+    for t in out:
+        q = possedute.get(t["isin"], 0) + (t["quote"] if t["tipo"] == "acquisto" else -t["quote"])
+        if q < -1e-9:
+            raise ValueError(f"Vendita di {t['isin']} del {t['data']}: stai vendendo più quote di quelle che avevi.")
+        possedute[t["isin"]] = q
+    return out
+
+
 def valida_definizione(d):
     """Controlla il JSON di un portafoglio. Ritorna {nome, v, descrizione, amount, pesi: [(isin, peso 0-1)], vincoli}; ValueError con un messaggio chiaro se non va."""
     if not isinstance(d, dict):
@@ -235,12 +276,13 @@ def valida_definizione(d):
             peso = float(x.get("peso"))
         except (TypeError, ValueError):
             raise ValueError(f"{isin}: «peso» deve essere un numero (percentuale).")
-        if not 0 < peso <= 100:
-            raise ValueError(f"{isin}: il peso deve essere maggiore di 0 e al massimo 100.")
+        if not 0 <= peso <= 100:
+            raise ValueError(f"{isin}: il peso deve essere tra 0 e 100 (0 per un titolo già venduto, che serve solo alle transazioni).")
         righe.append((isin, peso))
     tot = sum(p for _, p in righe)
     if abs(tot - 100) > 0.5:
         raise ValueError(f"I pesi danno {round(tot, 2)}%: devono dare 100%.")
+    transazioni = valida_transazioni(d.get("transazioni"), visti)
     vincoli = None
     if d.get("vincoli") is not None:
         vv = d["vincoli"]
@@ -257,7 +299,7 @@ def valida_definizione(d):
                 raise ValueError(f"«vincoli»: classe «{c}» sconosciuta (ammesse: {', '.join(CLASSI)}).")
             classi[c] = _intervallo(x, c)
         vincoli = {"fondi": fondi, "classi": classi}
-    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli}
+    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni}
 
 
 def formatta_definizione(d):
@@ -267,6 +309,8 @@ def formatta_definizione(d):
     for k, v in {"$schema": "schema.json", **{k: v for k, v in d.items() if k != "$schema"}}.items():
         if k == "titoli":
             righe.append('  "titoli": [\n' + ",\n".join("    " + j(x) for x in v) + "\n  ]")
+        elif k == "transazioni":
+            righe.append('  "transazioni": [\n' + ",\n".join("    " + j(x) for x in v) + "\n  ]")
         elif k == "vincoli":
             sub = [f'    {j(kk)}: {{' + ("\n" + ",\n".join(f"      {j(a)}: {j(c)}" for a, c in vv.items()) + "\n    }" if vv else "}") for kk, vv in v.items()]
             righe.append('  "vincoli": {\n' + ",\n".join(sub) + "\n  }")
@@ -514,6 +558,8 @@ class Portafogli:
                 "amount": amount, "rf": 0.02, "origine": "json"}
         if df["vincoli"]:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
+        if df["transazioni"]:  # i movimenti reali: la pagina li usa al posto degli acquisti d'esempio
+            meta["transazioni"] = [{"s": sigla_di[t["isin"]], "d": t["data"], "t": "a" if t["tipo"] == "acquisto" else "v", "q": t["quote"], "p": t["prezzo"]} for t in df["transazioni"]]
         if self.prezzi is not None:
             self.prezzi.aggiungi({f["s"]: {"isin": f["isin"], "p0": f["p0"]} for f in fondi}, date[-1])
         say(t="salvato", n=len(fondi))
@@ -596,7 +642,8 @@ class Portafogli:
             if i["nome"] == df["nome"] and i["versione"] == versione:
                 raise Esiste(i["file"], f"Esiste già il portafoglio {df['nome']} {versione} ({i['file']}). Cambia la versione nel JSON per crearne uno nuovo.")
         self._scrivi(nuovo, {"nome": df["nome"], "versione": versione, "descrizione": df["descrizione"], "valore": df["amount"],
-                             "titoli": [{"isin": i, "peso": round(w * 100, 2)} for i, w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {})})
+                             "titoli": [{"isin": i, "peso": round(w * 100, 2)} for i, w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {}),
+                             **({"transazioni": df["transazioni"]} if df["transazioni"] else {})})
         try:
             return self.prepara(nuovo, avanza)
         except Exception:
@@ -606,7 +653,7 @@ class Portafogli:
                 pass
             raise
 
-    def salva(self, da, nome, versione, descrizione, pesi, importo=None):
+    def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None):
         """Scrive nome_V<n>.json partendo dal portafoglio `da` con i nuovi pesi (per sigla). Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
         origine = self.definizione(da)
         if origine is None:
@@ -645,8 +692,14 @@ class Portafogli:
             amount = int(amount) if amount == int(amount) else amount
         versione = f"V{v}"
         nuovo = f"{nome}_{versione}.json"
-        titoli = [{"isin": sigla_isin[s], "peso": round(x * 100, 1)} for s, x in sorted(w.items(), key=lambda a: -a[1]) if x > 0]
+        if transazioni is None:
+            transazioni = origine.get("transazioni") or []
+        tr = valida_transazioni(transazioni, set(sigla_isin.values()))
+        con_mov = {t["isin"] for t in tr}  # un titolo già venduto resta nel file con peso 0: serve ai suoi movimenti
+        titoli = [{"isin": sigla_isin[s], "peso": round(x * 100, 1)} for s, x in sorted(w.items(), key=lambda a: -a[1]) if x > 0 or sigla_isin[s] in con_mov]
         nd = {"nome": nome, "versione": versione, "descrizione": descrizione, "valore": amount, "titoli": titoli}
+        if tr:
+            nd["transazioni"] = tr
         if origine.get("vincoli"):
             ammessi = {t["isin"] for t in titoli}
             vv = origine["vincoli"]
@@ -744,7 +797,7 @@ def crea_server(prezzi, porta, portafogli):
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
                         return self.invia(200, portafogli.elimina(r.get("file")))
-                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"))
+                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"), r.get("transazioni"))
                 except OverflowError:
                     return self.invia(413, {"errore": "richiesta troppo grande"})
                 except (ValueError, LookupError) as e:  # include json.JSONDecodeError

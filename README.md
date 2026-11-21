@@ -54,8 +54,9 @@ Lo schema è in [`portafogli/schema.json`](portafogli/schema.json). Esempio (`po
 | `versione` | obbligatoria; `V1`, `V2`, `V3`… (anche solo il numero) |
 | `descrizione` | obbligatoria; al massimo 300 caratteri |
 | `valore` | **facoltativo**; investimento totale in euro da ripartire sui pesi (se manca: 10.000) |
-| `titoli` | da 1 a 30 elementi `{ "isin", "peso" }`; ISIN con cifra di controllo valida, non ripetuto; `peso` in percentuale, la somma deve dare 100 (tolleranza 0,5) |
+| `titoli` | da 1 a 30 elementi `{ "isin", "peso" }`; ISIN con cifra di controllo valida, non ripetuto; `peso` in percentuale (0 per un titolo già venduto), la somma deve dare 100 (tolleranza 0,5) |
 | `vincoli` | **facoltativo**; limiti iniziali della frontiera in percentuale, `[minimo, massimo]`: `fondi` per ISIN e `classi` (`Azionario`, `Obbligazionario`, `Materie prime`). Se manca: peso del piano ±10 punti per fondo |
+| `transazioni` | **facoltativo**; gli acquisti e le vendite reali: elementi `{ "isin", "data" (AAAA-MM-GG), "tipo" (`acquisto` o `vendita`), "quote", "prezzo" }`. Le quote sono sempre positive (la vendita si indica con il tipo); a pari data gli acquisti vengono prima; non si può vendere più di quanto si ha. Un titolo già venduto resta in `titoli` con `peso` 0. Con le transazioni la pagina calcola quote, costo medio (la vendita toglie quote al costo medio), rendita non realizzata e realizzata, andamento e rendimento nel tempo; se mancano, mostra acquisti d'esempio dal piano. |
 
 ## Dove stanno i dati
 
