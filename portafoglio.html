@@ -236,19 +236,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="panel" id="fcomp"></div>
     </div>
     <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli sopra. Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
-    <div id="ribilanciamento" style="margin-top:18px">
-    <div class="sec-head"><h3>Ribilanciamento</h3><span class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</span></div>
-    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
-      <div id="rb-soglie" role="status"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
-      </div>
-      <div class="scroll"><table id="rb"></table></div>
-      <p class="muted" id="rb-n"></p>
-    </div>
-    </div>
+    <div class="azioni" style="margin-top:14px"><button class="btn small" id="apririb" type="button" title="Quante quote comprare o vendere per avvicinarti a un obiettivo">Ribilanciamento…</button></div>
   </section>
 
   <section>
@@ -279,6 +267,20 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 </div>
 
 <div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
+<div class="ovl" id="rib" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="rib-t" style="max-width:940px">
+  <div class="top"><h2 id="rib-t">Ribilanciamento</h2><button class="x" id="rib-x" type="button" aria-label="Chiudi">×</button></div>
+  <p class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</p>
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <div id="rb-soglie" role="status"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
+      </div>
+      <div class="scroll"><table id="rb"></table></div>
+      <p class="muted" id="rb-n"></p>
+    </div>
+</div></div>
 <div class="ovl" id="ordini" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="or-t" style="max-width:760px">
   <div class="top"><h2 id="or-t">Quante quote comprare</h2><button class="x" id="or-x" type="button" aria-label="Chiudi">×</button></div>
   <div style="display:flex;flex-direction:column;gap:12px">
@@ -695,7 +697,7 @@ function disegnaFrontiera(dalCursore) {
     F.map((f, i) => ({ f, i, w: wr[i] })).sort((a, b) => b.w - a.w).map(({ f, i, w }) => { const d = w - WCUR[i]; return `<tr><td>${flink(i, f.s)}</td><td class="num" style="white-space:nowrap">${f.isin}</td><td class="num">${pct(w)}</td><td class="num">${VAL > 0 ? pct(WCUR[i]) : pct(f.w)}</td><td class="num ${cls(d)}">${Math.abs(d) < 0.0005 ? "—" : sgn(d)}</td></tr>`; }).join("") + `</tbody></table></div>
     <div class="azioni"><button class="btn small" id="salvapf" type="button">Salva come nuovo portafoglio…</button><button class="btn sec small" id="usasel" type="button">Usa per il ribilanciamento</button></div><p class="lerr" id="sv-nosrv"></p>`;
   { const b = $("#bozza"); if (!BOZZA) b.innerHTML = ""; else { const so = statistiche(BOZZA.w, FRI0()); b.innerHTML = `<div class="banner" style="margin-bottom:10px"><span><b>Simulazione:</b> la pagina mostra il portafoglio scelto sulla frontiera (rischio ${pct(s.vol)}, rendimento ${pct(s.cagr)}). Originale: rischio ${pct(so.vol)}, rendimento ${pct(so.cagr)}. Non è ancora salvato.</span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="bz-salva" type="button">Salva come nuovo portafoglio…</button><button class="btn sec small" id="bz-ann" type="button">Annulla</button></span></div>`; $("#bz-ann").onclick = annullaBozza; $("#bz-salva").onclick = () => apriSalva(F.map((f) => f.w), s, "Portafoglio dalla frontiera"); } }
-  $("#usasel").onclick = () => { ST.rib.t = "sel"; ST.rib.w = wr.slice(); $("#rb-t").value = "sel"; salva(); aggiornaRib(); $("#rb-t").scrollIntoView({ behavior: "smooth", block: "center" }); };
+  $("#usasel").onclick = () => { ST.rib.t = "sel"; ST.rib.w = wr.slice(); $("#rb-t").value = "sel"; salva(); aggiornaRib(); apriRib(); };
   $("#salvapf").onclick = () => apriSalva(wr, s, tit);
 }
 /* pesi in multipli di 0,1%, con la somma esattamente 100% (il resto va al fondo più grande): sono quelli salvati nel nuovo portafoglio */
@@ -729,6 +731,10 @@ let tb = null; const proponiRitardo = () => { clearTimeout(tb); tb = setTimeout(
 function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (SEL === "tuo") return { w: WCUR }; if (SEL === "obiettivo") return { w: pesiOrig() }; if (SEL === "sharpe" && P) return { w: P[FRONT.sharpe].w }; if (typeof SEL === "number" && P && P[SEL]) return { w: P[SEL].w }; if (SEL === "fmin" || SEL === "fmax") { const q = (fissa().pts || []).find((p) => p.k === SEL); if (q) return { w: q.w }; } return { w: WCUR }; }
 
 /* ---------- ribilanciamento ---------- */
+function apriRib() { aggiornaRib(); $("#rib").hidden = false; document.body.style.overflow = "hidden"; }
+const chiudiRib = () => { $("#rib").hidden = true; document.body.style.overflow = ""; };
+$("#apririb").onclick = apriRib; $("#rib-x").onclick = chiudiRib; $("#rib").addEventListener("mousedown", (e) => { if (e.target.id === "rib") chiudiRib(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#rib").hidden) chiudiRib(); });
 function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
 /* ---------- controllo della deriva: regola 5/25 ---------- */
 const SOGLIA_ASS = 0.05, SOGLIA_REL = 0.25, SOGLIA_MIN = 0.02;
