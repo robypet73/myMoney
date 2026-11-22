@@ -82,6 +82,13 @@ ul.note { margin: 0; padding-left: 18px; color: var(--muted); display: flex; fle
 .pfsel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; } .pfsel span { color: var(--muted); } .pfsel select { width: auto; max-width: 100%; }
 .vtag { font-family: var(--text); font-size: 13px; font-weight: 500; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); vertical-align: middle; }
 .pfsel[hidden] { display: none; }
+@media (max-width: 700px) {  /* telefono: il menu dei portafogli occupa tutta la prima riga, i pulsanti stanno allineati sulla seconda */
+  label.pfsel { display: flex; flex-wrap: wrap; width: 100%; gap: 8px; }
+  label.pfsel[hidden] { display: none; }
+  label.pfsel > span { display: none; }
+  label.pfsel select#pfsel { flex: 1 0 100%; width: 100%; min-width: 0; }
+  label.pfsel > .btn { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; white-space: nowrap; }
+}
 /* modello vuoto e caricamento JSON */
 .agg-btn[hidden], #start[hidden] { display: none; }
 body.vuoto .wrap > :not(header):not(#start):not(#banner) { display: none; } #start { display: flex; flex-direction: column; gap: 14px; }
