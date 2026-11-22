@@ -236,6 +236,19 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="panel" id="fcomp"></div>
     </div>
     <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli sopra. Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
+    <div id="ribilanciamento" style="margin-top:18px">
+    <div class="sec-head"><h3>Ribilanciamento</h3><span class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</span></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <div id="rb-soglie" role="status"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
+      </div>
+      <div class="scroll"><table id="rb"></table></div>
+      <p class="muted" id="rb-n"></p>
+    </div>
+    </div>
   </section>
 
   <section>
@@ -259,23 +272,6 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sec small" id="copia" type="button">Copia</button><button class="btn sec small" id="importa" type="button">Importa</button><span class="muted" id="exstato"></span></div>
     </details>
   </section>
-
-
-  <section>
-    <div class="sec-head"><h2>Ribilanciamento</h2><span class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</span></div>
-    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
-      <div id="rb-soglie" role="status"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
-      </div>
-      <div class="scroll"><table id="rb"></table></div>
-      <p class="muted" id="rb-n"></p>
-    </div>
-  </section>
-
-
   <section>
     <div class="sec-head"><h2>Storico di ciascun titolo</h2><span class="muted">Clicca sul nome per la scheda completa</span></div>
     <div class="grid" id="fondi"></div>
@@ -738,12 +734,11 @@ const SOGLIA_ASS = 0.05, SOGLIA_REL = 0.25, SOGLIA_MIN = 0.02;
 const fondoFuori = (i) => { const d = Math.abs(WCUR[i] - F[i].w); return d >= SOGLIA_ASS || (d >= SOGLIA_MIN && d >= SOGLIA_REL * F[i].w); };
 function disegnaSoglie() {
   const box = $("#rb-soglie"); if (!box) return;
-  const regola = "Regola: controllo una volta l'anno (gennaio); si riporta ai pesi del piano solo se un fondo si sposta di almeno 5 punti (o del 25% e almeno 2 punti) o una classe di almeno 5 punti.";
-  if (VAL <= 0) { box.innerHTML = `<div class="soglie muted">Inserisci i tuoi acquisti per controllare la deriva dei pesi. ${regola}</div>`; return; }
+  if (VAL <= 0) { box.innerHTML = `<div class="soglie muted">Inserisci i tuoi acquisti per controllare la deriva dei pesi.</div>`; return; }
   const voci = [];
   F.forEach((f, i) => { if (fondoFuori(i)) voci.push(`${flink(i, f.s)} è al ${pct(WCUR[i])} contro ${pct(f.w, 0)} del piano (${(WCUR[i] > f.w ? "+" : "−") + nf(Math.abs(WCUR[i] - f.w) * 100, 1)} punti)`); });
   CLASSI.forEach((c) => { const t = sum(F.filter((f) => f.cls === c).map((f) => f.w)), a = sum(F.map((f, i) => (f.cls === c ? WCUR[i] : 0))); if (Math.abs(a - t) >= SOGLIA_ASS) voci.push(`${CNOME[c]} è al ${pct(a)} contro ${pct(t, 0)} del piano`); });
-  box.innerHTML = voci.length ? `<div class="soglie fuori"><strong class="warn">Fuori soglia: conviene ribilanciare.</strong><ul>${voci.map((v) => `<li>${v}</li>`).join("")}</ul><div class="muted" style="margin-top:6px">${regola} Vendi solo l'eccesso e, se puoi, usa prima i nuovi versamenti.</div></div>` : `<div class="soglie"><strong class="up">Entro le soglie: nessun ribilanciamento necessario.</strong><div class="muted" style="margin-top:4px">${regola}</div></div>`;
+  box.innerHTML = voci.length ? `<div class="soglie fuori"><strong class="warn">Fuori soglia: conviene ribilanciare.</strong><ul>${voci.map((v) => `<li>${v}</li>`).join("")}</ul><div class="muted" style="margin-top:6px">Vendi solo l'eccesso e, se puoi, usa prima i nuovi versamenti.</div></div>` : `<div class="soglie"><strong class="up">Entro le soglie: nessun ribilanciamento necessario.</strong></div>`;
 }
 function aggiornaRib() {
   disegnaSoglie();
