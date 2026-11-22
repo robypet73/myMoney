@@ -192,12 +192,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 
   <section>
     <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
-    <div class="panel" id="invest">
+    <div class="panel" id="invest" style="display:none" hidden>
       <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
       <p class="muted" id="imp-n"></p>
-      <div class="azioni"><button class="btn sec small" id="imp-modtit" type="button" hidden title="Togli titoli o aggiungine con l'ISIN, poi ribilancia con la frontiera efficiente e salva">Modifica i titoli…</button><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
+      <div class="azioni"><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
       <p class="lerr" id="imp-msg"></p>
     </div>
+    <div class="azioni" id="comp-azioni" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"><button class="btn small" id="imp-modtit" type="button" hidden title="Togli titoli, cambia i pesi o aggiungine con l'ISIN; poi salva come nuova versione o come nuovo portafoglio">Modifica portafoglio…</button><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button></div>
     <div class="scroll"><table id="tab"></table></div>
   </section>
 
@@ -309,13 +310,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   </div>
 </div></div>
 <div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:640px">
-  <div class="top"><h2 id="mt-t">Modifica i titoli</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
-  <p class="muted">Togli titoli o aggiungine scrivendo l'ISIN. Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione. Puoi cambiare i pesi a mano: vengono sempre riportati a 100. Poi li ribilanci con la frontiera efficiente e salvi. Gli acquisti e le vendite dei titoli tolti non vengono portati nella bozza.</p>
+  <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
+  <p class="muted">Togli titoli o aggiungine scrivendo l'ISIN. Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione. Puoi cambiare i pesi a mano: vengono sempre riportati a 100. Poi salvi come nuova versione di questo portafoglio o come nuovo portafoglio, oppure prima li ribilanci con la frontiera efficiente. «Annulla» scarta tutte le modifiche. Gli acquisti e le vendite dei titoli tolti non passano nel nuovo portafoglio.</p>
   <div class="scroll"><table id="mt-tab"></table></div>
   <form id="mt-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 160px">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px">Peso % (vuoto = 1)<input id="mt-pw" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
   <p class="muted" id="mt-somma"></p>
   <div class="lerr" id="mt-err" role="alert"></div>
-  <div class="scar-foot" style="gap:8px"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn" id="mt-ok" type="button">Crea la bozza</button></div>
+  <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn sec" id="mt-ok" type="button" title="Apre una bozza dove ribilanci i pesi con la frontiera efficiente, poi salvi">Ribilancia…</button><button class="btn" id="mt-salva" type="button">Salva…</button></div>
 </div></div>
 <div class="ovl" id="salva" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="sv-t" style="max-width:600px">
   <div class="top"><h2 id="sv-t">Salva come nuovo portafoglio</h2><button class="x" id="sv-x" type="button" aria-label="Chiudi">×</button></div>
@@ -1102,14 +1103,27 @@ function svControlla(mostra) {
   if (mostra) $("#sv-err").textContent = err; else if (!err) $("#sv-err").textContent = "";
   return !err;
 }
+function svEsistenti() {  // «nuova versione di…»: i portafogli già nella cartella, col numero della prossima versione
+  const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
+  se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
+}
+function apriSalvaTitoli(titoli) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
+  SV = { w: null, titoli, importo: IMPORTO(), tocca: false, opener: $("#mt-salva"), modo: "titoli" };
+  const tot = MT.reduce((a, x) => a + mtVal(x), 0);
+  $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
+  $("#sv-w").textContent = "Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ".";
+  $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi(); svEsistenti();
+  $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + MT.length + " titoli, composizione modificata.";
+  $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
+  $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
+}
 function apriSalva(w, s, tit, msg = "sv-nosrv") {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
   $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
-  const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
-  se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
+  svEsistenti();
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
   $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + pct(az, 0) + " azioni, " + pct(ob, 0) + " obbligazioni, " + pct(oro, 0) + " oro. Rischio " + pct(s.vol) + ", rendimento storico " + pct(s.cagr) + ".";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
@@ -1135,6 +1149,18 @@ $("#sv-d").addEventListener("input", () => svControlla(false));
 $("#sv-f").addEventListener("submit", async (e) => {
   e.preventDefault(); if (!svControlla(true)) return;
   const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
+  if (SV.modo === "titoli") {
+    let ev = null, errore = "";
+    scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
+    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
+    await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
+    if (ev && ev.t === "salvato_pf") {
+      chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
+      $("#sv-fm").innerHTML = `Creato <b class="num">${esc(ev.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`;
+      $("#sv-apri").onclick = () => { location.href = urlPf(ev.file); }; $("#sv-apri").focus(); caricaPortafogli();
+    } else $("#sv-err").textContent = errore || (ev && ev.testo) || "Non sono riuscito a salvare.";
+    b.disabled = false; return;
+  }
   try {
     if (SV.modo === "modifica") {
       const r = await fetch("/api/modifica", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }) });
@@ -1184,11 +1210,16 @@ $("#mt-add").addEventListener("submit", (e) => {
   if (MT.some((x) => x.isin === isin) || MT_FUORI.includes(isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
   MT.push({ isin, s: null, nome: "", w: 0, peso: $("#mt-pw").value.trim() || "1" }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
 });
-$("#mt-ok").onclick = async () => {
+function mtDati() {  // i titoli da mandare al programma, o null (con il motivo) se qualcosa non va
   const err = $("#mt-err"); err.textContent = "";
-  if (!MT.length) { err.textContent = "Lascia almeno un titolo."; return; }
-  if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) { err.textContent = "I pesi devono essere tra 0 e 100."; return; }
-  const titoli = [...MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), ...MT_FUORI.map((isin) => ({ isin, peso: 0 }))];
+  if (!MT.length) { err.textContent = "Lascia almeno un titolo."; return null; }
+  if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) { err.textContent = "I pesi devono essere tra 0 e 100."; return null; }
+  if (!MT.some((x) => mtVal(x) > 0)) { err.textContent = "Almeno un titolo deve avere un peso maggiore di 0."; return null; }
+  return [...MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), ...MT_FUORI.map((isin) => ({ isin, peso: 0 }))];
+}
+$("#mt-salva").onclick = () => { const titoli = mtDati(); if (titoli) apriSalvaTitoli(titoli); };
+$("#mt-ok").onclick = async () => {
+  const titoli = mtDati(); if (!titoli) return;
   chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
   try { ev = await scFlusso("/api/bozza", { da: DA(), titoli }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
   await scSvuotata();

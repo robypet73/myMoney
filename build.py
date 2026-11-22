@@ -943,6 +943,19 @@ class Portafogli:
             self.bozze.pop(next(iter(self.bozze)))
         return {"token": token}
 
+    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None):
+        """Scrive nome_V<n>.json partendo da `da` con i titoli cambiati ([{isin, peso?}], come in bozza()): scarica i dati dei titoli nuovi e salva i pesi così come sono (a 100).
+        Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
+        token = self.bozza(da, titoli, avanza)["token"]
+        try:
+            doc = self.costruisci("bozza:" + token, scarica=False)
+            w = {f["s"]: round(f["w"], 3) for f in doc["funds"]}
+            grande = max(w, key=lambda s: w[s])
+            w[grande] = round(w[grande] + (1 - sum(w.values())), 3)  # l'arrotondamento a tre decimali non deve far uscire la somma da 100%
+            return self.salva("bozza:" + token, nome, versione, descrizione, w)
+        finally:
+            self.bozze.pop(token, None)
+
     def modifica(self, nomefile, nome, versione, descrizione):
         """Cambia nome, versione e descrizione di un portafoglio: stesso file se nome e versione restano, altrimenti il file viene rinominato. Ritorna info (+ chiave per gli acquisti nel browser)."""
         d = self.definizione(nomefile)
@@ -1159,6 +1172,21 @@ def crea_server(prezzi, porta, portafogli):
                 except OSError as e:
                     return self.invia(500, {"errore": f"file non scritto: {e}"})
                 return self.invia(200, nuovo)
+            if percorso == "/api/salva-titoli":
+                n = int(self.headers.get("Content-Length") or 0)
+                if n > 65536:
+                    return self.invia(413, {"errore": "richiesta troppo grande"})
+                corpo = self.rfile.read(n)
+
+                def salva_titoli(riga):
+                    try:
+                        r = json.loads(corpo)
+                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga)
+                    except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
+                        return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
+                    riga({"t": "salvato_pf", **info})
+
+                return self.flusso(salva_titoli)
             if percorso == "/api/bozza":
                 n = int(self.headers.get("Content-Length") or 0)
                 if n > 65536:

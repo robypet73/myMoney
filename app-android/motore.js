@@ -313,6 +313,14 @@
     Object.keys(LS).filter((k) => k.startsWith("mm:bozza:") && k !== "mm:bozza:" + token).slice(0, -9).forEach((k) => LS.removeItem(k));  // poche bozze: le più vecchie vengono dimenticate
     return { token };
   }
+  async function salvaTitoli(da, titoli, nome, versione, descrizione, avanza) {  // salva nome_Vn.json da `da` con i titoli cambiati ([{isin, peso?}]), scaricando i dati dei titoli nuovi
+    const token = (await bozza(da, titoli, avanza)).token;
+    try {
+      const doc = costruisciDaCache("bozza:" + token), w = Object.fromEntries(doc.funds.map((f) => [f.s, Math.round(f.w * 1000) / 1000]));
+      const grande = Object.keys(w).reduce((a, k) => (w[k] > w[a] ? k : a)); w[grande] = Math.round((w[grande] + (1 - sum(Object.values(w)))) * 1000) / 1000;  // la somma resta 100% dopo l'arrotondamento
+      return salva("bozza:" + token, nome, versione, descrizione, w);
+    } finally { LS.removeItem("mm:bozza:" + token); }
+  }
   function salva(da, nome, versione, descrizione, pesi, importo, transazioni) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
@@ -388,6 +396,7 @@
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { return json(modifica(r.file, r.nome, r.versione, r.descrizione)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
