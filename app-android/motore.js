@@ -289,7 +289,7 @@
     scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
   }
-  async function bozza(da, titoli, avanza) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
+  async function bozza(da, titoli, avanza, valore) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (!Array.isArray(titoli) || titoli.length < 1 || titoli.length > 30) throw Err("Servono da 1 a 30 titoli.");
     const prima = Object.fromEntries((origine.titoli || []).map((x) => [x.isin, x.peso])), visti = new Set(), nuovi = [];
@@ -304,7 +304,8 @@
     const tot = sum(nuovi.map((x) => x[1])); if (!(tot > 0)) throw Err("Almeno un titolo deve avere un peso maggiore di 0.");
     nuovi.forEach((x) => { x[1] = Math.round(x[1] * 100 / tot * 100) / 100; });
     const grande = nuovi.reduce((a, x) => (x[1] > a[1] ? x : a), nuovi[0]); grande[1] = Math.round((grande[1] + (100 - sum(nuovi.map((x) => x[1])))) * 100) / 100;
-    const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: origine.valore || 10000, titoli: nuovi.map(([isin, peso]) => ({ isin, peso })), _da: da.startsWith("bozza:") ? origine._da : da };
+    let val = origine.valore || 10000; if (valore !== undefined && valore !== null && valore !== "") { val = Math.round(parseFloat(valore) * 100) / 100; if (isNaN(val)) throw Err("Il valore dell'investimento deve essere un numero."); if (!(val >= 100 && val <= 1e9)) throw Err("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro."); }
+    const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: val, titoli: nuovi.map(([isin, peso]) => ({ isin, peso })), _da: da.startsWith("bozza:") ? origine._da : da };
     const tr = (origine.transazioni || []).filter((x) => visti.has(x.isin)); if (tr.length) d.transazioni = tr;
     validaDefinizione(d);
     const token = Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
@@ -313,8 +314,8 @@
     Object.keys(LS).filter((k) => k.startsWith("mm:bozza:") && k !== "mm:bozza:" + token).slice(0, -9).forEach((k) => LS.removeItem(k));  // poche bozze: le più vecchie vengono dimenticate
     return { token };
   }
-  async function salvaTitoli(da, titoli, nome, versione, descrizione, avanza) {  // salva nome_Vn.json da `da` con i titoli cambiati ([{isin, peso?}]), scaricando i dati dei titoli nuovi
-    const token = (await bozza(da, titoli, avanza)).token;
+  async function salvaTitoli(da, titoli, nome, versione, descrizione, avanza, valore) {  // salva nome_Vn.json da `da` con i titoli cambiati ([{isin, peso?}]), scaricando i dati dei titoli nuovi
+    const token = (await bozza(da, titoli, avanza, valore)).token;
     try {
       const doc = costruisciDaCache("bozza:" + token), w = Object.fromEntries(doc.funds.map((f) => [f.s, Math.round(f.w * 1000) / 1000]));
       const grande = Object.keys(w).reduce((a, k) => (w[k] > w[a] ? k : a)); w[grande] = Math.round((w[grande] + (1 - sum(Object.values(w)))) * 1000) / 1000;  // la somma resta 100% dopo l'arrotondamento
@@ -396,8 +397,8 @@
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { return json(modifica(r.file, r.nome, r.versione, r.descrizione)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
-    if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
+    if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
+    if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga, r.valore)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
       let dati;

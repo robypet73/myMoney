@@ -882,7 +882,7 @@ class Portafogli:
                 pass
             raise
 
-    def bozza(self, da, titoli, avanza=None):
+    def bozza(self, da, titoli, avanza=None, valore=None):
         """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 1 per un titolo nuovo).
         I pesi vengono riportati a 100; un titolo nuovo senza peso entra all'1% e gli altri si riducono in proporzione. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
@@ -925,8 +925,18 @@ class Portafogli:
             x[1] = round(x[1] * 100 / tot, 2)
         resto = round(100 - sum(x[1] for x in nuovi), 2)
         max(nuovi, key=lambda x: x[1])[1] = round(max(nuovi, key=lambda x: x[1])[1] + resto, 2)
+        if valore in (None, ""):
+            valore = origine.get("valore") or 10000
+        else:
+            try:
+                valore = round(float(valore), 2)
+            except (TypeError, ValueError):
+                raise ValueError("Il valore dell'investimento deve essere un numero.")
+            if not 100 <= valore <= 1e9:
+                raise ValueError("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro.")
+            valore = int(valore) if valore == int(valore) else valore
         d = {"nome": origine.get("nome"), "versione": origine.get("versione"), "descrizione": origine.get("descrizione") or "bozza",
-             "valore": origine.get("valore") or 10000, "titoli": [{"isin": i, "peso": p} for i, p, _f in nuovi],
+             "valore": valore, "titoli": [{"isin": i, "peso": p} for i, p, _f in nuovi],
              "_da": origine.get("_da") if da.startswith("bozza:") else da}
         tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
         if tr:
@@ -943,10 +953,10 @@ class Portafogli:
             self.bozze.pop(next(iter(self.bozze)))
         return {"token": token}
 
-    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None):
+    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None, valore=None):
         """Scrive nome_V<n>.json partendo da `da` con i titoli cambiati ([{isin, peso?}], come in bozza()): scarica i dati dei titoli nuovi e salva i pesi così come sono (a 100).
         Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
-        token = self.bozza(da, titoli, avanza)["token"]
+        token = self.bozza(da, titoli, avanza, valore)["token"]
         try:
             doc = self.costruisci("bozza:" + token, scarica=False)
             w = {f["s"]: round(f["w"], 3) for f in doc["funds"]}
@@ -1181,7 +1191,7 @@ def crea_server(prezzi, porta, portafogli):
                 def salva_titoli(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga)
+                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga, r.get("valore"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "salvato_pf", **info})
@@ -1196,7 +1206,7 @@ def crea_server(prezzi, porta, portafogli):
                 def bozza(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga)
+                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga, r.get("valore"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "pronta", **info})

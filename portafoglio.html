@@ -308,6 +308,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:640px">
   <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
   <p class="muted">Togli titoli o aggiungine scrivendo l'ISIN. Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione. Puoi cambiare i pesi a mano: vengono sempre riportati a 100. Poi salvi come nuova versione di questo portafoglio o come nuovo portafoglio, oppure prima li ribilanci con la frontiera efficiente. «Annulla» scarta tutte le modifiche. Gli acquisti e le vendite dei titoli tolti non passano nel nuovo portafoglio.</p>
+  <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div class="scroll"><table id="mt-tab"></table></div>
   <form id="mt-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 160px">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px">Peso % (vuoto = 1)<input id="mt-pw" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
   <p class="muted" id="mt-somma"></p>
@@ -1103,10 +1104,10 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
 function apriSalvaTitoli(titoli) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
-  SV = { w: null, titoli, importo: IMPORTO(), tocca: false, opener: $("#mt-salva"), modo: "titoli" };
+  SV = { w: null, titoli, importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
   const tot = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
-  $("#sv-w").textContent = "Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ".";
+  $("#sv-w").textContent = "Investimento " + eur(SV.importo) + " · Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi(); svEsistenti();
   $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + MT.length + " titoli, composizione modificata.";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
@@ -1147,7 +1148,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
   if (SV.modo === "titoli") {
     let ev = null, errore = "";
     scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
-    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
+    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
     await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
     if (ev && ev.t === "salvato_pf") {
       chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
@@ -1192,7 +1193,7 @@ function apriModTit() {
   const fuori = (i) => POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9;
   MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: fuori(i) })).filter((x) => !x.fuori);
   MT_FUORI = F.filter((f, i) => fuori(i)).map((f) => f.isin);
-  $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
+  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
 }
 const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
 $("#imp-modtit").onclick = $("#tb-mod").onclick = apriModTit; $("#mt-x").onclick = $("#mt-ann").onclick = chiudiModTit;
@@ -1213,13 +1214,14 @@ function mtDati() {  // i titoli da mandare al programma, o null (con il motivo)
   if (!MT.length) { err.textContent = "Lascia almeno un titolo."; return null; }
   if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) { err.textContent = "I pesi devono essere tra 0 e 100."; return null; }
   if (!MT.some((x) => mtVal(x) > 0)) { err.textContent = "Almeno un titolo deve avere un peso maggiore di 0."; return null; }
+  const v = +$("#mt-val").value; if (!(v >= 100 && v <= 1e9)) { err.textContent = "Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro."; return null; }
   return [...MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), ...MT_FUORI.map((isin) => ({ isin, peso: 0 }))];
 }
 $("#mt-salva").onclick = () => { const titoli = mtDati(); if (titoli) apriSalvaTitoli(titoli); };
 $("#mt-ok").onclick = async () => {
   const titoli = mtDati(); if (!titoli) return;
   chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
-  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli, valore: +$("#mt-val").value }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
   await scSvuotata();
   if (ev && ev.t === "pronta") { $("#scar-b").style.width = "100%"; $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Bozza pronta"); await new Promise((r) => setTimeout(r, 500)); location.href = "/portafoglio.html?bozza=" + encodeURIComponent(ev.token); return; }
   errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Bozza non creata"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();
