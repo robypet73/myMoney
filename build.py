@@ -233,6 +233,9 @@ def valida_transazioni(tr, isin_ammessi):
     return out
 
 
+PESO_NUOVO = 5  # peso (%) di un titolo aggiunto senza indicare il peso
+
+
 def valida_definizione(d):
     """Controlla il JSON di un portafoglio. Ritorna {nome, v, descrizione, amount, pesi: [(isin, peso 0-1)], vincoli}; ValueError con un messaggio chiaro se non va."""
     if not isinstance(d, dict):
@@ -748,8 +751,8 @@ class Portafogli:
             raise
 
     def bozza(self, da, titoli, avanza=None):
-        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 0 per un titolo nuovo).
-        I pesi vengono riportati a 100. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
+        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 5 per un titolo nuovo).
+        I pesi vengono riportati a 100; un titolo nuovo senza peso entra al 5%. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
         if origine is None:
             raise ValueError("Portafoglio di partenza non trovato.")
@@ -766,7 +769,7 @@ class Portafogli:
             visti.add(isin)
             peso = t.get("peso")
             if peso in (None, ""):
-                peso = prima.get(isin) or 0
+                peso = prima[isin] if prima.get(isin) is not None else PESO_NUOVO
             try:
                 peso = float(peso)
             except (TypeError, ValueError):

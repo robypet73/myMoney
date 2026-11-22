@@ -289,13 +289,13 @@
     scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
   }
-  async function bozza(da, titoli, avanza) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 0 per un titolo nuovo); i pesi tornano a 100
+  async function bozza(da, titoli, avanza) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 5 per un titolo nuovo); i pesi tornano a 100
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (!Array.isArray(titoli) || titoli.length < 1 || titoli.length > 30) throw Err("Servono da 1 a 30 titoli.");
     const prima = Object.fromEntries((origine.titoli || []).map((x) => [x.isin, x.peso])), visti = new Set(), nuovi = [];
     titoli.forEach((x) => {
       const isin = String((x && x.isin) || "").trim().toUpperCase(); if (!isin) throw Err("C'è un titolo senza ISIN."); if (visti.has(isin)) throw Err(isin + ": ISIN ripetuto."); visti.add(isin);
-      let peso = x.peso; if (peso === undefined || peso === null || peso === "") peso = prima[isin] || 0; peso = parseFloat(peso);
+      let peso = x.peso; if (peso === undefined || peso === null || peso === "") peso = prima[isin] != null ? prima[isin] : 5; peso = parseFloat(peso);
       if (isNaN(peso)) throw Err(isin + ": peso non valido."); if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100.");
       nuovi.push([isin, peso]);
     });
