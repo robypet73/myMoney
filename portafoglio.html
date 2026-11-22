@@ -143,7 +143,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="wrap">
   <header class="top">
     <div>
-      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-cartella" type="button" hidden>Cartella…</button><button class="btn sec small" id="pf-cartella-x" type="button" hidden title="Torna alla memoria dell'app">Scollega</button><button class="btn sec small" id="pf-mod" type="button" hidden title="Cambia nome, versione o descrizione">Modifica</button><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
+      <label class="pfsel" id="pfsel-w" hidden><span>Portafoglio</span><select id="pfsel" aria-label="Portafoglio aperto: scegline un altro"></select><button class="btn sec small" id="pf-cartella" type="button" hidden>Cartella…</button><button class="btn sec small" id="pf-drive" type="button" hidden title="Sceglie la cartella dei portafogli su Google Drive: il selettore si apre direttamente su Drive">Google Drive</button><button class="btn sec small" id="pf-cartella-x" type="button" hidden title="Torna alla memoria dell'app">Scollega</button><button class="btn sec small" id="pf-mod" type="button" hidden title="Cambia nome, versione o descrizione">Modifica</button><button class="btn sec small" id="pf-del" type="button" title="Cancella questo portafoglio dalla cartella del programma">Elimina</button></label>
       <h1><span id="titolo">francesca</span> <span class="vtag" id="vtag"></span></h1>
       <p class="sub" id="sub" hidden></p>
       <p class="solo-stampa" id="stampa-data"></p>
@@ -1014,7 +1014,7 @@ async function caricaPortafogli() {
     PF.server = true; PF.lista = j.lista || []; if (!PF.bozza && !/\.json$/i.test(PF.file)) PF.file = j.ultimo || "";
   } catch (e) { PF.server = false; return; }
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""} title="${esc(x.descrizione || "")}">${esc(x.nome)} · ${esc(x.versione)}</option>`).join("");
-  try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
+  try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-drive").hidden = !PF.cartella.nativo; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
   $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = $("#pf-mod").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
   $("#imp-modtit").hidden = VUOTO;
 }
@@ -1032,6 +1032,7 @@ async function cartellaApp(azione) {
     location.href = "/";
   } catch (e) { stato("Cartella non cambiata: " + e.message, true); }
 }
+$("#pf-drive").onclick = () => cartellaApp("drive");  // app Android: il selettore di cartelle si apre su Google Drive
 $("#pf-cartella-x").onclick = () => { if (confirm("Scollegare la cartella «" + ((PF.cartella || {}).cartella || "") + "» e usare la memoria dell'app? I file nella cartella restano dove sono.")) cartellaApp("reset"); };
 $("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o di Google Drive per desktop (per esempio G:\Il mio Drive\portafogli)
   const c = PF.cartella || {};
