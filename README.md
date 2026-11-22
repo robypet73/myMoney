@@ -11,7 +11,8 @@ Una sola pagina, **`portafoglio.html`**, da cui si fa tutto. Ogni portafoglio è
 | `portafogli/` | i portafogli: `nome_V1.json`, `nome_V2.json`… e lo schema |
 | `portafogli/schema.json` | lo **schema JSON** (JSON Schema) del formato di un portafoglio |
 | `portafogli/titoli/` | schede già complete dei titoli noti (caratteristiche e composizione); i prezzi si scaricano sempre |
-| `icons/` | l'icona dell'app |
+| `icons/` | l'icona dell'app: `myMoney.ico` (Windows, per il collegamento sul desktop), `myMoney.icns` (macOS), `myMoney-256.png` (Linux) e le immagini per telefono e web |
+| `crea-collegamento.cmd` | doppio clic su Windows: crea sul Desktop il collegamento «myMoney» con l'icona (altrimenti: tasto destro su `avvia.cmd` → Invia a → Desktop, poi Proprietà → Cambia icona → `icons\myMoney.ico`) |
 
 Serve Python 3.9 o più recente, nient'altro.
 
