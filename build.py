@@ -233,7 +233,7 @@ def valida_transazioni(tr, isin_ammessi):
     return out
 
 
-PESO_NUOVO = 5  # peso (%) di un titolo aggiunto senza indicare il peso
+PESO_NUOVO = 1  # peso (%) di un titolo aggiunto senza indicare il peso: gli altri si riducono in proporzione
 
 
 def valida_definizione(d):
@@ -751,8 +751,8 @@ class Portafogli:
             raise
 
     def bozza(self, da, titoli, avanza=None):
-        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 5 per un titolo nuovo).
-        I pesi vengono riportati a 100; un titolo nuovo senza peso entra al 5%. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
+        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 1 per un titolo nuovo).
+        I pesi vengono riportati a 100; un titolo nuovo senza peso entra all'1% e gli altri si riducono in proporzione. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
         if origine is None:
             raise ValueError("Portafoglio di partenza non trovato.")
@@ -767,25 +767,34 @@ class Portafogli:
             if isin in visti:
                 raise ValueError(f"{isin}: ISIN ripetuto.")
             visti.add(isin)
-            peso = t.get("peso")
+            peso, fisso = t.get("peso"), False
             if peso in (None, ""):
-                peso = prima[isin] if prima.get(isin) is not None else PESO_NUOVO
+                if prima.get(isin) is not None:
+                    peso = prima[isin]
+                else:
+                    peso, fisso = PESO_NUOVO, True  # titolo nuovo senza peso: entra all'1%
             try:
                 peso = float(peso)
             except (TypeError, ValueError):
                 raise ValueError(f"{isin}: peso non valido.")
             if not 0 <= peso <= 100:
                 raise ValueError(f"{isin}: il peso deve essere tra 0 e 100.")
-            nuovi.append([isin, peso])
-        tot = sum(p for _, p in nuovi)
+            nuovi.append([isin, peso, fisso])
+        fissi = sum(p for _, p, f in nuovi if f)
+        altri = sum(p for _, p, f in nuovi if not f)
+        if altri > 0 and fissi < 100:  # gli altri titoli si riducono (o, se ne è stato tolto uno, crescono) in proporzione fino a fare 100
+            for x in nuovi:
+                if not x[2]:
+                    x[1] = x[1] * (100 - fissi) / altri
+        tot = sum(p for _, p, _f in nuovi)
         if tot <= 0:
             raise ValueError("Almeno un titolo deve avere un peso maggiore di 0.")
         for x in nuovi:
             x[1] = round(x[1] * 100 / tot, 2)
-        resto = round(100 - sum(p for _, p in nuovi), 2)
+        resto = round(100 - sum(x[1] for x in nuovi), 2)
         max(nuovi, key=lambda x: x[1])[1] = round(max(nuovi, key=lambda x: x[1])[1] + resto, 2)
         d = {"nome": origine.get("nome"), "versione": origine.get("versione"), "descrizione": origine.get("descrizione") or "bozza",
-             "valore": origine.get("valore") or 10000, "titoli": [{"isin": i, "peso": p} for i, p in nuovi],
+             "valore": origine.get("valore") or 10000, "titoli": [{"isin": i, "peso": p} for i, p, _f in nuovi],
              "_da": origine.get("_da") if da.startswith("bozza:") else da}
         tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
         if tr:
