@@ -1188,7 +1188,8 @@ function mtDisegna() {
 const mtVal = (x) => (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0);
 function mtRiscala(fisso) {  // riporta a 100 i pesi degli altri titoli in proporzione; `fisso`: riga appena aggiunta, che resta com'è (-1: nessuna)
   const f = fisso >= 0 ? mtVal(MT[fisso]) : 0, altri = MT.filter((_, i) => i !== fisso), s = altri.reduce((a, x) => a + mtVal(x), 0);
-  if (!(s > 0) || f >= 100) return;
+  if (f > 100 || !altri.length) return;
+  if (!(s > 0)) { const sw = altri.reduce((q, x) => q + (x.w || 1), 0); altri.forEach((x) => { x.peso = String(Math.round((100 - f) * (x.w || 1) / sw * 100) / 100); }); return; }  // gli altri erano tutti a 0: si dividono il resto come erano all'apertura
   const k = (100 - f) / s; altri.forEach((x) => { x.peso = String(Math.round(mtVal(x) * k * 100) / 100); });
 }
 function apriModTit() {
@@ -1202,7 +1203,9 @@ const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.ove
 $("#imp-modtit").onclick = $("#tb-mod").onclick = apriModTit; $("#mt-x").onclick = $("#mt-ann").onclick = chiudiModTit;
 $("#modtit").addEventListener("mousedown", (e) => { if (e.target.id === "modtit") chiudiModTit(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modtit").hidden) chiudiModTit(); });
-$("#mt-tab").addEventListener("input", (e) => { const i = e.target.dataset.mt; if (i != null) { MT[+i].peso = e.target.value; const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0), 0); $("#mt-somma").textContent = "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : "."); } });
+$("#mt-tab").addEventListener("input", (e) => { const i = e.target.dataset.mt; if (i != null) { MT[+i].peso = e.target.value; const v = e.target.value;
+  if (v !== "" && +v >= 0 && +v <= 100) { mtRiscala(+i); $$("#mt-tab input[data-mt]").forEach((inp) => { if (+inp.dataset.mt !== +i) inp.value = MT[+inp.dataset.mt].peso; }); }  // cambiando un peso gli altri si ridistribuiscono in proporzione, a fare 100
+  const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0), 0); $("#mt-somma").textContent = "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : "."); } });
 $("#mt-tab").addEventListener("click", (e) => { const b = e.target.closest("[data-mt-del]"); if (!b) return; MT.splice(+b.dataset.mtDel, 1); mtRiscala(-1); mtDisegna(); });
 $("#mt-add").addEventListener("submit", (e) => {
   e.preventDefault(); const isin = $("#mt-isin").value.trim().toUpperCase(), err = $("#mt-err"); err.textContent = "";
