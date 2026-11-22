@@ -24,7 +24,9 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.error
 import urllib.parse
+import urllib.request
 import webbrowser
 
 import fonti
@@ -34,6 +36,8 @@ MODELLO = "portafoglio.html"  # l'unica pagina: il codice di ogni portafoglio, i
 CARTELLA_PF = "portafogli"  # i JSON dei portafogli (e lo schema)
 NOME = "myMoney"  # nome del programma e della sua cartella dati: non è quello di un portafoglio
 NOME_VECCHIO = "francesca"  # cartella dati delle versioni precedenti: se c'è, se ne copia il contenuto
+HOST_REMOTI = ("script.google.com", "script.googleusercontent.com")  # Google Drive «online»: una piccola web app di Google Apps Script (drive/mymoney_drive.gs) legge e scrive la cartella
+FILE_SCRIPT_DRIVE = os.path.join("drive", "mymoney_drive.gs")
 NOME_PF = re.compile(r"^[A-Za-z0-9]{1,30}$")  # nome di un portafoglio: solo lettere e cifre
 FILE_PF = re.compile(r"^[A-Za-z0-9]{1,30}_V[0-9]{1,3}\.json$")
 RE_DATI = re.compile(r'(<script type="application/json" id="dati">)(.*?)(</script>)', re.S)
@@ -323,6 +327,40 @@ def formatta_definizione(d):
     return "{\n" + ",\n".join(righe) + "\n}\n"
 
 
+def _url_remoto(url):
+    """Controlla l'indirizzo della web app di Google Apps Script (con ?key=…). Ritorna (indirizzo senza chiave, chiave); ValueError se non va."""
+    u = urllib.parse.urlsplit((url or "").strip())
+    if u.scheme != "https" or (u.hostname or "") not in HOST_REMOTI:
+        raise ValueError("L'indirizzo deve essere quello della web app di Google (https://script.google.com/macros/s/…/exec?key=la-tua-chiave).")
+    chiave = (urllib.parse.parse_qs(u.query).get("key") or [""])[0]
+    if not chiave:
+        raise ValueError("Manca la chiave: aggiungi in fondo all'indirizzo ?key= e la chiave scritta nello script.")
+    return urllib.parse.urlunsplit((u.scheme, u.netloc, u.path, "", "")), chiave
+
+
+def _chiama_remoto(base, chiave, corpo=None):
+    """GET (elenco) o POST (scrittura) alla web app. Ritorna il JSON della risposta; RuntimeError con un messaggio per l'utente se non va."""
+    try:
+        if corpo is None:
+            rich = urllib.request.Request(base + "?" + urllib.parse.urlencode({"key": chiave}), headers={"User-Agent": "myMoney"})
+        else:
+            dati = json.dumps({**corpo, "key": chiave}, ensure_ascii=False).encode("utf-8")
+            rich = urllib.request.Request(base, data=dati, headers={"Content-Type": "text/plain;charset=utf-8", "User-Agent": "myMoney"})
+        with urllib.request.urlopen(rich, timeout=40) as r:
+            r_json = json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Google Drive ha risposto con errore {e.code}: controlla che la distribuzione sia «App web», accesso «Chiunque».")
+    except (urllib.error.URLError, OSError):
+        raise RuntimeError("Non riesco a raggiungere Google Drive: controlla la connessione.")
+    except ValueError:
+        raise RuntimeError("La risposta di Google non è quella dello script: controlla l'indirizzo e che la distribuzione sia «App web», accesso «Chiunque».")
+    if not isinstance(r_json, dict):
+        raise RuntimeError("Risposta di Google Drive non valida.")
+    if r_json.get("errore"):
+        raise RuntimeError("Google Drive: " + str(r_json["errore"]))
+    return r_json
+
+
 def cartelle_suggerite():
     """Cartelle dove tenere i portafogli: Google Drive per desktop (Windows: unità virtuale G:, H:…; macOS: CloudStorage; cartella Google Drive nella home) e Documenti."""
     home = os.path.expanduser("~")
@@ -399,12 +437,97 @@ class Portafogli:
         self.prezzi = None  # impostato da avvia_app: riceve i titoli dei portafogli aperti
         self.copiati = 0  # portafogli copiati nell'ultima cartella scelta
         self.file_config = os.path.join(dati or os.path.dirname(file_ultimo), "config.json")
-        scelta = (self._json(self.file_config) or {}).get("cartella")
-        if scelta and os.path.isdir(scelta):  # cartella scelta dall'utente (anche di Google Drive per desktop); se non c'è più si torna a quella del programma
+        self.remoto = None  # (indirizzo, chiave) della cartella su Google Drive online; la copia di lavoro è nella cartella dell'utente
+        self.ultima_lettura = 0
+        self.dir_lavoro = os.path.join(dati or os.path.dirname(file_ultimo), "drive")
+        conf = self._json(self.file_config) or {}
+        scelta = conf.get("cartella")
+        if conf.get("remoto"):
+            try:
+                self.remoto = _url_remoto(conf["remoto"])
+                self.dir = self.dir_lavoro
+                os.makedirs(self.dir, exist_ok=True)
+                self.leggi_remoto(True)
+            except (ValueError, RuntimeError, OSError) as e:
+                print("Google Drive online non raggiungibile, uso la copia già scaricata:", e, flush=True)
+        elif scelta and os.path.isdir(scelta):  # cartella scelta dall'utente (anche di Google Drive per desktop); se non c'è più si torna a quella del programma
             self.dir = scelta
 
+    def leggi_remoto(self, forza=False):
+        """Scarica da Google Drive i portafogli nella copia di lavoro (quelli che non ci sono più online si tolgono). Al massimo ogni 20 secondi."""
+        if not self.remoto or (not forza and time.time() - self.ultima_lettura < 20):
+            return
+        r = _chiama_remoto(self.remoto[0], self.remoto[1])
+        files = r.get("files")
+        if not isinstance(files, list):
+            raise RuntimeError("Risposta di Google Drive non valida.")
+        with self.lock:
+            os.makedirs(self.dir, exist_ok=True)
+            presenti = set()
+            for f in files:
+                n, testo = (f or {}).get("name"), (f or {}).get("text")
+                if isinstance(n, str) and isinstance(testo, str) and FILE_PF.match(n):
+                    presenti.add(n)
+                    with open(self.percorso(n), "w", encoding="utf-8", newline="\n") as fh:
+                        fh.write(testo)
+            for n in os.listdir(self.dir):
+                if FILE_PF.match(n) and n not in presenti:
+                    os.remove(self.percorso(n))
+            schema = os.path.join(self.predefinita, "schema.json")
+            if os.path.exists(schema) and not os.path.exists(os.path.join(self.dir, "schema.json")):
+                shutil.copy2(schema, os.path.join(self.dir, "schema.json"))
+        self.ultima_lettura = time.time()
+
+    def _scrivi_remoto(self, scrivi=(), togli=()):
+        """Riporta su Google Drive file scritti (nome, testo) o tolti. Senza cartella online non fa nulla; RuntimeError se non riesce."""
+        if self.remoto:
+            _chiama_remoto(self.remoto[0], self.remoto[1], {"write": [{"name": n, "text": x} for n, x in scrivi], "trash": list(togli)})
+            self.ultima_lettura = time.time()
+
+    def imposta_remoto(self, url):
+        """Sceglie come cartella dei portafogli quella su Google Drive online (web app di Google Apps Script). Ritorna cartella_info()."""
+        base, chiave = _url_remoto(url)
+        try:
+            r = _chiama_remoto(base, chiave)
+        except RuntimeError as e:
+            raise ValueError(str(e))
+        online = {f.get("name") for f in (r.get("files") or []) if isinstance(f, dict) and FILE_PF.match(str(f.get("name")))}
+        prima = self.dir if not self.remoto else None
+        self.remoto = (base, chiave)
+        with self.lock:
+            self.dir = self.dir_lavoro
+        os.makedirs(self.dir, exist_ok=True)
+        copiati = 0
+        try:
+            if prima and not online:  # cartella online vuota: riceve una copia dei portafogli di prima (che restano dove sono)
+                nomi = [n for n in sorted(os.listdir(prima)) if FILE_PF.match(n)]
+                testi = []
+                for n in nomi:
+                    with open(os.path.join(prima, n), encoding="utf-8") as fh:
+                        testi.append((n, fh.read()))
+                if testi:
+                    _chiama_remoto(base, chiave, {"write": [{"name": n, "text": x} for n, x in testi], "trash": []})
+                    copiati = len(testi)
+            self.leggi_remoto(True)
+        except (RuntimeError, OSError) as e:
+            raise ValueError(str(e))
+        self.copiati = copiati
+        self._salva_config()
+        if self.prezzi is not None:
+            self.prezzi.titoli, self.prezzi.base = self.titoli_noti()
+        return self.cartella_info()
+
+    def _salva_config(self):
+        try:
+            os.makedirs(os.path.dirname(self.file_config), exist_ok=True)
+            with open(self.file_config, "w", encoding="utf-8") as fh:
+                json.dump({"cartella": "" if self.remoto or self.dir == self.predefinita else self.dir,
+                           **({"remoto": self.remoto[0] + "?" + urllib.parse.urlencode({"key": self.remoto[1]})} if self.remoto else {})}, fh, ensure_ascii=False)
+        except OSError as e:
+            raise ValueError(f"Cartella scelta ma non memorizzata: {e}")
+
     def cartella_info(self):
-        return {"cartella": self.dir, "predefinita": self.predefinita, "personalizzata": os.path.abspath(self.dir) != os.path.abspath(self.predefinita), "suggerite": cartelle_suggerite(), "copiati": self.copiati}
+        return {"cartella": "Google Drive (online)" if self.remoto else self.dir, "remoto": bool(self.remoto), "predefinita": self.predefinita, "personalizzata": bool(self.remoto) or os.path.abspath(self.dir) != os.path.abspath(self.predefinita), "suggerite": cartelle_suggerite(), "copiati": self.copiati}
 
     def imposta_cartella(self, percorso, crea=False):
         """Sceglie la cartella dei JSON dei portafogli (percorso del computer, per esempio quello di Google Drive per desktop). Vuoto = quella del programma.
@@ -430,6 +553,7 @@ class Portafogli:
             except OSError:
                 pass
         prima = self.dir
+        self.remoto = None
         with self.lock:
             self.dir = nuova
         copiati = 0
@@ -442,12 +566,7 @@ class Portafogli:
         except OSError:
             pass
         self.copiati = copiati
-        try:
-            os.makedirs(os.path.dirname(self.file_config), exist_ok=True)
-            with open(self.file_config, "w", encoding="utf-8") as fh:
-                json.dump({"cartella": "" if nuova == self.predefinita else nuova}, fh, ensure_ascii=False)
-        except OSError as e:
-            raise ValueError(f"Cartella scelta ma non memorizzata: {e}")
+        self._salva_config()
         if self.prezzi is not None:
             self.prezzi.titoli, self.prezzi.base = self.titoli_noti()
         return self.cartella_info()
@@ -514,6 +633,10 @@ class Portafogli:
         """Cancella il JSON di un portafoglio. Ritorna {eliminato, ultimo}; ValueError con un messaggio per l'utente se non si può."""
         if not self.info(nomefile):
             raise ValueError("Portafoglio non trovato.")
+        try:
+            self._scrivi_remoto(togli=[nomefile])
+        except RuntimeError as e:
+            raise ValueError(str(e))
         with self.lock:
             os.remove(self.percorso(nomefile))
         return {"eliminato": nomefile, "ultimo": self.ultimo()}
@@ -718,12 +841,21 @@ class Portafogli:
     # ---- scrittura
     def _scrivi(self, nuovo, d):
         os.makedirs(self.dir, exist_ok=True)
+        testo = formatta_definizione(d)
         with self.lock:
             try:
                 with open(self.percorso(nuovo), "x", encoding="utf-8") as fh:
-                    fh.write(formatta_definizione(d))
+                    fh.write(testo)
             except FileExistsError:
                 raise Esiste(nuovo, f"Esiste già il file {CARTELLA_PF}/{nuovo}. Cambia la versione per crearne uno nuovo.")
+        try:
+            self._scrivi_remoto(scrivi=[(nuovo, testo)])
+        except RuntimeError as e:
+            try:
+                os.remove(self.percorso(nuovo))  # non è arrivato su Google Drive: non resta solo sul computer
+            except OSError:
+                pass
+            raise ValueError(str(e))
 
     def crea(self, definizione, avanza=None):
         """Scrive nome_Vn.json nella cartella «portafogli» dalla definizione {nome, versione, descrizione, valore?, titoli, vincoli?} e scarica i dati da justETF. Ritorna info.
@@ -835,6 +967,10 @@ class Portafogli:
         nd = {**d, "nome": nome, "versione": f"V{v}", "descrizione": descrizione}
         testo = formatta_definizione(nd)
         valida_definizione(json.loads(testo))  # il file riscritto deve restare valido
+        try:
+            self._scrivi_remoto(scrivi=[(nuovo, testo)], togli=[nomefile] if nuovo != nomefile else [])
+        except RuntimeError as e:
+            raise ValueError(str(e))
         with self.lock:
             tmp = self.percorso(nuovo) + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
@@ -947,7 +1083,17 @@ def crea_server(prezzi, porta, portafogli):
             if p == "/api/prezzi":
                 return self.invia(200, prezzi.leggi())
             if p == "/api/portafogli":
+                try:
+                    portafogli.leggi_remoto()  # con la cartella su Google Drive online: aggiorna la copia di lavoro
+                except (RuntimeError, OSError):
+                    pass
                 return self.invia(200, {"ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
+            if p == "/api/drive-script":
+                try:
+                    with open(os.path.join(portafogli.base, FILE_SCRIPT_DRIVE), encoding="utf-8") as fh:
+                        return self.invia(200, fh.read().encode("utf-8"), "text/plain; charset=utf-8")
+                except OSError:
+                    return self.invia(404, {"errore": "script non trovato"})
             if p == "/api/cartella":
                 return self.invia(200, portafogli.cartella_info())
             if p == "/":
@@ -999,6 +1145,8 @@ def crea_server(prezzi, porta, portafogli):
                     if percorso == "/api/cartella":
                         if r.get("sfoglia"):  # solo la scelta con la finestra del sistema: l'applica poi la pagina
                             return self.invia(200, {"scelta": finestra_cartella(str(r.get("iniziale") or ""))})
+                        if "remoto" in r:  # cartella su Google Drive online
+                            return self.invia(200, {**portafogli.imposta_remoto(r.get("remoto")), "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                         info = portafogli.imposta_cartella(r.get("cartella"), bool(r.get("crea")))
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
