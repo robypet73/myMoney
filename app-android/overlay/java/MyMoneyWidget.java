@@ -28,6 +28,7 @@ import android.os.PowerManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.TypedValue;
 import android.os.Bundle;
 import android.view.View;
@@ -382,9 +383,10 @@ public class MyMoneyWidget extends AppWidgetProvider {
         Intent set = new Intent(c, MyMoneyWidgetSettings.class).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).setData(Uri.parse("mymoney://widget/" + id));
         v.setOnClickPendingIntent(R.id.w_gear, PendingIntent.getActivity(c, id, set, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         boolean molti = portafogli(c).size() > 1;  // le frecce compaiono solo con più di un portafoglio
-        v.setViewVisibility(R.id.w_prev, molti ? View.VISIBLE : View.GONE);
-        v.setViewVisibility(R.id.w_next, molti ? View.VISIBLE : View.GONE);
-        v.setOnClickPendingIntent(R.id.w_prev, azione(c, id, ACT_PREV));
+        v.setViewVisibility(R.id.w_next, molti ? View.VISIBLE : View.GONE);  // una sola freccia: «Port. ›» passa al portafoglio successivo, in cerchio
+        SpannableStringBuilder portTxt = new SpannableStringBuilder("Port. ›");
+        portTxt.setSpan(new RelativeSizeSpan(1.65f), 6, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        v.setTextViewText(R.id.w_next, portTxt);
         v.setOnClickPendingIntent(R.id.w_next, azione(c, id, ACT_NEXT));
         String file = corrente(c, id);
         String raw = file == null ? null : c.getSharedPreferences(PREFS, 0).getString(chiave(file), null);
