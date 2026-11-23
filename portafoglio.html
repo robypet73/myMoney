@@ -96,7 +96,11 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 /* importo da ripartire */
 #invest { display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 8px 18px; align-items: end; } #invest label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } #invest .azioni { margin: 0; } #invest .lerr { grid-column: 1 / -1; }
 .ext { display: inline-block; vertical-align: 1px; margin-left: 2px; font-size: 12px; line-height: 1; padding: 0 4px; color: var(--muted); text-decoration: none; border-radius: 6px; } .ext:hover, .ext:focus-visible { color: var(--accent); background: var(--raised); }
-#ct-pc { display: flex; flex-direction: column; gap: 12px; } #ct-pc[hidden] { display: none; } .ct-web { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; } .ct-web summary { cursor: pointer; } .ct-prime { display: flex; flex-direction: column; gap: 8px; } .ct-big { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--fg); cursor: pointer; } .ct-big[hidden] { display: none; } .ct-big:hover, .ct-big:focus-visible { border-color: var(--accent); } .ct-big span { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ct-big small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; } .ct-ic { flex: none; }
+#ct-pc { display: flex; flex-direction: column; gap: 12px; } #ct-pc[hidden] { display: none; } .mt-list { display: flex; flex-direction: column; gap: 10px; }
+.mt-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); } .mt-fuori { opacity: .75; }
+.mt-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; } .mt-n { flex: 1 1 200px; min-width: 0; } .mt-p { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); } .mt-p input { width: 78px; text-align: right; }
+.mt-r { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 6px; align-items: center; } .mt-r button { justify-self: end; } .mt-card .mt-add-tr { align-self: flex-start; }
+.ct-web { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; } .ct-web summary { cursor: pointer; } .ct-prime { display: flex; flex-direction: column; gap: 8px; } .ct-big { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--fg); cursor: pointer; } .ct-big[hidden] { display: none; } .ct-big:hover, .ct-big:focus-visible { border-color: var(--accent); } .ct-big span { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ct-big small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; } .ct-ic { flex: none; }
 .ct-s { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; } .ct-s:hover, .ct-s:focus-visible { border-color: var(--accent); } .ct-s span { color: var(--muted); word-break: break-all; }
 .solo-stampa { display: none; }
 @media print {
@@ -282,7 +286,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Consenti vendite</label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti</label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite</label>
       </div>
       <div class="scroll"><table id="rb"></table></div>
       <p class="muted" id="rb-n"></p>
@@ -314,11 +319,11 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="lerr" id="ct-err" role="alert"></div>
   </div>
 </div></div>
-<div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:640px">
+<div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:780px">
   <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
-  <p class="muted">Togli titoli o aggiungine scrivendo l'ISIN. Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione. Puoi cambiare i pesi a mano: vengono sempre riportati a 100. Poi salvi come nuova versione di questo portafoglio o come nuovo portafoglio, oppure prima li ribilanci con la frontiera efficiente. «Annulla» scarta tutte le modifiche. Gli acquisti e le vendite dei titoli tolti non passano nel nuovo portafoglio.</p>
+  <p class="muted">Aggiungi titoli con l'ISIN, toglili con ✕, cambia i pesi e inserisci per ciascun titolo gli acquisti e le vendite (anche più di uno). Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione; i pesi sono sempre riportati a 100. Senza prezzo, l'operazione usa il prezzo di chiusura del giorno (per i titoli nuovi scrivilo tu). Poi salvi come nuova versione di questo portafoglio o come nuovo, oppure ribilanci prima con la frontiera. «Annulla» scarta tutto.</p>
   <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
-  <div class="scroll"><table id="mt-tab"></table></div>
+  <div id="mt-tab" class="mt-list"></div>
   <form id="mt-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 160px">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px">Peso % (vuoto = 1)<input id="mt-pw" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
   <p class="muted" id="mt-somma"></p>
   <div class="lerr" id="mt-err" role="alert"></div>
@@ -386,7 +391,7 @@ const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (me
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
 const lotsDaFile = () => Object.fromEntries(F.map((f) => [f.s, (META.transazioni || []).filter((x) => x.s === f.s).map((x) => ({ q: x.q, d: x.d, p: x.p, t: x.t }))]));  // movimenti reali scritti nel file
 const TSIG = JSON.stringify(META.transazioni || null);  // se i movimenti del file cambiano, quelli salvati nel browser non valgono più
-const statoDef = () => ({ lots: META.transazioni ? lotsDaFile() : Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: !META.transazioni, tsig: TSIG, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, w: null } });
+const statoDef = () => ({ lots: META.transazioni ? lotsDaFile() : Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: !META.transazioni, tsig: TSIG, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, a: true, w: null } });
 const VSIG = JSON.stringify(META.vincoli || null);  // se i limiti scritti nel file cambiano, quelli salvati nel browser non valgono più
 let ST = statoDef();
 try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; if (META.transazioni && o.tsig !== TSIG) { ST.lots = d.lots; ST.esempio = false; } ST.tsig = TSIG; ST.vincSig = VSIG; if (o.vincSig !== VSIG) ST.vinc = d.vinc; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
@@ -756,14 +761,22 @@ function disegnaSoglie() {
 }
 function aggiornaRib() {
   disegnaSoglie();
-  $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = !!ST.rib.v;
-  const wt = pesiObiettivo(), cash = Math.max(0, +ST.rib.c || 0), tot = VAL + cash, vend = !!ST.rib.v;
-  if (tot <= 0) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci i tuoi acquisti oppure un versamento: il piano mostrerà quante quote comprare."; return; }
-  const tgt = wt.map((w) => w * tot), diff = tgt.map((t, i) => t - POS[i].valore); let x;
-  if (vend) x = diff.slice(); else { const sh = diff.map((d) => Math.max(0, d)), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * cash : 0)); }
-  const ops = F.map((f, i) => { const pr = POS[i].prezzo; let n = Math.round(x[i] / pr); if (n < 0) n = -Math.min(-n, Math.floor(POS[i].q)); return { n, imp: n * pr }; }), speso = sum(ops.map((o) => o.imp)), dopoV = VAL + speso;
+  const acq = ST.rib.a !== false, vend = !!ST.rib.v;
+  $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = vend; $("#rb-a").checked = acq; $("#rb-c").disabled = !acq;
+  const wt = pesiObiettivo(), cash = acq ? Math.max(0, +ST.rib.c || 0) : 0;
+  if (VAL + cash <= 0) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci i tuoi acquisti oppure un versamento: il piano mostrerà quante quote comprare."; return; }
+  let tot = VAL + cash, x, modo;
+  if (!acq && !vend) { x = F.map(() => 0); tot = VAL; modo = "Né acquisti né vendite spuntati: il ribilanciamento non può toccare nulla. Spunta almeno una delle due."; }
+  else if (acq && vend) { const tg = wt.map((w) => w * tot); x = tg.map((g, i) => g - POS[i].valore); modo = "Acquisti e vendite: porta il portafoglio al punto scelto."; }
+  else if (acq) { const tg = wt.map((w) => w * tot), sh = tg.map((g, i) => Math.max(0, g - POS[i].valore)), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * cash : 0)); modo = "Solo acquisti: le quote che hai non si toccano; il versamento va ai fondi sotto l'obiettivo, in proporzione al divario."; }
+  else {  // solo vendite: si vende l'eccesso e il ricavato resta liquido; il totale è quello che permette di arrivare ai pesi senza comprare
+    let T = Infinity; wt.forEach((w, i) => { if (w > 1e-9 && POS[i].valore > 0) T = Math.min(T, POS[i].valore / w); }); if (!isFinite(T)) T = 0;
+    tot = T; x = wt.map((w, i) => Math.min(0, w * T - POS[i].valore)); modo = "Solo vendite: non si compra nulla, si vende l'eccesso dei fondi sopra l'obiettivo e il ricavato resta liquido.";
+  }
+  const tgt = wt.map((w) => w * tot);
+  const ops = F.map((f, i) => { const pr = POS[i].prezzo; let n = Math.round(x[i] / pr); if (n < 0) n = -Math.min(-n, Math.floor(POS[i].q)); if (n > 0 && !acq) n = 0; if (n < 0 && !vend) n = 0; return { n, imp: n * pr }; }), speso = sum(ops.map((o) => o.imp)), dopoV = VAL + speso;
   $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}</td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
-  $("#rb-n").textContent = (vend ? "Con vendite: porta il portafoglio al punto scelto." : "Solo acquisti: il versamento va ai fondi sotto l'obiettivo, in proporzione al divario.") + " Quote arrotondate all'intero, prezzi di chiusura del " + dataIt(DATES[DATES.length - 1]) + (cash - speso > 0.5 && !vend ? "; restano circa " + eur(cash - speso) + " del versamento." : ".") + " Commissioni e imposte non incluse.";
+  $("#rb-n").textContent = modo + " Quote arrotondate all'intero, prezzi di chiusura del " + dataIt(DATES[DATES.length - 1]) + (cash - speso > 0.5 && acq && !vend ? "; restano circa " + eur(cash - speso) + " del versamento" : "") + (!acq && vend && speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
 }
 
 /* ---------- andamento e storici ---------- */
@@ -865,7 +878,7 @@ const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
 $("#pos").addEventListener("input", (e) => { const inp = e.target, lot = inp.closest(".lot"); if (!lot) return; const s = inp.closest(".fcard").dataset.s, k = +lot.dataset.k, c = inp.dataset.c; ST.lots[s][k][c] = inp.value; ST.esempio = false; inp.classList.toggle("bad", c === "q" && inp.value !== "" && !(+inp.value > 0)); salva(); aggiornaRitardo(); });
 $("#pos").addEventListener("click", (e) => { const add = e.target.closest("[data-add]"), del = e.target.closest("[data-del]"); if (add) { ST.lots[add.dataset.add].push({ q: "", d: DATES[DATES.length - 1], p: "", t: "a" }); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); const rr = $$(`#lots-${add.dataset.add} .lot`); if (rr.length) rr[rr.length - 1].querySelector("input").focus(); } if (del) { const s = del.closest(".fcard").dataset.s; ST.lots[s].splice(+del.dataset.del, 1); ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); } });
-$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
+$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
 $$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = perVal(b.dataset.p); ST.periodo = PERIODO; salva(); disegnaStorici(); }));
 $("#copia").onclick = async () => { const t = $("#export"); try { await navigator.clipboard.writeText(t.value); $("#exstato").textContent = "Copiato."; } catch (e) { t.select(); $("#exstato").textContent = "Selezionato: premi Ctrl+C."; } };
 $("#importa").onclick = () => { try { const o = JSON.parse($("#export").value); if (!o || !o.lots) throw 0; const L = {}; F.forEach((f) => { L[f.s] = (Array.isArray(o.lots[f.s]) ? o.lots[f.s] : []).map((x) => ({ q: x.q ?? "", d: String(x.d || "").slice(0, 10), p: x.p ?? "", t: x.t === "v" ? "v" : "a" })); }); ST.lots = L; ST.esempio = false; salva(); disegnaPosizioni(); aggiorna(); $("#exstato").textContent = "Importato."; } catch (e) { $("#exstato").textContent = "Il testo non è valido."; } };
@@ -1116,14 +1129,13 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
-function apriSalvaTitoli(titoli) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
-  SV = { w: null, titoli, importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
+function apriSalvaTitoli(dati) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
+  SV = { w: null, titoli: dati.titoli, transazioni: dati.transazioni, importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
   const tot = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
-  $("#sv-w").textContent = "Investimento " + eur(SV.importo) + " · Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ".";
+  $("#sv-w").textContent = "Investimento " + eur(SV.importo) + " · Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ". Operazioni inserite: " + dati.transazioni.length + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi(); svEsistenti();
-  $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + MT.length + " titoli, composizione modificata.";
-  if (movimenti().length) $("#sv-w").textContent += " NOTA: i tuoi acquisti e vendite restano quelli di prima, quindi il punto «Tuo» non si sposta sulla curva finché non fai le operazioni indicate in «Ribilanciamento» (obiettivo: il nuovo piano); il punto «Piano» sì."; 
+  $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + MT.length + " titoli, composizione e operazioni modificate.";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
 }
@@ -1165,7 +1177,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
   if (SV.modo === "titoli") {
     let ev = null, errore = "";
     scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
-    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
+    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, transazioni: SV.transazioni, valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
     await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
     if (ev && ev.t === "salvato_pf") {
       chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
@@ -1191,15 +1203,28 @@ $("#sv-f").addEventListener("submit", async (e) => {
   b.disabled = false;
 });
 
-/* ---------- modifica dei titoli: si crea una bozza (non salvata) da ribilanciare con la frontiera ---------- */
-let MT = [], MT_FUORI = [];  // MT: righe visibili {isin, s, nome, peso (testo)}; MT_FUORI: titoli usciti dal portafoglio, tenuti a peso 0 per la loro storia
-function mtDisegna() {
-  $("#mt-tab").innerHTML = `<thead><tr><th>Titolo</th><th class="num">Peso %</th><th></th></tr></thead><tbody>` + MT.map((x, i) =>
-    `<tr><td>${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}<div class="fsub num">${esc(x.isin)}</div></td><td class="num"><input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mt="${i}" value="${esc(x.peso)}" placeholder="${x.s ? "" : "1"}" style="width:72px;text-align:right" aria-label="Peso di ${esc(x.isin)}"></td><td><button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></td></tr>`).join("") + `</tbody>`;
-  const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0), 0);
+/* ---------- modifica portafoglio: titoli, pesi e acquisti/vendite; poi si salva o si ribilancia ---------- */
+let MT = [];  // una riga per titolo: {isin, s, nome, w, peso (testo), fuori, tr: [{d, t: "acquisto"|"vendita", q, p}]}
+const mtVal = (x) => (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0);
+function prezzoAl(isin, data) {  // chiusura del titolo alla data (ultimo giorno disponibile non dopo la data); null se il titolo è nuovo
+  const i = F.findIndex((f) => f.isin === isin); if (i < 0) return null;
+  let k0 = 0; for (let k = 0; k < DATES.length; k++) { if (DATES[k] <= data) k0 = k; else break; }
+  return PX[i][k0];
+}
+function mtSomma() {
+  const s = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#mt-somma").textContent = MT.length ? "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : ".") : "";
 }
-const mtVal = (x) => (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0);
+function mtDisegna() {
+  const ov = (i, k, f, v, extra) => `data-f="${f}" data-i="${i}" data-k="${k}" value="${esc(v)}" ${extra || ""}`;
+  $("#mt-tab").innerHTML = MT.map((x, i) => `<div class="mt-card${x.fuori ? " mt-fuori" : ""}">
+    <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}<div class="fsub num">${esc(x.isin)}</div></div>
+      <label class="mt-p">Peso % <input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mt="${i}" value="${esc(x.peso)}" placeholder="${x.s ? "" : "1"}" aria-label="Peso di ${esc(x.isin)}"></label>
+      <button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></div>
+    ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
+    <button class="btn sec small mt-add-tr" type="button" data-tr-add="${i}">+ Acquisto o vendita</button></div>`).join("");
+  mtSomma();
+}
 function mtRiscala(fisso) {  // riporta a 100 i pesi degli altri titoli in proporzione; `fisso`: riga appena aggiunta, che resta com'è (-1: nessuna)
   const f = fisso >= 0 ? mtVal(MT[fisso]) : 0, altri = MT.filter((_, i) => i !== fisso), s = altri.reduce((a, x) => a + mtVal(x), 0);
   if (f > 100 || !altri.length) return;
@@ -1208,38 +1233,61 @@ function mtRiscala(fisso) {  // riporta a 100 i pesi degli altri titoli in propo
 }
 function apriModTit() {
   if (!PF.server) { stato("Per cambiare i titoli serve il programma locale (o l'app).", true); return; }
-  const fuori = (i) => POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9;
-  MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: fuori(i) })).filter((x) => !x.fuori);
-  MT_FUORI = F.filter((f, i) => fuori(i)).map((f) => f.isin);
+  const mov = movimenti();
+  MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: !!(POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9),
+    tr: mov.filter((m) => m.isin === f.isin).map((m) => ({ d: m.data, t: m.tipo, q: String(m.quote), p: String(m.prezzo) })) }));
   $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
 }
 const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
 $("#imp-modtit").onclick = $("#tb-mod").onclick = apriModTit; $("#mt-x").onclick = $("#mt-ann").onclick = chiudiModTit;
 $("#modtit").addEventListener("mousedown", (e) => { if (e.target.id === "modtit") chiudiModTit(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modtit").hidden) chiudiModTit(); });
-$("#mt-tab").addEventListener("input", (e) => { const i = e.target.dataset.mt; if (i != null) { MT[+i].peso = e.target.value; const v = e.target.value;
+$("#mt-tab").addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.dataset.f) { MT[+el.dataset.i].tr[+el.dataset.k][el.dataset.f] = el.value; return; }  // data, tipo, quote o prezzo di un'operazione
+  const i = el.dataset.mt; if (i == null) return;
+  MT[+i].peso = el.value; const v = el.value;
   if (v !== "" && +v >= 0 && +v <= 100) { mtRiscala(+i); $$("#mt-tab input[data-mt]").forEach((inp) => { if (+inp.dataset.mt !== +i) inp.value = MT[+inp.dataset.mt].peso; }); }  // cambiando un peso gli altri si ridistribuiscono in proporzione, a fare 100
-  const s = MT.reduce((a, x) => a + (x.peso === "" ? (x.s ? x.w : 1) : +x.peso || 0), 0); $("#mt-somma").textContent = "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : "."); } });
-$("#mt-tab").addEventListener("click", (e) => { const b = e.target.closest("[data-mt-del]"); if (!b) return; MT.splice(+b.dataset.mtDel, 1); mtRiscala(-1); mtDisegna(); });
+  mtSomma();
+});
+$("#mt-tab").addEventListener("click", (e) => {
+  const d = e.target.closest("[data-mt-del]"), a = e.target.closest("[data-tr-add]"), r = e.target.closest("[data-r-del]");
+  if (d) { MT.splice(+d.dataset.mtDel, 1); mtRiscala(-1); mtDisegna(); }
+  else if (a) { MT[+a.dataset.trAdd].tr.push({ d: BASE, t: "acquisto", q: "", p: "" }); mtDisegna(); }
+  else if (r) { const [i, k] = r.dataset.rDel.split(":").map(Number); MT[i].tr.splice(k, 1); mtDisegna(); }
+});
 $("#mt-add").addEventListener("submit", (e) => {
   e.preventDefault(); const isin = $("#mt-isin").value.trim().toUpperCase(), err = $("#mt-err"); err.textContent = "";
   if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) { err.textContent = "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale."; return; }
-  if (MT.some((x) => x.isin === isin) || MT_FUORI.includes(isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
-  MT.push({ isin, s: null, nome: "", w: 0, peso: $("#mt-pw").value.trim() || "1" }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
+  if (MT.some((x) => x.isin === isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
+  MT.push({ isin, s: null, nome: "", w: 0, peso: $("#mt-pw").value.trim() || "1", fuori: false, tr: [] }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
 });
-function mtDati() {  // i titoli da mandare al programma, o null (con il motivo) se qualcosa non va
+function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure null (con il motivo in #mt-err) se qualcosa non va
   const err = $("#mt-err"); err.textContent = "";
-  if (!MT.length) { err.textContent = "Lascia almeno un titolo."; return null; }
-  if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) { err.textContent = "I pesi devono essere tra 0 e 100."; return null; }
-  if (!MT.some((x) => mtVal(x) > 0)) { err.textContent = "Almeno un titolo deve avere un peso maggiore di 0."; return null; }
-  const v = +$("#mt-val").value; if (!(v >= 100 && v <= 1e9)) { err.textContent = "Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro."; return null; }
-  return [...MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), ...MT_FUORI.map((isin) => ({ isin, peso: 0 }))];
+  const no = (m) => { err.textContent = m; return null; };
+  if (!MT.length) return no("Lascia almeno un titolo.");
+  if (MT.some((x) => x.peso !== "" && !(+x.peso >= 0 && +x.peso <= 100))) return no("I pesi devono essere tra 0 e 100.");
+  if (!MT.some((x) => mtVal(x) > 0)) return no("Almeno un titolo deve avere un peso maggiore di 0.");
+  const v = +$("#mt-val").value; if (!(v >= 100 && v <= 1e9)) return no("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro.");
+  const transazioni = [];
+  for (const x of MT) for (const [k, r] of x.tr.entries()) {
+    if (r.q === "" && r.p === "") continue;  // riga lasciata vuota: si ignora
+    const nome = (x.s || x.isin) + " operazione " + (k + 1);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(r.d || "")) return no(nome + ": scrivi la data.");
+    if (!(+r.q > 0)) return no(nome + ": le quote devono essere maggiori di 0.");
+    let p = +r.p;
+    if (!(p > 0)) { const pa = prezzoAl(x.isin, r.d); if (pa > 0) p = Math.round(pa * 1e4) / 1e4; else return no(nome + ": scrivi il prezzo unitario (per un titolo nuovo non è noto)."); }
+    transazioni.push({ isin: x.isin, data: r.d, tipo: r.t, quote: +r.q, prezzo: p });
+  }
+  transazioni.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
+  const poss = {}; for (const o of transazioni) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
+  return { titoli: MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), transazioni };
 }
-$("#mt-salva").onclick = () => { const titoli = mtDati(); if (titoli) apriSalvaTitoli(titoli); };
+$("#mt-salva").onclick = () => { const dati = mtDati(); if (dati) apriSalvaTitoli(dati); };
 $("#mt-ok").onclick = async () => {
-  const titoli = mtDati(); if (!titoli) return;
+  const dati = mtDati(); if (!dati) return;
   chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
-  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli, valore: +$("#mt-val").value }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli: dati.titoli, valore: +$("#mt-val").value, transazioni: dati.transazioni }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
   await scSvuotata();
   if (ev && ev.t === "pronta") { $("#scar-b").style.width = "100%"; $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Bozza pronta"); await new Promise((r) => setTimeout(r, 500)); location.href = "/portafoglio.html?bozza=" + encodeURIComponent(ev.token); return; }
   errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Bozza non creata"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();

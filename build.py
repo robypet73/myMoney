@@ -882,7 +882,7 @@ class Portafogli:
                 pass
             raise
 
-    def bozza(self, da, titoli, avanza=None, valore=None):
+    def bozza(self, da, titoli, avanza=None, valore=None, transazioni=None):
         """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 1 per un titolo nuovo).
         I pesi vengono riportati a 100; un titolo nuovo senza peso entra all'1% e gli altri si riducono in proporzione. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
@@ -938,7 +938,10 @@ class Portafogli:
         d = {"nome": origine.get("nome"), "versione": origine.get("versione"), "descrizione": origine.get("descrizione") or "bozza",
              "valore": valore, "titoli": [{"isin": i, "peso": p} for i, p, _f in nuovi],
              "_da": origine.get("_da") if da.startswith("bozza:") else da}
-        tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
+        if transazioni is not None:  # acquisti e vendite inseriti nella schermata di modifica: sostituiscono quelli di prima
+            tr = valida_transazioni(transazioni, visti)
+        else:
+            tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
         if tr:
             d["transazioni"] = tr
         valida_definizione(d)
@@ -953,10 +956,10 @@ class Portafogli:
             self.bozze.pop(next(iter(self.bozze)))
         return {"token": token}
 
-    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None, valore=None):
+    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None, valore=None, transazioni=None):
         """Scrive nome_V<n>.json partendo da `da` con i titoli cambiati ([{isin, peso?}], come in bozza()): scarica i dati dei titoli nuovi e salva i pesi così come sono (a 100).
         Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
-        token = self.bozza(da, titoli, avanza, valore)["token"]
+        token = self.bozza(da, titoli, avanza, valore, transazioni)["token"]
         try:
             doc = self.costruisci("bozza:" + token, scarica=False)
             w = {f["s"]: round(f["w"], 3) for f in doc["funds"]}
@@ -1191,7 +1194,7 @@ def crea_server(prezzi, porta, portafogli):
                 def salva_titoli(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga, r.get("valore"))
+                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga, r.get("valore"), r.get("transazioni"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "salvato_pf", **info})
@@ -1206,7 +1209,7 @@ def crea_server(prezzi, porta, portafogli):
                 def bozza(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga, r.get("valore"))
+                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga, r.get("valore"), r.get("transazioni"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "pronta", **info})
