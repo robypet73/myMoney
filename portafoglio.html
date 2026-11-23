@@ -1169,8 +1169,9 @@ $("#sv-f").addEventListener("submit", async (e) => {
     await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
     if (ev && ev.t === "salvato_pf") {
       chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
-      $("#sv-fm").innerHTML = `Creato <b class="num">${esc(ev.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`;
+      $("#sv-fm").innerHTML = `Creato <b class="num">${esc(ev.file)}</b> nella cartella portafogli. Lo apro per mostrarti il nuovo portafoglio con i titoli modificati…`;
       $("#sv-apri").onclick = () => { location.href = urlPf(ev.file); }; $("#sv-apri").focus(); caricaPortafogli();
+      setTimeout(() => { location.href = urlPf(ev.file); }, 1200);  // si passa subito al nuovo portafoglio: quello di partenza non cambia
     } else $("#sv-err").textContent = errore || (ev && ev.testo) || "Non sono riuscito a salvare.";
     b.disabled = false; return;
   }
