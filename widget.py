@@ -228,6 +228,7 @@ class Widget:
         self.lock = threading.Lock()
         self.in_corso = set()
         self.da_ridisegnare = False
+        self.diag = ""
         self.sposta = None
         radice.overrideredirect(True)
         try:
@@ -262,15 +263,50 @@ class Widget:
             self.manda_dietro()
 
     def manda_dietro(self):
+        """In fondo a tutte le finestre (ma sopra lo sfondo del desktop), senza prendere il fuoco. Si usano insieme Tk e, su Windows, l'API di sistema
+        sulla finestra principale; l'esito dell'ultimo tentativo resta in self.diag (e nel file widget.log se qualcosa non va)."""
         try:
-            if os.name == "nt":  # in fondo a tutte le finestre, ma sopra il desktop; senza prendere il fuoco
-                import ctypes
-                u = ctypes.windll.user32
-                hwnd = u.GetAncestor(self.r.winfo_id(), 2) or self.r.winfo_id()
-                u.SetWindowPos(hwnd, 1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)  # HWND_BOTTOM, NOMOVE | NOSIZE | NOACTIVATE
-            else:
-                self.r.lower()
+            self.r.attributes("-topmost", False)  # niente «sempre in primo piano»
         except Exception:
+            pass
+        try:
+            self.r.lower()
+        except Exception:
+            pass
+        if os.name != "nt":
+            self.diag = "ok (Tk)"
+            return
+        try:
+            import ctypes
+            from ctypes import wintypes
+            u = ctypes.WinDLL("user32", use_last_error=True)
+            u.GetParent.argtypes = [wintypes.HWND]; u.GetParent.restype = wintypes.HWND
+            u.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]; u.GetAncestor.restype = wintypes.HWND
+            u.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT]
+            u.SetWindowPos.restype = wintypes.BOOL
+            figlio = self.r.winfo_id()
+            # la finestra vera è quella che contiene quella di Tk: si prova con le due strade e, per sicurezza, con entrambe
+            candidati = []
+            for h in (u.GetAncestor(figlio, 2), u.GetParent(figlio), figlio):
+                if h and h not in candidati:
+                    candidati.append(h)
+            esiti = []
+            for h in candidati:
+                u.SetWindowPos(h, wintypes.HWND(-2), 0, 0, 0, 0, 0x0013)  # HWND_NOTOPMOST: toglie un eventuale «sempre in primo piano»
+                ok = u.SetWindowPos(h, wintypes.HWND(1), 0, 0, 0, 0, 0x0013)  # HWND_BOTTOM; NOSIZE | NOMOVE | NOACTIVATE
+                esiti.append(f"{h}:{'ok' if ok else 'errore ' + str(ctypes.get_last_error())}")
+            self.diag = "finestre " + ", ".join(esiti)
+        except Exception as e:
+            self.diag = "non riuscito: " + str(e)[:80]
+        if not self.diag.startswith("finestre") or "errore" in self.diag:
+            self.registra(self.diag)
+
+    def registra(self, testo):
+        """Una riga in widget.log (cartella dati dell'utente), per capire cosa non va."""
+        try:
+            with open(os.path.join(os.path.dirname(self.imp.file), "widget.log"), "a", encoding="utf-8") as fh:
+                fh.write(time.strftime("%d/%m/%Y %H:%M:%S ") + testo + "\n")
+        except OSError:
             pass
 
     def livello_dopo(self):
@@ -384,8 +420,9 @@ class Widget:
         if self.da_ridisegnare:
             self.da_ridisegnare = False
             self.disegna()
-        if self.imp.d.get("livello", "sfondo") == "sfondo" and int(time.time()) % 4 == 0:
-            self.manda_dietro()  # resta dietro anche se un'altra finestra viene chiusa o spostata
+        self.giro = getattr(self, "giro", 0) + 1
+        if self.imp.d.get("livello", "sfondo") == "sfondo" and self.giro % 3 == 0:
+            self.manda_dietro()  # circa una volta al secondo: resta dietro anche se un'altra finestra viene aperta o spostata
         self.r.after(300, self._poll)
 
     def pianifica(self):
@@ -541,6 +578,7 @@ class Widget:
         blocco("Aggiornamento ogni", [(f[0], f[1]) for f in FREQUENZE], fv, cambia)
         blocco("Dimensione", [(d[0], d[1]) for d in DIMENSIONI], dv, cambia)
         blocco("Posizione rispetto alle altre finestre", LIVELLI, lv, cambia)
+        tk.Label(w, text="Esito: " + (self.diag or "—"), bg=SFONDO2, fg=TENUE, anchor="w", justify="left", wraplength=360).pack(fill="x", padx=12, pady=(4, 0))
         riga = tk.Frame(w, bg=SFONDO2)
         riga.pack(fill="x", padx=10, pady=8)
         if os.name == "nt":
