@@ -1131,6 +1131,8 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
   $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
+  const zeri = F.filter((f, i) => !(w[i] > 0) && !movimenti().some((m) => m.isin === f.isin)).map((f) => f.s);  // titoli a 0%: nel file non ci sarebbero
+  if (zeri.length) $("#sv-w").textContent += " ATTENZIONE: a 0% e quindi NON salvati nel file: " + zeri.join(", ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
   svEsistenti();
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);

@@ -52,9 +52,16 @@
     });
     return "{\n" + r.join(",\n") + "\n}\n";
   }
-  function rispecchia(op) {  // ciò che cambia nella memoria dell'app si riflette nella cartella scelta (senza bloccare la pagina)
+  let ultimoSpecchio = null;
+  function rispecchia(op) {  // ciò che cambia nella memoria dell'app si riflette nella cartella scelta
     const F = cartellaAttiva() && plug("MyMoneyFolder"); if (!F) return;
-    F.apply(op).catch((e) => console.error("cartella non aggiornata:", e && e.message));
+    ultimoSpecchio = F.apply(op).then(() => null, (e) => e || new Error("errore sconosciuto"));
+  }
+  async function specchioOk() {  // attende la scrittura nella cartella; se non riesce lo dice (il portafoglio resta nell'app e al prossimo avvio viene riportato nella cartella)
+    const p = ultimoSpecchio; ultimoSpecchio = null; if (!p) return;
+    const e = await p; if (!e) return;
+    const c = cartellaAttiva();
+    throw Err("Salvato nell'app, ma NON nella cartella" + (c ? " «" + c.label + "»" : "") + ": " + (e.message || e) + ". Resta nell'app: riapri l'app per riprovare a scriverlo nella cartella.");
   }
   const scriviFile = (f) => ({ name: f, text: formatta(definizione(f)) });
   async function sincronizza() {  // all'avvio: i portafogli della cartella diventano quelli dell'app; una cartella vuota riceve quelli dell'app
@@ -65,8 +72,10 @@
     let l; try { l = await F.list(); } catch (e) { return; }  // cartella non raggiungibile: restano i portafogli già nell'app
     const nella = (l.files || []).filter((f) => FILE_PF.test(f.name));
     if (!nella.length) { try { await F.apply({ write: [...files().map(scriviFile), { name: "schema.json", text: SEED.schema || "{}" }] }); } catch (e) {} return; }
-    files().forEach((f) => LS.removeItem("mm:pf:" + f));
+    const inCartella = new Set(nella.map((f) => f.name)), soloApp = files().filter((f) => !inCartella.has(f));  // creati nell'app e non ancora arrivati nella cartella: non vanno persi
+    files().filter((f) => inCartella.has(f)).forEach((f) => LS.removeItem("mm:pf:" + f));
     nella.forEach((f) => { try { const d = JSON.parse(f.text); if (d && Array.isArray(d.titoli)) { delete d.$schema; scriviLS("mm:pf:" + f.name, d); } } catch (e) {} });
+    if (soloApp.length) { try { await F.apply({ write: soloApp.map(scriviFile) }); } catch (e) { console.error("portafogli non scritti nella cartella:", e && e.message); } }
   }
   async function cartellaApi(r) {  // risposta di /api/cartella
     const F = plug("MyMoneyFolder"); if (!F) return null;
@@ -287,7 +296,8 @@
     const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
     scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
-    try { const i = await prepara(nuovo, avanza); rispecchia({ write: [scriviFile(nuovo)] }); return i; } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
+    let i; try { i = await prepara(nuovo, avanza); } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
+    rispecchia({ write: [scriviFile(nuovo)] }); await specchioOk(); return i;
   }
   async function bozza(da, titoli, avanza, valore) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
@@ -319,7 +329,9 @@
     try {
       const doc = costruisciDaCache("bozza:" + token), w = Object.fromEntries(doc.funds.map((f) => [f.s, Math.round(f.w * 1000) / 1000]));
       const grande = Object.keys(w).reduce((a, k) => (w[k] > w[a] ? k : a)); w[grande] = Math.round((w[grande] + (1 - sum(Object.values(w)))) * 1000) / 1000;  // la somma resta 100% dopo l'arrotondamento
-      return salva("bozza:" + token, nome, versione, descrizione, w);
+      const info = salva("bozza:" + token, nome, versione, descrizione, w);
+      await specchioOk();
+      return info;
     } finally { LS.removeItem("mm:bozza:" + token); }
   }
   function salva(da, nome, versione, descrizione, pesi, importo, transazioni) {
@@ -395,8 +407,8 @@
     let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/modifica") { try { return json(modifica(r.file, r.nome, r.versione, r.descrizione)); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva") { try { return json(salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/modifica") { try { const m = modifica(r.file, r.nome, r.versione, r.descrizione); await specchioOk(); return json(m); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga, r.valore)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
