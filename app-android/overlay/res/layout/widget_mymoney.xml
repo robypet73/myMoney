@@ -118,22 +118,37 @@
     android:layout_height="wrap_content"
     android:layout_gravity="top|end"
     android:layout_marginEnd="8dp"
-    android:layout_marginTop="6dp"
+    android:layout_marginTop="0dp"
     android:gravity="center_vertical"
     android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/w_port"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Portafoglio successivo (in cerchio)"
+        android:includeFontPadding="false"
+        android:paddingStart="8dp"
+        android:paddingEnd="2dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:text="Port."
+        android:textColor="@color/widget_sub"
+        android:textSize="11sp" />
 
     <TextView
         android:id="@+id/w_next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="Portafoglio successivo (in cerchio)"
-        android:paddingStart="8dp"
+        android:includeFontPadding="false"
+        android:paddingStart="2dp"
         android:paddingEnd="8dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
-        android:text="Port. ›"
+        android:text="›"
         android:textColor="@color/widget_sub"
-        android:textSize="11sp" />
+        android:textSize="18sp" />
 
     <ImageView
         android:id="@+id/w_gear"
