@@ -278,9 +278,12 @@ public class MyMoneyWidget extends AppWidgetProvider {
             d.put("val", Math.round(val * 100) / 100.0);
             JSONArray vs = d.optJSONArray("vs"), ds = d.optJSONArray("ds");
             if (vs != null && ds != null && vs.length() > 0 && vs.length() == ds.length()) {
+                JSONArray is = d.optJSONArray("is");
+                boolean conCap = is != null && is.length() == ds.length();
                 if (ds.getString(ds.length() - 1).compareTo(today) < 0) {
                     ds.put(today);
                     vs.put(val);
+                    if (conCap) is.put(is.optDouble(is.length() - 1, 0));
                 } else {
                     vs.put(vs.length() - 1, val);
                 }
@@ -400,9 +403,21 @@ public class MyMoneyWidget extends AppWidgetProvider {
             }
             String[] dd = new String[Math.max(0, n - from)];
             double[] ss = new double[dd.length];
+            JSONArray cap = d.optJSONArray("is");
+            boolean conCap = cap != null && cap.length() == ds.length();
+            double[] ii = new double[dd.length];
             for (int i = 0; i < dd.length; i++) {
                 dd[i] = ds.getString(from + i);
                 ss[i] = vs.getDouble(from + i);
+                ii[i] = conCap ? cap.optDouble(from + i, 0) : 0;
+            }
+            // rendimento nel periodo del grafico: guadagno (valore finale - iniziale - nuovi versamenti) sul capitale di partenza più i versamenti
+            boolean hasPer = ss.length >= 2 && ss[0] > 0;
+            double perRet = 0;
+            if (hasPer) {
+                double flussi = conCap ? ii[ii.length - 1] - ii[0] : 0;
+                double base = ss[0] + Math.max(0, flussi);
+                perRet = base > 0 ? (ss[ss.length - 1] - ss[0] - flussi) / base : 0;
             }
             v.setTextViewText(R.id.w_name, d.optString("name", "Portafoglio") + " · " + per[1]);
             String vt = eur(val);
@@ -424,13 +439,22 @@ public class MyMoneyWidget extends AppWidgetProvider {
                 v.setTextViewText(R.id.w_roi, "");
                 v.setTextViewText(R.id.w_roi_l, "");
             }
+            // a destra: rendimento nel periodo scelto (1 anno, YTD…) e, dopo, la variazione di oggi
+            SpannableStringBuilder dayTxt = new SpannableStringBuilder();
+            if (hasPer) {
+                String lab = per[0].equals("ytd") ? "YTD" : per[0].equals("max") ? "Tutto" : per[1];
+                String ps = (w < 280 ? "" : lab + " ") + pct(perRet);
+                dayTxt.append(ps);
+                dayTxt.setSpan(new ForegroundColorSpan(perRet >= 0 ? UP : DOWN), 0, ps.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
             if (!d.isNull("day")) {
                 double day = d.getDouble("day");
-                v.setTextViewText(R.id.w_day, "Oggi " + pct(day));
-                v.setTextColor(R.id.w_day, day >= 0 ? UP : DOWN);
-            } else {
-                v.setTextViewText(R.id.w_day, "");
+                if (dayTxt.length() > 0) dayTxt.append("  ");
+                int s0 = dayTxt.length();
+                dayTxt.append("Oggi " + pct(day));
+                dayTxt.setSpan(new ForegroundColorSpan(day >= 0 ? UP : DOWN), s0, dayTxt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
+            v.setTextViewText(R.id.w_day, dayTxt);
             long at = d.optLong("at", 0);
             String agg = "";
             if (at > 0) {

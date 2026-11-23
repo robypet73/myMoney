@@ -438,13 +438,13 @@
       const last = DATES.length - 1, hasPos = VAL > 0, q = (i) => (hasPos ? POS[i].q : F[i].q0);
       const pos = F.map((f, i) => ({ q: q(i), isin: f.isin, p: PX[i][last] })).filter((x) => x.q > 0);
       const val = hasPos ? VAL : sum(pos.map((x) => x.q * x.p));
-      let i0 = 0, v = null;  // serie del valore: dai tuoi acquisti se ci sono, altrimenti quella del piano su tutto lo storico
-      if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) { v = su.val; i0 = DATES.length - v.length; } }
+      let i0 = 0, v = null, iv = null;  // serie del valore: dai tuoi acquisti se ci sono, altrimenti quella del piano su tutto lo storico
+      if (hasPos) { const su = serieUtente(); if (su && su.val.length > 1) { v = su.val; iv = su.inv && su.inv.length === su.val.length ? su.inv : null; i0 = DATES.length - v.length; } }
       if (!v) { const s0 = statistiche(pesiPiano(), 0).v; v = s0.map((x) => (x / s0[s0.length - 1]) * val); }  // il piano è una rendita relativa: la serie è scalata in modo che oggi valga quanto il valore attuale
-      const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [];
-      v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
+      const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [], is = [];
+      v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); if (iv) is.push(Math.round(iv[k] * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
       vs[vs.length - 1] = Math.round(val * 100) / 100;
-      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, real: Math.round(REAL * 100) / 100, day: giorno, ds, vs, pos, at: Date.now() };
+      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, real: Math.round(REAL * 100) / 100, day: giorno, ds, vs, ...(iv ? { is } : {}), pos, at: Date.now() };
       const files = typeof PF !== "undefined" && PF.lista && PF.lista.length ? PF.lista.map((x) => x.file) : null, s = JSON.stringify(d), firma = s + JSON.stringify(files);
       if (firma === ultimoWidget) return; ultimoWidget = firma;
       W.update({ data: s, file: (META && META.file) || "portafoglio", ...(files ? { files } : {}) }).catch(() => {});  // un portafoglio per volta; l'elenco serve a togliere dal widget quelli eliminati
