@@ -142,6 +142,27 @@
           }
         }
       }
+    },
+    "frontiera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finestra",
+        "prudente"
+      ],
+      "description": "Facoltativo. Come è stata calcolata la frontiera efficiente: anni di storico (1, 3 o 5) e rendimenti attesi prudenti. Si scrive da solo quando si salva un portafoglio dalla frontiera, così riaprendolo si ritrova la stessa curva.",
+      "properties": {
+        "finestra": {
+          "enum": [
+            1,
+            3,
+            5
+          ]
+        },
+        "prudente": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "$defs": {

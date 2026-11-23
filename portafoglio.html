@@ -381,7 +381,7 @@ const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (me
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
 const lotsDaFile = () => Object.fromEntries(F.map((f) => [f.s, (META.transazioni || []).filter((x) => x.s === f.s).map((x) => ({ q: x.q, d: x.d, p: x.p, t: x.t }))]));  // movimenti reali scritti nel file
 const TSIG = JSON.stringify(META.transazioni || null);  // se i movimenti del file cambiano, quelli salvati nel browser non valgono più
-const statoDef = () => ({ lots: META.transazioni ? lotsDaFile() : Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: !META.transazioni, tsig: TSIG, vinc: vincDef(), vincSig: VSIG, prud: true, periodo: 3, frper: 5, rib: { t: "obiettivo", c: 0, v: false, a: true, w: null } });
+const statoDef = () => ({ lots: META.transazioni ? lotsDaFile() : Object.fromEntries(F.map((f) => [f.s, [{ q: f.q0, d: BASE, p: "" }]])), esempio: !META.transazioni, tsig: TSIG, vinc: vincDef(), vincSig: VSIG, prud: META.frontiera ? META.frontiera.prudente : true, periodo: 3, frper: META.frontiera ? META.frontiera.finestra : 5, rib: { t: "obiettivo", c: 0, v: false, a: true, w: null } });
 const VSIG = JSON.stringify(META.vincoli || null);  // se i limiti scritti nel file cambiano, quelli salvati nel browser non valgono più
 let ST = statoDef();
 try { const o = JSON.parse(localStorage.getItem(KEY) || "null"); if (o && o.lots && o.vinc) { const d = statoDef(); ST = { ...d, ...o, rib: { ...d.rib, ...(o.rib || {}) } }; if (META.transazioni && o.tsig !== TSIG) { ST.lots = d.lots; ST.esempio = false; } ST.tsig = TSIG; ST.vincSig = VSIG; if (o.vincSig !== VSIG) ST.vinc = d.vinc; F.forEach((f) => { if (!Array.isArray(ST.lots[f.s])) ST.lots[f.s] = []; if (!ST.vinc.fondi[f.s]) ST.vinc.fondi[f.s] = d.vinc.fondi[f.s]; }); } } catch (e) {}
@@ -1180,7 +1180,8 @@ $("#sv-f").addEventListener("submit", async (e) => {
       location.href = urlPf(j.file); return;
     }
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
+    const vincoli = { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(CLASSI.map((c) => [c, [ST.vinc.classi[c].min, ST.vinc.classi[c].max]])) };  // i limiti e i dati con cui è stata calcolata la frontiera restano nel file
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, vincoli, frontiera: { finestra: [1, 3, 5].includes(+ST.frper) ? +ST.frper : 5, prudente: !!ST.prud }, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = urlPf(j.file); }; $("#sv-apri").focus(); caricaPortafogli();

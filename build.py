@@ -325,7 +325,13 @@ def valida_definizione(d):
                 raise ValueError(f"«vincoli»: classe «{c}» sconosciuta (ammesse: {', '.join(CLASSI)}).")
             classi[c] = _intervallo(x, c)
         vincoli = {"fondi": fondi, "classi": classi}
-    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni}
+    frontiera = None  # come è stata calcolata la frontiera (anni di storico, rendimenti prudenti): riaprendo il portafoglio si ritrova la stessa curva
+    if d.get("frontiera") is not None:
+        fr = d["frontiera"]
+        if not isinstance(fr, dict) or fr.get("finestra") not in (1, 3, 5) or not isinstance(fr.get("prudente"), bool):
+            raise ValueError("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.")
+        frontiera = {"finestra": fr["finestra"], "prudente": fr["prudente"]}
+    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni, "frontiera": frontiera}
 
 
 def formatta_definizione(d):
@@ -786,6 +792,8 @@ class Portafogli:
             meta["bozza"] = True
             if d.get("_da"):
                 meta["bozza_da"] = d["_da"]
+        if df["frontiera"]:
+            meta["frontiera"] = df["frontiera"]
         if df["vincoli"]:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
         if df["transazioni"]:  # i movimenti reali: la pagina li usa al posto degli acquisti d'esempio
@@ -890,7 +898,7 @@ class Portafogli:
                 raise Esiste(i["file"], f"Esiste già il portafoglio {df['nome']} {versione} ({i['file']}). Cambia la versione nel JSON per crearne uno nuovo.")
         self._scrivi(nuovo, {"nome": df["nome"], "versione": versione, "descrizione": df["descrizione"], "valore": df["amount"],
                              "titoli": [{"isin": i, "peso": round(w * 100, 2)} for i, w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {}),
-                             **({"transazioni": df["transazioni"]} if df["transazioni"] else {})})
+                             **({"transazioni": df["transazioni"]} if df["transazioni"] else {}), **({"frontiera": df["frontiera"]} if df["frontiera"] else {})})
         try:
             return self.prepara(nuovo, avanza)
         except Exception:
@@ -1026,7 +1034,7 @@ class Portafogli:
             self.segna(nuovo)
         return {**self.info(nuovo), "chiave": f"pf-{nome}-V{v}"}
 
-    def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None):
+    def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None, vincoli=None, frontiera=None):
         """Scrive nome_V<n>.json partendo dal portafoglio `da` con i nuovi pesi (per sigla). Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
         origine = self.definizione(da)
         if origine is None:
@@ -1073,10 +1081,14 @@ class Portafogli:
         nd = {"nome": nome, "versione": versione, "descrizione": descrizione, "valore": amount, "titoli": titoli}
         if tr:
             nd["transazioni"] = tr
-        if origine.get("vincoli"):
+        vv = vincoli if isinstance(vincoli, dict) and (vincoli.get("fondi") or vincoli.get("classi")) else origine.get("vincoli")  # i limiti usati per trovare il punto sulla frontiera
+        if vv:
             ammessi = {t["isin"] for t in titoli}
-            vv = origine["vincoli"]
             nd["vincoli"] = {"fondi": {i: x for i, x in (vv.get("fondi") or {}).items() if i in ammessi}, "classi": vv.get("classi") or {}}
+        fr = frontiera if isinstance(frontiera, dict) else origine.get("frontiera")
+        if fr:
+            nd["frontiera"] = fr
+        valida_definizione(nd)  # il file scritto deve restare valido
         try:
             self._scrivi(nuovo, nd)
         except Esiste:
@@ -1195,7 +1207,7 @@ def crea_server(prezzi, porta, portafogli):
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
                         return self.invia(200, portafogli.elimina(r.get("file")))
-                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"), r.get("transazioni"))
+                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"), r.get("transazioni"), r.get("vincoli"), r.get("frontiera"))
                 except OverflowError:
                     return self.invia(413, {"errore": "richiesta troppo grande"})
                 except (ValueError, LookupError) as e:  # include json.JSONDecodeError

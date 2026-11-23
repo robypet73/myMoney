@@ -229,7 +229,12 @@
       Object.entries(vv.classi || {}).forEach(([c, x]) => { if (!CLASSI.includes(c)) throw Err("«vincoli»: classe «" + c + "» sconosciuta (ammesse: " + CLASSI.join(", ") + ")."); classi[c] = intervallo(x, c); });
       vincoli = { fondi, classi };
     }
-    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni };
+    let frontiera = null;  // come è stata calcolata la frontiera: riaprendo il portafoglio si ritrova la stessa curva
+    if (d.frontiera !== undefined && d.frontiera !== null) {
+      const fr = d.frontiera; if (!fr || typeof fr !== "object" || ![1, 3, 5].includes(fr.finestra) || typeof fr.prudente !== "boolean") throw Err("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.");
+      frontiera = { finestra: fr.finestra, prudente: fr.prudente };
+    }
+    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni, frontiera };
   }
 
   // ---- dati dei titoli: schede note (con l'app), memoria dell'app, justETF
@@ -272,6 +277,7 @@
     fondi.forEach((f) => { f.p0 = px[f.s][px[f.s].length - 1]; f.q0 = Math.floor(df.amount * f.w / f.p0); });
     const meta = { nome: df.nome, versione, descrizione: df.descrizione, chiave: "pf-" + df.nome + "-" + versione, file: nomefile, base: date[date.length - 1], from: date[0], amount: df.amount, rf: 0.02, origine: "json" };
     if (nomefile.startsWith("bozza:")) { meta.chiave += "-bozza-" + nomefile.slice(6); meta.bozza = true; if (d._da) meta.bozza_da = d._da; }  // acquisti e limiti nel browser distinti da quelli del portafoglio di partenza
+    if (df.frontiera) meta.frontiera = df.frontiera;
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
     if (df.transazioni.length) meta.transazioni = df.transazioni.map((x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo }));
     say({ t: "salvato", n: fondi.length });
@@ -334,7 +340,7 @@
       return info;
     } finally { LS.removeItem("mm:bozza:" + token); }
   }
-  function salva(da, nome, versione, descrizione, pesi, importo, transazioni) {
+  function salva(da, nome, versione, descrizione, pesi, importo, transazioni, vincoli, frontiera) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
     const v = parseInt(String(versione).replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).");
@@ -351,7 +357,10 @@
     const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([s, x]) => x > 0 || conMov.has(siglaIsin[s])).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
     const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
     if (tr.length) nd.transazioni = tr;
-    if (origine.vincoli) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(origine.vincoli.fondi || {}).filter(([i]) => amm.has(i))), classi: origine.vincoli.classi || {} }; }
+    const vv = vincoli && typeof vincoli === "object" && (Object.keys(vincoli.fondi || {}).length || Object.keys(vincoli.classi || {}).length) ? vincoli : origine.vincoli;  // i limiti usati per trovare il punto sulla frontiera
+    if (vv) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(vv.fondi || {}).filter(([i]) => amm.has(i))), classi: vv.classi || {} }; }
+    const fr = frontiera && typeof frontiera === "object" ? frontiera : origine.frontiera; if (fr) nd.frontiera = fr;
+    validaDefinizione(nd);  // il file scritto deve restare valido
     scriviLS("mm:pf:" + nuovo, nd);
     rispecchia({ write: [scriviFile(nuovo)] });
     return info(nuovo);
@@ -427,7 +436,7 @@
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { const m = modifica(r.file, r.nome, r.versione, r.descrizione); await specchioOk(); return json(m); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni, r.vincoli, r.frontiera); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore, r.transazioni)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga, r.valore, r.transazioni)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
