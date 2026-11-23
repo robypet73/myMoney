@@ -92,7 +92,7 @@ Lo schema è in [`portafogli/schema.json`](portafogli/schema.json). Esempio (`po
 
 ## Limiti da conoscere
 
-- Tutti i prezzi vengono da justETF, in euro: possono differire di qualche centesimo da Borsa Italiana.
+- Tutti i prezzi vengono da justETF, in euro. Lo **storico** è quello del grafico di justETF (riferimento XETRA); il **prezzo di oggi** è quello in tempo reale di **gettex** (media tra denaro e lettera), lo stesso che justETF mostra nel riquadro «Quotazione», così i valori coincidono con la pagina del titolo. Il prezzo gettex viene letto dal canale in tempo reale che usa il sito di justETF (non è un'interfaccia ufficiale: se non risponde o cambia, restano i prezzi XETRA del grafico e compare l'avviso «gettex non raggiunto»). Vale per la pagina, l'app, il widget Android e il widget del desktop. Possono restare piccole differenze con Borsa Italiana o con un'altra sede di negoziazione.
 - Per un ISIN non presente in `portafogli/titoli/` la composizione viene dalla pagina di justETF, che elenca solo i primi paesi, settori e titoli: la quota restante finisce in «Altro». Aree geografiche e valute sono stimate dai paesi. «Scambi medi a Milano» non è disponibile per questi titoli («n.d.»).
 - Lo storico in comune parte dal titolo con la storia più breve.
 - Analisi tecnica sui dati storici, non consulenza.

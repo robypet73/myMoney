@@ -247,3 +247,110 @@ def serie(isin, dal=None, al=None):
     if not out:
         raise LookupError(f"{isin}: nessun prezzo su justETF")
     return out
+
+
+# ---- quotazione in tempo reale gettex: lo stesso canale che usa la pagina di justETF per il riquadro «Quotazione»
+CANALE_GETTEX = "api.mobile.stock-data-subscriptions.justetf.com"
+
+
+def gettex(isins, attesa=8.0):
+    """Prezzo di gettex (media tra denaro e lettera, come mostra justETF) per gli ISIN dati, dal canale in tempo reale della pagina.
+    Si sottoscrivono tutti gli ISIN in un colpo solo, si legge la prima quotazione di ciascuno e si chiude (al massimo `attesa` secondi).
+    Ritorna {isin: {"p": prezzo, "bid", "ask", "t": ISO UTC, "d": giorno AAAA-MM-GG}}; vuoto se il canale non è raggiungibile."""
+    import base64
+    import os
+    import socket
+    import ssl
+    import struct
+    import urllib.parse
+    isins = [i for i in dict.fromkeys(isins or []) if isinstance(i, str) and ISIN_RE.match(i)]
+    if not isins:
+        return {}
+    out, t0 = {}, time.time()
+    sock = None
+    try:
+        prox = urllib.request.getproxies().get("https") or urllib.request.getproxies().get("http")
+        if prox and not urllib.request.proxy_bypass(CANALE_GETTEX):
+            p = urllib.parse.urlsplit(prox if "//" in prox else "//" + prox)
+            sock = socket.create_connection((p.hostname, p.port or 8080), timeout=attesa)
+            auth = ""
+            if p.username:
+                auth = "Proxy-Authorization: Basic " + base64.b64encode(f"{urllib.parse.unquote(p.username)}:{urllib.parse.unquote(p.password or '')}".encode()).decode() + "\r\n"
+            sock.sendall(f"CONNECT {CANALE_GETTEX}:443 HTTP/1.1\r\nHost: {CANALE_GETTEX}:443\r\n{auth}\r\n".encode())
+            r = b""
+            while b"\r\n\r\n" not in r:
+                x = sock.recv(4096)
+                if not x:
+                    raise OSError("proxy chiuso")
+                r += x
+            if b" 200" not in r.split(b"\r\n")[0]:
+                raise OSError("proxy ha rifiutato il collegamento")
+        else:
+            sock = socket.create_connection((CANALE_GETTEX, 443), timeout=attesa)
+        ctx = ssl.create_default_context()
+        s = ctx.wrap_socket(sock, server_hostname=CANALE_GETTEX)
+        sock = s
+        chiave = base64.b64encode(os.urandom(16)).decode()
+        path = "/?subscription=trend&parameters=isins:" + ",".join(isins) + "/currency:EUR/language:it"
+        s.sendall((f"GET {path} HTTP/1.1\r\nHost: {CANALE_GETTEX}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {chiave}\r\n"
+                   f"Sec-WebSocket-Version: 13\r\nUser-Agent: myMoney\r\n\r\n").encode())
+        buf = bytearray()
+        while b"\r\n\r\n" not in buf:
+            s.settimeout(max(0.5, attesa - (time.time() - t0)))
+            x = s.recv(4096)
+            if not x:
+                raise OSError("canale chiuso")
+            buf += x
+        testa, _, resto = bytes(buf).partition(b"\r\n\r\n")
+        if b" 101" not in testa.split(b"\r\n")[0]:
+            raise OSError("canale non disponibile")
+        buf = bytearray(resto)
+
+        def leggi(n):
+            while len(buf) < n:
+                s.settimeout(max(0.5, attesa - (time.time() - t0)))
+                x = s.recv(4096)
+                if not x:
+                    raise OSError("canale chiuso")
+                buf.extend(x)
+            r = bytes(buf[:n])
+            del buf[:n]
+            return r
+
+        parti = b""
+        while len(out) < len(isins) and time.time() - t0 < attesa:
+            b1, b2 = leggi(2)
+            op, ln = b1 & 0x0F, b2 & 0x7F
+            if ln == 126:
+                ln = struct.unpack(">H", leggi(2))[0]
+            elif ln == 127:
+                ln = struct.unpack(">Q", leggi(8))[0]
+            dati = leggi(ln)
+            if op == 9:  # ping: si risponde col pong (i messaggi dal client sono mascherati)
+                m = os.urandom(4)
+                s.sendall(bytes([0x8A, 0x80 | len(dati)]) + m + bytes(c ^ m[k % 4] for k, c in enumerate(dati)) if len(dati) < 126 else b"")
+                continue
+            if op == 8:
+                break
+            if op in (1, 0):
+                parti += dati
+                if not (b1 & 0x80):
+                    continue
+                testo, parti = parti, b""
+                try:
+                    j = json.loads(testo.decode("utf-8"))
+                    mid = ((j.get("mid") or {}).get("raw"))
+                    if j.get("isin") in isins and mid and float(mid) > 0 and j.get("isin") not in out:
+                        ts = str(j.get("timestamp") or "")
+                        out[j["isin"]] = {"p": round(float(mid), 4), "bid": (j.get("bid") or {}).get("raw"), "ask": (j.get("ask") or {}).get("raw"), "t": ts, "d": ts[:10]}
+                except (ValueError, TypeError):
+                    pass
+    except (OSError, ssl.SSLError, ValueError):
+        pass  # canale non raggiungibile: restano le quotazioni XETRA del grafico
+    finally:
+        if sock is not None:
+            try:
+                sock.close()
+            except OSError:
+                pass
+    return out

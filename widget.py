@@ -102,6 +102,26 @@ def aggiungi_prezzi_recenti(doc, recenti):
     return doc
 
 
+def applica_live(doc, live):
+    """Prezzi in tempo reale di gettex (come justETF): sostituiscono l'ultimo prezzo del grafico o aggiungono il giorno nuovo. live: {isin: {p, d}}."""
+    date, px = doc["dates"], doc["px"]
+    giorni = [x["d"] for x in live.values() if x.get("d")]
+    if not giorni:
+        return doc
+    dl = max(giorni)
+    if dl < date[-1]:
+        return doc
+    if dl > date[-1]:
+        date.append(dl)
+        for sg in px:
+            px[sg].append(px[sg][-1])
+    for f in doc["funds"]:
+        x = live.get(f["isin"])
+        if x and x["p"] > 0 and x["d"] >= dl:
+            px[f["s"]][-1] = x["p"]
+    return doc
+
+
 def periodo_serie(ds, vs, iv, codice):
     """Parte della serie nel periodo scelto. Ritorna (giorni, valori, capitale versato o None)."""
     n = len(ds)
@@ -344,9 +364,15 @@ class Widget:
                     except Exception:
                         pass
             aggiungi_prezzi_recenti(doc, recenti)
+            live = {}
+            try:
+                live = fonti.gettex([fo["isin"] for fo in doc["funds"] if fo["isin"] in tenuti])
+            except Exception:
+                pass
+            applica_live(doc, live)
             w = dati_widget(doc, d)
             with self.lock:
-                self.dati[f] = {"w": w, "nome": f"{doc['meta']['nome']} {doc['meta']['versione']}", "at": time.time()}
+                self.dati[f] = {"w": w, "nome": f"{doc['meta']['nome']} {doc['meta']['versione']}", "at": time.time(), "gettex": bool(live)}
             self.msg = ""
         except Exception as e:  # rete assente o dati non disponibili: restano quelli già mostrati
             self.msg = "" if f in self.dati else "Dati non disponibili: " + str(e)[:60]
@@ -414,10 +440,10 @@ class Widget:
             if c.bbox(t4)[2] > xr:  # non c'è posto: resta solo la rendita
                 c.delete(t4)
         # grafico
-        top, bot, left = 92 * s, H - 24 * s, 40 * s
+        top, bot, left = 92 * s, H - 30 * s, 40 * s
         self._grafico(ds, vs, left, top, x1, bot, s, fo)
         agg = time.strftime("%H:%M", time.localtime(e["at"]))
-        c.create_text(x1, H - 9 * s, text="agg. " + agg + ("  ·  aggiorno…" if f in self.in_corso else ""), anchor="e", fill=TENUE, font=fo(7))
+        c.create_text(x1, H - 9 * s, text="agg. " + agg + (" · gettex" if e.get("gettex") else "") + ("  ·  aggiorno…" if f in self.in_corso else ""), anchor="e", fill=TENUE, font=fo(7))
 
     def _tasti(self, x1, y, s, fo, molti):
         c = self.c

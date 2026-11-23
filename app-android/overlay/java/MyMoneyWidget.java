@@ -244,6 +244,85 @@ public class MyMoneyWidget extends AppWidgetProvider {
         }
     }
 
+    /** Prezzi in tempo reale di gettex (media tra denaro e lettera, come mostra justETF), dal canale che usa la pagina di justETF: si sottoscrivono
+     *  tutti gli ISIN, si legge la prima quotazione di ciascuno e si chiude (al massimo 8 secondi). Mappa vuota se il canale non è raggiungibile. */
+    static Map<String, Double> gettex(java.util.Collection<String> isins) {
+        Map<String, Double> out = new HashMap<String, Double>();
+        java.util.ArrayList<String> lista = new java.util.ArrayList<String>(new java.util.LinkedHashSet<String>(isins));
+        if (lista.isEmpty()) return out;
+        javax.net.ssl.SSLSocket s = null;
+        try {
+            String host = "api.mobile.stock-data-subscriptions.justetf.com";
+            long fine = System.currentTimeMillis() + 8000;
+            s = (javax.net.ssl.SSLSocket) javax.net.ssl.SSLSocketFactory.getDefault().createSocket(host, 443);
+            s.setSoTimeout(4000);
+            byte[] kb = new byte[16];
+            new java.security.SecureRandom().nextBytes(kb);
+            StringBuilder ids = new StringBuilder();
+            for (String i : lista) ids.append(ids.length() == 0 ? "" : ",").append(i);
+            String req = "GET /?subscription=trend&parameters=isins:" + ids + "/currency:EUR/language:it HTTP/1.1\r\nHost: " + host
+                    + "\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: " + android.util.Base64.encodeToString(kb, android.util.Base64.NO_WRAP)
+                    + "\r\nSec-WebSocket-Version: 13\r\nUser-Agent: myMoney\r\n\r\n";
+            java.io.OutputStream os = s.getOutputStream();
+            os.write(req.getBytes("UTF-8"));
+            os.flush();
+            java.io.InputStream in = s.getInputStream();
+            StringBuilder testa = new StringBuilder();
+            while (!testa.toString().endsWith("\r\n\r\n")) {
+                int b = in.read();
+                if (b < 0 || testa.length() > 8192) return out;
+                testa.append((char) b);
+            }
+            if (!testa.toString().startsWith("HTTP/1.1 101")) return out;
+            ByteArrayOutputStream parti = new ByteArrayOutputStream();
+            while (out.size() < lista.size() && System.currentTimeMillis() < fine) {
+                int b1 = in.read(), b2 = in.read();
+                if (b1 < 0 || b2 < 0) break;
+                int op = b1 & 0x0F;
+                long ln = b2 & 0x7F;
+                if (ln == 126) ln = ((long) in.read() << 8) | in.read();
+                else if (ln == 127) {
+                    ln = 0;
+                    for (int k = 0; k < 8; k++) ln = (ln << 8) | in.read();
+                }
+                if (ln > 1000000) break;
+                byte[] dati = new byte[(int) ln];
+                int got = 0;
+                while (got < dati.length) {
+                    int n = in.read(dati, got, dati.length - got);
+                    if (n < 0) return out;
+                    got += n;
+                }
+                if (op == 8) break;
+                if (op == 1 || op == 0) {
+                    parti.write(dati);
+                    if ((b1 & 0x80) == 0) continue;
+                    String testo = parti.toString("UTF-8");
+                    parti.reset();
+                    try {
+                        JSONObject j = new JSONObject(testo);
+                        String isin = j.optString("isin", "");
+                        JSONObject mid = j.optJSONObject("mid");
+                        if (mid != null && mid.optDouble("raw", 0) > 0 && lista.contains(isin) && !out.containsKey(isin)) out.put(isin, mid.getDouble("raw"));
+                    } catch (Exception e) {
+                        // messaggio non valido: si ignora
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // canale non raggiungibile: restano i prezzi XETRA del grafico
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (Exception e) {
+                    // ignorato
+                }
+            }
+        }
+        return out;
+    }
+
     /** Ricalcola valore e rendita con i prezzi attuali delle posizioni salvate dalla pagina (anche con l'app chiusa). */
     static void refreshData(Context c) throws Exception {
         android.content.SharedPreferences sp = c.getSharedPreferences(PREFS, 0);
@@ -251,6 +330,18 @@ public class MyMoneyWidget extends AppWidgetProvider {
         java.util.HashMap<String, Double> prezzi = new java.util.HashMap<String, Double>();
         boolean cambiato = false;
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        // prima i prezzi gettex di tutte le posizioni, in un'unica connessione
+        java.util.ArrayList<String> tutti = new java.util.ArrayList<String>();
+        for (String f : portafogli(c)) {
+            String r0 = sp.getString(chiave(f), null);
+            if (r0 == null) continue;
+            JSONArray p0 = new JSONObject(r0).optJSONArray("pos");
+            for (int i = 0; p0 != null && i < p0.length(); i++) {
+                String is0 = p0.getJSONObject(i).optString("isin", "");
+                if (!is0.isEmpty()) tutti.add(is0);
+            }
+        }
+        Map<String, Double> gx = gettex(tutti);
         for (String f : portafogli(c)) {
             String raw = sp.getString(chiave(f), null);
             if (raw == null) continue;
@@ -264,7 +355,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
                 double price = p.optDouble("p", 0);
                 String isin = p.optString("isin", "");
                 if (!isin.isEmpty()) {
-                    if (!prezzi.containsKey(isin)) prezzi.put(isin, eurPrice(isin));
+                    if (!prezzi.containsKey(isin)) prezzi.put(isin, gx.containsKey(isin) ? gx.get(isin) : eurPrice(isin));
                     Double e = prezzi.get(isin);
                     if (e != null) {
                         price = e;

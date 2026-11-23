@@ -373,6 +373,21 @@
   let ultimoTentativo = 0;
   const prezziVuoti = () => ({ at: null, fonte: "", prezzi: {}, storico: {}, avvisi: [], risposte: 0 });
   const leggiPrezzi = () => leggiLS("mm:prezzi") || prezziVuoti();
+  // quotazione in tempo reale di gettex: lo stesso canale che usa la pagina di justETF; si sottoscrivono tutti gli ISIN, si legge la prima quotazione di ciascuno e si chiude
+  function gettex(isins, attesa) {
+    const lista = [...new Set(isins)].filter((i) => ISIN_RE.test(i));
+    return new Promise((ok) => {
+      const out = {}; if (!lista.length || typeof WebSocket === "undefined") { ok(out); return; }
+      let ws = null, chiuso = false;
+      const fine = () => { if (chiuso) return; chiuso = true; try { ws && ws.close(); } catch (e) {} ok(out); };
+      try {
+        ws = new WebSocket("wss://api.mobile.stock-data-subscriptions.justetf.com?subscription=trend&parameters=isins:" + lista.join(",") + "/currency:EUR/language:it");
+        ws.onmessage = (m) => { try { const j = JSON.parse(m.data), mid = j && j.mid && j.mid.raw; if (lista.includes(j.isin) && mid > 0 && !out[j.isin]) { const ts = String(j.timestamp || ""); out[j.isin] = { p: Math.round(mid * 1e4) / 1e4, t: ts, d: ts.slice(0, 10) }; if (Object.keys(out).length >= lista.length) fine(); } } catch (e) {} };
+        ws.onerror = fine; ws.onclose = fine;
+        setTimeout(fine, attesa || 8000);
+      } catch (e) { fine(); }
+    });
+  }
   async function aggiornaPrezzi(say) {
     const { titoli, base } = titoliNoti(), vecchi = leggiPrezzi(), prezzi = { ...vecchi.prezzi }, storico = JSON.parse(JSON.stringify(vecchi.storico || {})), avvisi = []; let risposte = 0;
     const nt = Object.keys(titoli).length; say({ t: "inizio", n: nt });
@@ -386,7 +401,11 @@
       const ultime = s.filter((x) => x[0] > base); if (ok && ultime.length) prezzi[sigla] = { p: ultime[ultime.length - 1][1], d: ultime[ultime.length - 1][0] };
       await sleep(300);
     }
-    const nuovo = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), fonte: risposte ? FONTE : vecchi.fonte || "", prezzi, storico, avvisi, risposte };
+    const q = await gettex(Object.values(titoli).map((t) => t.isin)), live = {};  // prezzo gettex (come justETF): sostituisce l'ultimo prezzo XETRA del grafico
+    for (const [sigla, t] of Object.entries(titoli)) { const x = q[t.isin]; if (!x) continue; const prec = (prezzi[sigla] && prezzi[sigla].p) || t.p0; if (x.p / prec > 0.6 && x.p / prec < 1.6) live[sigla] = x; else avvisi.push(sigla + ": prezzo gettex anomalo (" + x.p + "), ignorato"); }
+    if (nt && !Object.keys(live).length) avvisi.push("gettex non raggiunto: restano i prezzi XETRA di justETF");
+    say({ t: "testo", testo: "gettex: " + Object.keys(live).length + " prezzi in tempo reale" });
+    const nuovo = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), fonte: risposte ? FONTE : vecchi.fonte || "", prezzi, storico, avvisi, risposte, live };
     scriviLS("mm:prezzi", nuovo); ultimoTentativo = Date.now(); say({ t: "salvato", n: Object.keys(prezzi).length });
     return nuovo;
   }

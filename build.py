@@ -161,8 +161,26 @@ class Prezzi:
                 if ok and ultime:
                     prezzi[sigla] = {"p": ultime[-1][1], "d": ultime[-1][0]}
                 time.sleep(0.3)
+            # prezzo in tempo reale di gettex (lo stesso che mostra justETF): sostituisce l'ultimo prezzo XETRA del grafico
+            live = {}
+            try:
+                q = fonti.gettex([t["isin"] for t in self.titoli.values()])
+            except Exception:
+                q = {}
+            for sigla, t in self.titoli.items():
+                x = q.get(t["isin"])
+                if not x:
+                    continue
+                prec = (prezzi.get(sigla) or {}).get("p") or t["p0"]
+                if 0.6 < x["p"] / prec < 1.6:
+                    live[sigla] = {"p": x["p"], "t": x["t"], "d": x["d"]}
+                else:
+                    avvisi.append(f"{sigla}: prezzo gettex anomalo ({x['p']}), ignorato")
+            if self.titoli and not live:
+                avvisi.append("gettex non raggiunto: restano i prezzi XETRA di justETF")
+            say(t="testo", testo=f"gettex: {len(live)} prezzi in tempo reale")
             nuovo = {"at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "fonte": FONTE if risposte else vecchi.get("fonte", ""),
-                     "prezzi": prezzi, "storico": storico, "avvisi": avvisi, "risposte": risposte}
+                     "prezzi": prezzi, "storico": storico, "avvisi": avvisi, "risposte": risposte, "live": live}
             with self.lock:
                 self.dati = nuovo
             try:

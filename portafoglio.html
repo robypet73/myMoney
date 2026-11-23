@@ -394,6 +394,12 @@ function costruisci() {
   DATES = D.dates.slice(); PX = F.map((f) => D.px[f.s].slice());
   const st = (LIVE && LIVE.storico) || {};
   Object.keys(st).filter((d) => d > BASE).sort().forEach((d) => { DATES.push(d); F.forEach((f, i) => { const v = st[d] && st[d][f.s]; PX[i].push(v > 0 ? v : PX[i][PX[i].length - 1]); }); });
+  const lv = (LIVE && LIVE.live) || {};  // prezzo in tempo reale di gettex (come justETF): vale per il giorno della quotazione
+  const dl = F.map((f) => lv[f.s] && lv[f.s].d).filter(Boolean).sort().pop();
+  if (dl && dl >= DATES[DATES.length - 1]) {
+    if (dl > DATES[DATES.length - 1]) { DATES.push(dl); PX.forEach((p) => p.push(p[p.length - 1])); }
+    F.forEach((f, i) => { const x = lv[f.s]; if (x && x.p > 0 && x.d >= dl) PX[i][PX[i].length - 1] = x.p; });
+  }
   const T = DATES.length; RD = new Array(T); RD[0] = F.map(() => 0);
   for (let t = 1; t < T; t++) RD[t] = F.map((_, i) => PX[i][t] / PX[i][t - 1] - 1);
   const R5 = []; for (let t = 5; t < T; t++) R5.push(F.map((_, i) => PX[i][t] / PX[i][t - 5] - 1));
@@ -867,6 +873,8 @@ let ULTIMO = null, MODO = null, DB = null;
 function ricevi(d) {
   if (!d || !d.prezzi || d.at === ULTIMO) return; ULTIMO = d.at; LIVE = d; costruisci(); aggiornaSubito(); richiediFrontiera();
   const n = Object.keys(d.prezzi).length, av = d.avvisi && d.avvisi.length, quando = new Date(d.at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }), giorno = new Date(d.at).toLocaleDateString("it-IT");
+  const ng = d.live ? Object.keys(d.live).length : 0, ora = ng ? Object.values(d.live).map((x) => x.t).sort().pop() : "";
+  if (ng) { stato("Aggiornato il " + giorno + " alle " + quando + " · prezzi gettex (" + ng + " titoli)" + (ora ? " delle " + new Date(ora).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "") + (av ? " · " + d.avvisi.join("; ") : ""), !!av); return; }
   if (!(d.risposte ?? n)) { stato("Alle " + quando + " non sono riuscito a scaricare i prezzi" + (av ? ": " + d.avvisi.join("; ") : ".") + " Restano i prezzi del " + dataIt(BASE) + ".", true); return; }
   if (!n) { stato("Scaricato alle " + quando + " da " + d.fonte + ": nessuna quotazione dopo il " + dataIt(BASE) + " (borsa chiusa o seduta non ancora iniziata)." + (av ? " Avvisi: " + d.avvisi.join("; ") : ""), !!av); return; }
   stato("Aggiornato il " + giorno + " alle " + quando + (av ? " · " + d.avvisi.join("; ") : ""), !!av);
