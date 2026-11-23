@@ -38,6 +38,8 @@ Serve Python 3.9 o più recente, nient'altro.
 - **Port. ›**: passa al portafoglio successivo, in cerchio.
 - **⚙** (o tasto destro): periodo del grafico, frequenza di aggiornamento (15 minuti… 6 ore), dimensione (piccolo, medio, grande), «Avvia con Windows», «Aggiorna ora», «Chiudi il widget».
 - Si sposta trascinandolo con il mouse (la posizione è ricordata); il doppio clic aggiorna subito.
+- **Posizione rispetto alle altre finestre** (nelle impostazioni): «Dietro le finestre» (predefinita: se ci passi sopra con un'altra finestra il widget resta sotto, come un widget sul desktop), «Normale» o «Sempre in primo piano».
+- **Avvio automatico con Windows**: la spunta «Avvia con Windows» nelle impostazioni, oppure un doppio clic su `widget-avvio-automatico.cmd` (per toglierlo: `widget-avvio-automatico.cmd off`). Mette un piccolo file `myMoney-widget.vbs` nella cartella Esecuzione automatica dell'utente, che avvia il widget senza finestre nere.
 - Non ha bisogno che `avvia.cmd` sia aperto: legge i file JSON direttamente. `python widget.py --prova` stampa i valori senza aprire la finestra.
 
 ## Sintesi e grafici

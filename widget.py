@@ -22,6 +22,7 @@ import fonti
 PERIODI = [("1m", "1 mese", 31), ("3m", "3 mesi", 92), ("6m", "6 mesi", 183), ("1a", "1 anno", 365), ("3a", "3 anni", 1096), ("5a", "5 anni", 1827), ("ytd", "YTD", None), ("max", "Tutto", None)]
 FREQUENZE = [(15, "15 minuti"), (30, "30 minuti"), (60, "1 ora"), (120, "2 ore"), (360, "6 ore")]
 DIMENSIONI = [("p", "Piccolo", 0.85), ("m", "Medio", 1.0), ("g", "Grande", 1.3)]
+LIVELLI = [("sfondo", "Dietro le finestre"), ("normale", "Normale"), ("alto", "Sempre in primo piano")]
 SU, GIU = "#1f9d6b", "#d6453d"
 SFONDO, SFONDO2, TESTO, TENUE, LINEA = "#0d1219", "#141b24", "#e8edf4", "#8e9bb0", "#243041"
 FONT = "Segoe UI"
@@ -143,7 +144,7 @@ def compatto(v):
 class Impostazioni:
     def __init__(self, dati):
         self.file = os.path.join(dati, "widget.json")
-        self.d = {"x": None, "y": None, "periodo": "1a", "freq": 60, "file": None, "dim": "m"}
+        self.d = {"x": None, "y": None, "periodo": "1a", "freq": 60, "file": None, "dim": "m", "livello": "sfondo"}
         try:
             with open(self.file, encoding="utf-8") as fh:
                 self.d.update(json.load(fh))
@@ -166,30 +167,33 @@ def cartella_avvio_windows():
 
 def avvio_attivo():
     c = cartella_avvio_windows()
-    return bool(c) and os.path.exists(os.path.join(c, "myMoney-widget.cmd"))
+    return bool(c) and (os.path.exists(os.path.join(c, "myMoney-widget.vbs")) or os.path.exists(os.path.join(c, "myMoney-widget.cmd")))
 
 
 def imposta_avvio(attivo):
     c = cartella_avvio_windows()
     if not c or os.name != "nt":
         return False
-    p = os.path.join(c, "myMoney-widget.cmd")
-    if not attivo:
+    p = os.path.join(c, "myMoney-widget.vbs")
+    for vecchio in (p, os.path.join(c, "myMoney-widget.cmd")):  # (il .cmd è la versione precedente)
         try:
-            os.remove(p)
+            os.remove(vecchio)
         except OSError:
             pass
+    if not attivo:
         return True
     py = sys.executable
     pyw = os.path.join(os.path.dirname(py), "pythonw.exe")
     if os.path.exists(pyw):
         py = pyw
     here = os.path.dirname(os.path.abspath(__file__))
-    try:
-        with open(p, "w", encoding="ascii", newline="\r\n") as fh:
-            fh.write(f'@echo off\ncd /d "{here}"\nstart "" "{py}" "{os.path.join(here, "widget.py")}"\n')
+    try:  # Windows Script Host: avvia pythonw senza nessuna finestra
+        with open(p, "w", encoding="mbcs", newline="\r\n") as fh:
+            fh.write('Set s = CreateObject("WScript.Shell")\n')
+            fh.write(f's.CurrentDirectory = "{here}"\n')
+            fh.write('s.Run """' + py + '"" ""' + os.path.join(here, "widget.py") + '""", 0, False\n')
         return True
-    except (OSError, UnicodeEncodeError):
+    except (OSError, UnicodeEncodeError, LookupError):
         return False
 
 
@@ -206,7 +210,6 @@ class Widget:
         self.da_ridisegnare = False
         self.sposta = None
         radice.overrideredirect(True)
-        radice.attributes("-topmost", True)
         try:
             radice.attributes("-alpha", 0.97)
         except Exception:
@@ -218,13 +221,41 @@ class Widget:
         self.c.bind("<ButtonPress-1>", self.inizio_trascina)
         self.c.bind("<B1-Motion>", self.trascina)
         self.c.bind("<ButtonRelease-1>", self.fine_trascina)
+        radice.bind("<FocusIn>", lambda e: self.livello_dopo())
         self.c.bind("<Double-Button-1>", lambda e: self.aggiorna(True))
         self.c.bind("<Button-3>", lambda e: self.impostazioni())
         radice.bind("<Escape>", lambda e: None)
         self.disegna()
+        self.applica_livello()
         self.aggiorna(True)
         self.pianifica()
         self._poll()
+
+    # -- livello: sempre in primo piano, normale, oppure dietro alle altre finestre (come un widget sul desktop)
+    def applica_livello(self):
+        liv = self.imp.d.get("livello", "sfondo")
+        try:
+            self.r.attributes("-topmost", liv == "alto")
+        except Exception:
+            pass
+        if liv == "sfondo":
+            self.manda_dietro()
+
+    def manda_dietro(self):
+        try:
+            if os.name == "nt":  # in fondo a tutte le finestre, ma sopra il desktop; senza prendere il fuoco
+                import ctypes
+                u = ctypes.windll.user32
+                hwnd = u.GetAncestor(self.r.winfo_id(), 2) or self.r.winfo_id()
+                u.SetWindowPos(hwnd, 1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)  # HWND_BOTTOM, NOMOVE | NOSIZE | NOACTIVATE
+            else:
+                self.r.lower()
+        except Exception:
+            pass
+
+    def livello_dopo(self):
+        if self.imp.d.get("livello", "sfondo") == "sfondo":
+            self.r.after(150, self.manda_dietro)  # dopo un clic (spostamento, cambio portafoglio) torna dietro
 
     # -- dimensioni e posizione
     def scala(self):
@@ -254,6 +285,7 @@ class Widget:
             self.imp.d["x"], self.imp.d["y"] = self.r.winfo_x(), self.r.winfo_y()
             self.imp.salva()
         self.sposta = None
+        self.livello_dopo()
 
     # -- portafogli
     def elenco(self):
@@ -326,6 +358,8 @@ class Widget:
         if self.da_ridisegnare:
             self.da_ridisegnare = False
             self.disegna()
+        if self.imp.d.get("livello", "sfondo") == "sfondo" and int(time.time()) % 4 == 0:
+            self.manda_dietro()  # resta dietro anche se un'altra finestra viene chiusa o spostata
         self.r.after(300, self._poll)
 
     def pianifica(self):
@@ -464,6 +498,7 @@ class Widget:
         w.resizable(False, False)
         w.geometry(f"+{self.r.winfo_x()}+{self.r.winfo_y() + self.r.winfo_height() + 8}")
         pv, fv, dv = tk.StringVar(value=self.imp.d["periodo"]), tk.IntVar(value=int(self.imp.d["freq"])), tk.StringVar(value=self.imp.d["dim"])
+        lv = tk.StringVar(value=self.imp.d.get("livello", "sfondo"))
         av = tk.BooleanVar(value=avvio_attivo())
         def blocco(titolo, righe, var, comando):
             fr = tk.LabelFrame(w, text=titolo, bg=SFONDO2, fg=TENUE, bd=1, padx=8, pady=4)
@@ -471,13 +506,15 @@ class Widget:
             for k, (val, eti) in enumerate(righe):
                 tk.Radiobutton(fr, text=eti, value=val, variable=var, command=comando, bg=SFONDO2, fg=TESTO, selectcolor=SFONDO, activebackground=SFONDO2, activeforeground=TESTO, anchor="w").grid(row=k // 4, column=k % 4, sticky="w", padx=4)
         def cambia():
-            self.imp.d["periodo"], self.imp.d["freq"], self.imp.d["dim"] = pv.get(), int(fv.get()), dv.get()
+            self.imp.d["periodo"], self.imp.d["freq"], self.imp.d["dim"], self.imp.d["livello"] = pv.get(), int(fv.get()), dv.get(), lv.get()
             self.imp.salva()
             self.dimensiona()
+            self.applica_livello()
             self.r.after(50, self.disegna)
         blocco("Periodo del grafico", [(p[0], p[1]) for p in PERIODI], pv, cambia)
         blocco("Aggiornamento ogni", [(f[0], f[1]) for f in FREQUENZE], fv, cambia)
         blocco("Dimensione", [(d[0], d[1]) for d in DIMENSIONI], dv, cambia)
+        blocco("Posizione rispetto alle altre finestre", LIVELLI, lv, cambia)
         riga = tk.Frame(w, bg=SFONDO2)
         riga.pack(fill="x", padx=10, pady=8)
         if os.name == "nt":
@@ -490,7 +527,14 @@ def avvia():
     import argparse
     ap = argparse.ArgumentParser(prog="widget", description="Widget myMoney per il desktop.")
     ap.add_argument("--prova", action="store_true", help="calcola e stampa i valori senza aprire la finestra")
+    ap.add_argument("--avvio", choices=["on", "off"], help="attiva o disattiva l'avvio automatico del widget con Windows")
     a = ap.parse_args()
+    if a.avvio:
+        if os.name != "nt":
+            sys.exit("L'avvio automatico è previsto solo per Windows.")
+        ok = imposta_avvio(a.avvio == "on")
+        print(("Avvio automatico " + ("attivato: il widget partirà all'accesso a Windows." if a.avvio == "on" else "disattivato.")) if ok else "Non sono riuscito a modificare l'avvio automatico.")
+        return
     cartella = os.path.dirname(os.path.abspath(__file__))
     dati = build.cartella_dati()
     pf = build.Portafogli(cartella, os.path.join(dati, "ultimo.json"), dati=dati)
