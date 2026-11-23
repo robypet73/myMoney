@@ -7,6 +7,7 @@ Una sola pagina, **`portafoglio.html`**, da cui si fa tutto. Ogni portafoglio è
 | `avvia.cmd` | doppio clic su Windows: lancia `build.py` |
 | `build.py` | il programma: server locale (solo su 127.0.0.1), scarico da justETF, lettura e salvataggio dei portafogli |
 | `fonti.py` | scarica da justETF i dati di un titolo (scheda del fondo e storico dei prezzi in euro) |
+| `widget.py`, `avvia-widget.cmd` | **widget per il desktop** (Windows, anche macOS/Linux): doppio clic su `avvia-widget.cmd` |
 | `portafoglio.html` | **la pagina**: il codice di tutto; i dati del portafoglio scelto vengono inseriti dal programma |
 | `portafogli/` | i portafogli: `nome_V1.json`, `nome_V2.json`… e lo schema |
 | `portafogli/schema.json` | lo **schema JSON** (JSON Schema) del formato di un portafoglio |
@@ -29,6 +30,15 @@ Serve Python 3.9 o più recente, nient'altro.
 9. **Elimina**: cancella il JSON del portafoglio aperto (chiede conferma).
 10. **Cartella…**: sceglie dove stanno i JSON dei portafogli, **sul computer o su Google Drive**. Si apre una finestra con le cartelle suggerite (Google Drive per desktop, se installato: l'unità virtuale `G:\Il mio Drive` o `My Drive`, la cartella in `Google Drive` nella home o in `Library/CloudStorage`; e Documenti), il pulsante **Sfoglia…** (finestra di scelta del sistema) e il campo del percorso. Una cartella `portafogli` dentro Drive o Documenti, se non c'è, viene creata. **Google Drive online, senza sincronizzarlo sul computer**: nella finestra, «Google Drive» apre la sezione per collegare una cartella online tramite una piccola web app di Google Apps Script (`drive/mymoney_drive.gs`, pulsante «Copia lo script»): si incolla in script.google.com, si cambia la CHIAVE, si distribuisce come «App web» (Esegui come: Me, Accesso: Chiunque) e si incolla in myMoney l'indirizzo con `?key=…`. Il programma legge i portafogli dalla cartella online `myMoneyPortafogli` (copia di lavoro nella cartella dell'utente, riletta ogni 20 secondi) e ogni salvataggio, modifica o eliminazione va online; se Google non risponde il salvataggio non avviene. Chi conosce l'indirizzo con la chiave può leggere e modificare i portafogli. Se la cartella nuova non ha portafogli, riceve una copia di quelli della cartella di prima (che restano dove sono) e `schema.json`. «Cartella del programma» torna alla cartella `portafogli/` del repository. La scelta è ricordata (`config.json` nella cartella dell'utente) e si può dare anche da riga di comando: `python build.py --cartella "G:\Il mio Drive\portafogli"` (`--cartella ""` per tornare a quella del programma). Le schede note dei titoli restano nel programma.
 11. **Scarica JSON**: esporta la definizione del portafoglio aperto (con i vincoli della frontiera).
+
+## Widget per il desktop
+
+`avvia-widget.cmd` apre una piccola finestra sempre in primo piano, come il widget Android: valore del portafoglio, rendita sull'investito, **rendimento nel periodo del grafico** (1 mese… YTD, Tutto) e variazione di oggi, grafico con gli assi e l'ora dell'ultimo aggiornamento. Usa gli stessi portafogli e la stessa cartella scelta nel programma (anche Google Drive) e scarica da justETF i prezzi aggiornati, da solo (ogni ora, scelta dalle impostazioni). Serve solo Python con Tkinter, già incluso nell'installazione normale di Python per Windows.
+
+- **Port. ›**: passa al portafoglio successivo, in cerchio.
+- **⚙** (o tasto destro): periodo del grafico, frequenza di aggiornamento (15 minuti… 6 ore), dimensione (piccolo, medio, grande), «Avvia con Windows», «Aggiorna ora», «Chiudi il widget».
+- Si sposta trascinandolo con il mouse (la posizione è ricordata); il doppio clic aggiorna subito.
+- Non ha bisogno che `avvia.cmd` sia aperto: legge i file JSON direttamente. `python widget.py --prova` stampa i valori senza aprire la finestra.
 
 ## Sintesi e grafici
 

@@ -314,7 +314,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <p class="muted">Aggiungi titoli con l'ISIN, toglili con ✕, cambia i pesi e inserisci per ciascun titolo gli acquisti e le vendite (anche più di uno). Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione; i pesi sono sempre riportati a 100. Senza prezzo, l'operazione usa il prezzo di chiusura del giorno (per i titoli nuovi scrivilo tu). Poi salvi come nuova versione di questo portafoglio o come nuovo, oppure ribilanci prima con la frontiera. «Annulla» scarta tutto.</p>
   <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div id="mt-tab" class="mt-list"></div>
-  <form id="mt-add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 160px">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px">Peso % (vuoto = 1)<input id="mt-pw" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
+  <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Peso %<input id="mt-pw" type="number" min="0" max="100" step="any" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
   <p class="muted" id="mt-somma"></p>
   <div class="lerr" id="mt-err" role="alert"></div>
   <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn sec" id="mt-ok" type="button" title="Apre una bozza dove ribilanci i pesi con la frontiera efficiente, poi salvi">Ribilancia…</button><button class="btn" id="mt-salva" type="button">Salva…</button></div>
@@ -1237,7 +1237,9 @@ $("#mt-add").addEventListener("submit", (e) => {
   e.preventDefault(); const isin = $("#mt-isin").value.trim().toUpperCase(), err = $("#mt-err"); err.textContent = "";
   if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) { err.textContent = "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale."; return; }
   if (MT.some((x) => x.isin === isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
-  MT.push({ isin, s: null, nome: "", w: 0, peso: $("#mt-pw").value.trim() || "1", fuori: false, tr: [] }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
+  const pw = $("#mt-pw").value.trim().replace(",", ".");  // facoltativo: se manca il titolo entra all'1%
+  if (pw !== "" && !(/^\d+(\.\d+)?$/.test(pw) && +pw >= 0 && +pw <= 100)) { err.textContent = "Il peso deve essere un numero decimale tra 0 e 100 (oppure lascia vuoto)."; return; }
+  MT.push({ isin, s: null, nome: "", w: 0, peso: pw === "" ? "1" : pw, fuori: false, tr: [] }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
 });
 function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure null (con il motivo in #mt-err) se qualcosa non va
   const err = $("#mt-err"); err.textContent = "";
