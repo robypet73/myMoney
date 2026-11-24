@@ -105,6 +105,9 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 .mp { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; } .mp[hidden] { display: none; }
 .mp-f { display: flex; flex-wrap: wrap; gap: 8px; } .mp-f input { flex: 1 1 200px; min-width: 0; } #mp-l { max-height: 320px; overflow: auto; display: flex; flex-direction: column; }
 .mp-r { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; } .mp-r:first-child { border-top: 0; } .mp-r b { font-weight: 600; } .mp-r button { flex: none; }
+.nv-r { display: grid; grid-template-columns: minmax(0, 1fr) 92px 110px 70px 34px; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; } .nv-r:first-child { border-top: 0; } .nv-r input { width: 100%; min-width: 0; } .nv-w { text-align: right; } .nv-h { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; border-top: 0; padding-bottom: 2px; }
+.nv-top { display: grid; grid-template-columns: minmax(0, 2fr) 100px minmax(0, 1fr); gap: 10px; } .nv-top label, .nv-add label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); } .nv-add { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+@media (max-width: 640px) { .nv-top { grid-template-columns: minmax(0, 1fr) 100px; } .nv-top label:nth-child(3) { grid-column: 1 / -1; } .nv-r { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px; } .nv-r .nv-n { grid-column: 1 / -1; } .nv-r .nv-w { grid-column: 1 / 3; text-align: left; } .nv-h { display: none; } }
 .mt-list { display: flex; flex-direction: column; gap: 10px; }
 .mt-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); } .mt-fuori { opacity: .75; }
 .mt-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; } .mt-n { flex: 1 1 200px; min-width: 0; } .mt-p { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); } .mt-p input { width: 78px; text-align: right; }
@@ -171,7 +174,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </div>
     <div class="agg">
       <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
-      <div class="agg-btn"><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
+      <div class="agg-btn"><button class="btn js-nuovo" id="pf-nuovo" type="button" hidden title="Nome, versione e titoli con ISIN e peso o valore">Crea portafoglio</button><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
       <div id="stato" role="status"></div>
     </div>
   </header>
@@ -179,7 +182,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <section id="start" hidden>
     <h2>Carica un portafoglio</h2>
     <p class="muted" style="max-width:70ch">Questo è il modello vuoto. Scegli un file <b>.json</b> con la definizione del portafoglio: il programma scarica i dati dei titoli (prezzi, caratteristiche, composizione) e salva il file <b class="num">nome_V1.json</b> nella cartella <b class="num">portafogli</b>. Puoi anche aprire un portafoglio già salvato dal menu «Portafoglio» in alto.</p>
-    <div><button class="btn js-carica" type="button">Carica portafoglio (JSON)</button></div>
+    <div><button class="btn js-nuovo" type="button" hidden>Crea portafoglio</button> <button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button></div>
     <details open><summary>Formato del file JSON</summary>
       <pre class="fmt">{
   "nome": "mioPortafoglio",
@@ -322,6 +325,20 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="ct-reset" type="button">Cartella del programma</button><button class="btn" id="ct-ok" type="button">Usa questa cartella</button></div></div>
     <div class="lerr" id="ct-err" role="alert"></div>
   </div>
+</div></div>
+<div class="ovl" id="nuovo" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="nv-t" style="max-width:780px">
+  <div class="top"><h2 id="nv-t">Crea portafoglio</h2><button class="x" id="nv-x" type="button" aria-label="Chiudi">×</button></div>
+  <p class="muted">Dai un nome, scegli la versione e aggiungi i titoli con l'ISIN. Per ogni titolo puoi indicare il <b>peso %</b> oppure il <b>valore in €</b> (o niente): i titoli senza indicazioni si dividono ciò che resta. Salvando si crea il file JSON nella cartella dei portafogli e si apre il portafoglio.</p>
+  <div class="nv-top"><label>Nome<input id="nv-n" type="text" maxlength="30" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="per esempio mioPortafoglio"><small>solo lettere e cifre, niente spazi né simboli</small></label><label>Versione<input id="nv-v" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></label><label>Investimento totale (€, facoltativo)<input id="nv-tot" type="number" min="100" step="100" inputmode="decimal" placeholder="10000"></label></div>
+  <label class="nv-d" style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Descrizione (facoltativa)<input id="nv-d" type="text" maxlength="300" autocomplete="off" placeholder="una breve frase"></label>
+  <div id="nv-tab"></div>
+  <form id="nv-add" class="nv-add" novalidate><label style="flex:1 1 200px">Aggiungi un titolo (ISIN)<input id="nv-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B4L5Y983"></label><label style="width:92px">Peso %<input id="nv-pw" type="text" inputmode="decimal"></label><label style="width:110px">Valore €<input id="nv-pv" type="text" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button><button class="btn sec small" type="button" id="nv-fin" title="Cerca tra gli ETF a zero commissioni di acquisto su Fineco">Lista Fineco gratuiti…</button></form>
+  <div class="muted" id="nv-hint" style="font-size:12px;min-height:16px"></div>
+  <label class="muted" style="display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer"><input type="checkbox" id="nv-solofin" style="margin-top:2px"><span>Solo ETF a zero commissioni su Fineco (togli la spunta per aggiungere un ISIN che non è nella lista)</span></label>
+  <div class="mp" id="nv-pick" hidden><div class="mp-f"><input id="np-q" type="search" placeholder="Cerca per nome o ISIN (per esempio «gold», «aggregate», «world value»)" autocomplete="off" aria-label="Cerca un ETF"><select id="np-t" aria-label="Tipo"><option value="">Tutti i tipi</option><option>Azioni</option><option>Obbligazioni</option><option>Materie prime</option><option>Monetario</option><option>Altro</option></select><select id="np-e" aria-label="Emittente"><option value="">Tutti gli emittenti</option></select></div><div class="muted" style="font-size:12px" id="np-info"></div><div id="np-l"></div></div>
+  <p class="muted" id="nv-riep"></p>
+  <div class="lerr" id="nv-err" role="alert"></div>
+  <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="nv-ann" type="button">Annulla</button><button class="btn" id="nv-salva" type="button">Salva e apri</button></div>
 </div></div>
 <div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:780px">
   <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
@@ -1135,7 +1152,7 @@ async function caricaPortafogli() {
   const s = $("#pfsel"); s.innerHTML = PF.lista.map((x) => `<option value="${esc(x.file)}"${x.file === PF.file ? " selected" : ""} title="${esc(x.descrizione || "")}">${esc(x.nome)} · ${esc(x.versione)}</option>`).join("");
   try { const rc = await fetch("/api/cartella", { cache: "no-store" }); if (rc.ok) { PF.cartella = await rc.json(); const b = $("#pf-cartella"); b.hidden = false; b.title = "Cartella dei portafogli: " + PF.cartella.cartella; $("#pf-cartella-x").hidden = !(PF.cartella.nativo && PF.cartella.personalizzata); } } catch (e) {}
   $("#pfsel-w").hidden = false; $("#pfsel-w").hidden = PF.lista.length === 0 && !PF.cartella; $("#pf-del").hidden = $("#pf-mod").hidden = VUOTO || !PF.lista.some((x) => x.file === PF.file);
-  $("#imp-modtit").hidden = VUOTO; $("#imp-annprop").hidden = VUOTO;
+  $("#imp-modtit").hidden = VUOTO; $("#imp-annprop").hidden = VUOTO; $$(".js-nuovo").forEach((b) => { b.hidden = false; });  // «Crea portafoglio» serve il programma locale o l'app
 }
 $("#report-pdf").onclick = () => {  // il browser stampa tutta la pagina con lo stile da carta; si sceglie «Salva come PDF»
   const t0 = document.title, d = new Date();
@@ -1332,14 +1349,17 @@ function mtAggiungi(isin, pwTesto) {  // aggiunge un titolo alla modifica; ritor
   if (FIN && $("#mt-solofin").checked && !FIN.m[isin]) return isin + " non è tra gli ETF a zero commissioni su Fineco (lista " + (FIN.validita || "") + "). Togli la spunta «Solo ETF a zero commissioni su Fineco» per aggiungerlo comunque.";
   MT.push({ isin, s: null, nome: "", w: 0, peso: pw === "" ? "1" : pw, fuori: false, tr: [] }); mtRiscala(MT.length - 1); return "";
 }
-function mpDisegna() {
-  const box = $("#mt-pick"), el = $("#mp-l"); if (!box || box.hidden) return;
-  if (!FIN) { $("#mp-info").textContent = ""; el.innerHTML = '<p class="muted">Lista Fineco non disponibile: serve il programma locale o l\'app (e il file fineco_gratis.json).</p>'; return; }
-  const q = $("#mp-q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), tp = $("#mp-t").value, em = $("#mp-e").value;
+function finLista(pre, dentro) {  // elenco ricercabile della lista Fineco nel pannello con prefisso `pre` (mp: Modifica portafoglio, np: Crea portafoglio)
+  const el = $("#" + pre + "-l"), info = $("#" + pre + "-info");
+  if (!FIN) { info.textContent = ""; el.innerHTML = '<p class="muted">Lista Fineco non disponibile: serve il programma locale o l\'app (e il file fineco_gratis.json).</p>'; return; }
+  const q = $("#" + pre + "-q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), tp = $("#" + pre + "-t").value, em = $("#" + pre + "-e").value;
   const r = FIN.etf.filter((e) => (!tp || e.tipo === tp) && (!em || e.emittente === em) && q.every((w) => (e.nome + " " + e.isin).toLowerCase().includes(w)));
-  $("#mp-info").textContent = r.length + " ETF" + (r.length > 60 ? " (mostro i primi 60: restringi la ricerca)" : "") + " · lista Fineco " + (FIN.validita || "") + ", file aggiornato il " + (FIN.aggiornato ? dataIt(FIN.aggiornato) : "?");
-  el.innerHTML = r.slice(0, 60).map((e) => { const dentro = MT.some((x) => x.isin === e.isin); return `<div class="mp-r"><div><b>${esc(e.nome)}</b><div class="fsub num">${e.isin} · ${esc(e.emittente)} · ${esc(e.tipo)}</div></div><button class="btn sec small" type="button" data-mp="${e.isin}"${dentro ? " disabled" : ""}>${dentro ? "Già dentro" : "Aggiungi"}</button></div>`; }).join("") || '<p class="muted">Nessun ETF trovato.</p>';
+  info.textContent = r.length + " ETF" + (r.length > 60 ? " (mostro i primi 60: restringi la ricerca)" : "") + " · lista Fineco " + (FIN.validita || "") + ", file aggiornato il " + (FIN.aggiornato ? dataIt(FIN.aggiornato) : "?");
+  el.innerHTML = r.slice(0, 60).map((e) => { const d = dentro(e.isin); return `<div class="mp-r"><div><b>${esc(e.nome)}</b><div class="fsub num">${e.isin} · ${esc(e.emittente)} · ${esc(e.tipo)}</div></div><button class="btn sec small" type="button" data-mp="${e.isin}"${d ? " disabled" : ""}>${d ? "Già dentro" : "Aggiungi"}</button></div>`; }).join("") || '<p class="muted">Nessun ETF trovato.</p>';
 }
+function finEmittenti(pre) { if (FIN && $("#" + pre + "-e").options.length < 2) [...new Set(FIN.etf.map((e) => e.emittente))].sort().forEach((x) => $("#" + pre + "-e").insertAdjacentHTML("beforeend", `<option>${esc(x)}</option>`)); }
+function mpDisegna() { const box = $("#mt-pick"); if (box && !box.hidden) finLista("mp", (i) => MT.some((x) => x.isin === i)); }
+function npDisegna() { const box = $("#nv-pick"); if (box && !box.hidden) finLista("np", (i) => NV.some((x) => x.isin === i)); }
 function mtDisegna() {
   const ov = (i, k, f, v, extra) => `data-f="${f}" data-i="${i}" data-k="${k}" value="${esc(v)}" ${extra || ""}`;
   $("#mt-tab").innerHTML = MT.map((x, i) => `<div class="mt-card${x.fuori ? " mt-fuori" : ""}">
@@ -1394,11 +1414,96 @@ $("#mt-add").addEventListener("submit", async (e) => {
 $("#mt-solofin").addEventListener("change", (e) => { try { localStorage.setItem("mm:finsolo", e.target.checked ? "1" : "0"); } catch (er) {} });
 $("#mt-fin").addEventListener("click", async () => {  // elenco ricercabile degli ETF a zero commissioni su Fineco
   const box = $("#mt-pick"); box.hidden = !box.hidden; if (box.hidden) return; await caricaFin();
-  if (FIN && $("#mp-e").options.length < 2) [...new Set(FIN.etf.map((e) => e.emittente))].sort().forEach((x) => $("#mp-e").insertAdjacentHTML("beforeend", `<option>${esc(x)}</option>`));
-  mpDisegna(); $("#mp-q").focus();
+  finEmittenti("mp"); mpDisegna(); $("#mp-q").focus();
 });
 $("#mp-q").addEventListener("input", mpDisegna); $("#mp-t").addEventListener("change", mpDisegna); $("#mp-e").addEventListener("change", mpDisegna);
 $("#mp-l").addEventListener("click", (e) => { const b = e.target.closest("[data-mp]"); if (!b) return; const m = mtAggiungi(b.dataset.mp, $("#mt-pw").value); $("#mt-err").textContent = m; if (m) return; $("#mt-pw").value = ""; mtDisegna(); mpDisegna(); });
+/* ---------- Crea portafoglio: nome, versione, descrizione facoltativa e titoli con peso % o valore € (facoltativi); salva il JSON nella cartella e apre il portafoglio ---------- */
+let NV = [];  // una riga per titolo: {isin, peso, valore} (testi; vuoto = non indicato)
+const NV_MIN = 1;  // peso (%) di un titolo senza indicazioni quando ci sono pesi o valori degli altri
+const nvNum = (s) => { const x = String(s ?? "").trim().replace(",", "."); return x === "" ? null : /^\d+(\.\d+)?$/.test(x) ? +x : NaN; };
+function nvCalcola() {  // pesi risultanti (a 100) e investimento totale; {righe, totale, calcolato, errore}
+  const rows = NV.map((x) => ({ isin: x.isin, p: nvNum(x.peso), v: nvNum(x.valore), w: 0 })), tt = nvNum($("#nv-tot").value);
+  if (!rows.length) return { righe: [], totale: tt, errore: "" };
+  if (rows.some((r) => Number.isNaN(r.p) || Number.isNaN(r.v)) || Number.isNaN(tt)) return { errore: "Pesi, valori e investimento totale devono essere numeri (virgola o punto)." };
+  if (rows.some((r) => r.p != null && r.p > 100)) return { errore: "Il peso va da 0 a 100." };
+  if (rows.some((r) => r.v != null && !(r.v > 0))) return { errore: "Il valore in € deve essere maggiore di 0." };
+  const K = rows.filter((r) => r.v != null), W = rows.filter((r) => r.v == null && r.p != null), Z = rows.filter((r) => r.v == null && r.p == null), sw = sum(W.map((r) => r.p));
+  let tot = tt;
+  if (K.length) {  // con i valori in € il totale è la loro somma, divisa per la quota che resta dopo i titoli indicati con il peso
+    const R = 100 - sw - Z.length * NV_MIN; if (!(R > 0)) return { errore: "I pesi indicati arrivano a 100% o più: non resta quota per i titoli indicati con il valore in €." };
+    const sv = sum(K.map((r) => r.v)); K.forEach((r) => { r.w = (R * r.v) / sv; }); W.forEach((r) => { r.w = r.p; }); Z.forEach((r) => { r.w = NV_MIN; }); tot = sv / (R / 100);
+  } else if (!W.length) rows.forEach((r) => { r.w = 100 / rows.length; });  // nessuna indicazione: pesi uguali
+  else { const resto = Math.max(0, 100 - sw); W.forEach((r) => { r.w = r.p; }); Z.forEach((r) => { r.w = Math.max(NV_MIN, resto / Z.length); }); }
+  const s = sum(rows.map((r) => r.w)); if (!(s > 0)) return { errore: "Almeno un titolo deve avere un peso maggiore di 0." };
+  rows.forEach((r) => { r.w = Math.round(((r.w * 100) / s) * 100) / 100; }); const gr = rows.reduce((a, r) => (r.w > a.w ? r : a), rows[0]); gr.w = Math.round((gr.w + (100 - sum(rows.map((r) => r.w)))) * 100) / 100;
+  return { righe: rows.map((r) => ({ isin: r.isin, peso: r.w })), totale: Math.round((tot == null ? 10000 : tot) * 100) / 100, calcolato: K.length > 0, errore: "" };
+}
+function nvAggiorna() {  // pesi risultanti e riepilogo, senza ridisegnare le caselle (non si perde il cursore)
+  const c = nvCalcola(), pesi = c.righe ? Object.fromEntries(c.righe.map((r) => [r.isin, r.peso])) : {};
+  NV.forEach((x, i) => { const el = document.querySelector(`#nv-tab [data-w="${i}"]`); if (el) el.textContent = pesi[x.isin] != null ? nf(pesi[x.isin], 2) + "%" : "—"; });
+  const fuori = FIN ? NV.filter((x) => !FIN.m[x.isin]).length : 0;
+  $("#nv-riep").innerHTML = c.errore ? `<span class="down">${esc(c.errore)}</span>` : NV.length ? NV.length + " titoli · pesi riportati a 100% · investimento totale " + eur(c.totale) + (c.calcolato ? " (dalla somma dei valori)" : "") + (fuori ? ` · <span class="muted">${fuori} non nella lista Fineco gratuiti</span>` : "") : "Aggiungi almeno un titolo.";
+}
+function nvDisegna() {
+  $("#nv-tab").innerHTML = NV.length ? `<div class="nv-r nv-h"><span>Titolo</span><span>Peso %</span><span>Valore €</span><span style="text-align:right">Risultante</span><span></span></div>` + NV.map((x, i) => { const f = FIN && FIN.m[x.isin];
+    return `<div class="nv-r"><div class="nv-n"><b class="num">${esc(x.isin)}</b>${f ? `<div class="fsub">${esc(f.nome)}</div>` : ""}${FIN ? `<div class="fsub">${f ? '<span class="up">Fineco 0 €</span>' : '<span class="muted">non nella lista Fineco gratuiti</span>'}</div>` : ""}</div><input type="text" inputmode="decimal" data-nv="peso" data-i="${i}" value="${esc(x.peso)}" placeholder="peso %" aria-label="Peso % di ${esc(x.isin)}"><input type="text" inputmode="decimal" data-nv="valore" data-i="${i}" value="${esc(x.valore)}" placeholder="valore €" aria-label="Valore in € di ${esc(x.isin)}"><span class="num nv-w" data-w="${i}">—</span><button class="btn sec small" type="button" data-nv-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli">✕</button></div>`; }).join("") : '<p class="muted">Nessun titolo: aggiungine uno con l\'ISIN o dalla lista Fineco.</p>';
+  nvAggiorna();
+}
+function nvAggiungi(isin, p, v) {  // ritorna il messaggio d'errore, oppure "" se il titolo è stato aggiunto
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) return "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale.";
+  if (NV.some((x) => x.isin === isin)) return isin + " è già nell'elenco.";
+  if (NV.length >= 30) return "Al massimo 30 titoli.";
+  if (Number.isNaN(nvNum(p)) || Number.isNaN(nvNum(v))) return "Peso e valore devono essere numeri (oppure lasciali vuoti).";
+  if (nvNum(p) > 100) return "Il peso va da 0 a 100.";
+  if (FIN && $("#nv-solofin").checked && !FIN.m[isin]) return isin + " non è tra gli ETF a zero commissioni su Fineco (lista " + (FIN.validita || "") + "). Togli la spunta «Solo ETF a zero commissioni su Fineco» per aggiungerlo comunque.";
+  NV.push({ isin, peso: String(p || "").trim(), valore: String(v || "").trim() }); return "";
+}
+function nvHint() {  // controllo immediato dell'ISIN scritto: è nella lista Fineco gratuiti?
+  const isin = $("#nv-isin").value.trim().toUpperCase(), h = $("#nv-hint"); h.textContent = "";
+  if (isin.length < 12) return;
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) { h.textContent = "ISIN non valido: due lettere, nove lettere o cifre e una cifra finale."; return; }
+  if (!FIN) { h.textContent = "Lista Fineco non disponibile: non posso controllare se è gratuito."; return; }
+  const e = FIN.m[isin]; h.innerHTML = e ? `<span class="up">✓ Nella lista Fineco gratuiti</span> · ${esc(e.nome)} (${esc(e.emittente)})` : `<span class="down">✗ Non è nella lista Fineco gratuiti</span> (${esc(FIN.validita || "")})`;
+}
+async function apriNuovo() {
+  if (!PF.server) { stato("Per creare un portafoglio serve il programma locale (o l'app).", true); return; }
+  $("#nv-err").textContent = ""; $("#nv-hint").textContent = ""; $("#nv-solofin").checked = finSolo(); $("#nv-pick").hidden = true; nvDisegna();
+  $("#nuovo").hidden = false; document.body.style.overflow = "hidden"; $("#nv-n").focus();
+  caricaFin().then((d) => { if (d && !$("#nuovo").hidden) nvDisegna(); });
+}
+const chiudiNuovo = () => { $("#nuovo").hidden = true; document.body.style.overflow = ""; };
+$$(".js-nuovo").forEach((b) => b.addEventListener("click", apriNuovo));
+$("#nv-x").onclick = $("#nv-ann").onclick = chiudiNuovo;
+$("#nuovo").addEventListener("mousedown", (e) => { if (e.target.id === "nuovo") chiudiNuovo(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#nuovo").hidden) chiudiNuovo(); });
+$("#nv-solofin").addEventListener("change", (e) => { try { localStorage.setItem("mm:finsolo", e.target.checked ? "1" : "0"); } catch (er) {} });
+$("#nv-isin").addEventListener("input", nvHint);
+$("#nv-tot").addEventListener("input", nvAggiorna);
+$("#nv-add").addEventListener("submit", async (e) => {
+  e.preventDefault(); const err = $("#nv-err"); err.textContent = ""; await caricaFin();
+  const m = nvAggiungi($("#nv-isin").value.trim().toUpperCase(), $("#nv-pw").value, $("#nv-pv").value); err.textContent = m; if (m) return;
+  $("#nv-isin").value = $("#nv-pw").value = $("#nv-pv").value = ""; $("#nv-hint").textContent = ""; nvDisegna(); npDisegna(); $("#nv-isin").focus();
+});
+$("#nv-tab").addEventListener("input", (e) => { const el = e.target, i = el.dataset.i; if (!el.dataset.nv || i == null) return; NV[+i][el.dataset.nv] = el.value; nvAggiorna(); });
+$("#nv-tab").addEventListener("click", (e) => { const b = e.target.closest("[data-nv-del]"); if (!b) return; NV.splice(+b.dataset.nvDel, 1); nvDisegna(); npDisegna(); });
+$("#nv-fin").addEventListener("click", async () => {
+  const box = $("#nv-pick"); box.hidden = !box.hidden; if (box.hidden) return; await caricaFin(); finEmittenti("np"); npDisegna(); $("#np-q").focus();
+});
+$("#np-q").addEventListener("input", npDisegna); $("#np-t").addEventListener("change", npDisegna); $("#np-e").addEventListener("change", npDisegna);
+$("#np-l").addEventListener("click", (e) => { const b = e.target.closest("[data-mp]"); if (!b) return; const m = nvAggiungi(b.dataset.mp, $("#nv-pw").value, $("#nv-pv").value); $("#nv-err").textContent = m; if (m) return; $("#nv-pw").value = $("#nv-pv").value = ""; nvDisegna(); npDisegna(); });
+$("#nv-salva").onclick = () => {
+  const err = $("#nv-err"), no = (m) => { err.textContent = m; return false; }; err.textContent = "";
+  const nome = $("#nv-n").value.trim(), v = parseInt($("#nv-v").value, 10);
+  if (!/^[A-Za-z0-9]{1,30}$/.test(nome)) { $("#nv-n").focus(); return no("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri."); }
+  if (!(v >= 1 && v <= 999)) { $("#nv-v").focus(); return no("La versione deve essere un numero da 1 a 999."); }
+  if (!NV.length) { $("#nv-isin").focus(); return no("Aggiungi almeno un titolo."); }
+  const c = nvCalcola(); if (c.errore) return no(c.errore);
+  if (!(c.totale >= 100 && c.totale <= 1e9)) return no("L'investimento totale deve essere tra 100 e 1.000.000.000 euro.");
+  if (FIN && $("#nv-solofin").checked) { const fuori = NV.filter((x) => !FIN.m[x.isin]).map((x) => x.isin); if (fuori.length) return no(fuori.join(", ") + (fuori.length > 1 ? " non sono" : " non è") + " nella lista Fineco gratuiti: togli la spunta «Solo ETF a zero commissioni su Fineco» o togli il titolo."); }
+  const def = { nome, versione: "V" + v, descrizione: $("#nv-d").value.trim() || "Portafoglio " + nome, valore: c.totale, titoli: c.righe };
+  chiudiNuovo(); creaDaDefinizione(def);  // scarica i dati dei titoli, scrive nome_Vn.json nella cartella e apre il portafoglio
+};
 function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure null (con il motivo in #mt-err) se qualcosa non va
   const err = $("#mt-err"); err.textContent = "";
   const no = (m) => { err.textContent = m; return null; };
