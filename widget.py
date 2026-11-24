@@ -40,7 +40,8 @@ def dati_widget(doc, definizione):
     date, px, fondi = doc["dates"], doc["px"], doc["funds"]
     T = len(date)
     sigla = {f["isin"]: f["s"] for f in fondi}
-    tr = [x for x in (definizione.get("transazioni") or []) if isinstance(x, dict)]
+    # le operazioni solo pianificate («pianificata»: «Y») non sono investite: il widget conta solo quelle eseguite
+    tr = [x for x in (definizione.get("transazioni") or []) if isinstance(x, dict) and str(x.get("pianificata", "N")).strip().upper() not in ("Y", "TRUE")]
     if not tr:  # nessun acquisto: il piano (quote intere sui pesi, ribilanciato ogni giorno) scalato sul valore di oggi
         val = sum(f["q0"] * px[f["s"]][-1] for f in fondi)
         idx = [1.0]
@@ -85,6 +86,11 @@ def dati_widget(doc, definizione):
                 v += sg * l["qe"] * px[l["s"]][t]
                 c += sg * (l["qe"] * l["pr"] if l["v"] else l["costo"])  # capitale versato = acquisti meno incassi delle vendite
         vs.append(v); inv.append(c)
+    if len(vs) < 2 and val > 0:  # acquisti tutti di oggi: la serie dei tuoi acquisti non ha ancora un andamento, si mostra quello dei titoli che hai ora (stesse quote) su tutto lo storico
+        vs = [sum(q * px[s][t] for s, (q, c) in stato.items() if q > 0) for t in range(T)]
+        if vs[-1] > 0:
+            vs = [x / vs[-1] * val for x in vs]
+            return {"val": val, "cost": cost, "real": real, "day": (vs[-1] / vs[-2] - 1) if T > 1 and vs[-2] else None, "ds": list(date), "vs": vs, "is_": None}
     return {"val": val, "cost": cost, "real": real, "day": (vs[-1] / vs[-2] - 1) if len(vs) > 1 and vs[-2] else None, "ds": date[i0:], "vs": vs, "is_": inv}
 
 
