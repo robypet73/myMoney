@@ -111,6 +111,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 .mt-list { display: flex; flex-direction: column; gap: 10px; }
 .mt-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); } .mt-fuori { opacity: .75; }
 .mt-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; } .mt-n { flex: 1 1 200px; min-width: 0; } .mt-p { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); } .mt-p input { width: 78px; text-align: right; }
+.mt-pi { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; } .mt-pi input { width: auto; margin: 0; }
 .mt-r { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 6px; align-items: center; } .mt-r button { justify-self: end; } .mt-card .mt-add-tr { align-self: flex-start; }
 .ct-web { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; } .ct-web summary { cursor: pointer; } .ct-prime { display: flex; flex-direction: column; gap: 8px; } .ct-big { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--fg); cursor: pointer; } .ct-big[hidden] { display: none; } .ct-big:hover, .ct-big:focus-visible { border-color: var(--accent); } .ct-big span { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ct-big small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; } .ct-ic { flex: none; }
 .ct-s { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; } .ct-s:hover, .ct-s:focus-visible { border-color: var(--accent); } .ct-s span { color: var(--muted); word-break: break-all; }
@@ -345,6 +346,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <p class="muted">Aggiungi titoli con l'ISIN, toglili con ✕, cambia i pesi e inserisci per ciascun titolo gli acquisti e le vendite (anche più di uno). Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione; i pesi sono sempre riportati a 100. Senza prezzo, l'operazione usa il prezzo di chiusura del giorno (per i titoli nuovi scrivilo tu). Poi salvi come nuova versione di questo portafoglio o come nuovo, oppure ribilanci prima con la frontiera. «Annulla» scarta tutto.</p>
   <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div id="mt-tab" class="mt-list"></div>
+  <p class="muted" style="font-size:12px;margin:0">Per ogni operazione la spunta <b>«Pianificato»</b> la tiene solo come proposta («da investire», non conta come investito); senza spunta è un acquisto o una vendita eseguiti e conta come investito.</p>
   <p class="muted" id="mt-prop" hidden style="font-size:12px;margin:0"></p>
   <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Peso %<input id="mt-pw" type="number" min="0" max="100" step="any" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button><button class="btn sec small" type="button" id="mt-fin" title="Cerca tra gli ETF a zero commissioni di acquisto su Fineco">Lista Fineco gratuiti…</button></form>
   <label class="muted" style="display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer"><input type="checkbox" id="mt-solofin" style="margin-top:2px"><span>Solo ETF a zero commissioni su Fineco (togli la spunta per aggiungere un ISIN che non è nella lista)</span></label>
@@ -511,11 +513,12 @@ function calcolaPos() {
   WCUR = VAL > 0 ? POS.map((p) => p.valore / VAL) : F.map((f) => f.w);
   calcolaPiano();
 }
-function calcolaPiano() {  // il file indica le quote obiettivo (piano proposto): «da investire» = obiettivo − quote che hai davvero; quando le hai pareggiate la colonna sparisce
+function calcolaPiano() {  // proposte: operazioni solo pianificate (spunta «Pianificato») e quote obiettivo di un ribilanciamento; «da investire» = obiettivo − quote che hai davvero
   DI = F.map(() => 0); WPROP = null;
-  const ob = META.obiettivo; if (!ob || ST.esempio) return;  // le proposte stanno solo nel file (campo «obiettivo»)
-  const tq = F.map((f, i) => (f.s in ob ? ob[f.s] : POS[i].q));
-  DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 0.5 ? Math.round(d * 100) / 100 : 0; });  // acquisti e vendite che inserisci fanno scendere la differenza; a 0 la proposta di quel titolo non c'è più
+  const ob = META.obiettivo, pia = {}; (META.pianificate || []).forEach((x) => { pia[x.s] = (pia[x.s] || 0) + (x.t === "a" ? x.q : -x.q); });
+  if ((!ob && !META.pianificate) || ST.esempio) return;
+  const tq = F.map((f, i) => Math.max(0, f.s in pia ? POS[i].q + pia[f.s] : ob && f.s in ob ? ob[f.s] : POS[i].q));  // un'operazione pianificata su un titolo vale più della quota obiettivo
+  DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 0.5 ? Math.round(d * 100) / 100 : 0; });  // acquisti e vendite eseguiti fanno scendere la differenza; a 0 la proposta di quel titolo non c'è più
   if (!DI.some(Boolean)) return;
   const v = tq.map((q, i) => q * POS[i].prezzo), S = sum(v); if (S > 0) WPROP = v.map((x) => x / S);
 }
@@ -1235,7 +1238,8 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
-const trSalva = () => movimenti();  // le transazioni sono solo quelle che hai inserito tu: le operazioni di un ribilanciamento restano «da investire»
+const pianificateFile = () => (META.pianificate || []).map((x) => ({ isin: (F.find((f) => f.s === x.s) || {}).isin, data: x.d, tipo: x.t === "a" ? "acquisto" : "vendita", quote: x.q, prezzo: x.p, pianificata: true })).filter((x) => x.isin);
+const trSalva = () => movimenti().concat(SV.obiettivo && SV.obiettivo.length ? [] : pianificateFile());  // un nuovo ribilanciamento sostituisce le operazioni pianificate  // le transazioni sono solo quelle che hai inserito tu: le operazioni di un ribilanciamento restano «da investire»
 const obiettivoDa = (ops) => { const n = {}; ops.forEach((o) => { n[o.isin] = (n[o.isin] || 0) + o.n; }); return F.map((f, i) => ({ isin: f.isin, quote: Math.max(0, Math.round((POS[i].q + (n[f.isin] || 0)) * 1e6) / 1e6) })).filter((x) => x.quote > 0 || n[x.isin] != null); };  // quote da avere alla fine = quelle che hai + le operazioni proposte
 function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo) che portano i titoli che hai davvero sui pesi `w`, senza nuovi versamenti
   if (ST.esempio || !(VAL > 0)) return [];
@@ -1366,7 +1370,7 @@ function mtDisegna() {
     <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}<div class="fsub num">${esc(x.isin)}${FIN ? (FIN.m[x.isin] ? ' · <span class="up">Fineco 0 €</span>' : ' · <span class="muted">non nella lista Fineco gratuiti</span>') : ""}</div></div>
       <label class="mt-p">Peso % <input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mt="${i}" value="${esc(x.peso)}" placeholder="${x.s ? "" : "1"}" aria-label="Peso di ${esc(x.isin)}"></label>
       <button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></div>
-    ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
+    ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><label class="mt-pi" title="Spuntata: l'operazione è solo pianificata e non conta come investito; senza spunta è eseguita"><input type="checkbox" data-f="pi" data-i="${i}" data-k="${k}"${r.pi ? " checked" : ""}> Pianificato</label><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
     <button class="btn sec small mt-add-tr" type="button" data-tr-add="${i}">+ Acquisto o vendita</button></div>`).join("");
   mtSomma();
 }
@@ -1380,8 +1384,8 @@ function apriModTit() {
   if (!PF.server) { stato("Per cambiare i titoli serve il programma locale (o l'app).", true); return; }
   const mov = movimenti();
   MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: !!(POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9),
-    tr: mov.filter((m) => m.isin === f.isin).map((m) => ({ d: m.data, t: m.tipo, q: String(m.quote), p: String(m.prezzo) })) }));
-  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; $("#mt-solofin").checked = finSolo(); $("#mt-pick").hidden = true; { const p = $("#mt-prop"), n = DI.filter(Boolean).length; p.hidden = !n; p.textContent = n ? "Proposte attive su " + n + " titoli (quote da comprare o vendere). Inserendo acquisti e vendite la differenza si ricalcola e, a 0, la proposta di quel titolo sparisce; se cambi i pesi o i titoli le proposte vengono annullate." : ""; } mtDisegna(); caricaFin().then((d) => { if (d && !$("#modtit").hidden) mtDisegna(); }); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
+    tr: mov.filter((m) => m.isin === f.isin).map((m) => ({ d: m.data, t: m.tipo, q: String(m.quote), p: String(m.prezzo), pi: false })).concat((META.pianificate || []).filter((x) => x.s === f.s).map((x) => ({ d: x.d, t: x.t === "a" ? "acquisto" : "vendita", q: String(x.q), p: String(x.p), pi: true }))) }));
+  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; $("#mt-solofin").checked = finSolo(); $("#mt-pick").hidden = true; { const p = $("#mt-prop"), n = DI.filter(Boolean).length; p.hidden = !n; p.textContent = n ? "Proposte attive su " + n + " titoli (quote da comprare o vendere). Inserendo acquisti e vendite la differenza si ricalcola e, a 0, la proposta di quel titolo sparisce; se cambi i pesi o i titoli le proposte vengono annullate. Spuntando «Pianificato» su un'operazione la tieni solo come proposta, senza contarla come investita." : ""; } mtDisegna(); caricaFin().then((d) => { if (d && !$("#modtit").hidden) mtDisegna(); }); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
 }
 const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
 $("#imp-annprop").onclick = async () => {  // toglie le proposte dal file
@@ -1394,7 +1398,7 @@ $("#modtit").addEventListener("mousedown", (e) => { if (e.target.id === "modtit"
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modtit").hidden) chiudiModTit(); });
 $("#mt-tab").addEventListener("input", (e) => {
   const el = e.target;
-  if (el.dataset.f) { MT[+el.dataset.i].tr[+el.dataset.k][el.dataset.f] = el.value; return; }  // data, tipo, quote o prezzo di un'operazione
+  if (el.dataset.f) { MT[+el.dataset.i].tr[+el.dataset.k][el.dataset.f] = el.type === "checkbox" ? el.checked : el.value; return; }  // data, tipo, quote o prezzo di un'operazione
   const i = el.dataset.mt; if (i == null) return;
   MT[+i].peso = el.value; const v = el.value;
   if (v !== "" && +v >= 0 && +v <= 100) { mtRiscala(+i); $$("#mt-tab input[data-mt]").forEach((inp) => { if (+inp.dataset.mt !== +i) inp.value = MT[+inp.dataset.mt].peso; }); }  // cambiando un peso gli altri si ridistribuiscono in proporzione, a fare 100
@@ -1519,12 +1523,12 @@ function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure nu
     if (!(+r.q > 0)) return no(nome + ": le quote devono essere maggiori di 0.");
     let p = +r.p;
     if (!(p > 0)) { const pa = prezzoAl(x.isin, r.d); if (pa > 0) p = Math.round(pa * 1e4) / 1e4; else return no(nome + ": scrivi il prezzo unitario (per un titolo nuovo non è noto)."); }
-    transazioni.push({ isin: x.isin, data: r.d, tipo: r.t, quote: +r.q, prezzo: p });
+    transazioni.push({ isin: x.isin, data: r.d, tipo: r.t, quote: +r.q, prezzo: p, ...(r.pi ? { pianificata: true } : {}) });
   }
   transazioni.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
-  const poss = {}; for (const o of transazioni) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
+  const poss = {}; for (const o of transazioni.filter((x) => !x.pianificata)) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
   const invariato = META.obiettivo && MT.length === F.length && MT.every((x) => x.s && Math.abs(mtVal(x) - x.w) < 0.06);  // pesi e titoli come prima: il piano proposto (quote obiettivo) resta, e «Da investire» scende man mano che inserisci gli acquisti
-  const obiettivo = invariato ? F.filter((f) => f.s in META.obiettivo && Math.abs(META.obiettivo[f.s] - (poss[f.isin] || 0)) >= 0.5).map((f) => ({ isin: f.isin, quote: META.obiettivo[f.s] })) : [];  // si salvano solo le differenze ancora aperte: quando le quote che hai pareggiano la proposta, quella proposta sparisce dal file
+  const obiettivo = invariato ? F.filter((f) => f.s in META.obiettivo && Math.abs(META.obiettivo[f.s] - (poss[f.isin] || 0)) >= 0.5 && !transazioni.some((o) => o.pianificata && o.isin === f.isin)).map((f) => ({ isin: f.isin, quote: META.obiettivo[f.s] })) : [];  // si salvano solo le differenze ancora aperte: quando le quote che hai pareggiano la proposta, quella proposta sparisce dal file
   return { titoli: MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), transazioni, obiettivo };
 }
 $("#mt-salva").onclick = () => { const dati = mtDati(); if (dati) apriSalvaTitoli(dati); };

@@ -107,6 +107,10 @@
             "type": "number",
             "exclusiveMinimum": 0,
             "description": "Prezzo unitario in euro."
+          },
+          "pianificata": {
+            "type": "boolean",
+            "description": "Facoltativo. true = operazione solo pianificata: non conta come investito e compare come «da investire»; per renderla eseguita togli il campo (o metti false)."
           }
         }
       }

@@ -195,11 +195,12 @@
       if (x.tipo !== "acquisto" && x.tipo !== "vendita") throw Err("«transazioni» n. " + n + " (" + isin + "): «tipo» deve essere «acquisto» o «vendita».");
       const quote = parseFloat(x.quote), prezzo = parseFloat(x.prezzo);
       if (!(quote > 0 && prezzo > 0)) throw Err("«transazioni» n. " + n + " (" + isin + "): «quote» e «prezzo» devono essere numeri maggiori di 0 (la vendita ha tipo «vendita», non quote negative).");
-      return { isin, data: String(x.data), tipo: x.tipo, quote: Number.isInteger(quote) ? quote : Math.round(quote * 1e6) / 1e6, prezzo: Math.round(prezzo * 1e6) / 1e6 };
+      if (x.pianificata !== undefined && x.pianificata !== null && typeof x.pianificata !== "boolean") throw Err("«transazioni» n. " + n + " (" + isin + "): «pianificata» deve essere true o false.");
+      return { isin, data: String(x.data), tipo: x.tipo, quote: Number.isInteger(quote) ? quote : Math.round(quote * 1e6) / 1e6, prezzo: Math.round(prezzo * 1e6) / 1e6, ...(x.pianificata ? { pianificata: true } : {}) };  // pianificata: non conta come investito, compare come «da investire»
     });
     out.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.tipo === "acquisto" ? 0 : 1) - (b.tipo === "acquisto" ? 0 : 1)));
     const pos = {};
-    out.forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
+    out.filter((x) => !x.pianificata).forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
     return out;
   }
   function validaObiettivo(ob, ammessi) {  // quote obiettivo del piano proposto: [{isin, quote}]; «da investire» = quote obiettivo − quote che hai davvero
@@ -291,7 +292,10 @@
     if (nomefile.startsWith("bozza:")) { meta.chiave += "-bozza-" + nomefile.slice(6); meta.bozza = true; if (d._da) meta.bozza_da = d._da; }  // acquisti e limiti nel browser distinti da quelli del portafoglio di partenza
     if (df.frontiera) meta.frontiera = df.frontiera;
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
-    if (df.transazioni.length) meta.transazioni = df.transazioni.map((x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo }));
+    if (df.transazioni.length) {  // movimenti eseguiti: sostituiscono gli acquisti d'esempio; quelli solo pianificati vanno in «pianificate»
+      const conv = (x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo });
+      meta.transazioni = df.transazioni.filter((x) => !x.pianificata).map(conv); if (df.transazioni.some((x) => x.pianificata)) meta.pianificate = df.transazioni.filter((x) => x.pianificata).map(conv);
+    }
     if (df.obiettivo.length) meta.obiettivo = Object.fromEntries(df.obiettivo.map((x) => [siglaDi[x.isin], x.quote]));  // quote del piano proposto: la pagina ne ricava «da investire»
     say({ t: "salvato", n: fondi.length });
     return { meta, funds: fondi, dates: date, px };
@@ -393,8 +397,9 @@
   }
   function annullaProposte(f) {  // toglie le proposte (quote obiettivo) dal file: stesso file, pesi e transazioni restano
     const d = definizione(f); if (!d || String(f).startsWith("bozza:")) throw Err("Portafoglio non trovato.");
-    if (!d.obiettivo || !d.obiettivo.length) return info(f);
-    const nd = { ...d }; delete nd.obiettivo; validaDefinizione(nd);
+    const pian = (d.transazioni || []).some((x) => x.pianificata);
+    if ((!d.obiettivo || !d.obiettivo.length) && !pian) return info(f);
+    const nd = { ...d }; delete nd.obiettivo; if (pian) { nd.transazioni = nd.transazioni.filter((x) => !x.pianificata); if (!nd.transazioni.length) delete nd.transazioni; } validaDefinizione(nd);
     scriviLS("mm:pf:" + f, nd); rispecchia({ write: [scriviFile(f)] }); return info(f);
   }
   function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); rispecchia({ trash: [f] }); return { eliminato: f, ultimo: ultimo() }; }

@@ -245,10 +245,15 @@ def valida_transazioni(tr, isin_ammessi):
             raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere numeri.")
         if not (quote > 0 and prezzo > 0):
             raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere maggiori di 0 (la vendita ha tipo «vendita», non quote negative).")
-        out.append({"isin": isin, "data": str(data), "tipo": tipo, "quote": int(quote) if quote == int(quote) else round(quote, 6), "prezzo": round(prezzo, 6)})
+        if x.get("pianificata") not in (None, True, False):
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «pianificata» deve essere true o false.")
+        nuova = {"isin": isin, "data": str(data), "tipo": tipo, "quote": int(quote) if quote == int(quote) else round(quote, 6), "prezzo": round(prezzo, 6)}
+        if x.get("pianificata"):  # solo pianificata: non conta come investito, compare come «da investire»
+            nuova["pianificata"] = True
+        out.append(nuova)
     out.sort(key=lambda t: (t["data"], 0 if t["tipo"] == "acquisto" else 1))  # a pari data prima gli acquisti
     possedute = {}
-    for t in out:
+    for t in (x for x in out if not x.get("pianificata")):  # il controllo sulle vendite vale per quelle eseguite
         q = possedute.get(t["isin"], 0) + (t["quote"] if t["tipo"] == "acquisto" else -t["quote"])
         if q < -1e-9:
             raise ValueError(f"Vendita di {t['isin']} del {t['data']}: stai vendendo più quote di quelle che avevi.")
@@ -822,8 +827,11 @@ class Portafogli:
             meta["frontiera"] = df["frontiera"]
         if df["vincoli"]:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
-        if df["transazioni"]:  # i movimenti reali: la pagina li usa al posto degli acquisti d'esempio
-            meta["transazioni"] = [{"s": sigla_di[t["isin"]], "d": t["data"], "t": "a" if t["tipo"] == "acquisto" else "v", "q": t["quote"], "p": t["prezzo"]} for t in df["transazioni"]]
+        if df["transazioni"]:  # i movimenti reali (eseguiti): la pagina li usa al posto degli acquisti d'esempio; quelli solo pianificati vanno in «pianificate»
+            conv = lambda t: {"s": sigla_di[t["isin"]], "d": t["data"], "t": "a" if t["tipo"] == "acquisto" else "v", "q": t["quote"], "p": t["prezzo"]}
+            meta["transazioni"] = [conv(t) for t in df["transazioni"] if not t.get("pianificata")]
+            if any(t.get("pianificata") for t in df["transazioni"]):
+                meta["pianificate"] = [conv(t) for t in df["transazioni"] if t.get("pianificata")]
         if df["obiettivo"]:  # quote del piano proposto: la pagina ne ricava «da investire» e il punto «Piano proposto»
             meta["obiettivo"] = {sigla_di[x["isin"]]: x["quote"] for x in df["obiettivo"]}
         if self.prezzi is not None:
@@ -1070,9 +1078,13 @@ class Portafogli:
         d = self.definizione(nomefile)
         if d is None or str(nomefile).startswith("bozza:"):
             raise ValueError("Portafoglio non trovato.")
-        if not d.get("obiettivo"):
+        if not d.get("obiettivo") and not any(isinstance(t, dict) and t.get("pianificata") for t in (d.get("transazioni") or [])):
             return self.info(nomefile)  # niente da annullare
-        testo = formatta_definizione({k: v for k, v in d.items() if k != "obiettivo"})
+        resto = [t for t in (d.get("transazioni") or []) if not (isinstance(t, dict) and t.get("pianificata"))]  # anche le operazioni solo pianificate sono proposte
+        nd = {k: v for k, v in d.items() if k not in ("obiettivo", "transazioni")}
+        if resto:
+            nd["transazioni"] = resto
+        testo = formatta_definizione(nd)
         valida_definizione(json.loads(testo))  # il file riscritto deve restare valido
         try:
             self._scrivi_remoto(scrivi=[(nomefile, testo)], togli=[])
