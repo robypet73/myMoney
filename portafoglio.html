@@ -278,7 +278,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:210px">Variazione dell'investimento (€, + o −)<input type="number" id="rb-c" step="100" value="0" placeholder="0"></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:210px">Variazione dell'investimento (€, + o −) <small id="rb-att" style="font-weight:normal"></small><input type="number" id="rb-c" step="100" value="0" placeholder="0"></label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti dei titoli che ho già</label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite dei titoli che ho già</label>
       </div>
@@ -775,16 +775,26 @@ function disegnaSoglie() {
   CLASSI.forEach((c) => { const t = sum(F.filter((f) => f.cls === c).map((f) => f.w)), a = sum(F.map((f, i) => (f.cls === c ? WCUR[i] : 0))); if (Math.abs(a - t) >= SOGLIA_ASS) voci.push(`${CNOME[c]} è al ${pct(a)} contro ${pct(t, 0)} del piano`); });
   box.innerHTML = voci.length ? `<div class="soglie fuori"><strong class="warn">Fuori soglia: conviene ribilanciare.</strong><ul>${voci.map((v) => `<li>${v}</li>`).join("")}</ul><div class="muted" style="margin-top:6px">Vendi solo l'eccesso e, se puoi, usa prima i nuovi versamenti.</div></div>` : `<div class="soglie"><strong class="up">Entro le soglie: nessun ribilanciamento necessario.</strong></div>`;
 }
+function riempi(v, w, B) {  // valori finali f_i = max(v_i, L·w_i) con somma = Σv + B: i titoli già sopra l'obiettivo restano com'erano, gli altri salgono tutti allo stesso livello L
+  const S = sum(v) + B, wp = w.filter((x) => x > 1e-9); if (!wp.length || !(B > 0)) return v.slice();
+  let lo = 0, hi = S / Math.min(...wp);
+  for (let k = 0; k < 90; k++) { const L = (lo + hi) / 2; if (sum(v.map((vi, i) => Math.max(vi, L * w[i]))) > S) hi = L; else lo = L; }
+  return v.map((vi, i) => Math.max(vi, lo * w[i]));
+}
 function calcolaRib() {
-  /* Obiettivo: i pesi scelti (piano, massimo Sharpe, punto della frontiera…). Investimento attuale = il maggiore tra il valore dell'investimento e quello che hai già; la variazione (+ aumenta, − riduce, predefinito 0)
-     dà il totale del piano T. Con variazione 0 e investimento tutto in portafoglio si ribilanciano solo i pesi. I titoli che hai già si toccano solo se spunti acquisti o vendite; i titoli non ancora acquistati si comprano sempre. */
+  /* Obiettivo: i pesi scelti (piano, massimo Sharpe, punto della frontiera…). Investimento attuale = il valore di ciò che hai in portafoglio; la variazione (+ aumenta, − riduce, predefinito 0)
+     dà il totale del piano T. Con variazione 0 si ribilanciano solo i pesi. I titoli che hai già si toccano solo se spunti acquisti o vendite; i titoli non ancora acquistati si comprano sempre. */
   const acq = ST.rib.a !== false, vend = !!ST.rib.v, wt = pesiObiettivo(), last = DATES.length - 1;
-  const base = Math.max(IMPORTO(), VAL), delta = Number.isFinite(+ST.rib.c) ? +ST.rib.c : 0, T0 = Math.max(0, base + delta), B0 = T0 - VAL;  // B0 < 0: serve vendere
+  const base = VAL, delta = Number.isFinite(+ST.rib.c) ? +ST.rib.c : 0, T0 = Math.max(0, base + delta), B0 = T0 - VAL;  // B0 < 0: serve vendere
   const v = POS.map((p) => p.valore), pr = F.map((f, i) => PX[i][last]), tieni = POS.map((p) => p.q > 1e-9);
   let x = F.map(() => 0), modo, B = Math.max(0, B0), T = VAL + B, tot = T, tgt = wt.map((w) => w * T), avviso = "";
   if (!(T0 > 0)) return { vuoto: true };
   if (acq && vend) { T = T0; tot = T0; B = B0; tgt = wt.map((w) => w * T); x = tgt.map((g, i) => g - v[i]); modo = "Acquisti e vendite: porta il portafoglio ai pesi scelti con le operazioni qui sotto."; }
-  else if (acq) { const sh = tgt.map((g, i) => Math.max(0, g - v[i])), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * B : 0)); modo = "Solo acquisti: non si vende nulla; la somma da investire va ai titoli sotto l'obiettivo (anche quelli che hai già), in proporzione al divario."; if (B0 < 0) avviso = " Una riduzione dell'investimento richiede di spuntare le vendite."; }
+  else if (acq) {
+    const f = riempi(v, wt, B); x = f.map((fi, i) => fi - v[i]); tgt = f;  // obiettivo raggiungibile senza vendere
+    modo = "Solo acquisti: non si vende nulla. I titoli che hai già e che superano l'obiettivo restano dove sono; la somma da investire va ai titoli sotto l'obiettivo per avvicinarsi ai pesi scelti.";
+    if (!(B > 0)) avviso = " Per comprare indica una variazione dell'investimento positiva.";
+  }
   else if (vend) {
     T = T0; tot = T0; tgt = wt.map((w) => w * T);
     const venduti = tgt.map((g, i) => (tieni[i] ? Math.min(0, g - v[i]) : 0)), incasso = -sum(venduti);
@@ -795,6 +805,7 @@ function calcolaRib() {
     tgt = tgt.map((g, i) => (tieni[i] ? v[i] : x[i])); tot = VAL + B;
     modo = S > 0 ? "Senza acquisti né vendite i titoli che hai già non si toccano: i nuovi pesi si applicano solo ai titoli non ancora acquistati, con la somma ancora da investire. Non si arriva alla frontiera." : "Senza acquisti né vendite i titoli che hai già non si toccano, e non ci sono titoli ancora da acquistare con peso: non c'è nulla da fare.";
     if (B0 < 0) avviso = " Una riduzione dell'investimento richiede di spuntare le vendite.";
+    else if (!(B > 0)) avviso = " Per comprare indica una variazione dell'investimento positiva.";
   }
   const ops = F.map((f, i) => {
     let n = Math.round(x[i] / pr[i]);
@@ -828,6 +839,7 @@ function aggiornaRib() {
   disegnaSoglie();
   const acq = ST.rib.a !== false, vend = !!ST.rib.v;
   $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = vend; $("#rb-a").checked = acq;
+  $("#rb-att").textContent = "· ora " + eur(VAL);
   const R = calcolaRib();
   if (R.vuoto) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci il valore dell'investimento (in Modifica portafoglio): il piano mostrerà quante quote comprare."; $("#rb-crea").disabled = true; return; }
   const { wt, tgt, tot, ops, speso, dopoV, B } = R;
