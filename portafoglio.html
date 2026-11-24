@@ -25,6 +25,12 @@ button { cursor: pointer; }
 .btn { background: var(--accent); color: #06121f; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; }
 .btn.sec { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
 .btn.small { padding: 5px 10px; font-size: 13px; }
+.info { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; padding: 0; border: 1px solid var(--muted); border-radius: 50%; background: transparent; color: var(--muted); font: italic 600 11px/1 Georgia, 'Times New Roman', serif; cursor: pointer; vertical-align: middle; flex: none; text-transform: none; letter-spacing: 0; } .info:hover, .info:focus-visible { color: var(--accent); border-color: var(--accent); }
+#infopop { position: fixed; z-index: 100000; max-width: calc(100vw - 24px); max-height: 70vh; overflow: auto; background: var(--raised); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); font-size: 13px; line-height: 1.5; font-weight: 400; text-transform: none; letter-spacing: 0; text-align: left; } #infopop[hidden] { display: none; }
+#infopop h4 { margin: 0 24px 6px 0; font-size: 14px; } #infopop p { margin: 0 0 8px; } #infopop b { color: var(--accent); font-weight: 600; } #infopop .ix { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.val-r { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; } .val-r:first-child { border-top: 0; } .val-d { width: 12px; height: 12px; border-radius: 50%; } .val-d.v { background: var(--good); } .val-d.g { background: var(--warn); } .val-d.r { background: var(--bad); } .val-d.n { background: var(--line); }
+.val-s { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin-top: -2px; } .val-v { font-weight: 600; font-variant-numeric: tabular-nums; } .val-sum { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 8px; } .val-sum b { font-variant-numeric: tabular-nums; }
+.val-ed { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 80px; gap: 6px 8px; align-items: center; font-size: 13px; margin-top: 8px; } .val-ed input { width: 100%; min-width: 0; } .val-ed .h { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
 .btn.nuovo { background: var(--good); color: var(--bg); } .btn.nuovo:hover { filter: brightness(1.08); }  /* «Crea portafoglio»: verde, diverso dagli altri pulsanti */
 .btn:disabled { opacity: .55; cursor: default; }
 .btn:focus-visible, .seg button:focus-visible, .flink:focus-visible, .pt:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
@@ -125,7 +131,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
   body { background: #fff; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .wrap { max-width: none; padding: 0; gap: 18px; }
   .solo-stampa { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
-  .zreset, .ext, .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del] { display: none !important; }
+  .zreset, .ext, .pfsel, .agg, #bozza, #rs, .rs-lab, .rs-btn, #vincoli, .seg, #banner, .azioni, .ovl, #start, #frper-n, #vmsg, details, [data-add], [data-del], .info, #infopop { display: none !important; }
   .panel, .kpi, .fcard, .chart, table, h2, h3 { break-inside: avoid; }
   .sec-head, h2 { break-after: avoid; }
   section { break-inside: auto; }
@@ -210,19 +216,33 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div id="banner"></div>
   <div class="kpi" id="kpi"></div>
 
+  <section id="valutazione">
+    <div class="sec-head"><h2>Valutazione del portafoglio<button type="button" class="info" data-i="v_pannello" aria-label="Spiegazione">i</button></h2><span class="muted" id="val-nota"></span></div>
+    <div class="panel" id="val-pan">
+      <div id="val-sel" class="seg" role="group" aria-label="Su quale portafoglio" hidden style="margin-bottom:8px"><button type="button" data-vs="corrente">Corrente (investito)</button><button type="button" data-vs="piano">Piano proposto</button></div>
+      <div class="val-sum" id="val-sum"></div>
+      <div id="val-lista"></div>
+      <details id="val-soglie"><summary>Imposta le soglie</summary>
+        <p class="muted" style="font-size:12px;margin:6px 0 0">Le soglie sono indicative: regolale in base al tuo obiettivo e alla tua tolleranza al rischio. Verde = nei limiti, giallo = vicino al limite, rosso = fuori.</p>
+        <div class="val-ed" id="val-ed"></div>
+        <div style="margin-top:10px"><button class="btn sec small" id="val-reset" type="button">Ripristina le soglie</button></div>
+      </details>
+    </div>
+  </section>
+
   <section>
-    <div class="sec-head"><h2>Storico del portafoglio</h2>
+    <div class="sec-head"><h2>Storico del portafoglio<button type="button" class="info" data-i="g_storico" aria-label="Spiegazione">i</button></h2>
       <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div>
     </div>
-    <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo</h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
-    <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente</h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
-    <div class="panel"><div class="fhead"><h3>Guadagno rispetto al minimo precedente</h3><span class="num" id="pfgm"></span></div><div class="chart" id="gm"></div></div>
+    <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo<button type="button" class="info" data-i="g_valore" aria-label="Spiegazione">i</button></h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
+    <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente<button type="button" class="info" data-i="g_dd" aria-label="Spiegazione">i</button></h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
+    <div class="panel"><div class="fhead"><h3>Guadagno rispetto al minimo precedente<button type="button" class="info" data-i="g_gm" aria-label="Spiegazione">i</button></h3><span class="num" id="pfgm"></span></div><div class="chart" id="gm"></div></div>
     <div class="years" id="anni"></div>
     <p class="muted" style="max-width:80ch">Ricostruzione con i pesi attuali tenuti costanti (portafoglio ribilanciato ogni giorno) sui prezzi giornalieri; non è un risultato realmente ottenuto.</p>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Composizione</h2><span class="muted" id="prezzial"></span></div>
+    <div class="sec-head"><h2>Composizione<button type="button" class="info" data-i="c_classi" aria-label="Spiegazione">i</button></h2><span class="muted" id="prezzial"></span></div>
     <div class="panel" id="invest" style="display:none" hidden>
       <label>Valore totale dell'investimento (€)<input type="number" id="imp" min="0" step="100" inputmode="decimal"></label>
       <p class="muted" id="imp-n"></p>
@@ -235,32 +255,32 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   </section>
 
   <section>
-    <div class="sec-head"><h2>Dentro il portafoglio</h2><span class="muted" id="espnota"></span></div>
+    <div class="sec-head"><h2>Dentro il portafoglio<button type="button" class="info" data-i="c_dentro" aria-label="Spiegazione">i</button></h2><span class="muted" id="espnota"></span></div>
     <div class="pies">
-      <div class="panel pie"><div class="fhead"><h3>Tipo di investimento</h3></div><div id="p-tipo"></div></div>
-      <div class="panel pie"><div class="fhead"><h3>Area geografica</h3></div><div id="p-aree"></div></div>
-      <div class="panel pie"><div class="fhead"><h3>Settori</h3><span class="muted" id="e-az"></span></div><div id="p-settori"></div></div>
+      <div class="panel pie"><div class="fhead"><h3>Tipo di investimento<button type="button" class="info" data-i="c_tipo" aria-label="Spiegazione">i</button></h3></div><div id="p-tipo"></div></div>
+      <div class="panel pie"><div class="fhead"><h3>Area geografica</h3><button type="button" class="info" data-i="c_aree" aria-label="Spiegazione">i</button></div><div id="p-aree"></div></div>
+      <div class="panel pie"><div class="fhead"><h3>Settori</h3><button type="button" class="info" data-i="c_settori" aria-label="Spiegazione">i</button><span class="muted" id="e-az"></span></div><div id="p-settori"></div></div>
     </div>
     <div class="grid">
-      <div class="panel"><div class="fhead"><h3>Paesi principali</h3><span class="muted">parte azionaria</span></div><ul class="bars" id="e-paesi"></ul></div>
-      <div class="panel"><div class="fhead"><h3>Valute dei titoli</h3></div><ul class="bars" id="e-valute"></ul></div>
-      <div class="panel"><div class="fhead"><h3>Primi titoli azionari</h3><span class="muted" id="e-n"></span></div><ul class="bars" id="e-titoli"></ul></div>
-      <div class="panel"><div class="fhead"><h3>Obbligazioni per paese dell'emittente</h3><span class="muted" id="e-ob"></span></div><ul class="bars" id="e-obbl"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Paesi principali<button type="button" class="info" data-i="c_paesi" aria-label="Spiegazione">i</button></h3><span class="muted">parte azionaria</span></div><ul class="bars" id="e-paesi"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Valute dei titoli<button type="button" class="info" data-i="c_valute" aria-label="Spiegazione">i</button></h3></div><ul class="bars" id="e-valute"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Primi titoli azionari<button type="button" class="info" data-i="c_titoli" aria-label="Spiegazione">i</button></h3><span class="muted" id="e-n"></span></div><ul class="bars" id="e-titoli"></ul></div>
+      <div class="panel"><div class="fhead"><h3>Obbligazioni per paese dell'emittente<button type="button" class="info" data-i="c_obbl" aria-label="Spiegazione">i</button></h3><span class="muted" id="e-ob"></span></div><ul class="bars" id="e-obbl"></ul></div>
     </div>
     <p class="muted" style="max-width:80ch" id="nota-comp">Ogni valore è una quota del portafoglio intero, calcolata sui pesi attuali (o sul piano, se non hai inserito acquisti) guardando dentro ai fondi, con le composizioni pubblicate. Per i titoli sono considerati i primi dieci di ogni fondo.</p>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Frontiera efficiente</h2><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
+    <div class="sec-head"><h2>Frontiera efficiente<button type="button" class="info" data-i="f_front" aria-label="Spiegazione">i</button></h2><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
     <div class="panel"><div class="chart" id="front-home" aria-label="Frontiera efficiente (si lavora con «Ribilanciamento…»)"></div><div class="leg" id="fleg-home" style="margin-top:8px"></div></div>
     <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli (si cambiano in «Ribilanciamento…»). Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
     <div class="azioni" style="margin-top:14px"><button class="btn small" id="apririb" type="button" title="Scegli il punto sulla frontiera, i dati e le spunte; poi crea il portafoglio con acquisti e vendite già impostati">Ribilanciamento…</button></div>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Il tuo andamento</h2><span class="muted" id="and-n"></span></div>
-    <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)</h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
-    <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato</h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
+    <div class="sec-head"><h2>Il tuo andamento<button type="button" class="info" data-i="g_andamento" aria-label="Spiegazione">i</button></h2><span class="muted" id="and-n"></span></div>
+    <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)<button type="button" class="info" data-i="g_risultato" aria-label="Spiegazione">i</button></h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
+    <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato<button type="button" class="info" data-i="g_valcap" aria-label="Spiegazione">i</button></h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
   </section>
 
   <section>
@@ -279,13 +299,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div class="top"><h2 id="rib-t">Ribilanciamento</h2><button class="x" id="rib-x" type="button" aria-label="Chiudi">×</button></div>
   <p class="muted">Scegli sulla frontiera il punto dove vuoi arrivare (clic su un punto, cursore del rischio o pulsanti), imposta i dati e i vincoli della curva e le spunte: sotto vedi i nuovi pesi e gli acquisti e le vendite da fare. Senza spunte i titoli che hai già non si toccano e i nuovi pesi si applicano ai titoli non ancora acquistati. «Crea il portafoglio…» salva un nuovo portafoglio con i nuovi pesi e queste operazioni già impostate.</p>
     <div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px"><span class="muted" style="font-size:13px">Dati della frontiera:</span><div class="seg" id="frper" role="group" aria-label="Periodo dei dati della frontiera"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button></div><span class="muted" id="frper-n" style="font-size:12px"></span></div>
-    <div id="blocchi-w" style="border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 10px"><h3 style="margin:0 0 4px;font-size:15px">Quota per classe</h3><p class="muted" style="font-size:12px;margin:0 0 8px">Per ogni classe puoi indicare la quota minima e massima ammessa nel portafoglio. Predefinito: tutto l'intervallo, 0% – 100%.</p><div id="blocchi"></div></div>
+    <div id="blocchi-w" style="border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 10px"><h3 style="margin:0 0 4px;font-size:15px">Quota per classe<button type="button" class="info" data-i="r_quota" aria-label="Spiegazione">i</button></h3><p class="muted" style="font-size:12px;margin:0 0 8px">Per ogni classe puoi indicare la quota minima e massima ammessa nel portafoglio. Predefinito: tutto l'intervallo, 0% – 100%.</p><div id="blocchi"></div></div>
     <details id="vincoli"><summary>Vincoli per fondo (peso minimo e massimo di ciascun fondo)</summary>
       <div class="vinc" id="vinc"></div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><button class="btn sec small" id="vreset" type="button">Ripristina i vincoli</button><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="prud"> Rendimenti prudenti (media tra il fondo e tutti i fondi)</label><span class="lerr" id="vmsg"></span></div>
     </details>
     <div class="panel" id="rischio">
-      <div class="fhead"><h3>Quanta incertezza vuoi accettare?</h3><span class="num" id="rs-v"></span></div>
+      <div class="fhead"><h3>Quanta incertezza vuoi accettare?<button type="button" class="info" data-i="f_incertezza" aria-label="Spiegazione">i</button></h3><span class="num" id="rs-v"></span></div>
       <input type="range" id="rs" min="0" max="200" step="1" value="0" aria-label="Livello di rischio sulla frontiera" disabled>
       <div class="rs-lab"><span>meno incertezza, rendimento più basso</span><span>più incertezza, rendimento più alto</span></div>
       <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="srisk" title="Il punto della frontiera con lo stesso rischio del tuo portafoglio">Stesso rischio, più rendimento</button><button class="btn sec small" type="button" data-rs="srend" title="Il punto della frontiera con lo stesso rendimento del tuo portafoglio">Stesso rendimento, meno rischio</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="maxrr" title="L'estremo alto della frontiera: il punto con il rendimento più alto, che è anche quello con il rischio più alto">Rischio e rendimento massimi</button></div>
@@ -298,7 +318,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano proposto (investito + da investire)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:230px">Totale dell'investimento da raggiungere (€) <small id="rb-att" style="font-weight:normal"></small><input type="number" id="rb-tot" min="0" step="100" inputmode="decimal"></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:230px">Totale dell'investimento da raggiungere (€)<button type="button" class="info" data-i="r_totale" aria-label="Spiegazione">i</button> <small id="rb-att" style="font-weight:normal"></small><input type="number" id="rb-tot" min="0" step="100" inputmode="decimal"></label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti dei titoli che ho già</label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite dei titoli che ho già</label>
       </div>
@@ -352,7 +372,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
   <div class="nv-top"><label>Nome<input id="mt-n" type="text" maxlength="30" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="Nome del portafoglio"><small>solo lettere e cifre, niente spazi né simboli</small></label><label>Versione<input id="mt-v" type="number" min="1" max="999" step="1" inputmode="numeric" aria-label="Versione"></label></div>
   <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Descrizione<input id="mt-d" type="text" maxlength="300" autocomplete="off" placeholder="una breve frase"></label>
-  <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
+  <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<button type="button" class="info" data-i="m_valore" aria-label="Spiegazione">i</button><input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div id="mt-tab" class="mt-list"></div>
   <p class="muted" id="mt-prop" hidden style="font-size:12px;margin:0"></p>
   <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><button class="btn sec small" type="submit">Aggiungi</button><button class="btn sec small" type="button" id="mt-fin" title="Cerca tra gli ETF a zero commissioni di acquisto su Fineco">Lista Fineco gratuiti…</button></form>
@@ -399,6 +419,82 @@ const D = JSON.parse(document.getElementById("dati").textContent);
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = (v, d = 0) => v.toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: "always" });
 const eur = (v, d = 0) => nf(v, d) + " €", pct = (v, d = 1) => nf(v * 100, d) + "%", sgn = (v, d = 1) => (v > 0.00005 ? "+" : "") + pct(v, d), sgnE = (v, d = 0) => (v > 0.5 / Math.pow(10, d) ? "+" : "") + eur(v, d);
+/* ---------- «i»: spiegazione di ogni dato importante (descrizione, come si legge, valori tipici) ---------- */
+const INFO = {
+  k_valore: { t: "Valore attuale", d: "Quanto vale oggi quello che possiedi davvero: quote × ultimo prezzo di ciascun titolo.", l: "Confrontalo con «Investito»: la differenza è il risultato non ancora realizzato. Senza acquisti inseriti mostra il valore del piano.", v: "Dipende dal capitale: non esiste un valore «giusto»." },
+  k_investito: { t: "Investito", d: "Il capitale ancora investito: costo delle quote che hai, al prezzo medio d'acquisto. Le vendite lo riducono.", l: "Gli acquisti solo pianificati («da investire») non contano qui finché non li esegui.", v: "Serve come base per il risultato in %." },
+  k_risultato: { t: "Risultato", d: "Guadagno o perdita: valore attuale meno capitale investito, più gli utili già realizzati con le vendite. L'XIRR è il rendimento annuo vero, che tiene conto di quando hai versato.", l: "In euro e in % sull'investito. Il rendimento annuo ha senso solo dopo qualche mese.", v: "Su 1–2 anni da −10% a +15% è normale per un portafoglio misto: non giudicare prima di 3–5 anni." },
+  k_strategia: { t: "Rendita strategia", d: "Se avessi messo 1 € su ogni titolo il giorno del suo primo acquisto, quanto guadagneresti oggi in media.", l: "Misura la qualità delle scelte dei titoli, non il tempismo né i pesi. Più è alta, meglio sono andati i titoli scelti.", v: "Confrontala con il rendimento storico: se è molto più bassa, hai scelto titoli che sono andati peggio del resto." },
+  k_rend: { t: "Rendimento annuo storico", d: "Rendimento annuo composto (CAGR) che il portafoglio avrebbe avuto negli ultimi anni con i pesi attuali tenuti costanti.", l: "È una ricostruzione del passato, non una previsione: più la finestra è corta, più dipende dal periodo.", v: "Azioni mondiali 6–9% l'anno su 10+ anni, obbligazioni 2–4%, oro 3–8%. Sopra il 12% su 3–5 anni è quasi sempre merito del periodo." },
+  k_dd: { t: "Perdita massima", d: "La discesa più grande dal massimo precedente al minimo successivo nel periodo osservato (drawdown).", l: "Chiediti: sopporterei di vedere il capitale scendere di questa percentuale senza vendere?", v: "Obbligazionario −5/−10%; misto −10/−20%; azionario −25/−35%; nelle crisi gravi −40/−55%." },
+  k_costo: { t: "Costo annuo (TER)", d: "Costo medio annuo dei fondi, pesato per quanto investi in ciascuno. Si paga ogni anno sul valore detenuto.", l: "Su 40.000 € lo 0,20% sono 80 € l'anno. I costi si sommano nel tempo.", v: "ETF indicizzati 0,07–0,30%; settoriali e tematici 0,35–0,60%; sopra 0,75% è caro." },
+  k_divers: { t: "Diversificazione", d: "Due misure: il DR (rischio dei fondi presi da soli diviso rischio del portafoglio) e i fondi effettivi (quanti fondi di peso uguale darebbero la stessa concentrazione).", l: "Più sono alti, più i fondi si compensano. DR 1 = nessuna diversificazione.", v: "DR 1,1–1,2 poco diversificato; 1,3–1,5 buono. Fondi effettivi 4–8 sono tipici di 6–10 ETF." },
+  v_pannello: { t: "Valutazione del portafoglio", d: "Un quadro di indicatori oggettivi calcolati con i dati già presenti nell'app, ciascuno con un semaforo rispetto a soglie che puoi cambiare.", l: "Verde: dentro il limite. Giallo: vicino al limite. Rosso: fuori. Non è un voto unico: serve a vedere dove sono i punti deboli.", v: "Le soglie predefinite sono convenzioni prudenti: adattale al tuo obiettivo e alla tua tolleranza al rischio." },
+  v_vol: { t: "Rischio (volatilità annua)", d: "Quanto oscillano i rendimenti in un anno (deviazione standard annualizzata).", l: "Più è alta, più il valore sale e scende. Una volatilità del 10% significa oscillazioni tipiche di ±10% in un anno.", v: "Obbligazionario 2–5%; misto 7–12%; azionario mondiale 14–18%; settoriali 20–40%." },
+  v_dd: { t: "Perdita massima storica", d: "La discesa più grande dal massimo precedente al minimo nel periodo osservato.", l: "È il test più concreto del rischio: trasformalo in euro sul tuo capitale e chiediti se lo sopporteresti.", v: "Misto −10/−20%; azionario −25/−35%; nelle crisi gravi fino a −50%." },
+  v_sharpe: { t: "Indice di Sharpe", d: "Rendimento oltre il tasso senza rischio (2%) per ogni unità di rischio: (rendimento − 2%) ÷ volatilità.", l: "Più è alto, più rendimento ottieni per ogni punto di rischio. Confronta solo portafogli sullo stesso periodo.", v: "Sotto 0,3 debole; 0,4–0,7 normale; sopra 0,8 ottimo (ma spesso merito del periodo)." },
+  v_gap: { t: "Distanza dalla frontiera", d: "Quanto rendimento in più darebbe la frontiera efficiente a parità di rischio, con gli stessi fondi e gli stessi limiti.", l: "0 = sei sulla curva. Più la distanza è grande, più rendimento storico lasci per strada a quel rischio.", v: "Entro 2 punti è vicino; oltre 4 è lontano. Una certa distanza è normale se diversifichi."},
+  v_neff: { t: "Fondi effettivi", d: "Quanti fondi di peso uguale darebbero la stessa concentrazione: 1 ÷ somma dei pesi al quadrato.", l: "Se hai 10 fondi ma uno pesa il 60%, i fondi effettivi sono pochi. Conta come sono distribuiti i pesi, non quanti fondi hai.", v: "Sotto 3,5 concentrato; 5–8 buono; con 6–10 ETF è tipico 4–7." },
+  v_dr: { t: "Diversificazione (DR)", d: "Rapporto tra la media pesata dei rischi dei singoli fondi e il rischio del portafoglio.", l: "1 = i fondi si muovono tutti insieme. Più sale, più si compensano tra loro.", v: "1,1–1,2 poco diversificato; 1,3–1,5 buono; oltre 1,6 raro con soli ETF azionari." },
+  v_pmax: { t: "Peso del fondo maggiore", d: "La quota del portafoglio occupata dal singolo fondo più grande.", l: "Un solo fondo molto grande rende il portafoglio dipendente da quello.", v: "Un ETF mondiale come base può arrivare al 40–50%; sopra il 55% è molto concentrato." },
+  v_rcmax: { t: "Quota di rischio del fondo maggiore", d: "Quanta parte del rischio totale viene dal fondo che ne fa di più (contributo al rischio).", l: "Può essere molto più alta del suo peso se il fondo è volatile o correlato agli altri.", v: "Entro 40–45% buono; sopra il 60% il portafoglio vive di un solo fondo." },
+  v_ter: { t: "Costo annuo medio (TER)", d: "Costo annuo dei fondi pesato per quanto investi in ciascuno.", l: "Si paga ogni anno: lo 0,10% in più su 40.000 € sono 40 € l'anno, e si accumulano.", v: "Sotto 0,25% ottimo; 0,25–0,50% normale; oltre 0,50% caro per ETF indicizzati." },
+  v_tech: { t: "Tecnologia sul portafoglio", d: "Quanta parte del portafoglio è in società tecnologiche, vedendo dentro ai fondi.", l: "Include anche la tecnologia contenuta negli ETF mondiali e americani, non solo i fondi di settore.", v: "Nel mondo azionario pesa circa il 25%; sul portafoglio intero 15–25% è normale, oltre 35% è una scommessa." },
+  v_area: { t: "Area geografica maggiore", d: "Quanta parte del portafoglio è nell'area geografica più grande (Stati Uniti, Europa, ecc.), vedendo dentro ai fondi.", l: "Una concentrazione in una sola area ti espone ai suoi cicli e al suo cambio.", v: "Nel mondo azionario gli Stati Uniti pesano circa il 62–65%; sul portafoglio con obbligazioni 40–55% è normale." },
+  v_azioni: { t: "Quota azionaria", d: "Quanta parte del portafoglio è in azioni (le obbligazioni e l'oro sono il resto).", l: "È la leva principale del rischio. Deve essere coerente con il tuo orizzonte: più è lungo, più azioni puoi tenere.", v: "Prudente 20–30%; bilanciato 40–60%; dinamico 70–90%." },
+  v_n: { t: "Numero di titoli", d: "Quanti fondi hanno un peso apprezzabile (oltre lo 0,5%).", l: "Pochi fondi sono semplici da gestire, ma oltre una certa soglia non aggiungono diversificazione.", v: "Con ETF ampi bastano 4–8; oltre 12–15 si complica senza benefici." },
+  t_peso: { t: "Peso", d: "Quota del portafoglio che il titolo occupa. Si calcola da solo: quote × prezzo medio d'acquisto (non si scrive a mano). «proposto» è il peso dopo gli acquisti pianificati.", l: "La somma dà sempre 100%. Un titolo senza quote pesa l'1% finché non inserisci acquisti.", v: "Un singolo fondo oltre 40–50% concentra il rischio." },
+  t_investito: { t: "Investito e da investire", d: "Costo delle quote che hai davvero. Sotto, in verde o in rosso, le operazioni solo pianificate: «Acq.» da comprare, «Vendi» da vendere.", l: "Le righe pianificate calano da sole quando inserisci gli acquisti e le vendite reali; spariscono a zero.", v: "Un titolo è pianificato se ha almeno una quota ancora da comprare o vendere." },
+  t_valore: { t: "Valore attuale", d: "Quote × ultimo prezzo del titolo.", l: "Il confronto con «Investito» dà il risultato non realizzato.", v: "—" },
+  t_rendita: { t: "Rendita corrente", d: "Guadagno o perdita del titolo rispetto a quanto hai investito, in euro e in %.", l: "Un titolo in perdita non è per forza sbagliato: valutalo sull'orizzonte per cui l'hai scelto.", v: "Su un titolo azionario ±15% nel primo anno è normale." },
+  g_storico: { t: "Storico del portafoglio", d: "Come sarebbe andato il portafoglio con i pesi attuali tenuti costanti e ribilanciato ogni giorno, sui prezzi giornalieri.", l: "È una ricostruzione, non un risultato realmente ottenuto. Il periodo si sceglie con i pulsanti.", v: "Guarda soprattutto le discese, non solo il rendimento finale." },
+  g_valore: { t: "Valore dell'importo investito", d: "Quanto varrebbe l'importo indicato se fosse stato investito all'inizio del periodo scelto.", l: "Il numero a destra è il rendimento totale del periodo.", v: "—" },
+  g_dd: { t: "Perdita rispetto al massimo precedente", d: "Distanza percentuale dal massimo toccato fino a quel giorno (drawdown).", l: "0% = al massimo storico; il punto più basso è la perdita massima. Quanto dura la discesa conta quanto la sua profondità.", v: "Misto −10/−20%; azionario −25/−35%." },
+  g_gm: { t: "Guadagno rispetto al minimo precedente", d: "Quanto il valore è salito dal minimo toccato fino a quel giorno.", l: "Mostra la forza delle risalite dopo i cali.", v: "Dopo una crisi gravi le risalite possono superare il +50%." },
+  g_andamento: { t: "Il tuo andamento", d: "Il risultato reale dei tuoi acquisti e vendite nel tempo, non una ricostruzione.", l: "Mostra quanto hai guadagnato o perso rispetto al capitale versato, giorno per giorno.", v: "Parte da zero con il primo acquisto." },
+  g_risultato: { t: "Risultato dei tuoi acquisti", d: "Valore del portafoglio meno il capitale versato (acquisti meno incassi delle vendite).", l: "Sopra zero hai guadagnato, sotto zero perso. Non include imposte e commissioni.", v: "—" },
+  g_valcap: { t: "Valore e capitale versato", d: "Confronta quanto vale oggi il portafoglio con quanto hai versato in totale.", l: "Quando la linea del valore sta sopra quella del capitale, sei in guadagno.", v: "—" },
+  c_classi: { t: "Composizione", d: "Come è ripartito il capitale tra azioni, obbligazioni, materie prime (oro) e altro, e i titoli con quote, costo e rendita.", l: "La barra in alto mostra le classi; la tabella i singoli titoli.", v: "Prudente 20–30% azioni; bilanciato 40–60%; dinamico 70–90%." },
+  c_dentro: { t: "Dentro il portafoglio", d: "Cosa c'è davvero dentro i fondi: tipi, aree geografiche, settori, valute e titoli principali.", l: "Due fondi diversi possono contenere gli stessi titoli: qui lo vedi sommando tutto.", v: "Confronta con il mondo azionario: USA 62–65%, Europa 15%, Giappone 5–6%, emergenti 10–11%." },
+  c_tipo: { t: "Tipo di investimento", d: "Ripartizione per tipo di fondo: azioni, obbligazioni (Stato, aziende), oro.", l: "Il numero al centro è la quota azionaria.", v: "Dinamico 70–90% azioni." },
+  c_aree: { t: "Area geografica", d: "Dove sono le attività che possiedi, vedendo dentro i fondi.", l: "Non è dove ha sede il fondo ma dove operano le società.", v: "Mondo azionario: USA 62–65%, Europa 15%, Giappone 5–6%, emergenti 10–11%." },
+  c_settori: { t: "Settori", d: "Ripartizione della parte azionaria per settore economico.", l: "Aiuta a vedere concentrazioni nascoste, per esempio la tecnologia negli ETF mondiali.", v: "Nel mondo: tecnologia ~25%, finanza ~16%, industria ~11%, salute ~10%." },
+  c_paesi: { t: "Paesi principali", d: "I paesi più importanti nella parte azionaria, sommando i fondi.", l: "Un paese con peso molto più alto di quello mondiale è una scommessa.", v: "Stati Uniti ~62–65%, Giappone ~5–6%, Regno Unito ~3–4%." },
+  c_valute: { t: "Valute dei titoli", d: "In quali valute sono espressi i titoli sottostanti. Anche se il fondo è in euro, il rischio cambio resta.", l: "Se il dollaro si indebolisce, i titoli in dollari valgono meno in euro (salvo copertura).", v: "Con ETF mondiali il dollaro pesa 40–60% della parte azionaria." },
+  c_titoli: { t: "Primi titoli azionari", d: "I singoli titoli più pesanti sommando tutti i fondi.", l: "Mostra le concentrazioni nascoste: lo stesso titolo può stare in più fondi.", v: "In un ETF mondiale i primi titoli valgono 3–6% ciascuno." },
+  c_obbl: { t: "Obbligazioni per paese dell'emittente", d: "Chi ha emesso le obbligazioni che possiedi, per paese.", l: "Una forte concentrazione in uno Stato o in un'area aumenta il rischio di credito e di cambio.", v: "Euro-governativi: Italia, Francia, Germania, Spagna; globali: USA ~40%." },
+  f_front: { t: "Frontiera efficiente", d: "La curva dei portafogli con il rendimento più alto possibile per ogni livello di rischio, usando solo i tuoi fondi e i limiti scelti.", l: "Un punto sotto la curva rende meno di un altro con lo stesso rischio. È calcolata sul passato: dà un orientamento, non un obiettivo.", v: "Stare entro 2–3 punti dalla curva è normale se diversifichi." },
+  f_incertezza: { t: "Quanta incertezza vuoi accettare", d: "Cursore sulla frontiera: a sinistra meno rischio e rendimento più basso, a destra più rischio e rendimento più alto.", l: "Muovilo e guarda sotto cosa cambia: rendimento, rischio, perdita massima.", v: "Scegli il livello di perdita massima che sopporteresti, non quello di rendimento che vorresti." },
+  r_quota: { t: "Quota per classe", d: "Limite minimo e massimo che puoi imporre alla quota di azioni, obbligazioni e materie prime nel portafoglio.", l: "Trascina i due cursori: la frontiera si ricalcola solo con portafogli dentro questi limiti.", v: "Predefinito 0–100%: nessun limite." },
+  r_totale: { t: "Totale dell'investimento da raggiungere", d: "L'importo totale che vuoi avere investito a fine ribilanciamento.", l: "La differenza con quello che hai ora è la somma da investire (o da disinvestire se è negativa).", v: "Predefinito: il valore dell'investimento del portafoglio." },
+  r_ora: { t: "Ora", d: "Quanto vale oggi ciascun fondo e il suo peso attuale.", l: "I titoli non ancora acquistati sono a 0.", v: "—" },
+  r_obiettivo: { t: "Obiettivo", d: "Valore e peso che ogni fondo dovrebbe avere nel nuovo piano.", l: "Dipende dal punto scelto sulla frontiera.", v: "—" },
+  r_operazione: { t: "Operazione", d: "Quote da comprare o vendere per passare da «Ora» a «Obiettivo», a quote intere e all'ultimo prezzo.", l: "Verde = compra, rosso = vendi. Non include commissioni né imposte.", v: "Tienile come proposta con «Pianificato» finché non le esegui." },
+  r_dopo: { t: "Dopo", d: "Il peso di ciascun fondo dopo aver eseguito le operazioni (le quote intere non danno mai pesi esatti).", l: "Deve avvicinarsi all'obiettivo; il resto è l'arrotondamento.", v: "Scarti sotto 1 punto sono normali." },
+  m_peso: { t: "Peso calcolato", d: "Non si scrive: si calcola da quote × prezzo medio d'acquisto, includendo le operazioni pianificate.", l: "Cambia da solo quando modifichi le quote.", v: "Un titolo senza quote resta all'1%." },
+  m_valore: { t: "Valore dell'investimento", d: "L'importo totale del piano: serve come totale da raggiungere nel ribilanciamento.", l: "Non cambia le quote che hai già.", v: "Predefinito 10.000 € per i nuovi portafogli." },
+  m_pian: { t: "Pianificato", d: "Se spunti, l'operazione è solo pianificata: non conta come investita e compare come «da investire». Senza spunta è eseguita.", l: "Quando la esegui davvero, togli la spunta: l'importo diventa investito.", v: "Un titolo è pianificato se ha almeno una quota ancora da comprare o vendere." },
+  f_corrente: { t: "Portafoglio corrente", d: "Il punto di ciò che hai davvero acquistato (solo investito), con i pesi attuali.", l: "Se sta sotto la curva, a pari rischio un altro portafoglio avrebbe reso di più.", v: "—" },
+  f_piano: { t: "Piano proposto", d: "Il punto del portafoglio dopo gli acquisti e le vendite pianificati (investito + da investire).", l: "Mostra dove arriveresti eseguendo il piano.", v: "—" },
+  f_sharpe: { t: "Massimo Sharpe", d: "Il punto della frontiera con il miglior rendimento per unità di rischio.", l: "È il portafoglio «più efficiente», ma calcolato sul passato.", v: "Spesso concentrato sui fondi andati meglio: usalo come riferimento, non come obiettivo." },
+  f_curva: { t: "Frontiera", d: "La curva dei portafogli efficienti: massimo rendimento per ogni livello di rischio.", l: "Più in alto a sinistra è meglio.", v: "—" },
+};
+const KINFO = { "Valore attuale": "k_valore", Investito: "k_investito", Risultato: "k_risultato", "Rendita strategia": "k_strategia", "Rendimento storico": "k_rend", "Perdita massima": "k_dd", "Costo annuo": "k_costo", Diversificazione: "k_divers" };
+const inf = (k) => (INFO[k] ? `<button type="button" class="info" data-i="${k}" aria-label="Spiegazione: ${esc(INFO[k].t)}">i</button>` : "");
+let INFOB = null;
+function chiudiInfo() { const p = document.getElementById("infopop"); if (p) p.hidden = true; INFOB = null; }
+function apriInfo(b) {  // finestrella accanto al pulsante «i»: cos'è, come si legge, valori tipici
+  const x = INFO[b.dataset.i]; if (!x) return; let p = document.getElementById("infopop");
+  if (!p) { p = document.createElement("div"); p.id = "infopop"; p.setAttribute("role", "dialog"); p.hidden = true; document.body.appendChild(p); }
+  if (INFOB === b && !p.hidden) { chiudiInfo(); return; }
+  p.innerHTML = `<button type="button" class="ix" aria-label="Chiudi">×</button><h4>${esc(x.t)}</h4><p><b>Cos'è.</b> ${x.d}</p><p><b>Come si legge.</b> ${x.l}</p>${x.v && x.v !== "—" ? `<p><b>Valori tipici.</b> ${x.v}</p>` : ""}`;
+  p.hidden = false; INFOB = b; const r = b.getBoundingClientRect(), w = Math.min(340, innerWidth - 24); p.style.width = w + "px"; p.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + r.width / 2 - w / 2)) + "px";
+  const h = p.offsetHeight, sotto = r.bottom + 8; p.style.top = (sotto + h > innerHeight - 8 && r.top - 8 - h > 8 ? r.top - 8 - h : Math.max(8, sotto)) + "px";
+}
+document.addEventListener("click", (e) => { const b = e.target.closest(".info"); if (b) { e.preventDefault(); e.stopPropagation(); apriInfo(b); return; } if (e.target.closest(".ix") || !e.target.closest("#infopop")) chiudiInfo(); }, true);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") chiudiInfo(); });
+document.addEventListener("scroll", (e) => { const t = e.target; if (!(t && t.closest && t.closest("#infopop"))) chiudiInfo(); }, true);
+window.addEventListener("resize", chiudiInfo);
 const cls = (v) => (v > 0.00005 ? "up" : v < -0.00005 ? "down" : "");
 const dataIt = (d) => d.slice(8, 10) + "/" + d.slice(5, 7) + "/" + d.slice(0, 4);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -528,6 +624,55 @@ function calcolaPiano() {  // proposte: operazioni solo pianificate (spunta «Pi
   DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 1 - 1e-9 ? Math.round(d * 100) / 100 : 0; });  // un titolo è pianificato se ha almeno una quota ancora da comprare o vendere  // acquisti e vendite eseguiti fanno scendere la differenza; a 0 la proposta di quel titolo non c'è più
   if (!DI.some(Boolean)) return;
   const v = tq.map((q, i) => q * POS[i].prezzo), S = sum(v); if (S > 0) WPROP = v.map((x) => x / S);
+}
+/* ---------- Valutazione: indicatori oggettivi con semaforo rispetto a soglie modificabili ---------- */
+const VAL_SPEC = [
+  { k: "vol", t: "Rischio (volatilità annua)", dir: "basso", ok: 12, ko: 16, u: "%", d: 1 },
+  { k: "dd", t: "Perdita massima storica", dir: "basso", ok: 15, ko: 25, u: "%", d: 1 },
+  { k: "sharpe", t: "Indice di Sharpe", dir: "alto", ok: 0.5, ko: 0.2, u: "", d: 2 },
+  { k: "gap", t: "Distanza dalla frontiera", dir: "basso", ok: 2, ko: 4, u: " pt", d: 1 },
+  { k: "neff", t: "Fondi effettivi", dir: "alto", ok: 5, ko: 3.5, u: "", d: 1 },
+  { k: "dr", t: "Diversificazione (DR)", dir: "alto", ok: 1.3, ko: 1.15, u: "", d: 2 },
+  { k: "pmax", t: "Peso del fondo maggiore", dir: "basso", ok: 40, ko: 55, u: "%", d: 0 },
+  { k: "rcmax", t: "Quota di rischio del fondo maggiore", dir: "basso", ok: 45, ko: 60, u: "%", d: 0 },
+  { k: "ter", t: "Costo annuo medio (TER)", dir: "basso", ok: 0.25, ko: 0.5, u: "%", d: 2 },
+  { k: "tech", t: "Tecnologia sul portafoglio", dir: "basso", ok: 25, ko: 35, u: "%", d: 0 },
+  { k: "area", t: "Area geografica maggiore", dir: "basso", ok: 55, ko: 70, u: "%", d: 0 },
+  { k: "azioni", t: "Quota azionaria", dir: "intervallo", ok: [50, 80], ko: 10, u: "%", d: 0 },
+  { k: "n", t: "Numero di titoli", dir: "basso", ok: 10, ko: 15, u: "", d: 0 },
+];
+const valSoglia = (s) => ({ ...s, ...((ST.val || {})[s.k] || {}) });
+function divers(w) {  // fondi effettivi, rapporto di diversificazione e contributo al rischio di ciascun fondo
+  const sw = COV.map((r) => sum(r.map((x, j) => x * w[j]))), v = sum(w.map((x, i) => x * sw[i]));
+  return { neff: 1 / sum(w.map((x) => x * x)), dr: v > 0 ? sum(w.map((x, i) => x * Math.sqrt(COV[i][i]))) / Math.sqrt(v) : 1, rc: w.map((x, i) => (v > 0 ? (x * sw[i]) / v : 0)) };
+}
+function valDati(w) {
+  const i0 = FRI0(), st = statistiche(w, i0), d = divers(w), M = mixPort(w), aree = Object.entries(M.aree).filter(([k]) => k !== "Oro" && k !== "Altro");
+  let gap = null; const P = FRONT && !FRONT.err && FRONT.pts && FRONT.pts.length ? FRONT.pts : null;
+  if (P && st.vol >= P[0].vol && st.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < st.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (st.vol - a.vol)) / (b.vol - a.vol || 1); gap = Math.max(0, (rr - st.cagr) * 100); }
+  return { vol: st.vol * 100, dd: -st.dd * 100, sharpe: st.sharpe, gap, neff: d.neff, dr: d.dr, pmax: Math.max(...w) * 100, rcmax: Math.max(...d.rc) * 100, ter: sum(F.map((f, i) => w[i] * f.ter)), tech: (M.settori["Tecnologia"] || 0) * 100, area: aree.length ? Math.max(...aree.map((x) => x[1])) * 100 : 0, azioni: perClasse(w).Azionario * 100, n: w.filter((x) => x > 0.005).length };
+}
+function valStato(s, v) {  // "v" verde, "g" giallo, "r" rosso, "n" non calcolabile
+  if (v == null || !isFinite(v)) return "n";
+  if (s.dir === "basso") return v <= s.ok ? "v" : v <= s.ko ? "g" : "r";
+  if (s.dir === "alto") return v >= s.ok ? "v" : v >= s.ko ? "g" : "r";
+  const [lo, hi] = s.ok; return v >= lo && v <= hi ? "v" : v >= lo - s.ko && v <= hi + s.ko ? "g" : "r";
+}
+function disegnaValutazione() {
+  const el = $("#val-lista"); if (!el) return;
+  const haP = !!WPROP, sel = haP && ST.valsel !== "corrente" ? "piano" : "corrente", w = sel === "piano" ? pesiPiano() : VAL > 0 ? WCUR : pesiPiano();
+  $("#val-sel").hidden = !haP; $$("#val-sel button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.vs === sel)));
+  const dati = valDati(w), conta = { v: 0, g: 0, r: 0 };
+  const sogl = (s) => (s.dir === "intervallo" ? `verde tra ${s.ok[0]}% e ${s.ok[1]}%, giallo entro ${s.ko} punti` : s.dir === "basso" ? `verde fino a ${nf(s.ok, s.d)}${s.u}, rosso oltre ${nf(s.ko, s.d)}${s.u}` : `verde da ${nf(s.ok, s.d)}, rosso sotto ${nf(s.ko, s.d)}`);
+  el.innerHTML = VAL_SPEC.map((b) => { const s = valSoglia(b), v = dati[s.k], st = valStato(s, v); if (st !== "n") conta[st]++;
+    return `<div class="val-r"><span class="val-d ${st}" title="${{ v: "Nei limiti", g: "Vicino al limite", r: "Fuori dai limiti", n: "Non calcolabile" }[st]}"></span><span>${s.t}${inf("v_" + s.k)}</span><span class="val-v">${v == null || !isFinite(v) ? "—" : nf(v, s.d) + s.u}</span><span class="val-s">${sogl(s)}</span></div>`; }).join("");
+  $("#val-sum").innerHTML = `<span><b style="color:var(--good)">${conta.v}</b> nei limiti</span><span><b style="color:var(--warn)">${conta.g}</b> vicini al limite</span><span><b style="color:var(--bad)">${conta.r}</b> fuori</span>`;
+  $("#val-nota").textContent = (sel === "piano" ? "sul piano proposto (investito + da investire)" : VAL > 0 ? "sul portafoglio corrente (solo investito)" : "sul piano") + " · dati di " + dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]);
+}
+function valEditor() {  // caselle delle soglie, scritte una volta (non si ridisegnano mentre si digita)
+  $("#val-ed").innerHTML = `<span class="h">Indicatore</span><span class="h">Verde</span><span class="h">Rosso</span><span class="h"></span>` + VAL_SPEC.map((b) => { const s = valSoglia(b);
+    return s.dir === "intervallo" ? `<span>${b.t}</span><input type="number" step="any" data-vk="${b.k}" data-vf="lo" value="${s.ok[0]}" aria-label="${b.t}: minimo"><input type="number" step="any" data-vk="${b.k}" data-vf="hi" value="${s.ok[1]}" aria-label="${b.t}: massimo"><input type="number" step="any" data-vk="${b.k}" data-vf="m" value="${s.ko}" aria-label="${b.t}: margine giallo">`
+      : `<span>${b.t}</span><input type="number" step="any" data-vk="${b.k}" data-vf="ok" value="${s.ok}" aria-label="${b.t}: soglia verde"><input type="number" step="any" data-vk="${b.k}" data-vf="ko" value="${s.ko}" aria-label="${b.t}: soglia rossa"><span class="muted">${s.dir === "basso" ? "più basso è meglio" : "più alto è meglio"}</span>`; }).join("");
 }
 function serieUtente() {
   let i0 = Infinity; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) i0 = Math.min(i0, x.t); }));
@@ -706,7 +851,7 @@ function disegnaKpi() {
     ["Risultato", hasPos ? `<span class="${cls(pl)}">${sgnE(pl)}</span>` : "—", hasPos && INV > 0 ? `<span class="${cls(pl)}">${sgn(pl / INV, 2)}</span> sull'investito` + (REAL !== 0 ? ` · realizzato ${sgnE(REAL)}` : "") + (xi == null ? "" : ` · <span class="${cls(xi)}">${sgn(xi)}</span> annuo (XIRR)`) : "al " + dataIt(last)],
     ["Rendita strategia", rs == null ? "—" : `<span class="${cls(rs)}">${sgn(rs)}</span>`, rs == null ? "nessun acquisto inserito" : "1 € su ogni titolo dal primo acquisto · " + strat.length + " titoli"],
     ["Rendimento storico", pct(s.cagr), "annuo composto · vol. " + pct(s.vol) + " · Sharpe " + nf(s.sharpe, 2)],
-    ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
+    ["Perdita massima", pct(s.dd), "storica: dal " + dataIt(s.da) + " al " + dataIt(s.a)], ["Costo annuo", pct(ter, 2), hasPos ? "TER medio ≈ " + eur(VAL * ter) + " all'anno" : "TER medio dei fondi"], ["Diversificazione", nf(dr, 2), "fondi effettivi " + nf(neff, 1) + " su " + NF]].map((k) => `<div><div class="l">${k[0]}${inf(KINFO[k[0]])}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
   $("#banner").innerHTML = ST.esempio ? `<div class="banner"><span>Valori di esempio: il piano di acquisto da ${eur(AMT)} ai prezzi del ${dataIt(BASE)}. Sostituiscili con i tuoi acquisti.</span><button class="btn sec small" id="azzera" type="button">Inserisci i miei acquisti</button></div>` : "";
   const az = $("#azzera"); if (az) az.onclick = () => apriModTit();  // gli acquisti si inseriscono in «Modifica portafoglio»
 }
@@ -720,7 +865,7 @@ function disegnaTabella() {
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
   { const ap = $("#imp-annprop"), att = DI.some(Boolean) && !META.bozza && PF.server; ap.disabled = !att; ap.title = att ? "Toglie dal file le proposte di acquisto e vendita (i pesi del piano restano)" : DI.some(Boolean) ? "Salva prima la bozza" : "Nessuna proposta attiva"; }
   const hasDI = DI.some(Boolean), netDI = sum(F.map((f, i) => DI[i] * POS[i].prezzo));  // «Da investire»: solo finché ci sono quote da comprare o vendere
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], r = RR[i]; if (p.acq > 0 && p.q <= 1e-9 && !DI[i]) return "";  // titolo uscito dal portafoglio: niente riga
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso${inf("t_peso")}</th><th>Investito${inf("t_investito")}</th><th>Valore attuale${inf("t_valore")}</th><th>Rendita corrente${inf("t_rendita")}</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], r = RR[i]; if (p.acq > 0 && p.q <= 1e-9 && !DI[i]) return "";  // titolo uscito dal portafoglio: niente riga
       return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">${hasDI ? "proposto" : "piano"} ${pct(pesiPiano()[i], 0)}</div>` : ""}</td><td class="num">${p.q > 0 ? eur(p.costo) + `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote · medio ${eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2)}</div>` : "—"}${DI[i] ? `<div class="fsub" style="font-weight:600;color:var(${DI[i] < 0 ? "--bad" : "--good"})">${DI[i] > 0 ? "Acq." : "Vendi"} ${nf(Math.abs(DI[i]), DI[i] % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)} = ${eur(Math.abs(DI[i]) * p.prezzo)}</div>` : ""}</td><td class="num">${r ? eur(r.val) : "—"}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a>${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(r)}</td></tr>`; }).join("") +
     `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${INV > 0 ? eur(INV) : "—"}${hasDI ? `<div class="fsub" style="color:var(${netDI < 0 ? "--bad" : "--good"})">da investire ${sgnE(netDI)}</div>` : ""}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—"}</td></tr></tfoot>`;
 }
@@ -728,6 +873,7 @@ function disegnaTabella() {
 /* ---------- frontiera: disegno e dettaglio ---------- */
 let SEL = "tuo";
 function disegnaFrontiera(dalCursore) {
+  setTimeout(disegnaValutazione, 0);  // la distanza dalla frontiera si aggiorna con la curva
   const box = $("#front"), hbox = $("#front-home"); if (!FRONT) return; if (FRONT.err) { box.innerHTML = hbox.innerHTML = `<p class="lerr">${esc(FRONT.err)}</p>`; $("#fcomp").innerHTML = ""; $("#fleg").innerHTML = $("#fleg-home").innerHTML = ""; return; }
   const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiOrig(), FRI0()), sh = P[FRONT.sharpe], mv = P[0], fx = fissa(), fxp = fx.pts || [];
   const svgDi = (larg) => {
@@ -744,7 +890,7 @@ function disegnaFrontiera(dalCursore) {
     <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Corrente</text><text x="${X(ob.vol) + 12}" y="${Y(ob.cagr) + (Math.abs(X(ob.vol) - X(tuo.vol)) < 60 && Math.abs(Y(ob.cagr) - Y(tuo.cagr)) < 24 ? -12 : 18)}" font-size="12" font-weight="600" fill="var(--c2)">${WPROP ? "Proposto" : "Piano"}</text></svg>`;
   };
   box.innerHTML = svgDi(box.clientWidth); hbox.innerHTML = svgDi(hbox.clientWidth);
-  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>portafoglio corrente (solo investito)</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>${WPROP ? "piano proposto (investito + da investire)" : "piano di partenza"}</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
+  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>portafoglio corrente (solo investito)${inf("f_corrente")}</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>${WPROP ? "piano proposto (investito + da investire)" : "piano di partenza"}${inf("f_piano")}</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe${inf("f_sharpe")}</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
   $("#fleg").innerHTML = legHtml; $("#fleg-home").innerHTML = legHtml;
   $$(".pt", hbox).forEach((e) => { const k = e.dataset.k; e.addEventListener("click", () => { SEL = /^\d+$/.test(k) ? +k : k; proponi(); apriRib(); }); });  // dalla home: il punto scelto diventa l'obiettivo e si apre il Ribilanciamento
   $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); proponi(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
@@ -753,7 +899,7 @@ function disegnaFrontiera(dalCursore) {
   let gap = ""; if (tuo.vol >= P[0].vol && tuo.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < tuo.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (tuo.vol - a.vol)) / (b.vol - a.vol || 1); gap = `<p class="muted" style="margin:6px 0">A pari rischio (${pct(tuo.vol)}) la frontiera rende ${pct(rr)}: ${rr >= tuo.cagr ? `<span class="up">${nf((rr - tuo.cagr) * 100, 1)} punti</span> in più del tuo portafoglio` : "il tuo portafoglio sta sopra la curva (curva con i tuoi vincoli)"}.</p>`; }
   const dv = (w) => { const sw = COV.map((r) => sum(r.map((x, j) => x * w[j]))), v = sum(w.map((x, i) => x * sw[i])); return { neff: 1 / sum(w.map((x) => x * x)), dr: v > 0 ? sum(w.map((x, i) => x * Math.sqrt(COV[i][i]))) / Math.sqrt(v) : 1 }; };  // diversificazione: fondi effettivi e rapporto di diversificazione
   const riga = (n, a, b, f, bene) => { const d = a - b; return `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td><td class="num ${Math.abs(d) < 0.0005 ? "" : (d > 0) === bene ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "—" : (d > 0 ? "+" : "") + f(d)}</td></tr>`; };
-  $("#fcomp").innerHTML = `<h3>${tit}</h3>${SEL === "tuo" ? '<p class="muted" style="margin:4px 0">Sposta il cursore del rischio: qui compare il portafoglio proposto.</p>' : ""}${gap}${fx.err ? `<p class="muted" style="margin:6px 0">Casi a stessa composizione non calcolabili: ${esc(fx.err)}</p>` : ""}<table class="cmp"><thead><tr><th></th><th>${SEL === "tuo" ? "Tuo" : "Proposto"}</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>${riga("Rendimento annuo", s.cagr, c.cagr, (x) => pct(x), true)}${riga("Rischio (volatilità)", s.vol, c.vol, (x) => pct(x), false)}${riga("Sharpe", s.sharpe, c.sharpe, (x) => nf(x, 2), true)}${riga("Perdita massima", s.dd, c.dd, (x) => pct(x), true)}${riga("Fondi effettivi", dv(wr).neff, dv(WCUR).neff, (x) => nf(x, 1), true)}${riga("Diversificazione (DR)", dv(wr).dr, dv(WCUR).dr, (x) => nf(x, 2), true)}</tbody></table><p class="muted" style="font-size:12px;margin:6px 0 0">Fondi effettivi: quanti fondi di peso uguale darebbero la stessa concentrazione (1 ÷ somma dei pesi²). DR: rischio dei fondi presi da soli ÷ rischio del portafoglio; più è alto, più i fondi si compensano.</p>
+  $("#fcomp").innerHTML = `<h3>${tit}</h3>${SEL === "tuo" ? '<p class="muted" style="margin:4px 0">Sposta il cursore del rischio: qui compare il portafoglio proposto.</p>' : ""}${gap}${fx.err ? `<p class="muted" style="margin:6px 0">Casi a stessa composizione non calcolabili: ${esc(fx.err)}</p>` : ""}<table class="cmp"><thead><tr><th></th><th>${SEL === "tuo" ? "Tuo" : "Proposto"}</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>${riga("Rendimento annuo" + inf("k_rend"), s.cagr, c.cagr, (x) => pct(x), true)}${riga("Rischio (volatilità)" + inf("v_vol"), s.vol, c.vol, (x) => pct(x), false)}${riga("Sharpe" + inf("v_sharpe"), s.sharpe, c.sharpe, (x) => nf(x, 2), true)}${riga("Perdita massima" + inf("v_dd"), s.dd, c.dd, (x) => pct(x), true)}${riga("Fondi effettivi" + inf("v_neff"), dv(wr).neff, dv(WCUR).neff, (x) => nf(x, 1), true)}${riga("Diversificazione (DR)" + inf("v_dr"), dv(wr).dr, dv(WCUR).dr, (x) => nf(x, 2), true)}</tbody></table><p class="muted" style="font-size:12px;margin:6px 0 0">Fondi effettivi: quanti fondi di peso uguale darebbero la stessa concentrazione (1 ÷ somma dei pesi²). DR: rischio dei fondi presi da soli ÷ rischio del portafoglio; più è alto, più i fondi si compensano.</p>
     <div class="scroll"><table style="font-size:13px"><thead><tr><th>Fondo</th><th>ISIN</th><th>Proposto</th><th>Attuale</th><th>Diff.</th></tr></thead><tbody>` +
     F.map((f, i) => ({ f, i, w: wr[i] })).sort((a, b) => b.w - a.w).map(({ f, i, w }) => { const d = w - WCUR[i]; return `<tr><td>${flink(i, f.s)}</td><td class="num" style="white-space:nowrap">${f.isin}</td><td class="num">${pct(w)}</td><td class="num">${VAL > 0 ? pct(WCUR[i]) : pct(f.w)}</td><td class="num ${cls(d)}">${Math.abs(d) < 0.0005 ? "—" : sgn(d)}</td></tr>`; }).join("") + `</tbody></table></div>
     <div class="azioni"><button class="btn sec small" id="salvapf" type="button">Salva solo i pesi come nuovo portafoglio…</button></div><p class="lerr" id="sv-nosrv"></p>`;
@@ -865,7 +1011,7 @@ function disegnaClassi(R) {
   const ora = perClasse(WCUR), nuovo = perClasse(R.wt), dopo = perClasse(F.map((f, i) => (R.dopoV > 0 ? (POS[i].valore + R.ops[i].imp) / R.dopoV : 0)));
   const barra = (x, c) => `<div style="height:6px;border-radius:3px;background:var(--line);margin-top:3px"><div style="height:6px;border-radius:3px;width:${Math.max(0, Math.min(100, x * 100)).toFixed(1)}%;background:${c}"></div></div>`;
   const cella = (x, c) => `<td class="num">${pct(x, 1)}${barra(x, c)}</td>`;
-  $("#rb-classi").innerHTML = `<thead><tr><th>Ripartizione</th><th>Attuale</th><th>Nuovo obiettivo</th><th>Dopo le operazioni</th></tr></thead><tbody>` +
+  $("#rb-classi").innerHTML = `<thead><tr><th>Ripartizione${inf("r_quota")}</th><th>Attuale</th><th>Nuovo obiettivo</th><th>Dopo le operazioni</th></tr></thead><tbody>` +
     CLASSI4.map((c, k) => { const col = ["var(--c1)", "var(--c3)", "var(--c4)", "var(--muted)"][k], d = nuovo[c] - ora[c]; return `<tr><td>${c}</td>${cella(ora[c], col)}<td class="num"><b>${pct(nuovo[c], 1)}</b> <span class="fsub ${Math.abs(d) < 0.0005 ? "" : d > 0 ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "" : (d > 0 ? "+" : "−") + nf(Math.abs(d) * 100, 1) + " pt"}</span>${barra(nuovo[c], col)}</td>${cella(dopo[c], col)}</tr>`; }).join("") + `</tbody>`;
 }
 function aggiornaRib() {
@@ -877,7 +1023,7 @@ function aggiornaRib() {
   if (R.vuoto) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Indica il totale dell'investimento da raggiungere: il piano mostrerà quante quote comprare e vendere."; $("#rb-crea").disabled = true; return; }
   const { wt, tgt, tot, ops, speso, dopoV, B } = R;
   disegnaClassi(R);
-  $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}<div class="fsub">${esc(f.name)}</div></td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
+  $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora${inf("r_ora")}</th><th>Obiettivo${inf("r_obiettivo")}</th><th>Operazione${inf("r_operazione")}</th><th>Dopo${inf("r_dopo")}</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}<div class="fsub">${esc(f.name)}</div></td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
   const rest = B - Math.max(0, speso);
   $("#rb-n").textContent = R.modo + " Totale da raggiungere " + eur(R.T0) + ": ora hai " + eur(R.base) + (R.delta ? (R.delta > 0 ? ", da investire " : ", da disinvestire ") + eur(Math.abs(R.delta)) : "") + ". Quote arrotondate all'intero, prezzi del " + dataIt(DATES[DATES.length - 1]) + (rest > 0.5 && speso > 0 ? "; restano circa " + eur(rest) : "") + (speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
   $("#rb-crea").disabled = ST.esempio || !ops.some((o) => o.n !== 0);
@@ -991,7 +1137,7 @@ $("#blocchi").addEventListener("input", (e) => {  // slider min-max di una class
 $("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFrontiera(); };
 
 /* ---------- eventi dell'interfaccia ---------- */
-let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaBarraClassi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
+let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaValutazione(); disegnaBarraClassi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
 $("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; if (ST.rib.t === "sharpe") SEL = "sharpe"; else if (ST.rib.t === "minvar") SEL = 0; else if (ST.rib.t === "obiettivo") SEL = "obiettivo"; salva(); disegnaFrontiera(); aggiornaRib(); }; $("#rb-tot").oninput = (e) => { ST.rib.tot = +e.target.value > 0 ? +e.target.value : 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
@@ -1375,9 +1521,9 @@ function mtDisegna() {
   const ov = (i, k, f, v, extra) => `data-f="${f}" data-i="${i}" data-k="${k}" value="${esc(v)}" ${extra || ""}`;
   $("#mt-tab").innerHTML = MT.map((x, i) => `<div class="mt-card${x.fuori ? " mt-fuori" : ""}">
     <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}${mtPian(x) ? ' <span class="up">(pianificato)</span>' : ""}<div class="fsub num">${esc(x.isin)}${FIN ? (FIN.m[x.isin] ? ' · <span class="up">Fineco 0 €</span>' : ' · <span class="muted">non nella lista Fineco gratuiti</span>') : ""}</div></div>
-      <span class="mt-p muted">Peso <b class="num" data-mw="${i}">—</b></span>
+      <span class="mt-p muted">Peso${inf("m_peso")} <b class="num" data-mw="${i}">—</b></span>
       <button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></div>
-    ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><label class="mt-pi" title="Spuntata: l'operazione è solo pianificata e non conta come investito; senza spunta è eseguita"><input type="checkbox" data-f="pi" data-i="${i}" data-k="${k}"${r.pi ? " checked" : ""}> Pianificato</label><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
+    ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><label class="mt-pi" title="Spuntata: l'operazione è solo pianificata e non conta come investito; senza spunta è eseguita"><input type="checkbox" data-f="pi" data-i="${i}" data-k="${k}"${r.pi ? " checked" : ""}> Pianificato${inf("m_pian")}</label><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
     <button class="btn sec small mt-add-tr" type="button" data-tr-add="${i}">+ Acquisto o vendita</button></div>`).join("");
   mtSomma();
 }
@@ -1530,6 +1676,15 @@ if (META.bozza) {  // barra della bozza: salva (nuovo o nuova versione), modific
   if (META.bozza_da && /^[\w.-]+\.json$/.test(META.bozza_da)) $("#tb-torna").href = urlPf(META.bozza_da);
 }
 
+$("#val-sel").addEventListener("click", (e) => { const b = e.target.closest("[data-vs]"); if (!b) return; ST.valsel = b.dataset.vs; salva(); disegnaValutazione(); });
+$("#val-ed").addEventListener("input", (e) => {
+  const el = e.target, k = el.dataset.vk; if (!k) return; const v = parseFloat(String(el.value).replace(",", ".")); if (!isFinite(v)) return;
+  const base = VAL_SPEC.find((s) => s.k === k), cur = { ...((ST.val || {})[k] || {}) }; ST.val = { ...(ST.val || {}) };
+  if (base.dir === "intervallo") { const ok = cur.ok ? cur.ok.slice() : base.ok.slice(); if (el.dataset.vf === "lo") ok[0] = v; else if (el.dataset.vf === "hi") ok[1] = v; else cur.ko = v; cur.ok = ok; } else cur[el.dataset.vf] = v;
+  ST.val[k] = cur; salva(); disegnaValutazione();
+});
+$("#val-reset").addEventListener("click", () => { ST.val = {}; salva(); valEditor(); disegnaValutazione(); });
+valEditor();
 /* ---------- avvio ---------- */
 if (!VUOTO) { costruisci(); disegnaVincoli(); disegnaBlocchi(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }
 if (META.autocarica) { caricaPortafogli(); creaDaDefinizione({ file: META.autocarica }, true); } else avvia();
