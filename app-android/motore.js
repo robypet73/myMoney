@@ -46,7 +46,7 @@
   function formatta(d) {  // come formatta_definizione di build.py: un titolo per riga
     const j = (x) => JSON.stringify(x), r = [], tutto = { $schema: "schema.json", ...Object.fromEntries(Object.entries(d).filter(([k]) => k !== "$schema")) };
     Object.entries(tutto).forEach(([k, v]) => {
-      if (k === "titoli" || k === "transazioni") r.push("  " + j(k) + ": [\n" + v.map((x) => "    " + j(x)).join(",\n") + "\n  ]");
+      if (k === "titoli" || k === "transazioni" || k === "obiettivo") r.push("  " + j(k) + ": [\n" + v.map((x) => "    " + j(x)).join(",\n") + "\n  ]");
       else if (k === "vincoli") r.push('  "vincoli": {\n' + Object.entries(v).map(([kk, vv]) => "    " + j(kk) + ": {" + (Object.keys(vv).length ? "\n" + Object.entries(vv).map(([a, c]) => "      " + j(a) + ": " + j(c)).join(",\n") + "\n    }" : "}")).join(",\n") + "\n  }");
       else r.push("  " + j(k) + ": " + j(v));
     });
@@ -202,6 +202,18 @@
     out.forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
     return out;
   }
+  function validaObiettivo(ob, ammessi) {  // quote obiettivo del piano proposto: [{isin, quote}]; «da investire» = quote obiettivo − quote che hai davvero
+    if (ob === undefined || ob === null) return [];
+    if (!Array.isArray(ob) || ob.length > 100) throw Err("«obiettivo»: un elenco di {\"isin\", \"quote\"}.");
+    const visti = new Set();
+    return ob.map((x, k) => {
+      const isin = String((x && x.isin) || "").trim().toUpperCase();
+      if (!ammessi.has(isin)) throw Err("«obiettivo» n. " + (k + 1) + ": l'ISIN «" + isin + "» non è tra i titoli del portafoglio.");
+      if (visti.has(isin)) throw Err("«obiettivo»: ISIN ripetuto (" + isin + ")."); visti.add(isin);
+      const q = parseFloat(x.quote); if (!(q >= 0)) throw Err("«obiettivo» n. " + (k + 1) + " (" + isin + "): «quote» deve essere un numero non negativo.");
+      return { isin, quote: Math.round(q * 1e6) / 1e6 };
+    });
+  }
   function validaDefinizione(d) {
     if (!d || typeof d !== "object" || Array.isArray(d)) throw Err("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.");
     const nome = d.nome; if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("«nome»: solo lettere e cifre, niente spazi né simboli, al massimo 30 caratteri.");
@@ -220,7 +232,7 @@
       rr.push([isin, peso]);
     });
     const tot = sum(rr.map((x) => x[1])); if (Math.abs(tot - 100) > 0.5) throw Err("I pesi danno " + Math.round(tot * 100) / 100 + "%: devono dare 100%.");
-    const transazioni = validaTransazioni(d.transazioni, visti);
+    const transazioni = validaTransazioni(d.transazioni, visti), obiettivo = validaObiettivo(d.obiettivo, visti);
     let vincoli = null;
     if (d.vincoli !== undefined && d.vincoli !== null) {
       const vv = d.vincoli; if (typeof vv !== "object" || Array.isArray(vv)) throw Err("«vincoli»: un oggetto con «fondi» (per ISIN) e «classi».");
@@ -234,7 +246,7 @@
       const fr = d.frontiera; if (!fr || typeof fr !== "object" || ![1, 3, 5].includes(fr.finestra) || typeof fr.prudente !== "boolean") throw Err("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.");
       frontiera = { finestra: fr.finestra, prudente: fr.prudente };
     }
-    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni, frontiera };
+    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni, obiettivo, frontiera };
   }
 
   // ---- dati dei titoli: schede note (con l'app), memoria dell'app, justETF
@@ -280,6 +292,7 @@
     if (df.frontiera) meta.frontiera = df.frontiera;
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
     if (df.transazioni.length) meta.transazioni = df.transazioni.map((x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo }));
+    if (df.obiettivo.length) meta.obiettivo = Object.fromEntries(df.obiettivo.map((x) => [siglaDi[x.isin], x.quote]));  // quote del piano proposto: la pagina ne ricava «da investire»
     say({ t: "salvato", n: fondi.length });
     return { meta, funds: fondi, dates: date, px };
   }
@@ -301,11 +314,11 @@
     if (def && typeof def === "object" && Object.keys(def).length === 1 && def.file) { if (!info(def.file)) throw Err("Portafoglio non trovato."); return prepara(def.file, avanza); }
     const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
-    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
+    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.obiettivo.length ? { obiettivo: df.obiettivo } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     let i; try { i = await prepara(nuovo, avanza); } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
     rispecchia({ write: [scriviFile(nuovo)] }); await specchioOk(); return i;
   }
-  async function bozza(da, titoli, avanza, valore, transazioni) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
+  async function bozza(da, titoli, avanza, valore, transazioni, obiettivo) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (!Array.isArray(titoli) || titoli.length < 1 || titoli.length > 30) throw Err("Servono da 1 a 30 titoli.");
     const prima = Object.fromEntries((origine.titoli || []).map((x) => [x.isin, x.peso])), visti = new Set(), nuovi = [];
@@ -322,7 +335,8 @@
     const grande = nuovi.reduce((a, x) => (x[1] > a[1] ? x : a), nuovi[0]); grande[1] = Math.round((grande[1] + (100 - sum(nuovi.map((x) => x[1])))) * 100) / 100;
     let val = origine.valore || 10000; if (valore !== undefined && valore !== null && valore !== "") { val = Math.round(parseFloat(valore) * 100) / 100; if (isNaN(val)) throw Err("Il valore dell'investimento deve essere un numero."); if (!(val >= 100 && val <= 1e9)) throw Err("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro."); }
     const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: val, titoli: nuovi.map(([isin, peso]) => ({ isin, peso })), _da: da.startsWith("bozza:") ? origine._da : da };
-    const tr = transazioni !== undefined && transazioni !== null ? validaTransazioni(transazioni, visti) : (origine.transazioni || []).filter((x) => visti.has(x.isin)); if (tr.length) d.transazioni = tr;  // con la schermata di modifica gli acquisti e le vendite inseriti sostituiscono quelli di prima
+    const tr = transazioni !== undefined && transazioni !== null ? validaTransazioni(transazioni, visti) : (origine.transazioni || []).filter((x) => visti.has(x.isin)); const ob = obiettivo !== undefined && obiettivo !== null ? validaObiettivo(obiettivo, visti) : (origine.obiettivo || []).filter((x) => visti.has(x.isin)); if (ob.length) d.obiettivo = ob;
+    if (tr.length) d.transazioni = tr;  // con la schermata di modifica gli acquisti e le vendite inseriti sostituiscono quelli di prima
     validaDefinizione(d);
     const token = Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
     if (!scriviLS("mm:bozza:" + token, d)) throw Err("Memoria dell'app piena: elimina qualche portafoglio.");
@@ -330,8 +344,8 @@
     Object.keys(LS).filter((k) => k.startsWith("mm:bozza:") && k !== "mm:bozza:" + token).slice(0, -9).forEach((k) => LS.removeItem(k));  // poche bozze: le più vecchie vengono dimenticate
     return { token };
   }
-  async function salvaTitoli(da, titoli, nome, versione, descrizione, avanza, valore, transazioni) {  // salva nome_Vn.json da `da` con i titoli cambiati ([{isin, peso?}]), scaricando i dati dei titoli nuovi
-    const token = (await bozza(da, titoli, avanza, valore, transazioni)).token;
+  async function salvaTitoli(da, titoli, nome, versione, descrizione, avanza, valore, transazioni, obiettivo) {  // salva nome_Vn.json da `da` con i titoli cambiati ([{isin, peso?}]), scaricando i dati dei titoli nuovi
+    const token = (await bozza(da, titoli, avanza, valore, transazioni, obiettivo)).token;
     try {
       const doc = costruisciDaCache("bozza:" + token), w = Object.fromEntries(doc.funds.map((f) => [f.s, Math.round(f.w * 1000) / 1000]));
       const grande = Object.keys(w).reduce((a, k) => (w[k] > w[a] ? k : a)); w[grande] = Math.round((w[grande] + (1 - sum(Object.values(w)))) * 1000) / 1000;  // la somma resta 100% dopo l'arrotondamento
@@ -340,7 +354,7 @@
       return info;
     } finally { LS.removeItem("mm:bozza:" + token); }
   }
-  function salva(da, nome, versione, descrizione, pesi, importo, transazioni, vincoli, frontiera) {
+  function salva(da, nome, versione, descrizione, pesi, importo, transazioni, vincoli, frontiera, obiettivo) {
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("Il nome può avere solo lettere e cifre (niente spazi né simboli), al massimo 30 caratteri.");
     const v = parseInt(String(versione).replace(/^[Vv]/, ""), 10); if (!(v >= 1 && v <= 999)) throw Err("La versione deve essere un numero da 1 a 999 (V1, V2, V3…).");
@@ -357,6 +371,7 @@
     const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([s, x]) => x > 0 || conMov.has(siglaIsin[s])).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
     const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
     if (tr.length) nd.transazioni = tr;
+    const ob = validaObiettivo(obiettivo === undefined || obiettivo === null ? (da.startsWith("bozza:") ? origine.obiettivo : []) : obiettivo, new Set(titoli.map((t) => t.isin))); if (ob.length) nd.obiettivo = ob;  // un piano nuovo parte senza «da investire» se la pagina non lo indica
     const vv = vincoli && typeof vincoli === "object" && (Object.keys(vincoli.fondi || {}).length || Object.keys(vincoli.classi || {}).length) ? vincoli : origine.vincoli;  // i limiti usati per trovare il punto sulla frontiera
     if (vv) { const amm = new Set(titoli.map((t) => t.isin)); nd.vincoli = { fondi: Object.fromEntries(Object.entries(vv.fondi || {}).filter(([i]) => amm.has(i))), classi: vv.classi || {} }; }
     const fr = frontiera && typeof frontiera === "object" ? frontiera : origine.frontiera; if (fr) nd.frontiera = fr;
@@ -436,9 +451,9 @@
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { const m = modifica(r.file, r.nome, r.versione, r.descrizione); await specchioOk(); return json(m); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni, r.vincoli, r.frontiera); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
-    if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore, r.transazioni)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
-    if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga, r.valore, r.transazioni)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
+    if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni, r.vincoli, r.frontiera, r.obiettivo); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore, r.transazioni, r.obiettivo)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
+    if (percorso === "/api/bozza") return flusso(async (riga) => { try { riga({ t: "pronta", ...(await bozza(r.da, r.titoli, riga, r.valore, r.transazioni, r.obiettivo)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/crea") return flusso(async (riga) => { try { riga({ t: "creato", ...(await crea(r, riga)) }); } catch (e) { riga(e.esiste ? { t: "esiste", file: e.esiste, testo: e.message } : { t: "fallito", testo: e.message || "richiesta non valida" }); } });
     if (percorso === "/api/aggiorna") return flusso(async (riga) => {
       let dati;

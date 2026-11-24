@@ -274,7 +274,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="fhead"><h3>Quanta incertezza vuoi accettare?</h3><span class="num" id="rs-v"></span></div>
       <input type="range" id="rs" min="0" max="200" step="1" value="0" aria-label="Livello di rischio sulla frontiera" disabled>
       <div class="rs-lab"><span>meno incertezza, rendimento più basso</span><span>più incertezza, rendimento più alto</span></div>
-      <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="srisk" title="Il punto della frontiera con lo stesso rischio del tuo portafoglio">Stesso rischio, più rendimento</button><button class="btn sec small" type="button" data-rs="srend" title="Il punto della frontiera con lo stesso rendimento del tuo portafoglio">Stesso rendimento, meno rischio</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="fmin" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rischio minimo</button><button class="btn sec small" type="button" data-rs="fmax" title="Tiene ferma, a mezzo punto, la quota attuale di azioni, obbligazioni e materie prime">Stessa composizione: rendimento massimo</button></div>
+      <div class="rs-btn"><button class="btn sec small" type="button" data-rs="minvar">Rischio minimo</button><button class="btn sec small" type="button" data-rs="tuo">Il rischio attuale</button><button class="btn sec small" type="button" data-rs="srisk" title="Il punto della frontiera con lo stesso rischio del tuo portafoglio">Stesso rischio, più rendimento</button><button class="btn sec small" type="button" data-rs="srend" title="Il punto della frontiera con lo stesso rendimento del tuo portafoglio">Stesso rendimento, meno rischio</button><button class="btn sec small" type="button" data-rs="sharpe">Massimo Sharpe</button><button class="btn sec small" type="button" data-rs="maxrr" title="L'estremo alto della frontiera: il punto con il rendimento più alto, che è anche quello con il rischio più alto">Rischio e rendimento massimi</button></div>
     </div>
     <div class="stack">
       <div class="panel"><div id="bozza"></div><div class="chart" id="front"></div><div class="leg" id="fleg" style="margin-top:8px"></div></div>
@@ -283,7 +283,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="panel" style="display:flex;flex-direction:column;gap:12px">
       <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano proposto (investito + da investire)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:230px">Totale dell'investimento da raggiungere (€) <small id="rb-att" style="font-weight:normal"></small><input type="number" id="rb-tot" min="0" step="100" inputmode="decimal"></label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti dei titoli che ho già</label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite dei titoli che ho già</label>
@@ -340,7 +340,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <label>Versione<span class="sv-v"><span aria-hidden="true">V</span><input id="sv-ver" type="number" min="1" max="999" step="1" inputmode="numeric"></span><small>1, 2, 3…</small></label>
     </div>
     <label>Descrizione<textarea id="sv-d" rows="3" maxlength="300"></textarea><small>una o due frasi: cosa cambia rispetto agli altri portafogli</small></label>
-    <div id="sv-rib-w" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer"><input type="checkbox" id="sv-rib" style="margin-top:3px"><span><b>Segna il ribilanciamento come eseguito</b><br><span class="muted" id="sv-rib-t"></span></span></label></div>
+    <div id="sv-rib-w" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px"><b>Da investire</b><br><span class="muted" id="sv-rib-t"></span></div>
     <p class="muted"><span id="sv-fl">Nuovo file</span>: <b id="sv-file" class="num"></b></p>
     <div class="lerr" id="sv-err" role="alert"></div>
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-ann" type="button">Annulla</button><button class="btn" id="sv-ok" type="submit">Salva il portafoglio</button></div>
@@ -454,7 +454,8 @@ function anniRend(v, i0 = 0) { const out = {}; const last = DATES[DATES.length -
 function lastIdx(d) { let lo = 0, hi = DATES.length - 1, r = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (DATES[m] <= d) { r = m; lo = m + 1; } else hi = m - 1; } return r; }
 
 /* ---------- posizioni e acquisti ---------- */
-const pesiPiano = () => F.map((f) => f.w);
+let WPROP = null, DI = [];  // piano proposto (investito + da investire) e, per fondo, quote da comprare (+) o vendere (−) per arrivarci; WPROP resta null senza «da investire»
+const pesiPiano = () => WPROP || F.map((f) => f.w);
 const pesiOrig = () => (BOZZA ? BOZZA.w : pesiPiano());
 function infoLotto(i, lot) {
   const q = +lot.q; if (!(q > 0)) return null; if (!lot.d) return { err: "manca la data" };
@@ -484,7 +485,16 @@ function xirr(fl) { if (fl.length < 2) return null; const t0 = fl[0].t, f = (r) 
 let POS = [], VAL = 0, INV = 0, ACQ = 0, INC = 0, REAL = 0, WCUR = pesiPiano();
 function calcolaPos() {
   POS = posizioni(); VAL = sum(POS.map((p) => p.valore)); INV = sum(POS.map((p) => p.costo)); ACQ = sum(POS.map((p) => p.acq)); INC = sum(POS.map((p) => p.inc)); REAL = sum(POS.map((p) => p.real));
-  WCUR = VAL > 0 ? POS.map((p) => p.valore / VAL) : pesiPiano();
+  WCUR = VAL > 0 ? POS.map((p) => p.valore / VAL) : F.map((f) => f.w);
+  calcolaPiano();
+}
+function calcolaPiano() {  // il file indica le quote obiettivo (piano proposto): «da investire» = obiettivo − quote che hai davvero; quando le hai pareggiate la colonna sparisce
+  DI = F.map(() => 0); WPROP = null;
+  const ob = META.obiettivo; if (!ob || ST.esempio) return;
+  const tq = F.map((f, i) => (f.s in ob ? ob[f.s] : POS[i].q));
+  DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 0.5 ? Math.round(d * 100) / 100 : 0; });
+  if (!DI.some(Boolean)) return;
+  const v = tq.map((q, i) => q * POS[i].prezzo), S = sum(v); if (S > 0) WPROP = v.map((x) => x / S);
 }
 function serieUtente() {
   let i0 = Infinity; POS.forEach((p) => p.lots.forEach((x) => { if (x && !x.err) i0 = Math.min(i0, x.t); }));
@@ -532,18 +542,7 @@ function risolvi(gamma, w0, V, mu) {
 }
 let FRONT = null, FRSEQ = 0, FIXC = null;
 /* due casi con la composizione attuale per classe (azioni / obbligazioni / materie prime) tenuta ferma: rischio minimo e rendimento massimo, con i limiti per fondo dei vincoli */
-function fissa() {
-  const wb = BOZZA ? BOZZA.wcur : WCUR, cw = CLASSI.map((c) => sum(F.map((f, i) => (f.cls === c ? wb[i] : 0)))), key = FRSEQ + "|" + ST.frper + "|" + ST.prud + "|" + cw.map((x) => x.toFixed(4)).join(",") + "|" + JSON.stringify(ST.vinc.fondi);
-  if (FIXC && FIXC.key === key) return FIXC;
-  const V = vincoli(); V.GL = cw.map((x) => Math.max(0, x - 0.005)); V.GU = cw.map((x) => Math.min(1, x + 0.005));  // composizione ferma a meno di mezzo punto (le quote intere non danno mai pesi esatti)
-  const err = verifica(V); if (err) return (FIXC = { key, err: "con i limiti per fondo non si può mantenere la composizione attuale (" + err.replace(/\.$/, "") + ")." });
-  const mm = sum(MUW) / NF, mu = ST.prud ? MUW.map((x) => 0.5 * x + 0.5 * mm) : MUW, i0 = FRI0();
-  const mk = (k, nome, w) => { const s = statistiche(w, i0); return { k, nome, w, vol: s.vol, ret: s.cagr }; };
-  let w = proietta(F.map(() => 1 / NF), V); const curva = [], NC = 14;
-  for (let k = 0; k < NC; k++) { w = risolvi(Math.exp(Math.log(3000) - (k * Math.log(3000 / 0.03)) / (NC - 1)), w, V, mu); curva.push(mk("c", "", w.slice())); }
-  const wmin = curva[0].w, wmax = curva[NC - 1].w;
-  return (FIXC = { key, curva, pts: [mk("fmin", "Stessa composizione: rischio minimo", wmin), mk("fmax", "Stessa composizione: rendimento massimo", wmax)] });
-}
+function fissa() { return { key: "", curva: [], pts: [] }; }  // il criterio «stessa composizione» è stato tolto: nessuna curva né punti min/max
 async function calcolaFrontiera() {
   const seq = ++FRSEQ, V = vincoli(), err = verifica(V); $("#vmsg").textContent = err || ""; segFr(); $("#per1").textContent = dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]);
   if (err) { FRONT = { err, pts: [] }; disegnaFrontiera(); return; }
@@ -686,9 +685,10 @@ function disegnaTabella() {
   const RR = F.map(riga), totV = sum(RR.map((r) => (r ? r.val : 0))), totPl = sum(RR.map((r) => (r ? r.pl : 0))) + (piano ? 0 : REAL), totC = sum(RR.map((r) => (r ? r.costo : 0)));  // con vendite il totale include il realizzato; la percentuale è sull'investito
   const imp = IMPORTO(), usato = ripartisci(imp).spesa; $("#imp-ordini").hidden = !(ST.esempio || ACQ <= 0);  // il pulsante «Quante quote comprare» c'è finché non hai acquisti tuoi
   $("#imp-n").textContent = "Ripartito sui pesi del piano, a quote intere ai prezzi del " + dataIt(last) + ": investiti " + eur(usato) + (imp - usato > 0.5 ? ", restano " + eur(imp - usato) : "") + ".";
-  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th><th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], r = RR[i]; if (p.acq > 0 && p.q <= 1e-9) return "";  // titolo uscito dal portafoglio: niente riga
-      return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">piano ${pct(f.w, 0)}</div>` : ""}</td><td class="num">${p.q > 0 ? eur(p.costo) + `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote · medio ${eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2)}</div>` : "—"}</td><td class="num">${r ? eur(r.val) : "—"}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a>${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(r)}</td></tr>`; }).join("") +
-    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${INV > 0 ? eur(INV) : "—"}</td><td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—"}</td></tr></tfoot>`;
+  const hasDI = DI.some(Boolean), netDI = sum(F.map((f, i) => DI[i] * POS[i].prezzo));  // «Da investire»: solo finché ci sono quote da comprare o vendere
+  $("#tab").innerHTML = `<thead><tr><th>Nome</th><th class="l">ISIN</th><th class="l">Tipo</th><th>Peso</th><th>Investito</th>${hasDI ? "<th>Da investire</th>" : ""}<th>Valore attuale</th><th>Rendita corrente</th></tr></thead><tbody>` + F.map((f, i) => { const p = POS[i], r = RR[i]; if (p.acq > 0 && p.q <= 1e-9 && !DI[i]) return "";  // titolo uscito dal portafoglio: niente riga
+      return `<tr><td><div><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i)}</div><div class="fsub">${f.s} · ${f.ruolo}</div></td><td class="l num" style="white-space:nowrap">${f.isin}</td><td class="l">${esc(f.tipo)}</td><td class="num">${pct(VAL > 0 ? WCUR[i] : f.w)}${VAL > 0 ? `<div class="fsub">${hasDI ? "proposto" : "piano"} ${pct(pesiPiano()[i], 0)}</div>` : ""}</td><td class="num">${p.q > 0 ? eur(p.costo) + `<div class="fsub">${nf(p.q, p.q % 1 ? 2 : 0)} quote · medio ${eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2)}</div>` : "—"}</td>${hasDI ? `<td class="num">${DI[i] ? `<span class="${DI[i] < 0 ? "down" : ""}" style="font-weight:600">${DI[i] > 0 ? "+" : "−"}${nf(Math.abs(DI[i]), DI[i] % 1 ? 2 : 0)} quote</span><div class="fsub">≈ ${eur(Math.abs(DI[i]) * p.prezzo)}${DI[i] < 0 ? " da incassare" : ""}</div>` : "—"}</td>` : ""}<td class="num">${r ? eur(r.val) : "—"}<a class="ext" href="https://www.justetf.com/it/etf-profile.html?isin=${f.isin}" target="_blank" rel="noopener" title="Quotazione di ${esc(f.s)} su justETF" aria-label="Quotazione di ${esc(f.name)} su justETF (si apre in una nuova scheda)">↗</a>${r ? `<div class="fsub">${piano ? "piano · " : ""}${nf(r.q, r.q % 1 ? 2 : 0)} quote × ${eur(p.prezzo, p.prezzo < 20 ? 3 : 2)}</div>` : ""}</td><td class="num">${rend(r)}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td>Totale</td><td></td><td></td><td class="num">100%</td><td class="num">${INV > 0 ? eur(INV) : "—"}</td>${hasDI ? `<td class="num">${sgnE(netDI)}<div class="fsub">netto da investire</div></td>` : ""}<td class="num">${totV > 0 ? eur(totV) : "—"}${piano && totV > 0 ? '<div class="fsub">piano</div>' : ""}</td><td class="num ${cls(totPl)}">${totV > 0 ? sgnE(totPl) + (totC > 0 ? `<div class="fsub ${cls(totPl)}">${sgn(totPl / totC, 2)} ${piano ? "dal " + dataIt(BASE) : "sull'investito"}</div>` : "") : "—"}</td></tr></tfoot>`;
 }
 
 /* ---------- frontiera: disegno e dettaglio ---------- */
@@ -706,15 +706,15 @@ function disegnaFrontiera(dalCursore) {
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente: rischio e rendimento storico">${g}<text x="${(L + W - R) / 2}" y="${H - 3}" font-size="11" fill="var(--muted)" text-anchor="middle">Rischio (volatilità annua)</text><text x="12" y="${(T + H - B) / 2}" font-size="11" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 12 ${(T + H - B) / 2})">Rendimento annuo</text>
     <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/>${P.map((p, i) => `<circle class="pt" tabindex="0" data-k="${i}" cx="${X(p.vol).toFixed(1)}" cy="${Y(p.ret).toFixed(1)}" r="${SEL === i ? 7 : 4.5}" fill="${SEL === i ? "var(--accent)" : "var(--bg)"}" stroke="var(--accent)" stroke-width="2"><title>Rischio ${pct(p.vol)} · rendimento ${pct(p.ret)}</title></circle>`).join("")}
     <circle class="pt" tabindex="0" data-k="sharpe" cx="${X(sh.vol).toFixed(1)}" cy="${Y(sh.ret).toFixed(1)}" r="8" fill="none" stroke="var(--warn)" stroke-width="2.5"><title>Massimo Sharpe</title></circle>
-    ${fxc.length ? `<path d="${fxc.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" ")}" fill="none" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="5 4"/>` : ""}${fxp.map((p) => { const x = X(p.vol), y = Y(p.ret), sel = SEL === p.k; return `<path class="pt" tabindex="0" data-k="${p.k}" d="M${x.toFixed(1)} ${(y - 9).toFixed(1)} L${(x + 9).toFixed(1)} ${(y + 7).toFixed(1)} L${(x - 9).toFixed(1)} ${(y + 7).toFixed(1)} Z" fill="var(--c4)" stroke="${sel ? "var(--fg)" : "var(--bg)"}" stroke-width="${sel ? 2.5 : 1.5}" stroke-linejoin="round"><title>${p.nome}</title></path><text x="${x.toFixed(1)}" y="${(y - 14).toFixed(1)}" font-size="11" font-weight="600" fill="var(--c4)" text-anchor="middle">${p.k === "fmin" ? "min" : "max"}</text>`; }).join("")}${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Il tuo portafoglio")}
-    <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Tuo</text><text x="${X(ob.vol) + 12}" y="${Y(ob.cagr) + (Math.abs(X(ob.vol) - X(tuo.vol)) < 60 && Math.abs(Y(ob.cagr) - Y(tuo.cagr)) < 24 ? -12 : 18)}" font-size="12" font-weight="600" fill="var(--c2)">Piano</text></svg>`;
+    ${fxc.length ? `<path d="${fxc.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" ")}" fill="none" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="5 4"/>` : ""}${fxp.map((p) => { const x = X(p.vol), y = Y(p.ret), sel = SEL === p.k; return `<path class="pt" tabindex="0" data-k="${p.k}" d="M${x.toFixed(1)} ${(y - 9).toFixed(1)} L${(x + 9).toFixed(1)} ${(y + 7).toFixed(1)} L${(x - 9).toFixed(1)} ${(y + 7).toFixed(1)} Z" fill="var(--c4)" stroke="${sel ? "var(--fg)" : "var(--bg)"}" stroke-width="${sel ? 2.5 : 1.5}" stroke-linejoin="round"><title>${p.nome}</title></path><text x="${x.toFixed(1)}" y="${(y - 14).toFixed(1)}" font-size="11" font-weight="600" fill="var(--c4)" text-anchor="middle">${p.k === "fmin" ? "min" : "max"}</text>`; }).join("")}${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", WPROP ? "Piano proposto" : "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Portafoglio corrente")}
+    <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Corrente</text><text x="${X(ob.vol) + 12}" y="${Y(ob.cagr) + (Math.abs(X(ob.vol) - X(tuo.vol)) < 60 && Math.abs(Y(ob.cagr) - Y(tuo.cagr)) < 24 ? -12 : 18)}" font-size="12" font-weight="600" fill="var(--c2)">${WPROP ? "Proposto" : "Piano"}</text></svg>`;
   };
   box.innerHTML = svgDi(box.clientWidth); hbox.innerHTML = svgDi(hbox.clientWidth);
-  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>tuo portafoglio (dai tuoi acquisti)</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
+  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>portafoglio corrente (solo investito)</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>${WPROP ? "piano proposto (investito + da investire)" : "piano di partenza"}</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
   $("#fleg").innerHTML = legHtml; $("#fleg-home").innerHTML = legHtml;
   $$(".pt", hbox).forEach((e) => { const k = e.dataset.k; e.addEventListener("click", () => { SEL = /^\d+$/.test(k) ? +k : k; proponi(); apriRib(); }); });  // dalla home: il punto scelto diventa l'obiettivo e si apre il Ribilanciamento
   $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); proponi(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
-  const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr, FRI0()), c = statistiche(WCUR, FRI0()), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : SEL === "fmin" || SEL === "fmax" ? (fxp.find((p) => p.k === SEL) || {}).nome || "Portafoglio proposto" : "Portafoglio proposto";
+  const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr, FRI0()), c = statistiche(WCUR, FRI0()), tit = SEL === "tuo" ? "Portafoglio corrente" : SEL === "obiettivo" ? (WPROP ? "Piano proposto" : "Piano di partenza") : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : SEL === "fmin" || SEL === "fmax" ? (fxp.find((p) => p.k === SEL) || {}).nome || "Portafoglio proposto" : "Portafoglio proposto";
   sincRischio(P, tuo, ob, dalCursore);
   let gap = ""; if (tuo.vol >= P[0].vol && tuo.vol <= P[P.length - 1].vol) { let j = 1; while (j < P.length - 1 && P[j].vol < tuo.vol) j++; const a = P[j - 1], b = P[j], rr = a.ret + ((b.ret - a.ret) * (tuo.vol - a.vol)) / (b.vol - a.vol || 1); gap = `<p class="muted" style="margin:6px 0">A pari rischio (${pct(tuo.vol)}) la frontiera rende ${pct(rr)}: ${rr >= tuo.cagr ? `<span class="up">${nf((rr - tuo.cagr) * 100, 1)} punti</span> in più del tuo portafoglio` : "il tuo portafoglio sta sopra la curva (curva con i tuoi vincoli)"}.</p>`; }
   const riga = (n, a, b, f, bene) => { const d = a - b; return `<tr><td>${n}</td><td class="num">${f(a)}</td><td class="num">${f(b)}</td><td class="num ${Math.abs(d) < 0.0005 ? "" : (d > 0) === bene ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "—" : (d > 0 ? "+" : "") + f(d)}</td></tr>`; };
@@ -733,10 +733,10 @@ function sincRischio(P, tuo, ob, dalCursore) {
   const fp = fissa().pts || [], x = typeof SEL === "number" ? P[SEL] : SEL === "sharpe" ? P[FRONT.sharpe] : (SEL === "fmin" || SEL === "fmax") && fp.length ? fp.find((p) => p.k === SEL) : SEL === "obiettivo" ? { vol: ob.vol, ret: ob.cagr } : { vol: tuo.vol, ret: tuo.cagr };
   if (!dalCursore) rs.value = Math.round(Math.max(0, Math.min(1, (x.vol - v0) / (v1 - v0 || 1))) * +rs.max);  // se si sta trascinando, il cursore resta dove lo metti
   rs.setAttribute("aria-valuetext", "rischio " + pct(x.vol) + ", rendimento " + pct(x.ret));
-  $("#rs-v").innerHTML = `rischio <b>${pct(x.vol)}</b> · rendimento <b>${pct(x.ret)}</b>` + (typeof SEL === "number" || SEL === "sharpe" ? "" : ` <span class="muted">(${SEL === "obiettivo" ? "piano" : SEL === "fmin" || SEL === "fmax" ? "stessa composizione" : "il tuo"})</span>`);
+  $("#rs-v").innerHTML = `rischio <b>${pct(x.vol)}</b> · rendimento <b>${pct(x.ret)}</b>` + (typeof SEL === "number" || SEL === "sharpe" ? "" : ` <span class="muted">(${SEL === "obiettivo" ? (WPROP ? "piano proposto" : "piano") : "corrente"})</span>`);
 }
 $("#rs").addEventListener("input", (e) => { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const v = P[0].vol + (+e.target.value / +e.target.max) * (P[P.length - 1].vol - P[0].vol); SEL = P.reduce((a, p, i) => (Math.abs(p.vol - v) < Math.abs(P[a].vol - v) ? i : a), 0); disegnaFrontiera(true); proponiRitardo(); });  // il cursore è sul rischio: sceglie il punto della frontiera più vicino
-$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; if (k === "srisk" || k === "srend") { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const o = statistiche(BOZZA ? BOZZA.wcur : WCUR, FRI0()); SEL = P.reduce((a, p, i) => ((k === "srisk" ? Math.abs(p.vol - o.vol) < Math.abs(P[a].vol - o.vol) : Math.abs(p.ret - o.cagr) < Math.abs(P[a].ret - o.cagr)) ? i : a), 0); } else SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); proponi(); }));
+$$("#rischio [data-rs]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.rs; if (k === "srisk" || k === "srend") { const P = FRONT && FRONT.pts; if (!P || !P.length) return; const o = statistiche(BOZZA ? BOZZA.wcur : WCUR, FRI0()); SEL = P.reduce((a, p, i) => ((k === "srisk" ? Math.abs(p.vol - o.vol) < Math.abs(P[a].vol - o.vol) : Math.abs(p.ret - o.cagr) < Math.abs(P[a].ret - o.cagr)) ? i : a), 0); } else if (k === "maxrr") { const P = FRONT && FRONT.pts; if (!P || !P.length) return; SEL = P.length - 1; } else SEL = k === "minvar" ? 0 : k; disegnaFrontiera(); proponi(); }));
 function applicaBozza(w) {
   if (!BOZZA) BOZZA = { w: F.map((f) => f.w), q0: F.map((f) => f.q0), lots: JSON.parse(JSON.stringify(ST.lots)), esempio: ST.esempio, wcur: WCUR.slice() };
   F.forEach((f, i) => { f.w = w[i]; f.q0 = Math.floor((IMPORTO() * w[i]) / f.p0); });
@@ -842,7 +842,7 @@ function aggiornaRib() {
   if (R.vuoto) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Indica il totale dell'investimento da raggiungere: il piano mostrerà quante quote comprare e vendere."; $("#rb-crea").disabled = true; return; }
   const { wt, tgt, tot, ops, speso, dopoV, B } = R;
   disegnaClassi(R);
-  $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}</td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
+  $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}<div class="fsub">${esc(f.name)}</div></td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
   const rest = B - Math.max(0, speso);
   $("#rb-n").textContent = R.modo + " Totale da raggiungere " + eur(R.T0) + ": ora hai " + eur(R.base) + (R.delta ? (R.delta > 0 ? ", da investire " : ", da disinvestire ") + eur(Math.abs(R.delta)) : "") + ". Quote arrotondate all'intero, prezzi del " + dataIt(DATES[DATES.length - 1]) + (rest > 0.5 && speso > 0 ? "; restano circa " + eur(rest) : "") + (speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
   $("#rb-crea").disabled = ST.esempio || !ops.some((o) => o.n !== 0);
@@ -1210,7 +1210,8 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
-const trSalva = () => movimenti().concat(SV.opsFissi || ($("#sv-rib").checked && !$("#sv-rib-w").hidden) ? (SV.ops || []).map((o) => ({ isin: o.isin, data: o.data, tipo: o.n > 0 ? "acquisto" : "vendita", quote: Math.abs(o.n), prezzo: o.pr })) : []);  // i movimenti di prima, più le operazioni del ribilanciamento (già impostate, o spuntate)
+const trSalva = () => movimenti();  // le transazioni sono solo quelle che hai inserito tu: le operazioni di un ribilanciamento restano «da investire»
+const obiettivoDa = (ops) => { const n = {}; ops.forEach((o) => { n[o.isin] = (n[o.isin] || 0) + o.n; }); return F.map((f, i) => ({ isin: f.isin, quote: Math.max(0, Math.round((POS[i].q + (n[f.isin] || 0)) * 1e6) / 1e6) })).filter((x) => x.quote > 0 || n[x.isin] != null); };  // quote da avere alla fine = quelle che hai + le operazioni proposte
 function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo) che portano i titoli che hai davvero sui pesi `w`, senza nuovi versamenti
   if (ST.esempio || !(VAL > 0)) return [];
   const last = DATES.length - 1, out = [];
@@ -1223,7 +1224,7 @@ function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo)
   return out;
 }
 function apriSalvaTitoli(dati) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
-  SV = { w: null, titoli: dati.titoli, transazioni: dati.transazioni, importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
+  SV = { w: null, titoli: dati.titoli, transazioni: dati.transazioni, obiettivo: dati.obiettivo || [], importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
   $("#sv-rib-w").hidden = true;
   const tot = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
@@ -1237,12 +1238,11 @@ function apriSalva(w, s, tit, msg = "sv-nosrv", opsFissi = null) {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
   $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: (opsFissi && opsFissi.totale) || IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
-  SV.ops = opsFissi || opsRibilancio(w); SV.opsFissi = !!opsFissi; $("#sv-rib-w").hidden = !SV.ops.length; $("#sv-rib").checked = SV.ops.length > 0; $("#sv-rib").parentElement.querySelector("b").textContent = SV.opsFissi ? "Operazioni del ribilanciamento già impostate" : "Segna il ribilanciamento come eseguito"; $("#sv-rib").style.display = SV.opsFissi ? "none" : "";  // con acquisti già inseriti: si può segnare il ribilanciamento come fatto, così il punto «Tuo» si sposta sul nuovo piano
-  $("#sv-rib-t").textContent = SV.opsFissi ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Il nuovo portafoglio le contiene già tra acquisti e vendite (quote intere, ai prezzi di oggi): quando le esegui davvero puoi correggere prezzi e date in Modifica portafoglio." : SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Registro queste operazioni, ai prezzi di oggi, tra i tuoi acquisti e vendite: il punto «Tuo» va sul nuovo piano. Se non le hai ancora fatte, togli la spunta: i tuoi acquisti restano quelli di prima." : "";
+  SV.ops = opsFissi || opsRibilancio(w); SV.obiettivo = SV.ops.length ? obiettivoDa(SV.ops) : []; $("#sv-rib-w").hidden = !SV.ops.length;  // niente transazioni inventate: le quote da comprare e vendere si salvano come «da investire»
+  $("#sv-rib-t").textContent = SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Nel nuovo portafoglio «Investito» resta quello che hai inserito tu; queste quote compaiono nella colonna «Da investire» e spariscono quando inserisci gli acquisti e le vendite reali (Modifica portafoglio)." : "";
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   const zeri = F.filter((f, i) => !(w[i] > 0) && !movimenti().some((m) => m.isin === f.isin)).map((f) => f.s);  // titoli a 0%: nel file non ci sarebbero
   if (zeri.length) $("#sv-w").textContent += " ATTENZIONE: a 0% e quindi NON salvati nel file: " + zeri.join(", ") + ".";
-  if (movimenti().length) $("#sv-w").textContent += " NOTA: i tuoi acquisti e vendite restano quelli di prima, quindi il punto «Tuo» non si sposta sulla curva finché non fai le operazioni indicate in «Ribilanciamento» (obiettivo: il nuovo piano); il punto «Piano» sì."; 
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
   svEsistenti();
   const az = F.reduce((a, f, i) => a + (f.cls === "Azionario" ? w[i] : 0), 0), ob = F.reduce((a, f, i) => a + (f.cls === "Obbligazionario" ? w[i] : 0), 0), oro = F.reduce((a, f, i) => a + (f.cls === "Materie prime" ? w[i] : 0), 0);
@@ -1273,7 +1273,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
   if (SV.modo === "titoli") {
     let ev = null, errore = "";
     scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
-    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, transazioni: SV.transazioni, valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
+    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, transazioni: SV.transazioni, obiettivo: SV.obiettivo || [], valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
     await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
     if (ev && ev.t === "salvato_pf") {
       chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
@@ -1292,7 +1292,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
     }
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
     const vincoli = { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(CLASSI.map((c) => [c, [ST.vinc.classi[c].min, ST.vinc.classi[c].max]])) };  // i limiti e i dati con cui è stata calcolata la frontiera restano nel file
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, vincoli, frontiera: { finestra: [1, 3, 5].includes(+ST.frper) ? +ST.frper : 5, prudente: !!ST.prud }, importo: SV.importo, ...(trSalva().length ? { transazioni: trSalva() } : {}) }) });
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, vincoli, frontiera: { finestra: [1, 3, 5].includes(+ST.frper) ? +ST.frper : 5, prudente: !!ST.prud }, importo: SV.importo, obiettivo: SV.obiettivo || [], ...(trSalva().length ? { transazioni: trSalva() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = urlPf(j.file); }; $("#sv-apri").focus(); caricaPortafogli();
@@ -1380,13 +1380,15 @@ function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure nu
   }
   transazioni.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
   const poss = {}; for (const o of transazioni) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
-  return { titoli: MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), transazioni };
+  const invariato = META.obiettivo && MT.length === F.length && MT.every((x) => x.s && Math.abs(mtVal(x) - x.w) < 0.06);  // pesi e titoli come prima: il piano proposto (quote obiettivo) resta, e «Da investire» scende man mano che inserisci gli acquisti
+  const obiettivo = invariato ? F.filter((f) => f.s in META.obiettivo).map((f) => ({ isin: f.isin, quote: META.obiettivo[f.s] })) : [];
+  return { titoli: MT.map((x) => ({ isin: x.isin, ...(x.peso === "" ? {} : { peso: +x.peso }) })), transazioni, obiettivo };
 }
 $("#mt-salva").onclick = () => { const dati = mtDati(); if (dati) apriSalvaTitoli(dati); };
 $("#mt-ok").onclick = async () => {
   const dati = mtDati(); if (!dati) return;
   chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";
-  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli: dati.titoli, valore: +$("#mt-val").value, transazioni: dati.transazioni }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  try { ev = await scFlusso("/api/bozza", { da: DA(), titoli: dati.titoli, valore: +$("#mt-val").value, transazioni: dati.transazioni, obiettivo: dati.obiettivo }, ["pronta", "fallito"]); } catch (e) { errore = e.message || "errore"; }
   await scSvuotata();
   if (ev && ev.t === "pronta") { $("#scar-b").style.width = "100%"; $("#scar-cl").setAttribute("class", "clessidra fatto"); scTesto("#scar-t", "Bozza pronta"); await new Promise((r) => setTimeout(r, 500)); location.href = "/portafoglio.html?bozza=" + encodeURIComponent(ev.token); return; }
   errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", "Bozza non creata"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();

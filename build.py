@@ -255,6 +255,30 @@ def valida_transazioni(tr, isin_ammessi):
     return out
 
 
+def valida_obiettivo(ob, isin_ammessi):
+    """Quote obiettivo del piano proposto (facoltative): [{isin, quote}], quote >= 0. «Da investire» = quote obiettivo - quote che hai davvero (dalle transazioni)."""
+    if ob is None:
+        return []
+    if not isinstance(ob, list) or len(ob) > 100:
+        raise ValueError("«obiettivo»: un elenco di {\"isin\", \"quote\"}.")
+    out, visti = [], set()
+    for k, x in enumerate(ob, 1):
+        isin = str((x or {}).get("isin") or "").strip().upper() if isinstance(x, dict) else ""
+        if isin not in isin_ammessi:
+            raise ValueError(f"«obiettivo» n. {k}: l'ISIN «{isin}» non è tra i titoli del portafoglio.")
+        if isin in visti:
+            raise ValueError(f"«obiettivo»: ISIN ripetuto ({isin}).")
+        visti.add(isin)
+        try:
+            q = float(x.get("quote"))
+        except (TypeError, ValueError):
+            raise ValueError(f"«obiettivo» n. {k} ({isin}): «quote» deve essere un numero.")
+        if not q >= 0:
+            raise ValueError(f"«obiettivo» n. {k} ({isin}): «quote» non può essere negativo.")
+        out.append({"isin": isin, "quote": int(q) if q == int(q) else round(q, 6)})
+    return out
+
+
 PESO_NUOVO = 1  # peso (%) di un titolo aggiunto senza indicare il peso: gli altri si riducono in proporzione
 
 
@@ -309,6 +333,7 @@ def valida_definizione(d):
     if abs(tot - 100) > 0.5:
         raise ValueError(f"I pesi danno {round(tot, 2)}%: devono dare 100%.")
     transazioni = valida_transazioni(d.get("transazioni"), visti)
+    obiettivo = valida_obiettivo(d.get("obiettivo"), visti)
     vincoli = None
     if d.get("vincoli") is not None:
         vv = d["vincoli"]
@@ -331,7 +356,7 @@ def valida_definizione(d):
         if not isinstance(fr, dict) or fr.get("finestra") not in (1, 3, 5) or not isinstance(fr.get("prudente"), bool):
             raise ValueError("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.")
         frontiera = {"finestra": fr["finestra"], "prudente": fr["prudente"]}
-    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni, "frontiera": frontiera}
+    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni, "obiettivo": obiettivo, "frontiera": frontiera}
 
 
 def formatta_definizione(d):
@@ -341,8 +366,8 @@ def formatta_definizione(d):
     for k, v in {"$schema": "schema.json", **{k: v for k, v in d.items() if k != "$schema"}}.items():
         if k == "titoli":
             righe.append('  "titoli": [\n' + ",\n".join("    " + j(x) for x in v) + "\n  ]")
-        elif k == "transazioni":
-            righe.append('  "transazioni": [\n' + ",\n".join("    " + j(x) for x in v) + "\n  ]")
+        elif k in ("transazioni", "obiettivo"):
+            righe.append(f'  {j(k)}: [\n' + ",\n".join("    " + j(x) for x in v) + "\n  ]")
         elif k == "vincoli":
             sub = [f'    {j(kk)}: {{' + ("\n" + ",\n".join(f"      {j(a)}: {j(c)}" for a, c in vv.items()) + "\n    }" if vv else "}") for kk, vv in v.items()]
             righe.append('  "vincoli": {\n' + ",\n".join(sub) + "\n  }")
@@ -798,6 +823,8 @@ class Portafogli:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
         if df["transazioni"]:  # i movimenti reali: la pagina li usa al posto degli acquisti d'esempio
             meta["transazioni"] = [{"s": sigla_di[t["isin"]], "d": t["data"], "t": "a" if t["tipo"] == "acquisto" else "v", "q": t["quote"], "p": t["prezzo"]} for t in df["transazioni"]]
+        if df["obiettivo"]:  # quote del piano proposto: la pagina ne ricava «da investire» e il punto «Piano proposto»
+            meta["obiettivo"] = {sigla_di[x["isin"]]: x["quote"] for x in df["obiettivo"]}
         if self.prezzi is not None:
             self.prezzi.aggiungi({f["s"]: {"isin": f["isin"], "p0": f["p0"]} for f in fondi}, date[-1])
         say(t="salvato", n=len(fondi))
@@ -898,7 +925,7 @@ class Portafogli:
                 raise Esiste(i["file"], f"Esiste già il portafoglio {df['nome']} {versione} ({i['file']}). Cambia la versione nel JSON per crearne uno nuovo.")
         self._scrivi(nuovo, {"nome": df["nome"], "versione": versione, "descrizione": df["descrizione"], "valore": df["amount"],
                              "titoli": [{"isin": i, "peso": round(w * 100, 2)} for i, w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {}),
-                             **({"transazioni": df["transazioni"]} if df["transazioni"] else {}), **({"frontiera": df["frontiera"]} if df["frontiera"] else {})})
+                             **({"transazioni": df["transazioni"]} if df["transazioni"] else {}), **({"obiettivo": df["obiettivo"]} if df["obiettivo"] else {}), **({"frontiera": df["frontiera"]} if df["frontiera"] else {})})
         try:
             return self.prepara(nuovo, avanza)
         except Exception:
@@ -908,7 +935,7 @@ class Portafogli:
                 pass
             raise
 
-    def bozza(self, da, titoli, avanza=None, valore=None, transazioni=None):
+    def bozza(self, da, titoli, avanza=None, valore=None, transazioni=None, obiettivo=None):
         """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 1 per un titolo nuovo).
         I pesi vengono riportati a 100; un titolo nuovo senza peso entra all'1% e gli altri si riducono in proporzione. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
@@ -970,6 +997,9 @@ class Portafogli:
             tr = [x for x in (origine.get("transazioni") or []) if isinstance(x, dict) and x.get("isin") in visti]
         if tr:
             d["transazioni"] = tr
+        ob = valida_obiettivo(obiettivo, visti) if obiettivo is not None else [x for x in (origine.get("obiettivo") or []) if isinstance(x, dict) and x.get("isin") in visti]  # le quote del piano proposto restano finché la pagina non dice altrimenti
+        if ob:
+            d["obiettivo"] = ob
         valida_definizione(d)
         token = secrets.token_urlsafe(9)
         self.bozze[token] = d
@@ -982,10 +1012,10 @@ class Portafogli:
             self.bozze.pop(next(iter(self.bozze)))
         return {"token": token}
 
-    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None, valore=None, transazioni=None):
+    def salva_titoli(self, da, titoli, nome, versione, descrizione, avanza=None, valore=None, transazioni=None, obiettivo=None):
         """Scrive nome_V<n>.json partendo da `da` con i titoli cambiati ([{isin, peso?}], come in bozza()): scarica i dati dei titoli nuovi e salva i pesi così come sono (a 100).
         Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
-        token = self.bozza(da, titoli, avanza, valore, transazioni)["token"]
+        token = self.bozza(da, titoli, avanza, valore, transazioni, obiettivo)["token"]
         try:
             doc = self.costruisci("bozza:" + token, scarica=False)
             w = {f["s"]: round(f["w"], 3) for f in doc["funds"]}
@@ -1034,7 +1064,7 @@ class Portafogli:
             self.segna(nuovo)
         return {**self.info(nuovo), "chiave": f"pf-{nome}-V{v}"}
 
-    def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None, vincoli=None, frontiera=None):
+    def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None, vincoli=None, frontiera=None, obiettivo=None):
         """Scrive nome_V<n>.json partendo dal portafoglio `da` con i nuovi pesi (per sigla). Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
         origine = self.definizione(da)
         if origine is None:
@@ -1081,6 +1111,11 @@ class Portafogli:
         nd = {"nome": nome, "versione": versione, "descrizione": descrizione, "valore": amount, "titoli": titoli}
         if tr:
             nd["transazioni"] = tr
+        if obiettivo is None:  # senza indicazioni si porta dietro solo quelle di una bozza; un piano nuovo parte senza «da investire»
+            obiettivo = origine.get("obiettivo") if da.startswith("bozza:") else []
+        ob = valida_obiettivo(obiettivo, {t["isin"] for t in titoli})
+        if ob:
+            nd["obiettivo"] = ob
         vv = vincoli if isinstance(vincoli, dict) and (vincoli.get("fondi") or vincoli.get("classi")) else origine.get("vincoli")  # i limiti usati per trovare il punto sulla frontiera
         if vv:
             ammessi = {t["isin"] for t in titoli}
@@ -1207,7 +1242,7 @@ def crea_server(prezzi, porta, portafogli):
                         return self.invia(200, {**info, "ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
                     if percorso == "/api/elimina":
                         return self.invia(200, portafogli.elimina(r.get("file")))
-                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"), r.get("transazioni"), r.get("vincoli"), r.get("frontiera"))
+                    nuovo = portafogli.salva(r.get("da"), r.get("nome"), r.get("versione"), r.get("descrizione"), r.get("pesi"), r.get("importo"), r.get("transazioni"), r.get("vincoli"), r.get("frontiera"), r.get("obiettivo"))
                 except OverflowError:
                     return self.invia(413, {"errore": "richiesta troppo grande"})
                 except (ValueError, LookupError) as e:  # include json.JSONDecodeError
@@ -1224,7 +1259,7 @@ def crea_server(prezzi, porta, portafogli):
                 def salva_titoli(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga, r.get("valore"), r.get("transazioni"))
+                        info = portafogli.salva_titoli(r.get("da"), r.get("titoli"), r.get("nome"), r.get("versione"), r.get("descrizione"), riga, r.get("valore"), r.get("transazioni"), r.get("obiettivo"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "salvato_pf", **info})
@@ -1239,7 +1274,7 @@ def crea_server(prezzi, porta, portafogli):
                 def bozza(riga):
                     try:
                         r = json.loads(corpo)
-                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga, r.get("valore"), r.get("transazioni"))
+                        info = portafogli.bozza(r.get("da"), r.get("titoli"), riga, r.get("valore"), r.get("transazioni"), r.get("obiettivo"))
                     except (ValueError, LookupError, RuntimeError, OSError, AttributeError) as e:
                         return riga({"t": "fallito", "testo": str(e) or "richiesta non valida"})
                     riga({"t": "pronta", **info})

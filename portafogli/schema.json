@@ -111,6 +111,31 @@
         }
       }
     },
+    "obiettivo": {
+      "type": "array",
+      "maxItems": 100,
+      "description": "Facoltativo. Piano proposto (da un ribilanciamento): le quote che vuoi avere di ogni titolo. «Da investire» = quote obiettivo − quote che hai davvero (dalle transazioni, positivo = da comprare, negativo = da vendere); sparisce quando le hai pareggiate.",
+      "items": {
+        "type": "object",
+        "required": [
+          "isin",
+          "quote"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "isin": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$",
+            "description": "Uno degli ISIN di «titoli»."
+          },
+          "quote": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Quote da avere alla fine (0 = vendere tutto)."
+          }
+        }
+      }
+    },
     "vincoli": {
       "type": "object",
       "additionalProperties": false,
