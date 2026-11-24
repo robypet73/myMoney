@@ -102,6 +102,9 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 .dr input[type=range]::-webkit-slider-runnable-track { background: none; height: 18px; } .dr input[type=range]::-moz-range-track { background: none; }
 .dr input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); cursor: pointer; }
 .dr input[type=range]::-moz-range-thumb { pointer-events: auto; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); cursor: pointer; } .dr input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); cursor: default; }
+.mp { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; } .mp[hidden] { display: none; }
+.mp-f { display: flex; flex-wrap: wrap; gap: 8px; } .mp-f input { flex: 1 1 200px; min-width: 0; } #mp-l { max-height: 320px; overflow: auto; display: flex; flex-direction: column; }
+.mp-r { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; } .mp-r:first-child { border-top: 0; } .mp-r b { font-weight: 600; } .mp-r button { flex: none; }
 .mt-list { display: flex; flex-direction: column; gap: 10px; }
 .mt-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); } .mt-fuori { opacity: .75; }
 .mt-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; } .mt-n { flex: 1 1 200px; min-width: 0; } .mt-p { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); } .mt-p input { width: 78px; text-align: right; }
@@ -325,7 +328,9 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <p class="muted">Aggiungi titoli con l'ISIN, toglili con ✕, cambia i pesi e inserisci per ciascun titolo gli acquisti e le vendite (anche più di uno). Un titolo nuovo entra all'1% (o col peso che scrivi) e gli altri si riducono in proporzione; se ne togli uno, gli altri crescono in proporzione; i pesi sono sempre riportati a 100. Senza prezzo, l'operazione usa il prezzo di chiusura del giorno (per i titoli nuovi scrivilo tu). Poi salvi come nuova versione di questo portafoglio o come nuovo, oppure ribilanci prima con la frontiera. «Annulla» scarta tutto.</p>
   <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div id="mt-tab" class="mt-list"></div>
-  <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Peso %<input id="mt-pw" type="number" min="0" max="100" step="any" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button></form>
+  <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><label style="width:110px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Peso %<input id="mt-pw" type="number" min="0" max="100" step="any" inputmode="decimal"></label><button class="btn sec small" type="submit">Aggiungi</button><button class="btn sec small" type="button" id="mt-fin" title="Cerca tra gli ETF a zero commissioni di acquisto su Fineco">Lista Fineco gratuiti…</button></form>
+  <label class="muted" style="display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer"><input type="checkbox" id="mt-solofin" style="margin-top:2px"><span>Solo ETF a zero commissioni su Fineco (togli la spunta per aggiungere un ISIN che non è nella lista)</span></label>
+  <div class="mp" id="mt-pick" hidden><div class="mp-f"><input id="mp-q" type="search" placeholder="Cerca per nome o ISIN (per esempio «gold», «aggregate», «world value»)" autocomplete="off" aria-label="Cerca un ETF"><select id="mp-t" aria-label="Tipo"><option value="">Tutti i tipi</option><option>Azioni</option><option>Obbligazioni</option><option>Materie prime</option><option>Monetario</option><option>Altro</option></select><select id="mp-e" aria-label="Emittente"><option value="">Tutti gli emittenti</option></select></div><div class="muted" style="font-size:12px" id="mp-info"></div><div id="mp-l"></div></div>
   <p class="muted" id="mt-somma"></p>
   <div class="lerr" id="mt-err" role="alert"></div>
   <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn sec" id="mt-ok" type="button" title="Apre una bozza dove ribilanci i pesi con la frontiera efficiente, poi salvi">Ribilancia…</button><button class="btn" id="mt-salva" type="button">Salva…</button></div>
@@ -1312,10 +1317,30 @@ function mtSomma() {
   const s = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#mt-somma").textContent = MT.length ? "Somma dei pesi: " + nf(s, 1) + "%" + (Math.abs(s - 100) > 0.05 ? " → verrà riportata a 100%." : ".") : "";
 }
+/* ---------- lista Fineco: ETF a zero commissioni di acquisto (fineco_gratis.json; si aggiorna ogni mese con aggiorna_fineco.py) ---------- */
+let FIN = null, FINCARICA = null;
+function caricaFin() { return FINCARICA || (FINCARICA = fetch("/api/fineco", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d && Array.isArray(d.etf)) { d.m = Object.fromEntries(d.etf.map((e) => [e.isin, e])); FIN = d; } return FIN; }).catch(() => null)); }
+const finSolo = () => { try { return localStorage.getItem("mm:finsolo") !== "0"; } catch (e) { return true; } };
+function mtAggiungi(isin, pwTesto) {  // aggiunge un titolo alla modifica; ritorna il messaggio d'errore, oppure "" se è andata
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) return "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale.";
+  if (MT.some((x) => x.isin === isin)) return isin + " è già nel portafoglio.";
+  const pw = String(pwTesto || "").trim().replace(",", ".");  // facoltativo: se manca il titolo entra all'1%
+  if (pw !== "" && !(/^\d+(\.\d+)?$/.test(pw) && +pw >= 0 && +pw <= 100)) return "Il peso deve essere un numero decimale tra 0 e 100 (oppure lascia vuoto).";
+  if (FIN && $("#mt-solofin").checked && !FIN.m[isin]) return isin + " non è tra gli ETF a zero commissioni su Fineco (lista " + (FIN.validita || "") + "). Togli la spunta «Solo ETF a zero commissioni su Fineco» per aggiungerlo comunque.";
+  MT.push({ isin, s: null, nome: "", w: 0, peso: pw === "" ? "1" : pw, fuori: false, tr: [] }); mtRiscala(MT.length - 1); return "";
+}
+function mpDisegna() {
+  const box = $("#mt-pick"), el = $("#mp-l"); if (!box || box.hidden) return;
+  if (!FIN) { $("#mp-info").textContent = ""; el.innerHTML = '<p class="muted">Lista Fineco non disponibile: serve il programma locale o l\'app (e il file fineco_gratis.json).</p>'; return; }
+  const q = $("#mp-q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), tp = $("#mp-t").value, em = $("#mp-e").value;
+  const r = FIN.etf.filter((e) => (!tp || e.tipo === tp) && (!em || e.emittente === em) && q.every((w) => (e.nome + " " + e.isin).toLowerCase().includes(w)));
+  $("#mp-info").textContent = r.length + " ETF" + (r.length > 60 ? " (mostro i primi 60: restringi la ricerca)" : "") + " · lista Fineco " + (FIN.validita || "") + ", file aggiornato il " + (FIN.aggiornato ? dataIt(FIN.aggiornato) : "?");
+  el.innerHTML = r.slice(0, 60).map((e) => { const dentro = MT.some((x) => x.isin === e.isin); return `<div class="mp-r"><div><b>${esc(e.nome)}</b><div class="fsub num">${e.isin} · ${esc(e.emittente)} · ${esc(e.tipo)}</div></div><button class="btn sec small" type="button" data-mp="${e.isin}"${dentro ? " disabled" : ""}>${dentro ? "Già dentro" : "Aggiungi"}</button></div>`; }).join("") || '<p class="muted">Nessun ETF trovato.</p>';
+}
 function mtDisegna() {
   const ov = (i, k, f, v, extra) => `data-f="${f}" data-i="${i}" data-k="${k}" value="${esc(v)}" ${extra || ""}`;
   $("#mt-tab").innerHTML = MT.map((x, i) => `<div class="mt-card${x.fuori ? " mt-fuori" : ""}">
-    <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}<div class="fsub num">${esc(x.isin)}</div></div>
+    <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}<div class="fsub num">${esc(x.isin)}${FIN ? (FIN.m[x.isin] ? ' · <span class="up">Fineco 0 €</span>' : ' · <span class="muted">non nella lista Fineco gratuiti</span>') : ""}</div></div>
       <label class="mt-p">Peso % <input type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mt="${i}" value="${esc(x.peso)}" placeholder="${x.s ? "" : "1"}" aria-label="Peso di ${esc(x.isin)}"></label>
       <button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></div>
     ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
@@ -1333,7 +1358,7 @@ function apriModTit() {
   const mov = movimenti();
   MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, peso: String(Math.round(f.w * 1000) / 10), fuori: !!(POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9),
     tr: mov.filter((m) => m.isin === f.isin).map((m) => ({ d: m.data, t: m.tipo, q: String(m.quote), p: String(m.prezzo) })) }));
-  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
+  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = $("#mt-pw").value = ""; $("#mt-solofin").checked = finSolo(); $("#mt-pick").hidden = true; mtDisegna(); caricaFin().then((d) => { if (d && !$("#modtit").hidden) mtDisegna(); }); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
 }
 const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
 $("#imp-modtit").onclick = $("#tb-mod").onclick = apriModTit; $("#mt-x").onclick = $("#mt-ann").onclick = chiudiModTit;
@@ -1353,14 +1378,19 @@ $("#mt-tab").addEventListener("click", (e) => {
   else if (a) { MT[+a.dataset.trAdd].tr.push({ d: BASE, t: "acquisto", q: "", p: "" }); mtDisegna(); }
   else if (r) { const [i, k] = r.dataset.rDel.split(":").map(Number); MT[i].tr.splice(k, 1); mtDisegna(); }
 });
-$("#mt-add").addEventListener("submit", (e) => {
-  e.preventDefault(); const isin = $("#mt-isin").value.trim().toUpperCase(), err = $("#mt-err"); err.textContent = "";
-  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin)) { err.textContent = "L'ISIN ha 12 caratteri: due lettere, nove lettere o cifre e una cifra finale."; return; }
-  if (MT.some((x) => x.isin === isin)) { err.textContent = isin + " è già nel portafoglio."; return; }
-  const pw = $("#mt-pw").value.trim().replace(",", ".");  // facoltativo: se manca il titolo entra all'1%
-  if (pw !== "" && !(/^\d+(\.\d+)?$/.test(pw) && +pw >= 0 && +pw <= 100)) { err.textContent = "Il peso deve essere un numero decimale tra 0 e 100 (oppure lascia vuoto)."; return; }
-  MT.push({ isin, s: null, nome: "", w: 0, peso: pw === "" ? "1" : pw, fuori: false, tr: [] }); mtRiscala(MT.length - 1); $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); $("#mt-isin").focus();
+$("#mt-add").addEventListener("submit", async (e) => {
+  e.preventDefault(); const err = $("#mt-err"); err.textContent = ""; await caricaFin();
+  const m = mtAggiungi($("#mt-isin").value.trim().toUpperCase(), $("#mt-pw").value); err.textContent = m; if (m) return;
+  $("#mt-isin").value = $("#mt-pw").value = ""; mtDisegna(); mpDisegna(); $("#mt-isin").focus();
 });
+$("#mt-solofin").addEventListener("change", (e) => { try { localStorage.setItem("mm:finsolo", e.target.checked ? "1" : "0"); } catch (er) {} });
+$("#mt-fin").addEventListener("click", async () => {  // elenco ricercabile degli ETF a zero commissioni su Fineco
+  const box = $("#mt-pick"); box.hidden = !box.hidden; if (box.hidden) return; await caricaFin();
+  if (FIN && $("#mp-e").options.length < 2) [...new Set(FIN.etf.map((e) => e.emittente))].sort().forEach((x) => $("#mp-e").insertAdjacentHTML("beforeend", `<option>${esc(x)}</option>`));
+  mpDisegna(); $("#mp-q").focus();
+});
+$("#mp-q").addEventListener("input", mpDisegna); $("#mp-t").addEventListener("change", mpDisegna); $("#mp-e").addEventListener("change", mpDisegna);
+$("#mp-l").addEventListener("click", (e) => { const b = e.target.closest("[data-mp]"); if (!b) return; const m = mtAggiungi(b.dataset.mp, $("#mt-pw").value); $("#mt-err").textContent = m; if (m) return; $("#mt-pw").value = ""; mtDisegna(); mpDisegna(); });
 function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure null (con il motivo in #mt-err) se qualcosa non va
   const err = $("#mt-err"); err.textContent = "";
   const no = (m) => { err.textContent = m; return null; };

@@ -33,6 +33,8 @@ def main():
     t = '<!doctype html>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' + t  # nell'app la pagina è sola: serve il tipo di documento, la codifica e la vista per il telefono
     open(os.path.join(WWW, "portafoglio.html"), "w", encoding="utf-8").write(t)
     shutil.copy(os.path.join(QUI, "motore.js"), os.path.join(WWW, "motore.js"))
+    if os.path.exists(os.path.join(RADICE, "fineco_gratis.json")):
+        shutil.copy(os.path.join(RADICE, "fineco_gratis.json"), os.path.join(WWW, "fineco_gratis.json"))  # lista Fineco per «Modifica portafoglio»
     # prima di aprire la pagina si allineano i portafogli con la cartella scelta (telefono o Google Drive), se c'è
     open(os.path.join(WWW, "index.html"), "w", encoding="utf-8").write(
         '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>myMoney</title>'

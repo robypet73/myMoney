@@ -1,0 +1,2875 @@
+{
+"aggiornato":"2026-11-24",
+"validita":"01.11.2026 – 30.11.2026",
+"fonte":"https://images.fineco.it/cms/mail/immagini/docs/2022_Promo_ETF/PromoETFZeroCommissioni_Lista.pdf",
+"etf":[
+{
+"isin":"IE000VYO9NT0",
+"nome":"FINECO AM MSCI ACWI IMI CYBER SECURITY UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000O2G7VL0",
+"nome":"FINECO AM MSCI EUR HY SRI SUSTAINABLE CORPORATE BOND UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE000W6ZFH20",
+"nome":"FINECO AM MSCI EUR IG SRI SUSTAINABLE EX FOSSIL FUEL (1-3Y) CORPORATE BOND UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE000NPK2VI6",
+"nome":"FINECO AM MSCI EUR IG SRI SUSTAINABLE EX FOSSIL FUEL CORPORATE BOND UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE0000JVOLK2",
+"nome":"FINECO AM MSCI USD HY SRI SUSTAINABLE CORPORATE BOND UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE000WMJVNE9",
+"nome":"FINECO AM MSCI USD IG LIQUID SRI SUSTAINABLE CORPORATE BOND UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE0006XQ3YX3",
+"nome":"FINECO AM MSCI WORLD CONSUMER STAPLES ESG LEADERS UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000VDP6OY8",
+"nome":"FINECO AM MSCI WORLD FINANCIALS ESG LEADERS UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000SACNHU2",
+"nome":"FINECO AM MSCI WORLD INFORMATION TECHNOLOGY ESG LEADERS 20% CAPPED UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000EE3Q489",
+"nome":"FINECO AM MSCI WORLD METALS AND MINING UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000C87OS21",
+"nome":"FINECO AM MSCI WORLD SEMICONDUCTORS AND SEMICONDUCTOR EQUIPMENT UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000J8VOMQ9",
+"nome":"FINECOAM MKTVECTOR AI ESG UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000QU8JEH5",
+"nome":"FINECOAM MKTVECTOR AI ESG UCITS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000RWFQT12",
+"nome":"FINECOAM MKTVECTOR BIOTECHTOOLS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000YXUZAN8",
+"nome":"FINECOAM MKTVECTOR BIOTECHTOOLS ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000VAKCHT4",
+"nome":"FINECOAM MKTVECTOR GLOCLEANENRGY ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000PN3F926",
+"nome":"FINECOAM MKTVECTOR GLOCLEANENRGY ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000WCPJOV4",
+"nome":"FINECOAM MKTVECTOR GLOMTA EGAME ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000HA0OM03",
+"nome":"FINECOAM MKTVECTOR GLOMTA EGAME ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000QCDDND5",
+"nome":"FINECOAM MKTVECTOR JAP QUALTILT ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000SM6I1K9",
+"nome":"FINECOAM MKTVECTOR JAP QUALTILT ETF",
+"emittente":"Fineco AM",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322252171",
+"nome":"Xtrackers MSCI AC Asia ex Japan ESG Swap UCITS",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292106167",
+"nome":"Xtrackers Bloomberg Commodity ex-Agriculture & Livestock Swap UCITS ETF 1C EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Materie prime"
+},
+{
+"isin":"LU0659579733",
+"nome":"Xtrackers MSCI World Swap UCITS ETF 4C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0290358497",
+"nome":"Xtrackers II EUR Overnight Rate Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Monetario"
+},
+{
+"isin":"LU0779800910",
+"nome":"Xtrackers CSI300 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274211480",
+"nome":"Xtrackers DAX UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0380865021",
+"nome":"Xtrackers Euro Stoxx 50 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274211217",
+"nome":"Xtrackers Euro Stoxx 50 UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292095535",
+"nome":"Xtrackers Euro Stoxx Quality Dividend UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0489337690",
+"nome":"Xtrackers FTSE Developed Europe Real Estate UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274212538",
+"nome":"Xtrackers FTSE MIB UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322252924",
+"nome":"Xtrackers FTSE Vietnam Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2376679564",
+"nome":"Xtrackers Harvest MSCI China Tech 100 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0875160326",
+"nome":"Xtrackers Harvest CSI300 UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322250712",
+"nome":"Xtrackers LPX Private Equity Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292109344",
+"nome":"Xtrackers MSCI Brazil UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0514695690",
+"nome":"Xtrackers MSCI China UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2456436083",
+"nome":"Xtrackers MSCI China UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292107645",
+"nome":"Xtrackers MSCI Emerging Markets Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0846194776",
+"nome":"Xtrackers MSCI EMU UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322253906",
+"nome":"Xtrackers MSCI Europe Small Cap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274209237",
+"nome":"Xtrackers MSCI Europe UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0476289623",
+"nome":"Xtrackers MSCI Indonesia Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0659580079",
+"nome":"Xtrackers MSCI Japan UCITS ETF 4C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274209740",
+"nome":"Xtrackers MSCI Japan UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0476289466",
+"nome":"Xtrackers MSCI Mexico UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274210672",
+"nome":"Xtrackers MSCI USA Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274208692",
+"nome":"Xtrackers MSCI World Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292109690",
+"nome":"Xtrackers Nifty 50 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0397221945",
+"nome":"Xtrackers Portfolio UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Altro"
+},
+{
+"isin":"LU2009147757",
+"nome":"Xtrackers S&P 500 Swap UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0490618542",
+"nome":"Xtrackers S&P 500 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2196472984",
+"nome":"Xtrackers S&P 500 Swap UCITS ETF 5C EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322253229",
+"nome":"Xtrackers S&P Global Infrastructure Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0328476410",
+"nome":"Xtrackers S&P Select Frontier Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0328475792",
+"nome":"Xtrackers Stoxx Europe 600 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0274221281",
+"nome":"Xtrackers Switzerland UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2788421340",
+"nome":"Xtrackers CSI500 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0476289540",
+"nome":"Xtrackers MSCI Canada ESG Screened UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292109856",
+"nome":"Xtrackers FTSE China 50 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292107991",
+"nome":"Xtrackers MSCI EM Asia ESG Screened Swap UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292104469",
+"nome":"Xtrackers MSCI Europe In. T. Sc. UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322253732",
+"nome":"Xtrackers MSCI Europe Screened UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0514695187",
+"nome":"Xtrackers MSCI India Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0322252338",
+"nome":"Xtrackers MSCI Pacific ex Japan ESG Screened UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1875395870",
+"nome":"Xtrackers Nikkei 225 UCITS ETF 2D EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BF8J5974",
+"nome":"Xtrackers USD Corporate Bond Short Duration SRI PAB UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BL58LJ19",
+"nome":"Xtrackers USD Corporate Bond SRI PAB UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BD4DXB77",
+"nome":"Xtrackers ESG USD Emerging Markets Bond Quality Weighted UCITS ETF 2D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BD4DX952",
+"nome":"Xtrackers ESG USD Emerging Markets Bond Quality Weighted UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BYPHT736",
+"nome":"Xtrackers iBoxx EUR Corporate Bond Yield Plus UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BGV5VN51",
+"nome":"Xtrackers Artificial Intelligence & Big Data UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BFMNHK08",
+"nome":"Xtrackers MSCI Europe ESG UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000MCVFK47",
+"nome":"Xtrackers EUR Corporate Green Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BGV5VR99",
+"nome":"Xtrackers Future Mobility UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000QVYFUT7",
+"nome":"Xtrackers II India Government Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BTJRMP35",
+"nome":"Xtrackers MSCI Emerging Markets UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BG370F43",
+"nome":"Xtrackers MSCI Emerging Markets ESG UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000YDOORK7",
+"nome":"Xtrackers MSCI Fintech Innovation UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000KD0BZ68",
+"nome":"Xtrackers MSCI Genomic Healthcare Innovation UCITS 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00036F4K40",
+"nome":"Xtrackers MSCI Global SDG 3 Good Health UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0006FFX5U1",
+"nome":"Xtrackers MSCI Innovation UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BG36TC12",
+"nome":"Xtrackers MSCI Japan ESG UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000XOQ9TK4",
+"nome":"Xtrackers MSCI Next Generation Internet Innovation UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BFMNPS42",
+"nome":"Xtrackers MSCI USA ESG UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0000MMQ5M5",
+"nome":"Xtrackers MSCI USA ESG UCITS ETF 2C – EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BGQYRS42",
+"nome":"Xtrackers MSCI USA Information Tech. UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BJ0KDR00",
+"nome":"Xtrackers MSCI USA UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HR47",
+"nome":"Xtrackers MSCI World Telecom Services UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HP23",
+"nome":"Xtrackers MSCI World Consumer Discretionary UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HN09",
+"nome":"Xtrackers MSCI World Consumer Staples UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HM91",
+"nome":"Xtrackers MSCI World Energy UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BZ02LR44",
+"nome":"Xtrackers MSCI World ESG UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BMY76136",
+"nome":"Xtrackers MSCI World ESG UCITS ETF 2C - EUR hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HL84",
+"nome":"Xtrackers MSCI World Financials UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HK77",
+"nome":"Xtrackers MSCI World Health Care UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HV82",
+"nome":"Xtrackers MSCI World Industrials UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HT60",
+"nome":"Xtrackers MSCI World Information Technology UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HS53",
+"nome":"Xtrackers MSCI World Materials UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BL25JN58",
+"nome":"Xtrackers MSCI World Minimum Volatility UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BL25JP72",
+"nome":"Xtrackers MSCI World Momentum UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BL25JL35",
+"nome":"Xtrackers MSCI World Quality UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BJ0KDQ92",
+"nome":"Xtrackers MSCI World UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HQ30",
+"nome":"Xtrackers MSCI World Utilities UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BL25JM42",
+"nome":"Xtrackers MSCI World Value UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BMFKG444",
+"nome":"Xtrackers NASDAQ 100 UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00B3Y8D011",
+"nome":"Xtrackers Portfolio Income UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Altro"
+},
+{
+"isin":"IE00BJZ2DD79",
+"nome":"Xtrackers Russell 2000 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0002EI5AG0",
+"nome":"Xtrackers S&P 500 Equal Weight UCITS ETF 2C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BLNMYC90",
+"nome":"Xtrackers S&P 500 Equal Weight UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HW99",
+"nome":"Xtrackers S&P 500 UCITS ETF 1C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BZ036J45",
+"nome":"Xtrackers USD Corporate Bond UCITS ETF 2D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BZ036H21",
+"nome":"Xtrackers USD Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00BDR5HM97",
+"nome":"Xtrackers USD High Yield Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE000VXC51U5",
+"nome":"Xtrackers MSCI AC World ESG Screened UCITS ETF 2C – EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BGHQ0G80",
+"nome":"Xtrackers MSCI AC World ESG Screened UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM67HJ62",
+"nome":"Xtrackers MSCI Emerging Markets ESG Screened UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BPVLQD13",
+"nome":"Xtrackers MSCI Japan ESG Screened UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BRB36B93",
+"nome":"Xtrackers MSCI Japan ESG Screened UCITS ETF – EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000TSML5I8",
+"nome":"Xtrackers MSCI USA ESG Screened UCITS ETF 2C - Eur Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BJZ2DC62",
+"nome":"Xtrackers MSCI USA ESG Screened UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0003NQ0IY5",
+"nome":"Xtrackers MSCI World Quality ESG UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BCHWNQ94",
+"nome":"Xtrackers MSCI World ESG Screened UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000LAUZQT6",
+"nome":"Xtrackers MSCI World Value ESG UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0006WW1TQ4",
+"nome":"Xtrackers MSCI World ex USA UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0004MFRED4",
+"nome":"Xtrackers S&P 500 Equal Weight ESG UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000IDLWOL4",
+"nome":"Xtrackers S&P 500 Equal Weight Scored & Screened UCITS ETF 2C EUR Hdg",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BM97MR69",
+"nome":"Xtrackers US Treasuries Ultrashort Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2178481649",
+"nome":"Xtrackers II EUR Corporate Bond Short Duration SRI PAB UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0925589839",
+"nome":"Xtrackers II iBoxx Eurozone Government Bond Yield Plus 1-3 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1109942653",
+"nome":"Xtrackers II EUR High Yield Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0962078753",
+"nome":"Xtrackers II Global Inflation-Linked Bond UCITS ETF 1D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2385068593",
+"nome":"Xtrackers II ESG Global Government Bond UCITS ETF 4D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2385068163",
+"nome":"Xtrackers II ESG Global Government Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0484968812",
+"nome":"Xtrackers II ESG EUR Corporate Bond SRI PAB UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2504537445",
+"nome":"Xtrackers II Eurozone Government Bond ESG Tilted UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0494592974",
+"nome":"Xtrackers II Australia Government Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0478205379",
+"nome":"Xtrackers II EUR Corporate Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290357507",
+"nome":"Xtrackers II Eurozone Government Bond 15-30 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290357846",
+"nome":"Xtrackers II Eurozone Government Bond 25+ UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290356954",
+"nome":"Xtrackers II Eurozone Government Bond 3-5 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290357176",
+"nome":"Xtrackers II Eurozone Government Bond 5-7 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290357259",
+"nome":"Xtrackers II Eurozone Government Bond 7-10 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290355717",
+"nome":"Xtrackers II Eurozone Government Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290358224",
+"nome":"Xtrackers II Eurozone Inflation-Linked Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0378818131",
+"nome":"Xtrackers II Global Government Bond UCITS ETF 1C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0690964092",
+"nome":"Xtrackers II Global Government Bond UCITS ETF 1D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290357929",
+"nome":"Xtrackers II Global Inflation-Linked Bond UCITS ETF 1C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0908508814",
+"nome":"Xtrackers II Global Inflation-Linked Bond UCITS ETF 5C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0908508731",
+"nome":"Xtrackers II Global Government Bond UCITS ETF 5C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1094612022",
+"nome":"Xtrackers II Harvest China Government Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0613540268",
+"nome":"Xtrackers II Italy Government Bond 0-1 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0952581584",
+"nome":"Xtrackers II Japan Government Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0677077884",
+"nome":"Xtrackers USD Emerging Markets Bond UCITS ETF 2D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2504532131",
+"nome":"Xtrackers II TIPS US Inflation-Linked Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0524480265",
+"nome":"Xtrackers II iBoxx Eurozone Government Bond Yield Plus UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0321462953",
+"nome":"Xtrackers II USD Emerging Markets Bond UCITS ETF 1C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1109939865",
+"nome":"Xtrackers II EUR High Yield Corporate Bond 1-3 Swap UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1109943388",
+"nome":"Xtrackers II EUR HY Corporate Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0484969463",
+"nome":"Xtrackers II Eurozone AAA Gov Bd Swap UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2158769930",
+"nome":"Xtrackers II JPM EM Local Govern. Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523218",
+"nome":"Xtrackers II Target Maturity Sept 2027 EUR Corporate Bond UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523309",
+"nome":"Xtrackers II Target Maturity Sept 2029 EUR Corporate Bond UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523481",
+"nome":"Xtrackers II Target Maturity Sept 2031 EUR Corporate Bond UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523564",
+"nome":"Xtrackers II Target Maturity Sept 2033 EUR Corporate Bond UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673522913",
+"nome":"Xtrackers II T. M. Sept 2029 EUR Corp Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523135",
+"nome":"Xtrackers II T. M. Sept 2031 EUR Corp Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673523051",
+"nome":"Xtrackers II T. M. Sept 2033 EUR Corp Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2809864619",
+"nome":"Xtrackers II T. M. Sept 2034 EUR Corp Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0429458895",
+"nome":"Xtrackers II US Treasuries 1-3 UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"IE00094GSCQ4",
+"nome":"Xtrackers World Equity Enhanced Active UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00002ZKAP0",
+"nome":"Xtrackers Europe Equity Enhanced Active UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0002PGSLZ5",
+"nome":"Xtrackers US Equity Enhanced Active UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000472H9T4",
+"nome":"Xtrackers NASDAQ 100 Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1109941689",
+"nome":"Xtrackers II Rolling Target Mat. Sept 2027 EUR HY UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0839027447",
+"nome":"Xtrackers Nikkei 225 UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BG04M077",
+"nome":"Xtrackers MSCI USA UCITS ETF 2C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0942970103",
+"nome":"Xtrackers II ESG Global Aggregate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0942970798",
+"nome":"Xtrackers II ESG Global Aggregate Bond UCITS ETF 5C - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0290356871",
+"nome":"Xtrackers II Eurozone Government Bond 1-3 UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1399300455",
+"nome":"Xtrackers II US Treasuries UCITS ETF 2D - EUR Hedged",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0429459356",
+"nome":"Xtrackers II US Treasuries UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU0321465469",
+"nome":"Xtrackers II USD Overnight Rate Swap UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Monetario"
+},
+{
+"isin":"LU0643975161",
+"nome":"Xtrackers II Germany Government Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2673522830",
+"nome":"Xtrackers II Target Maturity Sept 2027 EUR Corporate Bond UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2810185665",
+"nome":"Xtrackers II Target Maturity Sept 2028 EUR Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2809864296",
+"nome":"Xtrackers II Target Maturity Sept 2030 EUR Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2809864452",
+"nome":"Xtrackers II Target Maturity Sept 2032 EUR Corporate Bond UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU3116008346",
+"nome":"Xtrackers Diversified Portfolio 20% Equity UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU3116008429",
+"nome":"Xtrackers Diversified Portfolio 40% Equity UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU3116008692",
+"nome":"Xtrackers Diversified Portfolio 60% Equity UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU3116008775",
+"nome":"Xtrackers Diversified Portfolio 80% Equity UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000F04HGE5",
+"nome":"Xtrackers Floating Rate Notes Active UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU3061478973",
+"nome":"Xtrackers Europe Defence Technologies UCITS ETF 1C",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0292096186",
+"nome":"Xtrackers Stoxx Global Select Dividend 100 Swap UCITS ETF 1D",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000L6ZMMC4",
+"nome":"Xtrackers FTSE All-World UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000YKHGYN2",
+"nome":"Xtrackers FTSE All-World ex US UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000X1GW0A7",
+"nome":"Xtrackers MSCI World IMI UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000O7Q2E56",
+"nome":"Xtrackers Electrification Technologies & Smart Grid UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000M8F3JA6",
+"nome":"Xtrackers Global Growth Leaders Active UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000X4A4GV2",
+"nome":"Xtrackers Global Equity Top Active UCITS ETF",
+"emittente":"Xtrackers",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00B4L5Y983",
+"nome":"iShares Core MSCI World UCITS ETF",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000JJPY166",
+"nome":"iShares € Cash UCITS ETF EUR (Acc)",
+"emittente":"iShares",
+"tipo":"Monetario"
+},
+{
+"isin":"IE000P1IQS65",
+"nome":"iShares World Equity Enhanced Active UCITS ETF EUR Hedged (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BLLZQ805",
+"nome":"iShares Growth Portfolio UCITS ETF EUR (Acc)",
+"emittente":"iShares",
+"tipo":"Altro"
+},
+{
+"isin":"IE00BLP53M98",
+"nome":"iShares Conservative Portfolio UCITS ETF EUR (Acc)",
+"emittente":"iShares",
+"tipo":"Altro"
+},
+{
+"isin":"IE00BLLZQS08",
+"nome":"iShares Moderate Portfolio UCITS ETF EUR (Acc)",
+"emittente":"iShares",
+"tipo":"Altro"
+},
+{
+"isin":"IE00BYZK4883",
+"nome":"iShares Digitalisation UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000IAXNM41",
+"nome":"iShares Europe Defence UCITS ETF EUR (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BJ5JP212",
+"nome":"iShares MSCI World Consumer Discretionary Sector Advanced UCITS ETF USD (Dist) Trend dei consumi",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BG0J4C88",
+"nome":"iShares Digital Security UCITS ETF",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000ROSD5J6",
+"nome":"iShares Essential Metals Producers UCITS ETF USD (Acc) Metalli e Risorse Naturali",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000U58J0M1",
+"nome":"iShares Global Clean Energy Transition UCITS ETF USD (Acc) Transizione Energetica",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000A9G9R73",
+"nome":"iShares Space Technologies UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000X59ZHE2",
+"nome":"iShares AI Infrastructure UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0009QS7W62",
+"nome":"iShares Healthcare Innovation UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BYZK4669",
+"nome":"iShares Ageing Population UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00BYZK4776",
+"nome":"iShares MSCI World Health Care Sector Advanced UCITS ETF USD (Acc)",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00B6R52143",
+"nome":"iShares Agribusiness UCITS ETF USD (Acc) Alimentazione e Agricoltura",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00023EZQ82",
+"nome":"iShares Digital Entertainment and Education UCITS ETF USD (Acc) Intrattenimento Digitale",
+"emittente":"iShares",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681045537",
+"nome":"Amundi MSCI World Ex Europe UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1691909508",
+"nome":"Amundi Global Gender Equality UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681048713",
+"nome":"Amundi S&P Global Luxury UCITS ETF - USD (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"DE000ETF9082",
+"nome":"Amundi TecDAX UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010821819",
+"nome":"Amundi MSCI Europe Ex EMU ESG Selection UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834983634",
+"nome":"Amundi STOXX Europe 600 Basic Materials UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2082997516",
+"nome":"Amundi STOXX Europe 600 Healthcare UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2082999215",
+"nome":"Amundi STOXX Europe 600 Utilities UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0011857234",
+"nome":"Amundi MDAX UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681038326",
+"nome":"Amundi NASDAQ-100 UCITS ETF - USD (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2269164310",
+"nome":"Amundi MSCI Japan SRI Climate Paris Aligned UCITS ETF DR - Hedged EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681046345",
+"nome":"Amundi Govt Bond Lowest Rated Euro Investment Grade 1-3 UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650487926",
+"nome":"Amundi Euro Government Bond 1-3Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650488817",
+"nome":"Amundi Euro Government Bond 3-5Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2090062949",
+"nome":"Amundi Euro Government Bond 7-10Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2090062782",
+"nome":"Amundi Euro Government Bond 15+Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1686831030",
+"nome":"Amundi J.P. Morgan USD Emerging Markets Bond UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2099296274",
+"nome":"Amundi Global High Yield Corporate Bond ESG UCITS ETF DR - Hedged EUR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1435356495",
+"nome":"Amundi USD High Yield Corporate Bond ESG UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1563454823",
+"nome":"Amundi Global Aggregate Green Bond UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"FR0010315770",
+"nome":"Amundi MSCI World II UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0011660927",
+"nome":"Amundi MSCI World II UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010756114",
+"nome":"Amundi MSCI World Ex EMU UCITS ETF",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0007075494",
+"nome":"Amundi DJ Global Titans 50 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1829220216",
+"nome":"Amundi MSCI All Country World UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0014003IY1",
+"nome":"Amundi MSCI World II UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0014003N93",
+"nome":"Amundi MSCI World II UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0013209921",
+"nome":"Amundi MSCI World Ex EMU SRI Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681043599",
+"nome":"Amundi MSCI World UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0533032859",
+"nome":"Amundi MSCI World Financials UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1832418773",
+"nome":"Amundi FTSE EPRA NAREIT Global Developed - UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0533033667",
+"nome":"Amundi MSCI World Information Technology UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0533033238",
+"nome":"Amundi MSCI World Health Care UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0832436512",
+"nome":"Amundi Global Equity Quality Income UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681046006",
+"nome":"Amundi Global Bioenergy UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2023678449",
+"nome":"Amundi MSCI Millennials UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0014002CH1",
+"nome":"Amundi MSCI Water UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010524777",
+"nome":"Amundi MSCI New Energy UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2023678878",
+"nome":"Amundi MSCI Digital Economy UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010930644",
+"nome":"Amundi Global Hydrogen UCITS ETF - Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010527275",
+"nome":"Amundi MSCI Water UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900066033",
+"nome":"Amundi MSCI Semiconductors UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0014002CG3",
+"nome":"Amundi MSCI New Energy UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2023679090",
+"nome":"Amundi MSCI Smart Mobility UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2023678282",
+"nome":"Amundi MSCI Disruptive Technology UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2216829809",
+"nome":"Amundi MSCI World Catholic Principles UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681048630",
+"nome":"Amundi S&P Global Luxury UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0252633754",
+"nome":"Amundi DAX III UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0007052782",
+"nome":"Amundi CAC 40 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010010827",
+"nome":"Amundi FTSE MIB UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2240851688",
+"nome":"Amundi DAX 50 ESG UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681046931",
+"nome":"Amundi CAC 40 ESG UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681044993",
+"nome":"Amundi MSCI Switzerland UCITS ETF - CHF (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2090062436",
+"nome":"Amundi DAX III UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681047079",
+"nome":"Amundi CAC 40 ESG UCITS ETF DR - EUR (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0013380607",
+"nome":"Amundi CAC 40 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681044720",
+"nome":"Amundi MSCI Switzerland UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010251744",
+"nome":"Amundi IBEX 35 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010655746",
+"nome":"Amundi IBEX 35 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0014002H76",
+"nome":"Amundi FTSE MIB UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2195226068",
+"nome":"Amundi S&P Eurozone Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1602144575",
+"nome":"Amundi MSCI EMU ESG Selection UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2182388582",
+"nome":"Amundi MSCI EMU Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2109787635",
+"nome":"Amundi MSCI EMU SRI Climate Paris Aligned UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0007054358",
+"nome":"Amundi EURO STOXX 50 II UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1861137484",
+"nome":"Amundi MSCI Europe SRI Climate Paris Aligned UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1940199711",
+"nome":"Amundi MSCI Europe ESG Selection UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681042609",
+"nome":"Amundi MSCI Europe ESG Broad Transition UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681044647",
+"nome":"Amundi MSCI Nordic UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2130768844",
+"nome":"Amundi MSCI Europe Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010261198",
+"nome":"Amundi MSCI Europe II UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010790980",
+"nome":"Amundi Stoxx Europe 50 UCITS ETF",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2059756598",
+"nome":"Amundi MSCI Europe SRI Climate Paris Aligned UCITS ETF DR (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"DE000ETF9603",
+"nome":"Amundi STOXX Europe 600 ESG II UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1940199984",
+"nome":"Amundi MSCI Europe ESG Selection UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834988278",
+"nome":"Amundi STOXX Europe 600 Energy Screened UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834986900",
+"nome":"Amundi STOXX Europe 600 Healthcare UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1812091194",
+"nome":"Amundi FTSE Epra Europe Real Estate UCITS ETF - EUR (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834988781",
+"nome":"Amundi STOXX Europe 600 Consumer Discretionary UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834987973",
+"nome":"Amundi STOXX Europe 600 Insurance UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834983477",
+"nome":"Amundi STOXX Europe 600 Banks UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834987890",
+"nome":"Amundi STOXX Europe 600 Industrials UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834988518",
+"nome":"Amundi STOXX Europe 600 Technology UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681039480",
+"nome":"Amundi FTSE Epra Europe Real Estate UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834988864",
+"nome":"Amundi STOXX Europe 600 Utilities UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834988609",
+"nome":"Amundi STOXX Europe 600 Telecommunications UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1829219390",
+"nome":"Amundi Euro Stoxx Banks UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2082998167",
+"nome":"Amundi STOXX Europe 600 Energy Screened UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2082996112",
+"nome":"Amundi STOXX Europe 600 Banks UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834985845",
+"nome":"Amundi STOXX Europe 600 Consumer Staples UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1834983550",
+"nome":"Amundi STOXX Europe 600 Basic Resources UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2082997946",
+"nome":"Amundi STOXX Europe 600 Insurance UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1812092168",
+"nome":"Amundi Stoxx Europe Select Dividend 30 - UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681042518",
+"nome":"Amundi MSCI Europe Value Factor UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1598688189",
+"nome":"Amundi MSCI Europe Growth UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0959210781",
+"nome":"Amundi S&P Eurozone Dividend Aristocrat Screened UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1598690169",
+"nome":"Amundi MSCI EMU Value Factor UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"DE000ETF9033",
+"nome":"Amundi DivDax II UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681041973",
+"nome":"Amundi MSCI Europe High Dividend Factor UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681041890",
+"nome":"Amundi MSCI Europe Quality Factor UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681041627",
+"nome":"Amundi MSCI Europe Minimum Volatility Factor UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681042435",
+"nome":"Amundi MSCI Europe Growth UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681041460",
+"nome":"Amundi MSCI Europe Momentum Factor UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1598689153",
+"nome":"Amundi MSCI EMU Small Cap ESG Broad Transition UCITS ETF DIST",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0007056841",
+"nome":"Amundi Dow Jones Industrial Average UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681049018",
+"nome":"Amundi S&P 500 UCITS ETF - USD (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681038599",
+"nome":"Amundi NASDAQ-100 UCITS ETF - Daily Hedged EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1829221024",
+"nome":"Amundi Nasdaq-100 II UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681049109",
+"nome":"Amundi S&P 500 UCITS ETF - DAILY HEDGED EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681048804",
+"nome":"Amundi S&P 500 UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2197908721",
+"nome":"Amundi Nasdaq-100 II UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681038243",
+"nome":"Amundi NASDAQ-100 UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1589349734",
+"nome":"Amundi MSCI USA Minimum Volatility Factor UCITS ETF (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681038672",
+"nome":"Amundi Russell 2000 UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681048127",
+"nome":"Amundi S&P 500 Buyback UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010245514",
+"nome":"Amundi Japan TOPIX II UCITS ETF EUR Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0496786905",
+"nome":"Amundi Australia S&P/ASX 200 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1602144732",
+"nome":"Amundi MSCI Japan ESG Broad Transition UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681037864",
+"nome":"Amundi Japan Topix UCITS ETF - DAILY HEDGED EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0011475078",
+"nome":"Amundi Japan TOPIX II UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681038912",
+"nome":"Amundi JPX-Nikkei 400 UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681039134",
+"nome":"Amundi JPX-Nikkei 400 UCITS ETF - DAILY HEDGED EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900068328",
+"nome":"Amundi MSCI AC Asia Pacific Ex Japan UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900068161",
+"nome":"Amundi MSCI AC Asia Ex Japan UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2009202107",
+"nome":"Amundi MSCI Emerging Ex China UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2109787049",
+"nome":"Amundi MSCI Emerging Markets ESG Broad Transition UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1861138961",
+"nome":"Amundi MSCI Emerging Markets SRI Climate Paris Aligned UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2109787551",
+"nome":"Amundi MSCI Emerging Markets ESG Selection UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010429068",
+"nome":"Amundi MSCI Emerging Markets III UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900068914",
+"nome":"Amundi MSCI China ESG Selection Extra UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900067940",
+"nome":"Amundi MSCI China ESG Selection Extra UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681043086",
+"nome":"Amundi MSCI India UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900066975",
+"nome":"Amundi MSCI Korea UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900065811",
+"nome":"Amundi MSCI Indonesia UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900067601",
+"nome":"Amundi MSCI Turkey UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0011720911",
+"nome":"Amundi MSCI China A UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010405431",
+"nome":"Amundi MSCI Greece UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010361683",
+"nome":"Amundi MSCI India II UCITS ETF EUR Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900066207",
+"nome":"Amundi MSCI Brazil UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1900066462",
+"nome":"Amundi MSCI Eastern Europe Ex Russia UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681044480",
+"nome":"Amundi MSCI Em Asia UCITS ETF - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1287022708",
+"nome":"Amundi Pan Africa UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681043912",
+"nome":"Amundi MSCI China Tech UCITS ETF EUR",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1437018598",
+"nome":"Amundi Euro Government Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1737653714",
+"nome":"Amundi Euro Government Bond UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"FR0010754200",
+"nome":"Amundi Govies 0-6 Months Euro Investment Grade UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU1650489385",
+"nome":"Amundi Euro Government Bond 10-15Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1829219713",
+"nome":"Amundi Euro Highest Rated Macro-Weighted Government Bond 3-5Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681046774",
+"nome":"Amundi Govt Bond Lowest Rated Euro Investment Grade UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681046691",
+"nome":"Amundi Govt Bond Highest Rated Euro Investment Grade UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650487413",
+"nome":"Amundi Euro Government Bond 1-3Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1287023003",
+"nome":"Amundi Euro Government Bond 5-7Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1287023268",
+"nome":"Amundi Euro Government Bond 15+Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1598691217",
+"nome":"Amundi Italy BTP Government Bond 10Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1287023342",
+"nome":"Amundi Euro Highest Rated Macro-Weighted Government Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2356220926",
+"nome":"Amundi Euro Government Green Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681046261",
+"nome":"Amundi Euro Government Tilted Green Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650488494",
+"nome":"Amundi Euro Government Bond 3-5Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1287023185",
+"nome":"Amundi Euro Government Bond 7-10Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650489898",
+"nome":"Amundi Euro Government Bond 10-15Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2090062865",
+"nome":"Amundi Euro Government Bond 5-7Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1829219556",
+"nome":"Amundi Euro Highest Rated Macro-Weighted Government Bond 1-3Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1598691050",
+"nome":"Amundi Italy BTP Government Bond 1-3Y UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1437016204",
+"nome":"Amundi Index J.P. Morgan GBI Global Govies UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU1708330235",
+"nome":"Amundi Index J.P. Morgan GBI Global Govies UCITS ETF DR - EUR HEDGED (C)",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU1681041205",
+"nome":"Amundi J.P. Morgan USD Emerging Markets Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1686830909",
+"nome":"Amundi J.P. Morgan USD Emerging Markets Bond UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650491282",
+"nome":"Amundi Euro Government Inflation-Linked Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1650491795",
+"nome":"Amundi Euro Government Inflation-Linked Bond UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1437018168",
+"nome":"Amundi EUR Corporate Bond ESG UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1525418643",
+"nome":"Amundi EUR Corporate Bond 1-5Y ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681040496",
+"nome":"Amundi Euro High Yield Bond ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2037748774",
+"nome":"Amundi EUR Corporate Bond 0-3Y ESG UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1617164998",
+"nome":"Amundi EUR Short Term High Yield Corporate Bond ESG UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1829219127",
+"nome":"Amundi EUR Corporate Bond Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1829218822",
+"nome":"Amundi EUR Corporate Bond ex-Financials ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681039647",
+"nome":"Amundi EUR Corporate Bond ESG UCITS ETF 2 DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681041114",
+"nome":"Amundi EUR Floating Rate Corporate Bond ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1215415214",
+"nome":"Amundi Euro High Yield Bond ESG UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2370241684",
+"nome":"Amundi Corporate Proceeds Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2099295466",
+"nome":"Amundi Global High Yield Corporate Bond ESG UCITS ETF DR - USD (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1525418726",
+"nome":"Amundi Global Corporate Bond 1-5Y ESG UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1285959703",
+"nome":"Amundi USD Corporate Bond Climate Paris Aligned UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681040900",
+"nome":"Amundi USD Floating Rate Corporate Bond ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1681041031",
+"nome":"Amundi USD Floating Rate Corporate Bond ESG UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1435356149",
+"nome":"Amundi USD High Yield Corporate Bond ESG UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1806495575",
+"nome":"Amundi USD Corporate Bond ESG UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1285959885",
+"nome":"Amundi USD Corporate Bond Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1285960032",
+"nome":"Amundi USD Corporate Bond Climate Paris Aligned UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1435356065",
+"nome":"Amundi USD High Yield Corporate Bond ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU2182388236",
+"nome":"Amundi Euro Aggregate Bond ESG UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1563454310",
+"nome":"Amundi Global Aggregate Green Bond UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1563454401",
+"nome":"Amundi Global Aggregate Green Bond UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1981859819",
+"nome":"Amundi Global Aggregate Proceeds Bond 1-10Y UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1900069219",
+"nome":"Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Materie prime"
+},
+{
+"isin":"LU1829218749",
+"nome":"Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Materie prime"
+},
+{
+"isin":"DE000ETF7011",
+"nome":"Amundi Multi-Asset Portfolio UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"DE000ETF7029",
+"nome":"Amundi Multi-Asset Portfolio Defensive UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"DE000ETF7037",
+"nome":"Amundi Multi-Asset Portfolio Offensive UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"IE00085PWS28",
+"nome":"Amundi MSCI World Ex USA UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0009BI8Z04",
+"nome":"Amundi MSCI World Ex USA UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0001GSQ2O9",
+"nome":"Amundi MSCI World ESG Broad Transition UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2572257124",
+"nome":"Amundi MSCI World III UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681043672",
+"nome":"Amundi MSCI World UCITS ETF - USD (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2655993207",
+"nome":"Amundi MSCI World UCITS ETF - EUR (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1829220133",
+"nome":"Amundi MSCI All Country World UCITS ETF USD Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000KYX7IP4",
+"nome":"Amundi S&P World Financials Screened UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681046188",
+"nome":"Amundi Global Bioenergy UCITS ETF USD Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1861132840",
+"nome":"Amundi MSCI Robotics & AI UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2090063327",
+"nome":"Amundi MSCI Semiconductors UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2037748345",
+"nome":"Amundi MSCI Smart Cities UCITS ETF ACC",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681037518",
+"nome":"Amundi Italy MIB ESG UCITS ETF DR - EUR (C)",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU0908501132",
+"nome":"Amundi MSCI EMU ESG Broad Transition UCITS ETF DIST",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1437015735",
+"nome":"Amundi Index MSCI Europe UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1574142243",
+"nome":"Amundi Stoxx Europe 600 UCITS ETF EUR Hedged Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681040223",
+"nome":"Amundi Stoxx Europe 600 ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0959210278",
+"nome":"Amundi S&P Eurozone Dividend Aristocrat Screened UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2611732558",
+"nome":"Amundi Euro Stoxx Select Dividend30 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2611731741",
+"nome":"Amundi DIVDAX UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU3038520774",
+"nome":"Amundi Stoxx Europe Defense UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000KXCEXR3",
+"nome":"Amundi S&P 500 Screened UCITS ETF - Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2991918421",
+"nome":"Amundi S&P 500 Equal Weight UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000PEAJOT0",
+"nome":"Amundi MSCI USA ESG Selection UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0008TKP6O7",
+"nome":"Amundi MSCI USA ESG Selection Extra UCITS ETF DR - USD (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2391437253",
+"nome":"Amundi S&P 500 UCITS ETF - USD (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000IP0UC52",
+"nome":"Amundi MSCI USA ESG Selection UCITS ETF Acc EUR Hedged",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0004TFW0R5",
+"nome":"Amundi MSCI USA ESG Selection Extra UCITS ETF ACC EUR Hedged",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000LAP5Z18",
+"nome":"Amundi S&P 500 Equal Weight ESG UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000R85HL30",
+"nome":"Amundi MSCI USA SRI Climate Paris Aligned UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000M86QRT4",
+"nome":"Amundi S&P 500 Equal Weight ESG UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE0000U24AJ9",
+"nome":"Amundi MSCI USA SRI Climate Paris Aligned UCITS ETF Acc EUR Hedged",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00058B19U6",
+"nome":"Amundi S&P 500 Climate Paris Aligned UCITS ETF Acc EUR Hedged",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1954152853",
+"nome":"Amundi Nasdaq-100 II UCITS ETF EUR Hedged Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE00058MW3M8",
+"nome":"Amundi S&P 500 Screened UCITS ETF - Acc EUR Hedged",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000XL4IXU1",
+"nome":"Amundi MSCI USA Ex Mega Cap UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"IE000YBGJ9I4",
+"nome":"Amundi MSCI USA Mega Cap UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1437017350",
+"nome":"Amundi Index MSCI Emerging Markets UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1737652583",
+"nome":"Amundi Index MSCI Emerging Markets UCITS ETF DR (D)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1437024729",
+"nome":"Amundi Global Aggregate Bond UCITS ETF DR (C)",
+"emittente":"Amundi",
+"tipo":"Obbligazioni"
+},
+{
+"isin":"LU1190417599",
+"nome":"Amundi Smart Overnight Return UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Monetario"
+},
+{
+"isin":"LU2082999306",
+"nome":"Amundi Smart Overnight Return UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Monetario"
+},
+{
+"isin":"FR0010510800",
+"nome":"Amundi EUR Overnight Return UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Monetario"
+},
+{
+"isin":"FR0013416716",
+"nome":"AMUNDI PHYSICAL GOLD ETC (C)",
+"emittente":"Amundi",
+"tipo":"Materie prime"
+},
+{
+"isin":"LU2872292243",
+"nome":"Amundi Lifecycle 2039 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU2872292169",
+"nome":"Amundi Lifecycle 2036 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU2872291948",
+"nome":"Amundi Lifecycle 2030 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU2872292086",
+"nome":"Amundi Lifecycle 2033 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"FR0011758085",
+"nome":"Amundi FTSE Italia PMI PIR 2020 UCITS ETF Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2611731824",
+"nome":"Amundi NYSE Arca Gold Bugs UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Materie prime"
+},
+{
+"isin":"FR0000021842",
+"nome":"Amundi BEL 20 UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Altro"
+},
+{
+"isin":"LU2611732475",
+"nome":"Amundi SDAX UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010435297",
+"nome":"Amundi MSCI Emerging Markets III UCITS ETF USD Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"FR0010375766",
+"nome":"Amundi MSCI India II UCITS ETF USD Acc",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681043169",
+"nome":"Amundi MSCI India UCITS ETF - USD (C)",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU2090063160",
+"nome":"Amundi MSCI Eastern Europe Ex Russia UCITS ETF Dist",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU1681044050",
+"nome":"Amundi MSCI China Tech UCITS ETF USD",
+"emittente":"Amundi",
+"tipo":"Azioni"
+},
+{
+"isin":"LU0832435464",
+"nome":"Amundi S&P 500 VIX Futures Enhanced Roll UCITS ETF Acc Fixed Income I prodotti Fidelity non sono più compresi nella promozione Acquisto ETF a zero commissioni I prodotti ETF Franklin Templeton non sono più compresi nella promozione Acquisto ETF a zero commissioni",
+"emittente":"Amundi",
+"tipo":"Azioni"
+}
+]
+}

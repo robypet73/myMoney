@@ -38,6 +38,7 @@ NOME = "myMoney"  # nome del programma e della sua cartella dati: non è quello 
 NOME_VECCHIO = "francesca"  # cartella dati delle versioni precedenti: se c'è, se ne copia il contenuto
 HOST_REMOTI = ("script.google.com", "script.googleusercontent.com")  # Google Drive «online»: una piccola web app di Google Apps Script (drive/mymoney_drive.gs) legge e scrive la cartella
 FILE_SCRIPT_DRIVE = os.path.join("drive", "mymoney_drive.gs")
+FILE_FINECO = "fineco_gratis.json"  # ETF a zero commissioni di acquisto su Fineco (si aggiorna con aggiorna_fineco.py)
 NOME_PF = re.compile(r"^[A-Za-z0-9]{1,30}$")  # nome di un portafoglio: solo lettere e cifre
 FILE_PF = re.compile(r"^[A-Za-z0-9]{1,30}_V[0-9]{1,3}\.json$")
 RE_DATI = re.compile(r'(<script type="application/json" id="dati">)(.*?)(</script>)', re.S)
@@ -1179,6 +1180,12 @@ def crea_server(prezzi, porta, portafogli):
                 except (RuntimeError, OSError):
                     pass
                 return self.invia(200, {"ultimo": portafogli.ultimo(), "lista": portafogli.elenco()})
+            if p == "/api/fineco":
+                try:
+                    with open(os.path.join(portafogli.base, FILE_FINECO), "rb") as fh:
+                        return self.invia(200, fh.read())
+                except OSError:
+                    return self.invia(404, {"errore": "lista Fineco non trovata (aggiorna_fineco.py la crea)"})
             if p == "/api/drive-script":
                 try:
                     with open(os.path.join(portafogli.base, FILE_SCRIPT_DRIVE), encoding="utf-8") as fh:

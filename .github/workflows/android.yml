@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [portafoglio.html, portafogli/**, fonti.py, icons/**, app-android/**, .github/workflows/android.yml]
+    paths: [portafoglio.html, portafogli/**, fonti.py, fineco_gratis.json, icons/**, app-android/**, .github/workflows/android.yml]
 
 permissions:
   contents: write

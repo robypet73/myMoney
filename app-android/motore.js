@@ -444,6 +444,7 @@
     if (metodo === "GET") {
       if (percorso === "/api/prezzi") return json(leggiPrezzi());
       if (percorso === "/api/portafogli") return json({ ultimo: ultimo(), lista: elenco() });
+      if (percorso === "/api/fineco") { try { const r = await FETCH("fineco_gratis.json"); if (r.ok) return json(await r.json()); } catch (e) {} return json({ errore: "lista Fineco non trovata" }, 404); }  // ETF a zero commissioni Fineco, copiata nell'app da prepara.py
       if (percorso === "/api/cartella") { const c = await cartellaApi(null); return c ? json(c) : json({ errore: "non trovato" }, 404); }
       return json({ errore: "non trovato" }, 404);
     }
