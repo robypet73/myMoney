@@ -270,17 +270,18 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 <div class="ovl" id="ovl" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ovl-t" id="ovl-box"></div></div>
 <div class="ovl" id="rib" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="rib-t" style="max-width:940px">
   <div class="top"><h2 id="rib-t">Ribilanciamento</h2><button class="x" id="rib-x" type="button" aria-label="Chiudi">×</button></div>
-  <p class="muted">Quante quote comprare o vendere per avvicinarti a un obiettivo</p>
+  <p class="muted">Quante quote comprare o vendere per portarti sui pesi scelti. Senza spunte i titoli che hai già non si toccano e i nuovi pesi si applicano ai titoli non ancora acquistati; con le spunte il ribilanciamento compra e vende anche quelli. «Crea il portafoglio…» salva un nuovo portafoglio con i nuovi pesi e queste operazioni già impostate.</p>
     <div class="panel" style="display:flex;flex-direction:column;gap:12px">
       <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano di partenza (emergenti 15%)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:150px">Nuovo versamento (€)<input type="number" id="rb-c" min="0" step="100" value="0"></label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti</label>
-        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite</label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti dei titoli che ho già</label>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite dei titoli che ho già</label>
       </div>
       <div class="scroll"><table id="rb"></table></div>
       <p class="muted" id="rb-n"></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" id="rb-crea" type="button">Crea il portafoglio con queste operazioni…</button></div>
     </div>
 </div></div>
 <div class="ovl" id="ordini" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="or-t" style="max-width:760px">
@@ -747,24 +748,52 @@ function disegnaSoglie() {
   CLASSI.forEach((c) => { const t = sum(F.filter((f) => f.cls === c).map((f) => f.w)), a = sum(F.map((f, i) => (f.cls === c ? WCUR[i] : 0))); if (Math.abs(a - t) >= SOGLIA_ASS) voci.push(`${CNOME[c]} è al ${pct(a)} contro ${pct(t, 0)} del piano`); });
   box.innerHTML = voci.length ? `<div class="soglie fuori"><strong class="warn">Fuori soglia: conviene ribilanciare.</strong><ul>${voci.map((v) => `<li>${v}</li>`).join("")}</ul><div class="muted" style="margin-top:6px">Vendi solo l'eccesso e, se puoi, usa prima i nuovi versamenti.</div></div>` : `<div class="soglie"><strong class="up">Entro le soglie: nessun ribilanciamento necessario.</strong></div>`;
 }
+function calcolaRib() {
+  /* Obiettivo: i pesi scelti (piano, massimo Sharpe, punto della frontiera…). Totale del piano = il maggiore tra il valore dell'investimento e quello che hai già, più il nuovo versamento;
+     la parte ancora da investire (B) si compra. I titoli che hai già si toccano solo se spunti acquisti (se ne compri ancora) o vendite (se ne vendi); i titoli non ancora acquistati si comprano sempre. */
+  const acq = ST.rib.a !== false, vend = !!ST.rib.v, wt = pesiObiettivo(), last = DATES.length - 1;
+  const cash = Math.max(0, +ST.rib.c || 0), B = Math.max(0, IMPORTO() - VAL) + cash;
+  const v = POS.map((p) => p.valore), pr = F.map((f, i) => PX[i][last]), tieni = POS.map((p) => p.q > 1e-9);
+  const T = VAL + B; let x = F.map(() => 0), modo, tot = T, tgt = wt.map((w) => w * T);
+  if (!(T > 0)) return { vuoto: true };
+  if (acq && vend) { x = tgt.map((g, i) => g - v[i]); modo = "Acquisti e vendite: porta il portafoglio ai pesi scelti con le operazioni qui sotto."; }
+  else if (acq) { const sh = tgt.map((g, i) => Math.max(0, g - v[i])), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * B : 0)); modo = "Solo acquisti: non si vende nulla; la somma ancora da investire va ai titoli sotto l'obiettivo (anche quelli che hai già), in proporzione al divario."; }
+  else if (vend) {
+    const venduti = tgt.map((g, i) => (tieni[i] ? Math.min(0, g - v[i]) : 0)), incasso = -sum(venduti);
+    const nuovi = tgt.map((g, i) => (tieni[i] ? 0 : g)), S = sum(nuovi), k = S > 0 ? Math.min(1, (B + incasso) / S) : 0;
+    x = venduti.map((s, i) => s + nuovi[i] * k); modo = "Vendite e titoli nuovi: si vende l'eccesso dei titoli che hai già; i titoli non ancora acquistati si comprano con la somma da investire e con l'incasso. I titoli che hai già sotto l'obiettivo non si comprano.";
+  } else {
+    const nuovi = wt.map((w, i) => (tieni[i] ? 0 : w)), S = sum(nuovi); x = nuovi.map((w) => (S > 0 ? (w / S) * B : 0));
+    tgt = tgt.map((g, i) => (tieni[i] ? v[i] : x[i])); tot = VAL + B;
+    modo = S > 0 ? "Senza acquisti né vendite i titoli che hai già non si toccano: i nuovi pesi si applicano solo ai titoli non ancora acquistati, con la somma ancora da investire. Non si arriva alla frontiera." : "Senza acquisti né vendite i titoli che hai già non si toccano, e non ci sono titoli ancora da acquistare con peso: non c'è nulla da fare.";
+  }
+  const ops = F.map((f, i) => {
+    let n = Math.round(x[i] / pr[i]);
+    if (n < 0) n = -Math.min(-n, Math.floor(POS[i].q + 1e-9));
+    if (n > 0 && !acq && tieni[i]) n = 0;   // i titoli che hai già non si comprano senza la spunta
+    if (n < 0 && !vend) n = 0;              // e non si vendono
+    return { i, isin: f.isin, s: f.s, n, pr: Math.round(pr[i] * 1e4) / 1e4, imp: n * pr[i], data: DATES[last] };
+  });
+  const speso = sum(ops.map((o) => o.imp));
+  return { wt, tgt, tot, ops, speso, dopoV: VAL + speso, B, cash, modo, acq, vend };
+}
 function aggiornaRib() {
   disegnaSoglie();
   const acq = ST.rib.a !== false, vend = !!ST.rib.v;
-  $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = vend; $("#rb-a").checked = acq; $("#rb-c").disabled = !acq;
-  const wt = pesiObiettivo(), cash = acq ? Math.max(0, +ST.rib.c || 0) : 0;
-  if (VAL + cash <= 0) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci i tuoi acquisti oppure un versamento: il piano mostrerà quante quote comprare."; return; }
-  let tot = VAL + cash, x, modo;
-  if (!acq && !vend) { x = F.map(() => 0); tot = VAL; modo = "Né acquisti né vendite spuntati: il ribilanciamento non può toccare nulla. Spunta almeno una delle due."; }
-  else if (acq && vend) { const tg = wt.map((w) => w * tot); x = tg.map((g, i) => g - POS[i].valore); modo = "Acquisti e vendite: porta il portafoglio al punto scelto."; }
-  else if (acq) { const tg = wt.map((w) => w * tot), sh = tg.map((g, i) => Math.max(0, g - POS[i].valore)), S = sum(sh); x = sh.map((d) => (S > 0 ? (d / S) * cash : 0)); modo = "Solo acquisti: le quote che hai non si toccano; il versamento va ai fondi sotto l'obiettivo, in proporzione al divario."; }
-  else {  // solo vendite: si vende l'eccesso e il ricavato resta liquido; il totale è quello che permette di arrivare ai pesi senza comprare
-    let T = Infinity; wt.forEach((w, i) => { if (w > 1e-9 && POS[i].valore > 0) T = Math.min(T, POS[i].valore / w); }); if (!isFinite(T)) T = 0;
-    tot = T; x = wt.map((w, i) => Math.min(0, w * T - POS[i].valore)); modo = "Solo vendite: non si compra nulla, si vende l'eccesso dei fondi sopra l'obiettivo e il ricavato resta liquido.";
-  }
-  const tgt = wt.map((w) => w * tot);
-  const ops = F.map((f, i) => { const pr = POS[i].prezzo; let n = Math.round(x[i] / pr); if (n < 0) n = -Math.min(-n, Math.floor(POS[i].q)); if (n > 0 && !acq) n = 0; if (n < 0 && !vend) n = 0; return { n, imp: n * pr }; }), speso = sum(ops.map((o) => o.imp)), dopoV = VAL + speso;
+  $("#rb-t").value = ST.rib.t; $("#rb-c").value = ST.rib.c; $("#rb-v").checked = vend; $("#rb-a").checked = acq;
+  const R = calcolaRib();
+  if (R.vuoto) { $("#rb").innerHTML = ""; $("#rb-n").textContent = "Inserisci il valore dell'investimento (in Modifica portafoglio) o un versamento: il piano mostrerà quante quote comprare."; $("#rb-crea").disabled = true; return; }
+  const { wt, tgt, tot, ops, speso, dopoV, B } = R;
   $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora</th><th>Obiettivo</th><th>Operazione</th><th>Dopo</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}</td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
-  $("#rb-n").textContent = modo + " Quote arrotondate all'intero, prezzi di chiusura del " + dataIt(DATES[DATES.length - 1]) + (cash - speso > 0.5 && acq && !vend ? "; restano circa " + eur(cash - speso) + " del versamento" : "") + (!acq && vend && speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
+  const rest = B - Math.max(0, speso);
+  $("#rb-n").textContent = R.modo + " Da investire: " + eur(B) + ". Quote arrotondate all'intero, prezzi del " + dataIt(DATES[DATES.length - 1]) + (rest > 0.5 && speso > 0 ? "; restano circa " + eur(rest) : "") + (speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
+  $("#rb-crea").disabled = ST.esempio || !ops.some((o) => o.n !== 0);
+  $("#rb-crea").title = ST.esempio ? "Inserisci prima i tuoi acquisti (Modifica portafoglio)" : ops.some((o) => o.n !== 0) ? "" : "Nessuna operazione da impostare";
+}
+function creaDaRib() {  // nuovo portafoglio con i nuovi pesi e le operazioni qui sopra già impostate tra i movimenti
+  const R = calcolaRib(); if (R.vuoto) return;
+  const ops = R.ops.filter((o) => o.n !== 0); if (!ops.length) return;
+  chiudiRib(); apriSalva(R.wt, statistiche(R.wt), "Ribilanciamento", "sv-nosrv", ops);
 }
 
 /* ---------- andamento e storici ---------- */
@@ -864,7 +893,7 @@ $("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFron
 let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
-$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
+$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; salva(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
 $$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = perVal(b.dataset.p); ST.periodo = PERIODO; salva(); disegnaStorici(); }));
 let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
 
@@ -1115,7 +1144,7 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
-const trSalva = () => movimenti().concat($("#sv-rib").checked && !$("#sv-rib-w").hidden && SV.ops ? SV.ops.map((o) => ({ isin: o.isin, data: o.data, tipo: o.n > 0 ? "acquisto" : "vendita", quote: Math.abs(o.n), prezzo: o.pr })) : []);  // i movimenti di prima, più (se spuntato) le operazioni del ribilanciamento
+const trSalva = () => movimenti().concat(SV.opsFissi || ($("#sv-rib").checked && !$("#sv-rib-w").hidden) ? (SV.ops || []).map((o) => ({ isin: o.isin, data: o.data, tipo: o.n > 0 ? "acquisto" : "vendita", quote: Math.abs(o.n), prezzo: o.pr })) : []);  // i movimenti di prima, più le operazioni del ribilanciamento (già impostate, o spuntate)
 function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo) che portano i titoli che hai davvero sui pesi `w`, senza nuovi versamenti
   if (ST.esempio || !(VAL > 0)) return [];
   const last = DATES.length - 1, out = [];
@@ -1138,12 +1167,12 @@ function apriSalvaTitoli(dati) {  // dalla schermata «Modifica portafoglio»: s
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
 }
-function apriSalva(w, s, tit, msg = "sv-nosrv") {
+function apriSalva(w, s, tit, msg = "sv-nosrv", opsFissi = null) {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
   $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
-  SV.ops = opsRibilancio(w); $("#sv-rib-w").hidden = !SV.ops.length; $("#sv-rib").checked = SV.ops.length > 0;  // con acquisti già inseriti: si può segnare il ribilanciamento come fatto, così il punto «Tuo» si sposta sul nuovo piano
-  $("#sv-rib-t").textContent = SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Registro queste operazioni, ai prezzi di oggi, tra i tuoi acquisti e vendite: il punto «Tuo» va sul nuovo piano. Se non le hai ancora fatte, togli la spunta: i tuoi acquisti restano quelli di prima." : "";
+  SV.ops = opsFissi || opsRibilancio(w); SV.opsFissi = !!opsFissi; $("#sv-rib-w").hidden = !SV.ops.length; $("#sv-rib").checked = SV.ops.length > 0; $("#sv-rib").parentElement.querySelector("b").textContent = SV.opsFissi ? "Operazioni del ribilanciamento già impostate" : "Segna il ribilanciamento come eseguito"; $("#sv-rib").style.display = SV.opsFissi ? "none" : "";  // con acquisti già inseriti: si può segnare il ribilanciamento come fatto, così il punto «Tuo» si sposta sul nuovo piano
+  $("#sv-rib-t").textContent = SV.opsFissi ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Il nuovo portafoglio le contiene già tra acquisti e vendite (quote intere, ai prezzi di oggi): quando le esegui davvero puoi correggere prezzi e date in Modifica portafoglio." : SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Registro queste operazioni, ai prezzi di oggi, tra i tuoi acquisti e vendite: il punto «Tuo» va sul nuovo piano. Se non le hai ancora fatte, togli la spunta: i tuoi acquisti restano quelli di prima." : "";
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   const zeri = F.filter((f, i) => !(w[i] > 0) && !movimenti().some((m) => m.isin === f.isin)).map((f) => f.s);  // titoli a 0%: nel file non ci sarebbero
   if (zeri.length) $("#sv-w").textContent += " ATTENZIONE: a 0% e quindi NON salvati nel file: " + zeri.join(", ") + ".";
