@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Installa PyInstaller
-        run: python -m pip install pyinstaller tzdata
+        run: python -m pip install pyinstaller tzdata pystray pillow
       - name: Prova il programma prima di impacchettarlo
         run: python -c "import build, widget; print('import ok')"
       - name: Costruisce gli eseguibili

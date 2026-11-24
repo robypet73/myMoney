@@ -1453,7 +1453,11 @@ def ciclo(prezzi, minuti, ferma):
         ferma.wait(minuti * 60 if borsa_aperta() else max(minuti, 60) * 60)
 
 
+PORTA_ATTIVA = None  # la porta su cui il programma ascolta (la usa l'icona nell'area di notifica dell'eseguibile)
+
+
 def avvia_app():
+    global PORTA_ATTIVA
     try:
         sys.stdout.reconfigure(errors="replace")
     except Exception:
@@ -1491,6 +1495,7 @@ def avvia_app():
             continue
     if srv is None:
         sys.exit(f"Le porte da {a.porta} a {a.porta + 19} sono occupate.")
+    PORTA_ATTIVA = porta
     ferma = threading.Event()
     threading.Thread(target=ciclo, args=(prezzi, a.minuti, ferma), daemon=True).start()
     url = f"http://127.0.0.1:{porta}/"

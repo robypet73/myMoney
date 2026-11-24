@@ -7,7 +7,7 @@ if %errorlevel%==0 (set PY=py -3) else (set PY=python)
 %PY% --version >nul 2>nul || goto nopy
 
 echo [1/3] Installo PyInstaller...
-%PY% -m pip install --quiet --upgrade pyinstaller tzdata || goto errore
+%PY% -m pip install --quiet --upgrade pyinstaller tzdata pystray pillow || goto errore
 
 echo [2/3] Creo i programmi (cartella dist\myMoney)...
 %PY% -m PyInstaller installer\myMoney.spec --noconfirm --distpath dist --workpath build-pyi || goto errore
