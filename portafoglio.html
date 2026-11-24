@@ -137,6 +137,15 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
   .panel, .kpi, .fcard, .chart, table, h2, h3 { break-inside: avoid; }
   .sec-head, h2 { break-after: avoid; }
   section { break-inside: auto; }
+  /* le tabelle larghe non si tagliano: niente scorrimento, testo più piccolo e a capo */
+  .scroll { overflow: visible !important; }
+  table { font-size: 9.5px !important; table-layout: auto; width: 100% !important; }
+  th, td { padding: 4px 5px !important; white-space: normal !important; overflow-wrap: anywhere; }
+  th { font-size: 8.5px !important; letter-spacing: 0; }
+  th:first-child, td:first-child { min-width: 0 !important; }
+  #tab td:nth-child(2) { white-space: nowrap !important; }
+  table small, table .muted, table .sub { font-size: 8.5px !important; }
+  table, tr { break-inside: avoid; }
 }
 @media (max-width: 760px) { #invest { grid-template-columns: minmax(0, 1fr); } }
 /* cursore del rischio sulla frontiera */
