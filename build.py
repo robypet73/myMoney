@@ -1065,6 +1065,26 @@ class Portafogli:
             self.segna(nuovo)
         return {**self.info(nuovo), "chiave": f"pf-{nome}-V{v}"}
 
+    def annulla_proposte(self, nomefile):
+        """Toglie dal file le proposte (quote obiettivo di un ribilanciamento): stesso file, pesi e transazioni restano. Ritorna info."""
+        d = self.definizione(nomefile)
+        if d is None or str(nomefile).startswith("bozza:"):
+            raise ValueError("Portafoglio non trovato.")
+        if not d.get("obiettivo"):
+            return self.info(nomefile)  # niente da annullare
+        testo = formatta_definizione({k: v for k, v in d.items() if k != "obiettivo"})
+        valida_definizione(json.loads(testo))  # il file riscritto deve restare valido
+        try:
+            self._scrivi_remoto(scrivi=[(nomefile, testo)], togli=[])
+        except RuntimeError as e:
+            raise ValueError(str(e))
+        with self.lock:
+            tmp = self.percorso(nomefile) + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(testo)
+            os.replace(tmp, self.percorso(nomefile))
+        return self.info(nomefile)
+
     def salva(self, da, nome, versione, descrizione, pesi, importo=None, transazioni=None, vincoli=None, frontiera=None, obiettivo=None):
         """Scrive nome_V<n>.json partendo dal portafoglio `da` con i nuovi pesi (per sigla). Ritorna info; ValueError con un messaggio per l'utente se qualcosa non va."""
         origine = self.definizione(da)
@@ -1235,9 +1255,11 @@ def crea_server(prezzi, porta, portafogli):
             if not (self.host_ok() and self.origine_ok()):
                 return self.invia(403, {"errore": "richiesta non ammessa"})
             percorso = self.path.split("?")[0]
-            if percorso in ("/api/salva", "/api/elimina", "/api/cartella", "/api/modifica"):
+            if percorso in ("/api/salva", "/api/elimina", "/api/cartella", "/api/modifica", "/api/annulla-proposte"):
                 try:
                     r = self.corpo_json(65536)
+                    if percorso == "/api/annulla-proposte":
+                        return self.invia(200, portafogli.annulla_proposte(r.get("file")))
                     if percorso == "/api/modifica":
                         return self.invia(200, portafogli.modifica(r.get("file"), r.get("nome"), r.get("versione"), r.get("descrizione")))
                     if percorso == "/api/cartella":

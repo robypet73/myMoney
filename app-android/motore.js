@@ -391,6 +391,12 @@
     if (nuovo !== f) { LS.removeItem("mm:pf:" + f); if (LS.getItem("mm:ultimo") === f) segna(nuovo); rispecchia({ write: [scriviFile(nuovo)], trash: [f] }); } else rispecchia({ write: [scriviFile(nuovo)] });
     return { ...info(nuovo), chiave: "pf-" + nome + "-V" + v };
   }
+  function annullaProposte(f) {  // toglie le proposte (quote obiettivo) dal file: stesso file, pesi e transazioni restano
+    const d = definizione(f); if (!d || String(f).startsWith("bozza:")) throw Err("Portafoglio non trovato.");
+    if (!d.obiettivo || !d.obiettivo.length) return info(f);
+    const nd = { ...d }; delete nd.obiettivo; validaDefinizione(nd);
+    scriviLS("mm:pf:" + f, nd); rispecchia({ write: [scriviFile(f)] }); return info(f);
+  }
   function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); rispecchia({ trash: [f] }); return { eliminato: f, ultimo: ultimo() }; }
 
   // ---- prezzi
@@ -451,6 +457,7 @@
     let r = {}; try { r = corpo ? JSON.parse(corpo) : {}; } catch (e) { return json({ errore: "richiesta non valida" }, 400); }
     if (percorso === "/api/cartella") { try { const c = await cartellaApi(r); return c ? json(c) : json({ errore: "non trovato" }, 404); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/elimina") { try { return json(elimina(r.file)); } catch (e) { return json({ errore: e.message }, 400); } }
+    if (percorso === "/api/annulla-proposte") { try { const x = annullaProposte(r.file); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/modifica") { try { const m = modifica(r.file, r.nome, r.versione, r.descrizione); await specchioOk(); return json(m); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva") { try { const x = salva(r.da, r.nome, r.versione, r.descrizione, r.pesi, r.importo, r.transazioni, r.vincoli, r.frontiera, r.obiettivo); await specchioOk(); return json(x); } catch (e) { return json({ errore: e.message }, 400); } }
     if (percorso === "/api/salva-titoli") return flusso(async (riga) => { try { riga({ t: "salvato_pf", ...(await salvaTitoli(r.da, r.titoli, r.nome, r.versione, r.descrizione, riga, r.valore, r.transazioni, r.obiettivo)) }); } catch (e) { riga({ t: "fallito", testo: e.message || "richiesta non valida" }); } });
