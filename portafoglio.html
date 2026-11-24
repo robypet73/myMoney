@@ -209,6 +209,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="azioni"><button class="btn sec small" id="imp-uso" type="button">Usa come miei acquisti</button><button class="btn small" id="imp-salva" type="button">Salva il portafoglio…</button></div>
       <p class="lerr" id="imp-msg"></p>
     </div>
+    <div id="comp-barra" style="margin-bottom:12px"></div>
     <div class="azioni" id="comp-azioni" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"><button class="btn small" id="imp-modtit" type="button" hidden title="Togli titoli, cambia i pesi o aggiungine con l'ISIN; poi salva come nuova versione o come nuovo portafoglio">Modifica portafoglio…</button><button class="btn small" id="imp-ordini" type="button" hidden title="Quante quote comprare di ogni titolo, al prezzo di oggi, per il totale che vuoi investire">Quante quote comprare…</button></div>
     <div class="scroll"><table id="tab"></table></div>
   </section>
@@ -791,6 +792,14 @@ function calcolaRib() {
 /* ripartizione per classe di attivo: Azionario, Obbligazionario, Materie prime, Altro (qualunque altro fondo) */
 const CLASSI4 = ["Azionario", "Obbligazionario", "Materie prime", "Altro"];
 const perClasse = (w) => { const r = { Azionario: 0, Obbligazionario: 0, "Materie prime": 0, Altro: 0 }; F.forEach((f, i) => { r[CLASSI.includes(f.cls) ? f.cls : "Altro"] += w[i] || 0; }); return r; };
+const COL_CLASSI = ["var(--c1)", "var(--c3)", "var(--c4)", "var(--muted)"];
+function disegnaBarraClassi() {
+  const w = perClasse(WCUR), el = $("#comp-barra"); if (!el) return;
+  const parti = CLASSI4.map((c, k) => ({ c, k, x: w[c] })), nota = VAL > 0 ? "sui tuoi pesi attuali" : "sul piano di partenza";
+  el.innerHTML = `<div role="img" aria-label="Ripartizione per classe: ${parti.map((p) => p.c + " " + pct(p.x, 1)).join(", ")}" style="display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--line)">` +
+    parti.filter((p) => p.x > 0.0005).map((p) => `<div title="${p.c} ${pct(p.x, 1)}" style="width:${(p.x * 100).toFixed(3)}%;background:${COL_CLASSI[p.k]};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#0d1219;white-space:nowrap;overflow:hidden">${p.x >= 0.07 ? pct(p.x, 1) : ""}</div>`).join("") + `</div>
+    <div class="leg" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px">${parti.map((p) => `<span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COL_CLASSI[p.k]}"></i>${p.c} <b class="num">${pct(p.x, 1)}</b></span>`).join("")}<span class="muted" style="margin-left:auto">${nota}</span></div>`;
+}
 function disegnaClassi(R) {
   const ora = perClasse(WCUR), piano = perClasse(F.map((f) => f.w)), nuovo = perClasse(R.wt), dopo = perClasse(F.map((f, i) => (R.dopoV > 0 ? (POS[i].valore + R.ops[i].imp) / R.dopoV : 0)));
   const barra = (x, c) => `<div style="height:6px;border-radius:3px;background:var(--line);margin-top:3px"><div style="height:6px;border-radius:3px;width:${Math.max(0, Math.min(100, x * 100)).toFixed(1)}%;background:${c}"></div></div>`;
@@ -912,7 +921,7 @@ $("#vreset").onclick = () => { ST.vinc = vincDef(); salva(); disegnaVincoli(); r
 $("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFrontiera(); };
 
 /* ---------- eventi dell'interfaccia ---------- */
-let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
+let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaBarraClassi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
 $("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; if (ST.rib.t === "sharpe") SEL = "sharpe"; else if (ST.rib.t === "minvar") SEL = 0; else if (ST.rib.t === "obiettivo") SEL = "obiettivo"; salva(); disegnaFrontiera(); aggiornaRib(); }; $("#rb-c").oninput = (e) => { ST.rib.c = +e.target.value || 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
