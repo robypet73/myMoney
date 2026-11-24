@@ -329,6 +329,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <label>Versione<span class="sv-v"><span aria-hidden="true">V</span><input id="sv-ver" type="number" min="1" max="999" step="1" inputmode="numeric"></span><small>1, 2, 3…</small></label>
     </div>
     <label>Descrizione<textarea id="sv-d" rows="3" maxlength="300"></textarea><small>una o due frasi: cosa cambia rispetto agli altri portafogli</small></label>
+    <div id="sv-rib-w" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer"><input type="checkbox" id="sv-rib" style="margin-top:3px"><span><b>Segna il ribilanciamento come eseguito</b><br><span class="muted" id="sv-rib-t"></span></span></label></div>
     <p class="muted"><span id="sv-fl">Nuovo file</span>: <b id="sv-file" class="num"></b></p>
     <div class="lerr" id="sv-err" role="alert"></div>
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-ann" type="button">Annulla</button><button class="btn" id="sv-ok" type="submit">Salva il portafoglio</button></div>
@@ -685,7 +686,7 @@ function disegnaFrontiera(dalCursore) {
     <circle class="pt" tabindex="0" data-k="sharpe" cx="${X(sh.vol).toFixed(1)}" cy="${Y(sh.ret).toFixed(1)}" r="8" fill="none" stroke="var(--warn)" stroke-width="2.5"><title>Massimo Sharpe</title></circle>
     ${fxc.length ? `<path d="${fxc.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" ")}" fill="none" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="5 4"/>` : ""}${fxp.map((p) => { const x = X(p.vol), y = Y(p.ret), sel = SEL === p.k; return `<path class="pt" tabindex="0" data-k="${p.k}" d="M${x.toFixed(1)} ${(y - 9).toFixed(1)} L${(x + 9).toFixed(1)} ${(y + 7).toFixed(1)} L${(x - 9).toFixed(1)} ${(y + 7).toFixed(1)} Z" fill="var(--c4)" stroke="${sel ? "var(--fg)" : "var(--bg)"}" stroke-width="${sel ? 2.5 : 1.5}" stroke-linejoin="round"><title>${p.nome}</title></path><text x="${x.toFixed(1)}" y="${(y - 14).toFixed(1)}" font-size="11" font-weight="600" fill="var(--c4)" text-anchor="middle">${p.k === "fmin" ? "min" : "max"}</text>`; }).join("")}${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Il tuo portafoglio")}
     <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Tuo</text><text x="${X(ob.vol) + 12}" y="${Y(ob.cagr) + (Math.abs(X(ob.vol) - X(tuo.vol)) < 60 && Math.abs(Y(ob.cagr) - Y(tuo.cagr)) < 24 ? -12 : 18)}" font-size="12" font-weight="600" fill="var(--c2)">Piano</text></svg>`;
-  $("#fleg").innerHTML = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>tuo portafoglio</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
+  $("#fleg").innerHTML = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>tuo portafoglio (dai tuoi acquisti)</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>piano di partenza</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
   $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); proponi(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
   const sel = pesoSel(), wr = arrotonda(sel.w), s = statistiche(wr, FRI0()), c = statistiche(WCUR, FRI0()), tit = SEL === "tuo" ? "Il tuo portafoglio" : SEL === "obiettivo" ? "Piano di partenza" : SEL === "sharpe" ? "Portafoglio proposto · massimo Sharpe" : SEL === "fmin" || SEL === "fmax" ? (fxp.find((p) => p.k === SEL) || {}).nome || "Portafoglio proposto" : "Portafoglio proposto";
   sincRischio(P, tuo, ob, dalCursore);
@@ -1114,8 +1115,21 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
+const trSalva = () => movimenti().concat($("#sv-rib").checked && !$("#sv-rib-w").hidden && SV.ops ? SV.ops.map((o) => ({ isin: o.isin, data: o.data, tipo: o.n > 0 ? "acquisto" : "vendita", quote: Math.abs(o.n), prezzo: o.pr })) : []);  // i movimenti di prima, più (se spuntato) le operazioni del ribilanciamento
+function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo) che portano i titoli che hai davvero sui pesi `w`, senza nuovi versamenti
+  if (ST.esempio || !(VAL > 0)) return [];
+  const last = DATES.length - 1, out = [];
+  F.forEach((f, i) => {
+    const pr = PX[i][last], q = POS[i].q; if (!(pr > 0)) return;
+    let n = Math.round((w[i] * VAL - POS[i].valore) / pr);
+    if (n < 0) n = -Math.min(-n, Math.floor(q + 1e-9));
+    if (n !== 0) out.push({ isin: f.isin, s: f.s, n, pr: Math.round(pr * 1e4) / 1e4, data: DATES[last] });
+  });
+  return out;
+}
 function apriSalvaTitoli(dati) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
   SV = { w: null, titoli: dati.titoli, transazioni: dati.transazioni, importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
+  $("#sv-rib-w").hidden = true;
   const tot = MT.reduce((a, x) => a + mtVal(x), 0);
   $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
   $("#sv-w").textContent = "Investimento " + eur(SV.importo) + " · Titoli e pesi: " + MT.slice().sort((a, b) => mtVal(b) - mtVal(a)).map((x) => (x.s || x.isin) + " " + pct(mtVal(x) / tot)).join(" · ") + ". Operazioni inserite: " + dati.transazioni.length + ".";
@@ -1128,6 +1142,8 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
   $("#sv-nosrv").textContent = $("#imp-msg").textContent = ""; SV = { w, importo: IMPORTO(), tocca: false, opener: document.activeElement, modo: "nuovo" };
   $("#sv-t").textContent = "Salva come nuovo portafoglio"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
+  SV.ops = opsRibilancio(w); $("#sv-rib-w").hidden = !SV.ops.length; $("#sv-rib").checked = SV.ops.length > 0;  // con acquisti già inseriti: si può segnare il ribilanciamento come fatto, così il punto «Tuo» si sposta sul nuovo piano
+  $("#sv-rib-t").textContent = SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Registro queste operazioni, ai prezzi di oggi, tra i tuoi acquisti e vendite: il punto «Tuo» va sul nuovo piano. Se non le hai ancora fatte, togli la spunta: i tuoi acquisti restano quelli di prima." : "";
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
   const zeri = F.filter((f, i) => !(w[i] > 0) && !movimenti().some((m) => m.isin === f.isin)).map((f) => f.s);  // titoli a 0%: nel file non ci sarebbero
   if (zeri.length) $("#sv-w").textContent += " ATTENZIONE: a 0% e quindi NON salvati nel file: " + zeri.join(", ") + ".";
@@ -1142,7 +1158,7 @@ function apriSalva(w, s, tit, msg = "sv-nosrv") {
 function apriModifica() {  // nome, versione e descrizione del portafoglio aperto: si salvano nello stesso file, o in uno nuovo se nome o versione cambiano
   if (!PF.server) return;
   SV = { w: null, importo: IMPORTO(), tocca: true, opener: document.activeElement, modo: "modifica" };
-  $("#sv-esist-w").hidden = true; $("#sv-t").textContent = "Modifica il portafoglio"; $("#sv-fl").textContent = "File"; $("#sv-ok").textContent = "Salva le modifiche"; $("#sv-w").hidden = true;
+  $("#sv-rib-w").hidden = true; $("#sv-esist-w").hidden = true; $("#sv-t").textContent = "Modifica il portafoglio"; $("#sv-fl").textContent = "File"; $("#sv-ok").textContent = "Salva le modifiche"; $("#sv-w").hidden = true;
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = String(VERS).replace(/^V/i, ""); $("#sv-d").value = META.descrizione || "";
   $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
   $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus();
@@ -1181,7 +1197,7 @@ $("#sv-f").addEventListener("submit", async (e) => {
     }
     const pesi = Object.fromEntries(F.map((f, i) => [f.s, SV.w[i]]));
     const vincoli = { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(CLASSI.map((c) => [c, [ST.vinc.classi[c].min, ST.vinc.classi[c].max]])) };  // i limiti e i dati con cui è stata calcolata la frontiera restano nel file
-    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, vincoli, frontiera: { finestra: [1, 3, 5].includes(+ST.frper) ? +ST.frper : 5, prudente: !!ST.prud }, importo: SV.importo, ...(movimenti().length ? { transazioni: movimenti() } : {}) }) });
+    const r = await fetch("/api/salva", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ da: DA(), nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value, pesi, vincoli, frontiera: { finestra: [1, 3, 5].includes(+ST.frper) ? +ST.frper : 5, prudente: !!ST.prud }, importo: SV.importo, ...(trSalva().length ? { transazioni: trSalva() } : {}) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status);
     $("#sv-f").hidden = true; $("#sv-fatto").hidden = false; $("#sv-fm").innerHTML = `Creato <b class="num">${esc(j.file)}</b> nella cartella portafogli. Lo trovi anche nel menu «Portafoglio» in alto.`; annullaBozza();
     $("#sv-apri").onclick = () => { location.href = urlPf(j.file); }; $("#sv-apri").focus(); caricaPortafogli();
