@@ -175,6 +175,11 @@ class Prezzi:
                 prec = (prezzi.get(sigla) or {}).get("p") or t["p0"]
                 if 0.6 < x["p"] / prec < 1.6:
                     live[sigla] = {"p": x["p"], "t": x["t"], "d": x["d"]}
+                    try:  # denaro e lettera: servono per lo spread (liquidità) nell'Analisi
+                        if x.get("bid") and x.get("ask") and float(x["ask"]) >= float(x["bid"]) > 0:
+                            live[sigla]["b"], live[sigla]["a"] = float(x["bid"]), float(x["ask"])
+                    except (TypeError, ValueError):
+                        pass
                 else:
                     avvisi.append(f"{sigla}: prezzo gettex anomalo ({x['p']}), ignorato")
             if self.titoli and not live:

@@ -423,7 +423,7 @@
       const fine = () => { if (chiuso) return; chiuso = true; try { ws && ws.close(); } catch (e) {} ok(out); };
       try {
         ws = new WebSocket("wss://api.mobile.stock-data-subscriptions.justetf.com?subscription=trend&parameters=isins:" + lista.join(",") + "/currency:EUR/language:it");
-        ws.onmessage = (m) => { try { const j = JSON.parse(m.data), mid = j && j.mid && j.mid.raw; if (lista.includes(j.isin) && mid > 0 && !out[j.isin]) { const ts = String(j.timestamp || ""); out[j.isin] = { p: Math.round(mid * 1e4) / 1e4, t: ts, d: ts.slice(0, 10) }; if (Object.keys(out).length >= lista.length) fine(); } } catch (e) {} };
+        ws.onmessage = (m) => { try { const j = JSON.parse(m.data), mid = j && j.mid && j.mid.raw; if (lista.includes(j.isin) && mid > 0 && !out[j.isin]) { const ts = String(j.timestamp || ""); out[j.isin] = { p: Math.round(mid * 1e4) / 1e4, t: ts, d: ts.slice(0, 10), ...(j.bid && j.ask && +j.ask.raw >= +j.bid.raw && +j.bid.raw > 0 ? { b: +j.bid.raw, a: +j.ask.raw } : {}) }; if (Object.keys(out).length >= lista.length) fine(); } } catch (e) {} };
         ws.onerror = fine; ws.onclose = fine;
         setTimeout(fine, attesa || 8000);
       } catch (e) { fine(); }

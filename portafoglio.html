@@ -28,6 +28,7 @@ button { cursor: pointer; }
 .info { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; padding: 0; border: 1px solid var(--muted); border-radius: 50%; background: transparent; color: var(--muted); font: italic 600 11px/1 Georgia, 'Times New Roman', serif; cursor: pointer; vertical-align: middle; flex: none; text-transform: none; letter-spacing: 0; } .info:hover, .info:focus-visible { color: var(--accent); border-color: var(--accent); }
 #infopop { position: fixed; z-index: 100000; max-width: calc(100vw - 24px); max-height: 70vh; overflow: auto; background: var(--raised); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); font-size: 13px; line-height: 1.5; font-weight: 400; text-transform: none; letter-spacing: 0; text-align: left; } #infopop[hidden] { display: none; }
 #infopop h4 { margin: 0 24px 6px 0; font-size: 14px; } #infopop p { margin: 0 0 8px; } #infopop b { color: var(--accent); font-weight: 600; } #infopop .ix { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.qual-sum { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; margin-bottom: 8px; } .qual-sum b { font-variant-numeric: tabular-nums; } #qual td, #qual th { white-space: nowrap; } #qual td.l { white-space: normal; }
 .val-r { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; } .val-r:first-child { border-top: 0; } .val-d { width: 12px; height: 12px; border-radius: 50%; } .val-d.v { background: var(--good); } .val-d.g { background: var(--warn); } .val-d.r { background: var(--bad); } .val-d.n { background: var(--line); }
 .val-s { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin-top: -2px; } .val-v { font-weight: 600; font-variant-numeric: tabular-nums; } .val-sum { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 8px; } .val-sum b { font-variant-numeric: tabular-nums; }
 .val-ed { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 80px; gap: 6px 8px; align-items: center; font-size: 13px; margin-top: 8px; } .val-ed input { width: 100%; min-width: 0; } .val-ed .h { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
@@ -184,7 +185,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </div>
     <div class="agg">
       <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
-      <div class="agg-btn"><button class="btn nuovo js-nuovo" id="pf-nuovo" type="button" hidden title="Nome, versione e titoli con ISIN e peso o valore">Crea portafoglio</button><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
+      <div class="agg-btn"><button class="btn sec" id="btn-analisi" type="button" title="Valutazione del portafoglio con semafori e qualità dei fondi">Analisi</button><button class="btn nuovo js-nuovo" id="pf-nuovo" type="button" hidden title="Nome, versione e titoli con ISIN e peso o valore">Crea portafoglio</button><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
       <div id="stato" role="status"></div>
     </div>
   </header>
@@ -216,19 +217,6 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div id="banner"></div>
   <div class="kpi" id="kpi"></div>
 
-  <section id="valutazione">
-    <div class="sec-head"><h2>Valutazione del portafoglio<button type="button" class="info" data-i="v_pannello" aria-label="Spiegazione">i</button></h2><span class="muted" id="val-nota"></span></div>
-    <div class="panel" id="val-pan">
-      <div id="val-sel" class="seg" role="group" aria-label="Su quale portafoglio" hidden style="margin-bottom:8px"><button type="button" data-vs="corrente">Corrente (investito)</button><button type="button" data-vs="piano">Piano proposto</button></div>
-      <div class="val-sum" id="val-sum"></div>
-      <div id="val-lista"></div>
-      <details id="val-soglie"><summary>Imposta le soglie</summary>
-        <p class="muted" style="font-size:12px;margin:6px 0 0">Le soglie sono indicative: regolale in base al tuo obiettivo e alla tua tolleranza al rischio. Verde = nei limiti, giallo = vicino al limite, rosso = fuori.</p>
-        <div class="val-ed" id="val-ed"></div>
-        <div style="margin-top:10px"><button class="btn sec small" id="val-reset" type="button">Ripristina le soglie</button></div>
-      </details>
-    </div>
-  </section>
 
   <section>
     <div class="sec-head"><h2>Storico del portafoglio<button type="button" class="info" data-i="g_storico" aria-label="Spiegazione">i</button></h2>
@@ -325,7 +313,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="scroll"><table id="rb-classi" style="font-size:13px"></table></div>
       <div class="scroll"><table id="rb"></table></div>
       <p class="muted" id="rb-n"></p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" id="rb-crea" type="button">Crea il portafoglio con queste operazioni…</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn sec" id="rb-analisi" type="button" title="Valutazione e qualità dei fondi sul portafoglio obiettivo del ribilanciamento">Analisi</button><button class="btn" id="rb-crea" type="button">Crea il portafoglio con queste operazioni…</button></div>
     </div>
 </div></div>
 <div class="ovl" id="ordini" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="or-t" style="max-width:760px">
@@ -398,6 +386,26 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-ann" type="button">Annulla</button><button class="btn" id="sv-ok" type="submit">Salva il portafoglio</button></div>
   </form>
   <div id="sv-fatto" hidden style="display:flex;flex-direction:column;gap:14px"><p id="sv-fm"></p><div class="scar-foot" style="gap:8px"><button class="btn sec" id="sv-resta" type="button">Resta qui</button><button class="btn" id="sv-apri" type="button">Apri il nuovo portafoglio</button></div></div>
+</div></div>
+<div class="ovl" id="analisi" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="an-t" style="max-width:900px">
+  <div class="top"><div><h2 id="an-t">Analisi del portafoglio</h2><p class="muted" id="val-nota" style="margin:2px 0 0;font-size:13px"></p></div><button class="x" id="an-x" type="button" aria-label="Chiudi">×</button></div>
+  <div class="panel" id="val-pan">
+    <h3 style="margin:0 0 8px;font-size:15px">Valutazione<button type="button" class="info" data-i="v_pannello" aria-label="Spiegazione">i</button></h3>
+    <div id="val-sel" class="seg" role="group" aria-label="Su quale portafoglio" hidden style="margin-bottom:8px"><button type="button" data-vs="corrente">Corrente (investito)</button><button type="button" data-vs="piano" hidden>Piano proposto</button><button type="button" data-vs="obiettivo" hidden>Obiettivo del ribilanciamento</button></div>
+    <div class="val-sum" id="val-sum"></div>
+    <div id="val-lista"></div>
+    <details id="val-soglie"><summary>Imposta le soglie</summary>
+      <p class="muted" style="font-size:12px;margin:6px 0 0">Le soglie sono indicative: regolale in base al tuo obiettivo e alla tua tolleranza al rischio. Verde = nei limiti, giallo = vicino al limite, rosso = fuori.</p>
+      <div class="val-ed" id="val-ed"></div>
+      <div style="margin-top:10px"><button class="btn sec small" id="val-reset" type="button">Ripristina le soglie</button></div>
+    </details>
+  </div>
+  <div class="panel" id="qual-pan">
+    <h3 style="margin:0 0 8px;font-size:15px">Qualità dei fondi<button type="button" class="info" data-i="q_pannello" aria-label="Spiegazione">i</button></h3>
+    <div class="qual-sum" id="qual-sum"></div>
+    <div class="scroll"><table id="qual" style="font-size:13px"></table></div>
+    <p class="muted" style="font-size:12px;margin:8px 0 0" id="qual-nota"></p>
+  </div>
 </div></div>
 <div class="ovl" id="scar" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="scar-t" aria-describedby="scar-s">
   <div class="scar-top">
@@ -477,6 +485,12 @@ const INFO = {
   f_corrente: { t: "Portafoglio corrente", d: "Il punto di ciò che hai davvero acquistato (solo investito), con i pesi attuali.", l: "Se sta sotto la curva, a pari rischio un altro portafoglio avrebbe reso di più.", v: "—" },
   f_piano: { t: "Piano proposto", d: "Il punto del portafoglio dopo gli acquisti e le vendite pianificati (investito + da investire).", l: "Mostra dove arriveresti eseguendo il piano.", v: "—" },
   f_sharpe: { t: "Massimo Sharpe", d: "Il punto della frontiera con il miglior rendimento per unità di rischio.", l: "È il portafoglio «più efficiente», ma calcolato sul passato.", v: "Spesso concentrato sui fondi andati meglio: usalo come riferimento, non come obiettivo." },
+  q_pannello: { t: "Qualità dei fondi", d: "Dati di struttura di ciascun fondo: valore gestito, dati storici disponibili, tipo di replica, spread di negoziazione ed emittente.", l: "Un fondo piccolo, giovane o con spread largo può essere chiuso, avere dati poco affidabili o costare di più quando compri e vendi.", v: "Valore gestito sopra 500 mln €, storico di almeno 5 anni, spread sotto 0,25%." },
+  q_aum: { t: "Valore gestito (patrimonio)", d: "Il patrimonio totale del fondo, in milioni o miliardi di euro, dalla scheda justETF.", l: "Sotto circa 100 mln € il fondo rischia di essere chiuso dall'emittente (con rimborso, a volte con perdite fiscali o costi); i fondi grandi sono più stabili e liquidi.", v: "Sopra 500 mln € solido; 100–500 mln € da seguire; sotto 100 mln € a rischio chiusura." },
+  q_storico: { t: "Dati storici disponibili", d: "Da quanti anni esiste il fondo (data di lancio). Rendimento, rischio e frontiera si calcolano sulla storia disponibile.", l: "Un fondo giovane ha una storia troppo corta per stimare rischio e correlazioni: i numeri dell'analisi sono meno affidabili.", v: "Almeno 5 anni per una stima solida; 3–5 accettabile; sotto 3 anni poco affidabile." },
+  q_replica: { t: "Replica e struttura", d: "Come il fondo replica l'indice: fisica (compra i titoli) o sintetica (swap con una banca). Un ETC è un titolo di debito dell'emittente, non un fondo UCITS.", l: "La replica fisica ha meno rischio di controparte. Con lo swap dipendi dalla banca controparte; con un ETC dall'emittente (anche se garantito da oro fisico).", v: "ETF UCITS fisici: rischio di controparte basso. Sintetici ed ETC: da conoscere." },
+  q_spread: { t: "Spread (liquidità)", d: "Differenza tra prezzo di acquisto e di vendita (lettera meno denaro) sul mercato gettex, in % del prezzo, nell'ultimo aggiornamento.", l: "È un costo che paghi a ogni operazione: più è basso, più il fondo è liquido. Cambia durante il giorno ed è più largo fuori dagli orari di Xetra.", v: "Sotto 0,25% ottimo; 0,25–0,50% accettabile; sopra 0,50% costoso, meglio ordini a limite." },
+  q_emittente: { t: "Emittente e rating", d: "Chi gestisce il fondo e dove è domiciliato. Il rating dell'emittente non è nei dati dell'app.", l: "Per un ETF UCITS fisico le attività sono separate dal patrimonio dell'emittente, quindi il suo rating conta poco. Conta per gli ETF sintetici (banca dello swap) e per gli ETC (l'emittente risponde del titolo).", v: "Emittenti come Amundi, iShares, Xtrackers, Vanguard sono grandi gruppi; per ETC e sintetici guarda la solidità della controparte." },
   f_curva: { t: "Frontiera", d: "La curva dei portafogli efficienti: massimo rendimento per ogni livello di rischio.", l: "Più in alto a sinistra è meglio.", v: "—" },
 };
 const KINFO = { "Valore attuale": "k_valore", Investito: "k_investito", Risultato: "k_risultato", "Rendita strategia": "k_strategia", "Rendimento storico": "k_rend", "Perdita massima": "k_dd", "Costo annuo": "k_costo", Diversificazione: "k_divers" };
@@ -492,7 +506,7 @@ function apriInfo(b) {  // finestrella accanto al pulsante «i»: cos'è, come s
   const h = p.offsetHeight, sotto = r.bottom + 8; p.style.top = (sotto + h > innerHeight - 8 && r.top - 8 - h > 8 ? r.top - 8 - h : Math.max(8, sotto)) + "px";
 }
 document.addEventListener("click", (e) => { const b = e.target.closest(".info"); if (b) { e.preventDefault(); e.stopPropagation(); apriInfo(b); return; } if (e.target.closest(".ix") || !e.target.closest("#infopop")) chiudiInfo(); }, true);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") chiudiInfo(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { const p = document.getElementById("infopop"); if (p && !p.hidden) { e.stopImmediatePropagation(); chiudiInfo(); } } }, true);  // Esc chiude prima la finestrella «i»
 document.addEventListener("scroll", (e) => { const t = e.target; if (!(t && t.closest && t.closest("#infopop"))) chiudiInfo(); }, true);
 window.addEventListener("resize", chiudiInfo);
 const cls = (v) => (v > 0.00005 ? "up" : v < -0.00005 ? "down" : "");
@@ -658,16 +672,44 @@ function valStato(s, v) {  // "v" verde, "g" giallo, "r" rosso, "n" non calcolab
   if (s.dir === "alto") return v >= s.ok ? "v" : v >= s.ko ? "g" : "r";
   const [lo, hi] = s.ok; return v >= lo && v <= hi ? "v" : v >= lo - s.ko && v <= hi + s.ko ? "g" : "r";
 }
+let ANAL = { ctx: "", sel: "" };  // ctx «rib»: aperta dal ribilanciamento; sel: portafoglio valutato
+function valSelezione() {
+  const ha = { piano: !!WPROP, obiettivo: ANAL.ctx === "rib" }; let s = ANAL.sel;
+  if (!s || (s === "piano" && !ha.piano) || (s === "obiettivo" && !ha.obiettivo)) s = ha.obiettivo ? "obiettivo" : ha.piano ? "piano" : "corrente";
+  return { s, ha };
+}
+function valPesi(s) {
+  if (s === "obiettivo") { const R = calcolaRib(); if (R && !R.vuoto && R.wt) return R.wt; }
+  if (s === "piano") return pesiPiano();
+  return VAL > 0 ? WCUR : pesiPiano();
+}
 function disegnaValutazione() {
-  const el = $("#val-lista"); if (!el) return;
-  const haP = !!WPROP, sel = haP && ST.valsel !== "corrente" ? "piano" : "corrente", w = sel === "piano" ? pesiPiano() : VAL > 0 ? WCUR : pesiPiano();
-  $("#val-sel").hidden = !haP; $$("#val-sel button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.vs === sel)));
+  const el = $("#val-lista"); if (!el || $("#analisi").hidden) return;
+  const { s: sel, ha } = valSelezione(), w = valPesi(sel);
+  $("#val-sel").hidden = !(ha.piano || ha.obiettivo); $('#val-sel [data-vs="piano"]').hidden = !ha.piano; $('#val-sel [data-vs="obiettivo"]').hidden = !ha.obiettivo;
+  $$("#val-sel button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.vs === sel)));
   const dati = valDati(w), conta = { v: 0, g: 0, r: 0 };
   const sogl = (s) => (s.dir === "intervallo" ? `verde tra ${s.ok[0]}% e ${s.ok[1]}%, giallo entro ${s.ko} punti` : s.dir === "basso" ? `verde fino a ${nf(s.ok, s.d)}${s.u}, rosso oltre ${nf(s.ko, s.d)}${s.u}` : `verde da ${nf(s.ok, s.d)}, rosso sotto ${nf(s.ko, s.d)}`);
   el.innerHTML = VAL_SPEC.map((b) => { const s = valSoglia(b), v = dati[s.k], st = valStato(s, v); if (st !== "n") conta[st]++;
     return `<div class="val-r"><span class="val-d ${st}" title="${{ v: "Nei limiti", g: "Vicino al limite", r: "Fuori dai limiti", n: "Non calcolabile" }[st]}"></span><span>${s.t}${inf("v_" + s.k)}</span><span class="val-v">${v == null || !isFinite(v) ? "—" : nf(v, s.d) + s.u}</span><span class="val-s">${sogl(s)}</span></div>`; }).join("");
   $("#val-sum").innerHTML = `<span><b style="color:var(--good)">${conta.v}</b> nei limiti</span><span><b style="color:var(--warn)">${conta.g}</b> vicini al limite</span><span><b style="color:var(--bad)">${conta.r}</b> fuori</span>`;
-  $("#val-nota").textContent = (sel === "piano" ? "sul piano proposto (investito + da investire)" : VAL > 0 ? "sul portafoglio corrente (solo investito)" : "sul piano") + " · dati di " + dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]);
+  $("#val-nota").textContent = (sel === "obiettivo" ? "sull'obiettivo del ribilanciamento" : sel === "piano" ? "sul piano proposto (investito + da investire)" : VAL > 0 ? "sul portafoglio corrente (solo investito)" : "sul piano") + " · dati di " + dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]);
+  disegnaQualita(w);
+}
+const fmtAum = (m) => (m == null ? "n.d." : m >= 1000 ? nf(m / 1000, 1) + " mld €" : nf(m, 0) + " mln €");
+function disegnaQualita(w) {  // valore gestito, storico, replica, spread ed emittente di ogni fondo
+  const el = $("#qual"); if (!el) return; const last = new Date(DATES[DATES.length - 1]), lv = (LIVE && LIVE.live) || {}, dot = (st, tt) => `<span class="val-d ${st}" title="${tt}" style="display:inline-block;margin-right:6px;vertical-align:middle"></span>`;
+  const righe = F.map((f, i) => { const peso = w[i] || 0;
+    const aum = f.aum == null ? "n" : f.aum >= 500 ? "v" : f.aum >= 100 ? "g" : "r";
+    const anni = f.lancio ? (last - new Date(f.lancio)) / (365.25 * 864e5) : null, sto = anni == null ? "n" : anni >= 5 ? "v" : anni >= 3 ? "g" : "r";
+    const etc = /\bETC\b/.test(f.name), sint = /intetic|swap/i.test(f.repl || ""), rep = sint || etc ? "g" : f.repl ? "v" : "n";
+    const q = lv[f.s], spr = q && q.b && q.a ? ((q.a - q.b) / ((q.a + q.b) / 2)) * 100 : null, sp = spr == null ? "n" : spr <= 0.25 ? "v" : spr <= 0.5 ? "g" : "r";
+    return { f, peso, aum, anni, sto, etc, sint, rep, spr, sp }; }).filter((r) => r.peso > 0.0005).sort((a, b) => b.peso - a.peso);
+  const quota = (fn) => sum(righe.filter(fn).map((r) => r.peso)) * 100;
+  $("#qual-sum").innerHTML = [["Peso su fondi sotto 100 mln €", quota((r) => r.f.aum != null && r.f.aum < 100)], ["Peso su fondi con meno di 3 anni di storia", quota((r) => r.anni != null && r.anni < 3)], ["Peso su ETC o fondi sintetici", quota((r) => r.etc || r.sint)]].map(([n, v]) => `<span>${n}: <b class="${v > 0.5 ? "down" : ""}">${nf(v, 0)}%</b></span>`).join("");
+  el.innerHTML = `<thead><tr><th>Fondo</th><th>Peso</th><th>Valore gestito${inf("q_aum")}</th><th>Storico${inf("q_storico")}</th><th>Replica${inf("q_replica")}</th><th>Spread${inf("q_spread")}</th><th class="l">Emittente${inf("q_emittente")}</th></tr></thead><tbody>` + righe.map((r) => `<tr><td>${esc(r.f.s)}<div class="fsub">${esc(r.f.name.slice(0, 46))}</div></td><td class="num">${pct(r.peso)}</td><td class="num">${dot(r.aum, r.aum === "r" ? "Sotto 100 mln €: rischio chiusura" : r.aum === "g" ? "Tra 100 e 500 mln €" : "Oltre 500 mln €")}${fmtAum(r.f.aum)}</td><td class="num">${dot(r.sto, r.sto === "r" ? "Meno di 3 anni di storia" : r.sto === "g" ? "Tra 3 e 5 anni di storia" : "Almeno 5 anni di storia")}${r.f.lancio ? dataIt(r.f.lancio) + " · " + nf(r.anni, 1) + " anni" : "n.d."}</td><td>${dot(r.rep, r.etc ? "ETC: titolo di debito, non UCITS" : r.sint ? "Replica sintetica (swap)" : "Replica fisica")}${esc(r.f.repl || "n.d.")}${r.etc ? " · ETC" : ""}</td><td class="num">${dot(r.sp, "")}${r.spr == null ? "n.d." : nf(r.spr, 2) + "%"}</td><td class="l">${esc(r.f.emittente || "n.d.")}<div class="fsub">${esc(r.f.dom || "")}${r.f.valuta ? " · " + esc(r.f.valuta) : ""}</div></td></tr>`).join("") + "</tbody>";
+  const senza = righe.filter((r) => r.spr == null).length;
+  $("#qual-nota").textContent = "Lo spread è quello di gettex all'ultimo aggiornamento" + (senza ? ` (non disponibile per ${senza} fondi: usa «Aggiorna i valori»)` : "") + ". Il rating dell'emittente non è nei dati dell'app: conta per gli ETC e i fondi sintetici, molto meno per gli ETF fisici UCITS.";
 }
 function valEditor() {  // caselle delle soglie, scritte una volta (non si ridisegnano mentre si digita)
   $("#val-ed").innerHTML = `<span class="h">Indicatore</span><span class="h">Verde</span><span class="h">Rosso</span><span class="h"></span>` + VAL_SPEC.map((b) => { const s = valSoglia(b);
@@ -1026,7 +1068,7 @@ function aggiornaRib() {
   $("#rb").innerHTML = `<thead><tr><th>Fondo</th><th>Ora${inf("r_ora")}</th><th>Obiettivo${inf("r_obiettivo")}</th><th>Operazione${inf("r_operazione")}</th><th>Dopo${inf("r_dopo")}</th></tr></thead><tbody>` + F.map((f, i) => { const o = ops[i], dopo = POS[i].valore + o.imp; return `<tr><td>${flink(i, f.s)}<div class="fsub">${esc(f.name)}</div></td><td class="num">${eur(POS[i].valore)}<div class="fsub">${VAL > 0 ? pct(WCUR[i]) : "—"}</div></td><td class="num">${eur(tgt[i])}<div class="fsub">${pct(wt[i])}</div></td><td class="num ${o.n > 0 ? "up" : o.n < 0 ? "down" : ""}">${o.n === 0 ? "—" : (o.n > 0 ? "Compra " : "Vendi ") + nf(Math.abs(o.n)) + " quote"}<div class="fsub">${o.n ? sgnE(o.imp) : ""}</div></td><td class="num">${pct(dopoV > 0 ? dopo / dopoV : 0)}</td></tr>`; }).join("") + `</tbody><tfoot><tr><td>Totale</td><td class="num">${eur(VAL)}</td><td class="num">${eur(tot)}</td><td class="num">${sgnE(speso)}</td><td class="num">${eur(dopoV)}</td></tr></tfoot>`;
   const rest = B - Math.max(0, speso);
   $("#rb-n").textContent = R.modo + " Totale da raggiungere " + eur(R.T0) + ": ora hai " + eur(R.base) + (R.delta ? (R.delta > 0 ? ", da investire " : ", da disinvestire ") + eur(Math.abs(R.delta)) : "") + ". Quote arrotondate all'intero, prezzi del " + dataIt(DATES[DATES.length - 1]) + (rest > 0.5 && speso > 0 ? "; restano circa " + eur(rest) : "") + (speso < 0 ? "; incasso circa " + eur(-speso) : "") + ". Commissioni e imposte non incluse.";
-  $("#rb-crea").disabled = ST.esempio || !ops.some((o) => o.n !== 0);
+  $("#rb-crea").disabled = ST.esempio || !ops.some((o) => o.n !== 0); if (!$("#analisi").hidden) disegnaValutazione();
   $("#rb-crea").title = ST.esempio ? "Inserisci prima i tuoi acquisti (Modifica portafoglio)" : ops.some((o) => o.n !== 0) ? "" : "Nessuna operazione da impostare";
 }
 function creaDaRib() {  // nuovo portafoglio con i nuovi pesi e le operazioni qui sopra già impostate tra i movimenti
@@ -1676,7 +1718,13 @@ if (META.bozza) {  // barra della bozza: salva (nuovo o nuova versione), modific
   if (META.bozza_da && /^[\w.-]+\.json$/.test(META.bozza_da)) $("#tb-torna").href = urlPf(META.bozza_da);
 }
 
-$("#val-sel").addEventListener("click", (e) => { const b = e.target.closest("[data-vs]"); if (!b) return; ST.valsel = b.dataset.vs; salva(); disegnaValutazione(); });
+function apriAnalisi(ctx) { ANAL = { ctx, sel: "" }; $("#analisi").hidden = false; document.body.style.overflow = "hidden"; disegnaValutazione(); $("#an-x").focus(); }
+const chiudiAnalisi = () => { $("#analisi").hidden = true; if (![...document.querySelectorAll(".ovl")].some((o) => !o.hidden)) document.body.style.overflow = ""; };
+$("#btn-analisi").onclick = () => apriAnalisi(""); $("#rb-analisi").onclick = () => apriAnalisi("rib"); $("#an-x").onclick = chiudiAnalisi;
+$("#analisi").addEventListener("mousedown", (e) => { if (e.target.id === "analisi") chiudiAnalisi(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#analisi").hidden && (!document.getElementById("infopop") || document.getElementById("infopop").hidden)) { e.stopPropagation(); chiudiAnalisi(); } }, true);  // Esc chiude solo l'Analisi, non le finestre sotto
+$("#val-sel").addEventListener("click", (e) => { const b = e.target.closest("[data-vs]"); if (!b) return; ANAL.sel = b.dataset.vs; disegnaValutazione(); });
+$("#btn-analisi").hidden = VUOTO;
 $("#val-ed").addEventListener("input", (e) => {
   const el = e.target, k = el.dataset.vk; if (!k) return; const v = parseFloat(String(el.value).replace(",", ".")); if (!isFinite(v)) return;
   const base = VAL_SPEC.find((s) => s.k === k), cur = { ...((ST.val || {})[k] || {}) }; ST.val = { ...(ST.val || {}) };
