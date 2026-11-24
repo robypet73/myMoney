@@ -5,7 +5,7 @@ nel periodo scelto, variazione di oggi e grafico del portafoglio, come il widget
 Usa gli stessi portafogli (JSON) e la stessa cartella scelta nel programma (anche Google Drive), scarica da justETF i prezzi aggiornati e si
 aggiorna da solo. Serve solo Python con Tkinter (incluso nell'installazione di Python per Windows). Avvio: avvia-widget.cmd
 
-Comandi: «Port. ›» passa al portafoglio successivo (in cerchio) · ⚙ (o tasto destro) apre le impostazioni (periodo del grafico, frequenza
+Comandi: «Port. ›» passa al portafoglio successivo (in cerchio) · «periodo ›» (per esempio «1 anno ›») passa al periodo successivo del grafico (in cerchio) · ⚙ (o tasto destro) apre le impostazioni (periodo del grafico, frequenza
 di aggiornamento, dimensione, avvio con Windows) · si sposta trascinandolo con il mouse · doppio clic aggiorna subito.
 """
 import bisect
@@ -445,7 +445,7 @@ class Widget:
         x1 = W - 10
         # barra in alto: nome, «Port. ›», rotella
         e = self.dati.get(f)
-        c.create_text(12 * s, 14 * s, text=(e["nome"] + " · " + nomeper) if e else "myMoney", anchor="w", fill=TENUE, font=fo(9))
+        c.create_text(12 * s, 14 * s, text=e["nome"] if e else "myMoney", anchor="w", fill=TENUE, font=fo(9))
         self._tasti(x1, 14 * s, s, fo, len(el) > 1)
         if not e:
             c.create_text(W / 2, H / 2, text=self.msg or ("Nessun portafoglio nella cartella" if not f else "…"), fill=TENUE, font=fo(10), width=W - 40, justify="center")
@@ -482,18 +482,35 @@ class Widget:
         agg = time.strftime("%H:%M", time.localtime(e["at"]))
         c.create_text(x1, H - 9 * s, text="agg. " + agg + (" · gettex" if e.get("gettex") else "") + ("  ·  aggiorno…" if f in self.in_corso else ""), anchor="e", fill=TENUE, font=fo(7))
 
+    def periodo_succ(self):
+        """«Per. ›»: passa al periodo successivo del grafico, in cerchio."""
+        cod = [p[0] for p in PERIODI]
+        cur = self.imp.d.get("periodo", "1a")
+        self.imp.d["periodo"] = cod[(cod.index(cur) + 1) % len(cod)] if cur in cod else cod[0]
+        self.imp.salva()
+        self.disegna()
+
     def _tasti(self, x1, y, s, fo, molti):
         c = self.c
         g = c.create_text(x1, y, text="⚙", anchor="e", fill=TENUE, font=fo(12))
         c.tag_bind(g, "<Button-1>", lambda e: self.impostazioni())
         c.tag_bind(g, "<Enter>", lambda e: c.config(cursor="hand2")); c.tag_bind(g, "<Leave>", lambda e: c.config(cursor=""))
+        sinistra = c.bbox(g)[0]
         if molti:
-            xp = c.bbox(g)[0] - 12 * s
+            xp = sinistra - 12 * s
             fr = c.create_text(xp, y, text="›", anchor="e", fill=TENUE, font=fo(15))
             pt = c.create_text(c.bbox(fr)[0] - 2 * s, y, text="Port.", anchor="e", fill=TENUE, font=fo(9))
             for t in (fr, pt):
                 c.tag_bind(t, "<Button-1>", lambda e: self.prossimo())
                 c.tag_bind(t, "<Enter>", lambda e: c.config(cursor="hand2")); c.tag_bind(t, "<Leave>", lambda e: c.config(cursor=""))
+            sinistra = c.bbox(pt)[0]
+        # «periodo ›»: un clic passa al periodo successivo del grafico (1 mese, 3 mesi … YTD, Tutto), in cerchio
+        nome = next((p[1] for p in PERIODI if p[0] == self.imp.d.get("periodo")), PERIODI[3][1])
+        fr2 = c.create_text(sinistra - 12 * s, y, text="›", anchor="e", fill=TENUE, font=fo(15))
+        pe = c.create_text(c.bbox(fr2)[0] - 2 * s, y, text=nome, anchor="e", fill=TENUE, font=fo(9))
+        for t in (fr2, pe):
+            c.tag_bind(t, "<Button-1>", lambda e: self.periodo_succ())
+            c.tag_bind(t, "<Enter>", lambda e: c.config(cursor="hand2")); c.tag_bind(t, "<Leave>", lambda e: c.config(cursor=""))
 
     def _grafico(self, ds, vs, x0, y0, x1, y1, s, fo):
         c = self.c

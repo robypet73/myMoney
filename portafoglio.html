@@ -62,7 +62,7 @@ th.l, td.l { text-align: left; white-space: normal; } th:first-child, td:first-c
 .tag { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 10px 0 0; font-size: 13px; } dt { color: var(--muted); } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 a { color: var(--accent); }
-.chart { position: relative; width: 100%; } .zreset { position: absolute; top: 2px; right: 4px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 11px; padding: 2px 8px; cursor: pointer; z-index: 2; } .zreset:hover { color: var(--fg); } .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart { position: relative; width: 100%; } .cvar { position: absolute; top: 2px; left: 62px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; font-size: 12px; font-weight: 600; pointer-events: none; font-variant-numeric: tabular-nums; } .zreset { position: absolute; top: 2px; right: 4px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 11px; padding: 2px 8px; cursor: pointer; z-index: 2; } .zreset:hover { color: var(--fg); } .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .tip { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; } .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .pies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .years { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; } .years > div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 6px; text-align: center; min-width: 0; } .years .y { font-size: 12px; color: var(--muted); } .years .num { font-size: 15px; white-space: nowrap; }
@@ -220,7 +220,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 
   <section>
     <div class="sec-head"><h2>Storico del portafoglio<button type="button" class="info" data-i="g_storico" aria-label="Spiegazione">i</button></h2>
-      <div class="seg" id="periodo" role="group" aria-label="Periodo"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button><button type="button" data-p="ytd">YTD</button><button type="button" data-p="0">Tutto</button></div>
+      <div class="seg per-sel" role="group" aria-label="Periodo dei grafici"></div>
     </div>
     <div class="panel"><div class="fhead"><h3>Valore di <span id="pf-imp">40.000 €</span> investiti a inizio periodo<button type="button" class="info" data-i="g_valore" aria-label="Spiegazione">i</button></h3><span class="num" id="pfret"></span></div><div class="chart" id="pf"></div></div>
     <div class="panel"><div class="fhead"><h3>Perdita rispetto al massimo precedente<button type="button" class="info" data-i="g_dd" aria-label="Spiegazione">i</button></h3><span class="num" id="pfdd"></span></div><div class="chart" id="dd"></div></div>
@@ -259,14 +259,15 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   </section>
 
   <section>
-    <div class="sec-head"><h2>Frontiera efficiente<button type="button" class="info" data-i="f_front" aria-label="Spiegazione">i</button></h2><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
+    <div class="sec-head"><h2>Frontiera efficiente<button type="button" class="info" data-i="f_front" aria-label="Spiegazione">i</button></h2><div class="seg" id="frper-home" role="group" aria-label="Anni di storico usati per la frontiera"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button></div><span class="muted" id="frstato">Quale portafoglio per ogni livello di rischio</span></div>
+    <p class="muted" id="fr-dati" style="margin:0 0 8px;font-size:13px"></p>
     <div class="panel"><div class="chart" id="front-home" aria-label="Frontiera efficiente (si lavora con «Ribilanciamento…»)"></div><div class="leg" id="fleg-home" style="margin-top:8px"></div></div>
     <p class="muted" style="max-width:80ch">Ogni punto della curva è il portafoglio con il rendimento più alto per quel livello di rischio, usando solo i <span id="nfondi"></span> fondi del portafoglio e rispettando i vincoli (si cambiano in «Ribilanciamento…»). Rendimento e rischio sono quelli storici (<span id="per1"></span>); la curva cambia se cambi i vincoli, mentre il tuo portafoglio si sposta quando cambi le quote.</p>
     <div class="azioni" style="margin-top:14px"><button class="btn small" id="apririb" type="button" title="Scegli il punto sulla frontiera, i dati e le spunte; poi crea il portafoglio con acquisti e vendite già impostati">Ribilanciamento…</button></div>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Il tuo andamento<button type="button" class="info" data-i="g_andamento" aria-label="Spiegazione">i</button></h2><span class="muted" id="and-n"></span></div>
+    <div class="sec-head"><h2>Il tuo andamento<button type="button" class="info" data-i="g_andamento" aria-label="Spiegazione">i</button></h2><div class="seg per-sel" role="group" aria-label="Periodo dei grafici"></div><span class="muted" id="and-n"></span></div>
     <div class="panel"><div class="fhead"><h3>Risultato dei tuoi acquisti (valore meno capitale versato)<button type="button" class="info" data-i="g_risultato" aria-label="Spiegazione">i</button></h3><span class="num" id="and-r"></span></div><div class="chart" id="c-ris"></div></div>
     <div class="panel"><div class="fhead"><h3>Valore del portafoglio e capitale versato<button type="button" class="info" data-i="g_valcap" aria-label="Spiegazione">i</button></h3><span class="num" id="and-v"></span></div><div class="chart" id="c-val"></div><div class="leg" style="margin-top:6px"><span><i style="background:var(--good)"></i>valore</span><span><i style="background:var(--muted)"></i>capitale versato</span></div></div>
   </section>
@@ -793,6 +794,9 @@ function lineChart(box, t, y, o = {}) {
   z.n = n; box._args = { t, y, o }; if (!box._zoomInit) zoomInit(box);
   const intero = z.a <= 0 && z.b >= 1, i0 = Math.max(0, Math.floor(z.a * (n - 1))), i1 = Math.min(n - 1, Math.ceil(z.b * (n - 1)));
   lineChartBase(box, intero ? t : t.slice(i0, i1 + 1), intero ? y : y.slice(i0, i1 + 1), { ...o, ref: o.ref ?? y[0], ...(o.line2 && !intero ? { line2: o.line2.slice(i0, i1 + 1) } : {}) });
+  const j0 = intero ? 0 : i0, j1 = intero ? n - 1 : i1;  // variazione percentuale nel periodo visualizzato (anche con lo zoom)
+  const pv = o.pvf ? o.pvf(j0, j1) : o.vb ? (o.vb[j0] > 0 && o.vb[j1] > 0 ? o.vb[j1] / o.vb[j0] - 1 : null) : Math.min(y[j0], y[j1]) > 0 ? y[j1] / y[j0] - 1 : null;
+  if (pv != null && isFinite(pv)) { const v = document.createElement("div"); v.className = "cvar " + cls(pv); v.textContent = sgn(pv, 2) + " nel periodo"; v.title = "Variazione percentuale nel periodo visualizzato"; box.appendChild(v); }
   if (!intero) { const b = document.createElement("button"); b.type = "button"; b.className = "zreset"; b.textContent = "↺ tutto"; b.title = "Mostra tutto il periodo"; b.setAttribute("aria-label", "Zoom: mostra tutto il periodo"); b.onclick = () => zoomImposta(box, 0, 1); box.appendChild(b); }
 }
 function zoomImposta(box, a, b) {
@@ -1078,13 +1082,25 @@ function creaDaRib() {  // nuovo portafoglio con i nuovi pesi e le operazioni qu
 }
 
 /* ---------- andamento e storici ---------- */
-let PERIODO = ST.periodo;
-function iniPer(p) {  // primo giorno del grafico: 0 = tutto, "ytd" = chiusura dell'ultimo giorno dell'anno scorso, un numero = quegli anni fa
-  if (!p) return 0; const last = DATES[DATES.length - 1];
+/* Periodo dei grafici: uno solo per tutti (storico, andamento, titoli); sempre fino all'ultimo giorno */
+const PER_OPT = [["max", "Dall'inizio"], [5, "5 anni"], [3, "3 anni"], [2, "2 anni"], [1, "1 anno"], ["ytd", "YTD"], ["1m", "1 mese"], ["1w", "1 settimana"], ["1d", "1 giorno"]];
+let PERIODO = ST.periodo === 0 || ST.periodo == null ? "max" : ST.periodo;
+function iniPer(p) {  // primo giorno del grafico: "max" = tutto, "ytd" = chiusura dell'ultimo giorno dell'anno scorso, un numero = quegli anni fa, "1m" un mese, "1w" una settimana, "1d" il giorno prima
+  if (!p || p === "max") return 0; const last = DATES[DATES.length - 1];
   if (p === "ytd") return Math.max(0, lastIdx((+last.slice(0, 4) - 1) + "-12-31"));
+  if (p === "1d") return Math.max(0, DATES.length - 2);
+  if (p === "1w" || p === "1m") { const d = new Date(last); if (p === "1w") d.setDate(d.getDate() - 7); else d.setMonth(d.getMonth() - 1); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i); }
   const d = new Date(last); d.setFullYear(d.getFullYear() - p); const s = d.toISOString().slice(0, 10), i = DATES.findIndex((x) => x >= s); return Math.max(0, i);
 }
-const perVal = (s) => (s === "ytd" || s === "acq" ? s : +s);
+const perVal = (s) => (["ytd", "acq", "max", "1m", "1w", "1d"].includes(s) ? s : +s);
+const segPer = () => $$(".per-sel button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(PERIODO))));
+function costruisciPer() {
+  $$(".per-sel").forEach((el) => { el.innerHTML = PER_OPT.map(([v, l]) => `<button type="button" data-p="${v}">${l}</button>`).join(""); el.addEventListener("click", (e) => { const b = e.target.closest("[data-p]"); if (!b) return; PERIODO = perVal(b.dataset.p); ST.periodo = PERIODO; salva(); disegnaStorici(); disegnaAndamento(); }); });
+  segPer();
+}
+function rendPeriodo(val, inv) {  // rendimento del periodo dei tuoi acquisti: (valore finale − iniziale − nuovi versamenti) ÷ (valore iniziale + versamenti)
+  const n = val.length; if (n < 2) return null; const flussi = inv[n - 1] - inv[0], base = val[0] + Math.max(0, flussi); return base > 0 ? (val[n - 1] - val[0] - flussi) / base : null;
+}
 function primoAcquisto(i) {  // indice del primo acquisto valido del titolo, o -1
   if (ST.esempio) return -1;  // gli acquisti d'esempio del piano non sono acquisti tuoi
   const x = (POS[i] ? POS[i].lots : []).filter((l) => l && !l.err && l.tipo === "a").map((l) => l.t); return x.length ? Math.min(...x) : -1;
@@ -1094,21 +1110,22 @@ function iniziale() { return iniPer(PERIODO); }
 function disegnaAndamento() {
   const su = serieUtente(), box1 = $("#c-ris"), box2 = $("#c-val");
   if (!su) { box1.innerHTML = box2.innerHTML = '<p class="muted">Inserisci almeno un acquisto per vedere l\'andamento.</p>'; $("#and-r").textContent = $("#and-v").textContent = ""; $("#and-n").textContent = ""; return; }
-  const t = DATES.slice(su.i0), ris = su.val.map((v, k) => v - su.inv[k]), last = ris[ris.length - 1];
-  $("#and-n").textContent = "dal " + dataIt(t[0]); $("#and-r").innerHTML = `<span class="${cls(last)}">${sgnE(last)}</span>`; $("#and-v").textContent = eur(su.val[su.val.length - 1]);
+  const a = Math.max(0, iniziale() - su.i0), t = DATES.slice(su.i0 + a), val = su.val.slice(a), inv = su.inv.slice(a), ris = val.map((v, k) => v - inv[k]), last = ris[ris.length - 1];  // dal periodo scelto, ma mai prima del primo acquisto
+  $("#and-n").textContent = "dal " + dataIt(t[0]); $("#and-r").innerHTML = `<span class="${cls(last)}">${sgnE(last)}</span>`; $("#and-v").textContent = eur(val[val.length - 1]);
   if (t.length < 2) { box1.innerHTML = box2.innerHTML = '<p class="muted">Serve almeno un secondo giorno di prezzi per il grafico.</p>'; return; }
-  lineChart(box1, t, ris, { ref: 0, padTop: true, f: (x) => nf(x, 0) + " €", h: 190, label: "Risultato dei tuoi acquisti" });
-  lineChart(box2, t, su.val, { ref: su.inv[0], line2: su.inv, f: (x) => nf(x, 0) + " €", h: 190, label: "Valore e capitale versato" });
+  const pvf = (i, j) => rendPeriodo(val.slice(i, j + 1), inv.slice(i, j + 1));
+  lineChart(box1, t, ris, { ref: 0, padTop: true, f: (x) => nf(x, 0) + " €", h: 190, label: "Risultato dei tuoi acquisti", pvf });
+  lineChart(box2, t, val, { ref: inv[0], line2: inv, f: (x) => nf(x, 0) + " €", h: 190, label: "Valore e capitale versato", pvf });
 }
 function disegnaStorici() {
   const i0 = iniziale(), t = DATES.slice(i0), s = statistiche(WCUR, i0), v = s.v.map((x) => x * IMPORTO());
   $("#pf-imp").textContent = eur(IMPORTO()); lineChart($("#pf"), t, v, { f: (x) => nf(x, 0) + " €", h: 240, label: "Valore del portafoglio" }); const r = v[v.length - 1] / v[0] - 1; $("#pfret").innerHTML = `<span class="${cls(r)}">${sgn(r)}</span> nel periodo`;
-  let mx = 0; const dd = v.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 170, color: "var(--bad)", label: "Perdita dal massimo" }); $("#pfdd").textContent = "peggiore " + nf(Math.min(...dd), 1) + "%";
-  let mn = Infinity; const gm = v.map((x) => { mn = Math.min(mn, x); return (x / mn - 1) * 100; }); lineChart($("#gm"), t, gm, { ref: 0, f: (x) => (x > 0 ? "+" : "") + x.toFixed(1).replace(".", ",") + "%", h: 170, label: "Guadagno dal minimo precedente" }); $("#pfgm").textContent = "ora " + (gm[gm.length - 1] > 0 ? "+" : "") + nf(gm[gm.length - 1], 1) + "% · massimo +" + nf(Math.max(...gm), 1) + "%";
+  let mx = 0; const dd = v.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 170, color: "var(--bad)", label: "Perdita dal massimo", vb: v }); $("#pfdd").textContent = "peggiore " + nf(Math.min(...dd), 1) + "%";
+  let mn = Infinity; const gm = v.map((x) => { mn = Math.min(mn, x); return (x / mn - 1) * 100; }); lineChart($("#gm"), t, gm, { ref: 0, f: (x) => (x > 0 ? "+" : "") + x.toFixed(1).replace(".", ",") + "%", h: 170, label: "Guadagno dal minimo precedente", vb: v }); $("#pfgm").textContent = "ora " + (gm[gm.length - 1] > 0 ? "+" : "") + nf(gm[gm.length - 1], 1) + "% · massimo +" + nf(Math.max(...gm), 1) + "%";
   const an = anniRend(statistiche(WCUR).v); $("#anni").innerHTML = Object.entries(an).map(([y, x]) => `<div><div class="y">${y}${y === DATES[DATES.length - 1].slice(0, 4) ? " (parziale)" : ""}</div><div class="num ${cls(x)}">${sgn(x)}</div></div>`).join("");
   $("#fondi").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3><span class="dot" style="background:${COLR[f.ruolo]}"></span>${flink(i, f.s)} <span class="muted" style="font-weight:400">${esc(f.name)}</span></h3><span class="num" id="r-${f.s}"></span></div><div class="chart" id="c-${f.s}"></div></div>`).join("");
   F.forEach((f, i) => { const y = PX[i].slice(i0), rr = y[y.length - 1] / y[0] - 1; lineChart($("#c-" + f.s), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 170, label: "Prezzo di " + f.s }); $("#r-" + f.s).innerHTML = `<span class="${cls(rr)}">${sgn(rr)}</span>`; });
-  $$("#periodo button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(PERIODO))));
+  segPer();
 }
 function disegnaAnagrafica() {
   $("#ana").innerHTML = F.map((f, i) => `<div class="panel"><div class="fhead"><h3>${flink(i)}</h3><span class="tag">${f.ruolo}</span></div><dl><dt>Simbolo · ISIN</dt><dd>${f.s} · ${f.isin}</dd><dt>Emittente</dt><dd>${esc(f.emittente)}</dd><dt>Tipo</dt><dd>${esc(f.tipo)}</dd><dt>Costo annuo (TER)</dt><dd>${pct(f.ter / 100, 2)}</dd><dt>Patrimonio</dt><dd>${f.aum != null ? nf(Math.round(f.aum)) + " mln €" : "n.d."}</dd><dt>Scambi medi a Milano</dt><dd>${f.adv != null ? nf(f.adv, 2) + " mln €/giorno" : "n.d."}</dd><dt>Replica</dt><dd>${esc(f.repl || "n.d.")}</dd><dt>Domicilio</dt><dd>${esc(f.dom || "n.d.")}</dd><dt>Lancio</dt><dd>${f.lancio ? dataIt(f.lancio) : "n.d."}</dd><dt>Proventi</dt><dd>Accumulazione</dd></dl></div>`).join("");
@@ -1149,7 +1166,7 @@ function apri(i) {
   $("#ovl").hidden = false; document.body.style.overflow = "hidden";
   barre("#s-aree", lista(mix.aree), "var(--c1)"); if ($("#s-sett")) barre("#s-sett", lista(mix.settori), "var(--c2)"); barre("#s-val", lista(mix.valute), "var(--accent)"); if ($("#s-top")) barre("#s-top", mix.top.map((r) => [r[0] + (r[1] ? " · " + r[1] : ""), r[2]]), "var(--c2)"); if ($("#s-paesi")) barre("#s-paesi", mix.paesi, "var(--c3)");
   const disegna = () => { const i0 = iniFondo(SP, i), t = DATES.slice(i0), y = PX[i].slice(i0), conCosto = SP === "acq" && p && p.q > 0 && p.costo > 0; $("#s-px-t").textContent = conCosto ? "Prezzo · linea tratteggiata: costo medio " + eur(p.costo / p.q, p.costo / p.q < 20 ? 3 : 2) : "Prezzo";
-    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s, ...(conCosto ? { ref: p.costo / p.q } : {}) }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(SP)))); };
+    lineChart($("#s-px"), t, y, { f: (x) => nf(x, y[0] < 20 ? 3 : 2), h: 230, label: "Prezzo di " + f.s, ...(conCosto ? { ref: p.costo / p.q } : {}) }); let mx = 0; const dd = y.map((x) => { mx = Math.max(mx, x); return (x / mx - 1) * 100; }); lineChart($("#s-dd"), t, dd, { vb: y, ref: 0, f: (x) => x.toFixed(1).replace(".", ",") + "%", h: 150, color: "var(--bad)", label: "Perdita dal massimo" }); $$("#sp button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === String(SP)))); };
   $$("#sp button").forEach((b) => b.addEventListener("click", () => { SP = perVal(b.dataset.p); disegna(); })); disegna(); $("#ovl-x").onclick = chiudi; $("#ovl-x").focus(); $("#ovl").scrollTop = 0;
 }
 function chiudi() { $("#ovl").hidden = true; document.body.style.overflow = ""; if (FOC && FOC.focus && document.contains(FOC)) FOC.focus(); }
@@ -1163,8 +1180,8 @@ function disegnaVincoli() {
   $("#vinc").innerHTML = `<div class="r"><span class="h" style="text-align:left">Per fondo (%)</span><span class="h">min</span><span class="h">max</span></div>` + F.map((f) => r(f.s, f.s, v.fondi[f.s].min, v.fondi[f.s].max, "f")).join("") + `<p class="muted" style="font-size:12px;margin:8px 0 0">I limiti per classe (azionario, obbligazionario, materie prime) si impostano con gli slider «Quota per classe», sopra.</p>`;
   $("#prud").checked = !!ST.prud;
 }
-const segFr = () => { $$("#frper button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === (ST.frper || 3)))); $("#frper-n").textContent = (ST.frper || 3) === 1 ? "Con un solo anno la curva è instabile: poche osservazioni per tanti fondi." : ""; };
-$$("#frper button").forEach((b) => b.addEventListener("click", () => { ST.frper = +b.dataset.p; salva(); momenti(); richiediFrontiera(); segFr(); }));
+const segFr = () => { $$("#frper button, #frper-home button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === (ST.frper || 3)))); $("#fr-dati").innerHTML = "Frontiera calcolata su <b>" + (ST.frper || 3) + (ST.frper === 1 ? " anno" : " anni") + "</b> di storico (" + dataIt(DATES[FRI0()]) + " – " + dataIt(DATES[DATES.length - 1]) + ")" + (ST.prud ? ", rendimenti prudenti" : "") + "."; $("#frper-n").textContent = (ST.frper || 3) === 1 ? "Con un solo anno la curva è instabile: poche osservazioni per tanti fondi." : ""; };
+$$("#frper button, #frper-home button").forEach((b) => b.addEventListener("click", () => { ST.frper = +b.dataset.p; salva(); momenti(); richiediFrontiera(); segFr(); }));
 let tf = null; const richiediFrontiera = () => { clearTimeout(tf); tf = setTimeout(calcolaFrontiera, 350); };
 $("#vinc").addEventListener("input", (e) => { const t = e.target; if (!t.dataset.v) return; const x = +t.value; t.classList.toggle("bad", !(x >= 0 && x <= 100)); if (!(x >= 0 && x <= 100)) return; (t.dataset.v === "f" ? ST.vinc.fondi : ST.vinc.classi)[t.dataset.id][t.dataset.b] = x; salva(); richiediFrontiera(); });
 $("#vreset").onclick = () => { ST.vinc = vincDef(); salva(); disegnaVincoli(); disegnaBlocchi(); richiediFrontiera(); };
@@ -1183,7 +1200,7 @@ let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegn
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
 $("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; if (ST.rib.t === "sharpe") SEL = "sharpe"; else if (ST.rib.t === "minvar") SEL = 0; else if (ST.rib.t === "obiettivo") SEL = "obiettivo"; salva(); disegnaFrontiera(); aggiornaRib(); }; $("#rb-tot").oninput = (e) => { ST.rib.tot = +e.target.value > 0 ? +e.target.value : 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
-$$("#periodo button").forEach((b) => b.addEventListener("click", () => { PERIODO = perVal(b.dataset.p); ST.periodo = PERIODO; salva(); disegnaStorici(); }));
+costruisciPer();
 let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
 
 /* ---------- prezzi aggiornati: programma locale oppure archivio della pagina ---------- */

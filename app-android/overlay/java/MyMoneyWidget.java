@@ -50,6 +50,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
     static final String PREFS = "mymoney_widget";
     static final String ACT_PREV = "it.robypet73.mymoneyportafogli.PREV";
     static final String ACT_NEXT = "it.robypet73.mymoneyportafogli.NEXT";
+    static final String ACT_PER = "it.robypet73.mymoneyportafogli.PER";  // «periodo ›»: periodo successivo del grafico
 
     /** I dati di ogni portafoglio passato dalla pagina stanno in una voce «d_nomefile». */
     static String chiave(String file) {
@@ -92,7 +93,7 @@ public class MyMoneyWidget extends AppWidgetProvider {
 
     static PendingIntent azione(Context c, int id, String a) {
         Intent i = new Intent(c, MyMoneyWidget.class).setAction(a).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id).setData(Uri.parse("mymoney://widget/" + id + "/" + a));
-        return PendingIntent.getBroadcast(c, id * 4 + (ACT_PREV.equals(a) ? 2 : 3), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        return PendingIntent.getBroadcast(c, id * 4 + (ACT_PREV.equals(a) ? 2 : ACT_NEXT.equals(a) ? 3 : 1), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
     static final int UP = Color.parseColor("#1F9D6B");
     static final int DOWN = Color.parseColor("#D6453D");
@@ -153,6 +154,17 @@ public class MyMoneyWidget extends AppWidgetProvider {
             int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
             if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 sposta(c, id, ACT_NEXT.equals(i.getAction()) ? 1 : -1);
+                draw(c, AppWidgetManager.getInstance(c), id);
+            }
+            return;
+        }
+        if (ACT_PER.equals(i.getAction())) {
+            int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                String corrente = periodo(c, id)[0];
+                int k = 0;
+                for (int j = 0; j < PERIODI.length; j++) if (PERIODI[j][0].equals(corrente)) k = j;
+                c.getSharedPreferences(PREFS, 0).edit().putString("per_" + id, PERIODI[(k + 1) % PERIODI.length][0]).apply();  // in cerchio
                 draw(c, AppWidgetManager.getInstance(c), id);
             }
             return;
@@ -479,6 +491,12 @@ public class MyMoneyWidget extends AppWidgetProvider {
         PendingIntent succ = azione(c, id, ACT_NEXT);
         v.setOnClickPendingIntent(R.id.w_port, succ);
         v.setOnClickPendingIntent(R.id.w_next, succ);
+        // «periodo ›»: un tocco passa al periodo successivo del grafico (sempre visibile)
+        String[] perc = periodo(c, id);
+        v.setTextViewText(R.id.w_per, "ytd".equals(perc[0]) ? "YTD" : "max".equals(perc[0]) ? "Tutto" : perc[1]);
+        PendingIntent persucc = azione(c, id, ACT_PER);
+        v.setOnClickPendingIntent(R.id.w_per, persucc);
+        v.setOnClickPendingIntent(R.id.w_per_next, persucc);
         v.setViewPadding(R.id.w_ctrl, 0, dp(c, Math.max(0f, pad - 7.5f)), 0, 0);  // il gruppo sta sulla stessa linea del nome del portafoglio
         String file = corrente(c, id);
         String raw = file == null ? null : c.getSharedPreferences(PREFS, 0).getString(chiave(file), null);
