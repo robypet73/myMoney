@@ -259,7 +259,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   <div class="top"><h2 id="rib-t">Ribilanciamento</h2><button class="x" id="rib-x" type="button" aria-label="Chiudi">×</button></div>
   <p class="muted">Scegli sulla frontiera il punto dove vuoi arrivare (clic su un punto, cursore del rischio o pulsanti), imposta i dati e i vincoli della curva e le spunte: sotto vedi i nuovi pesi e gli acquisti e le vendite da fare. Senza spunte i titoli che hai già non si toccano e i nuovi pesi si applicano ai titoli non ancora acquistati. «Crea il portafoglio…» salva un nuovo portafoglio con i nuovi pesi e queste operazioni già impostate.</p>
     <div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px"><span class="muted" style="font-size:13px">Dati della frontiera:</span><div class="seg" id="frper" role="group" aria-label="Periodo dei dati della frontiera"><button type="button" data-p="1">1 anno</button><button type="button" data-p="3">3 anni</button><button type="button" data-p="5">5 anni</button></div><span class="muted" id="frper-n" style="font-size:12px"></span></div>
-    <details id="vincoli"><summary>Vincoli della frontiera (peso minimo e massimo per fondo e per classe)</summary>
+    <div id="blocchi-w" style="border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 10px"><h3 style="margin:0 0 4px;font-size:15px">Quota per classe</h3><p class="muted" style="font-size:12px;margin:0 0 6px">Senza spunta la quota può cambiare liberamente; con «Blocca quota» può variare al massimo di ± il valore indicato (predefinito 5 punti) rispetto alla quota attuale.</p><div id="blocchi"></div></div>
+    <details id="vincoli"><summary>Vincoli per fondo (peso minimo e massimo di ciascun fondo)</summary>
       <div class="vinc" id="vinc"></div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><button class="btn sec small" id="vreset" type="button">Ripristina i vincoli</button><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="prud"> Rendimenti prudenti (media tra il fondo e tutti i fondi)</label><span class="lerr" id="vmsg"></span></div>
     </details>
@@ -381,8 +382,24 @@ const vincDef = () => {  // limiti iniziali della frontiera: quelli del file (me
   const mv = META.vincoli || {}, cw = {}; F.forEach((f) => (cw[f.cls] = (cw[f.cls] || 0) + f.w * 100));
   const lim = (v, d) => (Array.isArray(v) ? { min: v[0], max: v[1] } : d);
   return { fondi: Object.fromEntries(F.map((f) => [f.s, lim((mv.fondi || {})[f.s], { min: Math.max(0, Math.round(f.w * 100 - 10)), max: f.w > 0 ? Math.min(100, Math.round(f.w * 100 + 10)) : META.bozza && !(META.transazioni || []).some((x) => x.s === f.s) ? 30 : 0 })])),
-    classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], cw[c] ? { min: Math.max(0, Math.round(cw[c] - 10)), max: Math.min(100, Math.round(cw[c] + 10)) } : { min: 0, max: 100 })])) };
+    classi: Object.fromEntries(["Azionario", "Obbligazionario", "Materie prime"].map((c) => [c, lim((mv.classi || {})[c], { min: 0, max: 100 })])) };
 };
+/* «Blocca quota»: per ogni classe (azionario, obbligazionario, materie prime) senza spunta la quota può cambiare liberamente (0-100%); con la spunta può variare al massimo di ± punti
+   rispetto alla quota attuale (predefinito ±5). Lo stato si ricava dai limiti per classe, così coincide sempre con quelli salvati nei file. */
+const CL3 = ["Azionario", "Obbligazionario", "Materie prime"];
+function bloccoDaVinc() {
+  const vecchio = ST.blocco || {};
+  ST.blocco = Object.fromEntries(CL3.map((c) => { const x = ST.vinc.classi[c] || { min: 0, max: 100 }, on = x.min > 0.05 || x.max < 99.95; return [c, { on, pt: on ? Math.round(((x.max - x.min) / 2) * 10) / 10 : (vecchio[c] && vecchio[c].pt >= 0 ? vecchio[c].pt : 5) }]; }));
+}
+function impostaBlocco(c) {  // limiti della classe dallo stato del blocco, sulla quota attuale
+  const b = ST.blocco[c], cur = perClasse(WCUR)[c] * 100;
+  ST.vinc.classi[c] = b.on ? { min: Math.max(0, Math.round((cur - b.pt) * 10) / 10), max: Math.min(100, Math.round((cur + b.pt) * 10) / 10) } : { min: 0, max: 100 };
+}
+function disegnaBlocchi() {
+  const el = $("#blocchi"); if (!el || !ST.blocco) return;
+  el.innerHTML = CL3.map((c) => { const b = ST.blocco[c], cur = perClasse(WCUR)[c] * 100, x = ST.vinc.classi[c];
+    return `<div class="r" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:6px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:8px;align-items:center;min-width:230px;font-size:14px;cursor:pointer"><input type="checkbox" data-bl="${c}"${b.on ? " checked" : ""}> Blocca quota <b>${c}</b></label><span class="muted" style="font-size:13px">attuale <b class="num">${nf(cur, 1)}%</b></span>${b.on ? `<span style="font-size:13px">max variazione ± <input type="number" data-blp="${c}" min="0" max="50" step="0.5" value="${b.pt}" style="width:72px" aria-label="Massima variazione di ${c}"> %</span><span class="muted" style="font-size:13px" data-blr="${c}">ammesso ${nf(x.min, 1)}% – ${nf(x.max, 1)}%</span>` : `<span class="muted" style="font-size:13px">può cambiare liberamente</span>`}</div>`; }).join("");
+}
 const IMPORTO = () => (+ST.importo > 0 ? +ST.importo : AMT);  // investimento totale da ripartire sui pesi del piano
 const lotsDaFile = () => Object.fromEntries(F.map((f) => [f.s, (META.transazioni || []).filter((x) => x.s === f.s).map((x) => ({ q: x.q, d: x.d, p: x.p, t: x.t }))]));  // movimenti reali scritti nel file
 const TSIG = JSON.stringify(META.transazioni || null);  // se i movimenti del file cambiano, quelli salvati nel browser non valgono più
@@ -742,7 +759,7 @@ let tb = null; const proponiRitardo = () => { clearTimeout(tb); tb = setTimeout(
 function pesoSel() { const P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (SEL === "tuo") return { w: WCUR }; if (SEL === "obiettivo") return { w: pesiOrig() }; if (SEL === "sharpe" && P) return { w: P[FRONT.sharpe].w }; if (typeof SEL === "number" && P && P[SEL]) return { w: P[SEL].w }; if (SEL === "fmin" || SEL === "fmax") { const q = (fissa().pts || []).find((p) => p.k === SEL); if (q) return { w: q.w }; } return { w: WCUR }; }
 
 /* ---------- ribilanciamento ---------- */
-function apriRib() { aggiornaRib(); $("#rib").hidden = false; document.body.style.overflow = "hidden"; disegnaFrontiera(); }
+function apriRib() { aggiornaRib(); disegnaBlocchi(); $("#rib").hidden = false; document.body.style.overflow = "hidden"; disegnaFrontiera(); }
 const chiudiRib = () => { $("#rib").hidden = true; document.body.style.overflow = ""; };
 $("#apririb").onclick = apriRib; $("#rib-x").onclick = chiudiRib; $("#rib").addEventListener("mousedown", (e) => { if (e.target.id === "rib") chiudiRib(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#rib").hidden) chiudiRib(); });
@@ -801,11 +818,11 @@ function disegnaBarraClassi() {
     <div class="leg" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px">${parti.map((p) => `<span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COL_CLASSI[p.k]}"></i>${p.c} <b class="num">${pct(p.x, 1)}</b></span>`).join("")}<span class="muted" style="margin-left:auto">${nota}</span></div>`;
 }
 function disegnaClassi(R) {
-  const ora = perClasse(WCUR), piano = perClasse(F.map((f) => f.w)), nuovo = perClasse(R.wt), dopo = perClasse(F.map((f, i) => (R.dopoV > 0 ? (POS[i].valore + R.ops[i].imp) / R.dopoV : 0)));
+  const ora = perClasse(WCUR), nuovo = perClasse(R.wt), dopo = perClasse(F.map((f, i) => (R.dopoV > 0 ? (POS[i].valore + R.ops[i].imp) / R.dopoV : 0)));
   const barra = (x, c) => `<div style="height:6px;border-radius:3px;background:var(--line);margin-top:3px"><div style="height:6px;border-radius:3px;width:${Math.max(0, Math.min(100, x * 100)).toFixed(1)}%;background:${c}"></div></div>`;
   const cella = (x, c) => `<td class="num">${pct(x, 1)}${barra(x, c)}</td>`;
-  $("#rb-classi").innerHTML = `<thead><tr><th>Ripartizione</th><th>Ora (tuoi acquisti)</th><th>Piano attuale</th><th>Nuovo obiettivo</th><th>Dopo le operazioni</th></tr></thead><tbody>` +
-    CLASSI4.map((c, k) => { const col = ["var(--c1)", "var(--c3)", "var(--c4)", "var(--muted)"][k], d = nuovo[c] - ora[c]; return `<tr><td>${c}</td>${cella(ora[c], col)}${cella(piano[c], col)}<td class="num"><b>${pct(nuovo[c], 1)}</b> <span class="fsub ${Math.abs(d) < 0.0005 ? "" : d > 0 ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "" : (d > 0 ? "+" : "−") + nf(Math.abs(d) * 100, 1) + " pt"}</span>${barra(nuovo[c], col)}</td>${cella(dopo[c], col)}</tr>`; }).join("") + `</tbody>`;
+  $("#rb-classi").innerHTML = `<thead><tr><th>Ripartizione</th><th>Attuale</th><th>Nuovo obiettivo</th><th>Dopo le operazioni</th></tr></thead><tbody>` +
+    CLASSI4.map((c, k) => { const col = ["var(--c1)", "var(--c3)", "var(--c4)", "var(--muted)"][k], d = nuovo[c] - ora[c]; return `<tr><td>${c}</td>${cella(ora[c], col)}<td class="num"><b>${pct(nuovo[c], 1)}</b> <span class="fsub ${Math.abs(d) < 0.0005 ? "" : d > 0 ? "up" : "down"}">${Math.abs(d) < 0.0005 ? "" : (d > 0 ? "+" : "−") + nf(Math.abs(d) * 100, 1) + " pt"}</span>${barra(nuovo[c], col)}</td>${cella(dopo[c], col)}</tr>`; }).join("") + `</tbody>`;
 }
 function aggiornaRib() {
   disegnaSoglie();
@@ -910,14 +927,16 @@ document.addEventListener("click", (e) => { const b = e.target.closest(".flink")
 /* ---------- vincoli ---------- */
 function disegnaVincoli() {
   const v = ST.vinc, r = (id, nome, mn, mx, kind) => `<div class="r"><span>${nome}</span><input type="number" min="0" max="100" step="1" data-v="${kind}" data-id="${id}" data-b="min" value="${mn}" aria-label="Minimo ${nome}"><input type="number" min="0" max="100" step="1" data-v="${kind}" data-id="${id}" data-b="max" value="${mx}" aria-label="Massimo ${nome}"></div>`;
-  $("#vinc").innerHTML = `<div class="r"><span class="h" style="text-align:left">Per fondo (%)</span><span class="h">min</span><span class="h">max</span></div>` + F.map((f) => r(f.s, f.s, v.fondi[f.s].min, v.fondi[f.s].max, "f")).join("") + `<div class="r"><span class="h" style="text-align:left">Per classe (%)</span><span class="h">min</span><span class="h">max</span></div>` + CLASSI.map((c) => r(c, CNOME[c], v.classi[c].min, v.classi[c].max, "c")).join("");
+  $("#vinc").innerHTML = `<div class="r"><span class="h" style="text-align:left">Per fondo (%)</span><span class="h">min</span><span class="h">max</span></div>` + F.map((f) => r(f.s, f.s, v.fondi[f.s].min, v.fondi[f.s].max, "f")).join("") + `<p class="muted" style="font-size:12px;margin:8px 0 0">I limiti per classe (azionario, obbligazionario, materie prime) si impostano con «Blocca quota», sopra.</p>`;
   $("#prud").checked = !!ST.prud;
 }
 const segFr = () => { $$("#frper button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.p === (ST.frper || 3)))); $("#frper-n").textContent = (ST.frper || 3) === 1 ? "Con un solo anno la curva è instabile: poche osservazioni per tanti fondi." : ""; };
 $$("#frper button").forEach((b) => b.addEventListener("click", () => { ST.frper = +b.dataset.p; salva(); momenti(); richiediFrontiera(); segFr(); }));
 let tf = null; const richiediFrontiera = () => { clearTimeout(tf); tf = setTimeout(calcolaFrontiera, 350); };
 $("#vinc").addEventListener("input", (e) => { const t = e.target; if (!t.dataset.v) return; const x = +t.value; t.classList.toggle("bad", !(x >= 0 && x <= 100)); if (!(x >= 0 && x <= 100)) return; (t.dataset.v === "f" ? ST.vinc.fondi : ST.vinc.classi)[t.dataset.id][t.dataset.b] = x; salva(); richiediFrontiera(); });
-$("#vreset").onclick = () => { ST.vinc = vincDef(); salva(); disegnaVincoli(); richiediFrontiera(); };
+$("#vreset").onclick = () => { ST.vinc = vincDef(); bloccoDaVinc(); salva(); disegnaVincoli(); disegnaBlocchi(); richiediFrontiera(); };
+$("#blocchi").addEventListener("change", (e) => { const c = e.target.dataset.bl; if (!c) return; ST.blocco[c].on = e.target.checked; if (e.target.checked && !(ST.blocco[c].pt > 0)) ST.blocco[c].pt = 5; impostaBlocco(c); salva(); disegnaBlocchi(); disegnaVincoli(); richiediFrontiera(); });
+$("#blocchi").addEventListener("input", (e) => { const c = e.target.dataset.blp; if (!c) return; const x = +e.target.value; e.target.classList.toggle("bad", !(x >= 0 && x <= 50)); if (!(x >= 0 && x <= 50)) return; ST.blocco[c].pt = x; impostaBlocco(c); salva(); const r = $(`[data-blr="${c}"]`), l = ST.vinc.classi[c]; if (r) r.textContent = "ammesso " + nf(l.min, 1) + "% – " + nf(l.max, 1) + "%"; disegnaVincoli(); richiediFrontiera(); });
 $("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFrontiera(); };
 
 /* ---------- eventi dell'interfaccia ---------- */
@@ -1363,6 +1382,6 @@ if (META.bozza) {  // barra della bozza: salva (nuovo o nuova versione), modific
 }
 
 /* ---------- avvio ---------- */
-if (!VUOTO) { costruisci(); disegnaVincoli(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }
+if (!VUOTO) { costruisci(); disegnaVincoli(); bloccoDaVinc(); disegnaBlocchi(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }
 if (META.autocarica) { caricaPortafogli(); creaDaDefinizione({ file: META.autocarica }, true); } else avvia();
 </script>
