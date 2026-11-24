@@ -43,12 +43,11 @@
       "type": "array",
       "minItems": 1,
       "maxItems": 30,
-      "description": "I titoli (ETF/ETC) del portafoglio. I pesi devono dare 100 (tolleranza 0,5). Un titolo già venduto resta con peso 0: serve alle sue transazioni.",
+      "description": "I titoli (ETF/ETC) del portafoglio, solo l'ISIN. I pesi non si scrivono: si calcolano dalle quote (transazioni eseguite e pianificate) × prezzo medio. Un titolo già venduto resta nell'elenco per le sue transazioni.",
       "items": {
         "type": "object",
         "required": [
-          "isin",
-          "peso"
+          "isin"
         ],
         "additionalProperties": false,
         "properties": {
@@ -56,12 +55,6 @@
             "type": "string",
             "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$",
             "description": "ISIN con cifra di controllo valida, non ripetuto."
-          },
-          "peso": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100,
-            "description": "Peso in percentuale (0 per un titolo già venduto)."
           }
         }
       }
@@ -77,7 +70,8 @@
           "data",
           "tipo",
           "quote",
-          "prezzo"
+          "prezzo",
+          "pianificata"
         ],
         "additionalProperties": false,
         "properties": {
@@ -109,8 +103,13 @@
             "description": "Prezzo unitario in euro."
           },
           "pianificata": {
-            "type": "boolean",
-            "description": "Facoltativo. true = operazione solo pianificata: non conta come investito e compare come «da investire»; per renderla eseguita togli il campo (o metti false)."
+            "type": "string",
+            "enum": [
+              "Y",
+              "N"
+            ],
+            "default": "N",
+            "description": "Y = operazione solo pianificata: non conta come investito e compare come «da investire»; N = eseguita (se manca vale N). Per eseguire una pianificata si mette N."
           }
         }
       }

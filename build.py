@@ -245,15 +245,19 @@ def valida_transazioni(tr, isin_ammessi):
             raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere numeri.")
         if not (quote > 0 and prezzo > 0):
             raise ValueError(f"«transazioni» n. {k} ({isin}): «quote» e «prezzo» devono essere maggiori di 0 (la vendita ha tipo «vendita», non quote negative).")
-        if x.get("pianificata") not in (None, True, False):
-            raise ValueError(f"«transazioni» n. {k} ({isin}): «pianificata» deve essere true o false.")
+        pian = x.get("pianificata")  # "Y" = solo pianificata (non conta come investito, compare come «da investire»), "N" = eseguita; si accettano anche true/false e il campo assente (= "N")
+        if pian in (None, False, "N", "n"):
+            pian = "N"
+        elif pian in (True, "Y", "y"):
+            pian = "Y"
+        else:
+            raise ValueError(f"«transazioni» n. {k} ({isin}): «pianificata» deve essere \"Y\" o \"N\".")
         nuova = {"isin": isin, "data": str(data), "tipo": tipo, "quote": int(quote) if quote == int(quote) else round(quote, 6), "prezzo": round(prezzo, 6)}
-        if x.get("pianificata"):  # solo pianificata: non conta come investito, compare come «da investire»
-            nuova["pianificata"] = True
+        nuova["pianificata"] = pian
         out.append(nuova)
     out.sort(key=lambda t: (t["data"], 0 if t["tipo"] == "acquisto" else 1))  # a pari data prima gli acquisti
     possedute = {}
-    for t in (x for x in out if not x.get("pianificata")):  # il controllo sulle vendite vale per quelle eseguite
+    for t in (x for x in out if x["pianificata"] != "Y"):  # il controllo sulle vendite vale per quelle eseguite
         q = possedute.get(t["isin"], 0) + (t["quote"] if t["tipo"] == "acquisto" else -t["quote"])
         if q < -1e-9:
             raise ValueError(f"Vendita di {t['isin']} del {t['data']}: stai vendendo più quote di quelle che avevi.")
@@ -288,6 +292,34 @@ def valida_obiettivo(ob, isin_ammessi):
 PESO_NUOVO = 1  # peso (%) di un titolo aggiunto senza indicare il peso: gli altri si riducono in proporzione
 
 
+def pesi_da_quote(df, ultimi):
+    """Pesi (0-1, nell'ordine di df["pesi"]) calcolati dalle quote: quantità (eseguite e pianificate; per un titolo con una quota obiettivo e senza operazioni pianificate, la quota obiettivo)
+    × prezzo medio d'acquisto (se non ci sono acquisti, l'ultimo prezzo). Un titolo senza quote pesa l'1%. Senza nessuna quota ritorna None (restano i pesi segnaposto). `ultimi`: {isin: ultimo prezzo}."""
+    qta, acq, costo, pian = {}, {}, {}, set()
+    for t in df["transazioni"]:
+        i = t["isin"]
+        qta[i] = qta.get(i, 0) + (t["quote"] if t["tipo"] == "acquisto" else -t["quote"])
+        if t["tipo"] == "acquisto":
+            acq[i] = acq.get(i, 0) + t["quote"]
+            costo[i] = costo.get(i, 0) + t["quote"] * t["prezzo"]
+        if t["pianificata"] == "Y":
+            pian.add(i)
+    ob = {o["isin"]: o["quote"] for o in df["obiettivo"]}
+    val = []
+    for isin, _w in df["pesi"]:
+        q = qta.get(isin, 0)
+        if isin in ob and isin not in pian:
+            q = ob[isin]
+        med = costo[isin] / acq[isin] if acq.get(isin) else ultimi.get(isin) or 0
+        val.append(max(0, q) * med)
+    tot = sum(val)
+    if not tot > 0:
+        return None
+    zeri = sum(1 for v in val if not v > 0)
+    k = (100 - zeri) / tot
+    return [(v * k if v > 0 else 1) / 100 for v in val]
+
+
 def valida_definizione(d):
     """Controlla il JSON di un portafoglio. Ritorna {nome, v, descrizione, amount, pesi: [(isin, peso 0-1)], vincoli}; ValueError con un messaggio chiaro se non va."""
     if not isinstance(d, dict):
@@ -319,7 +351,7 @@ def valida_definizione(d):
         amount = int(amount) if amount == int(amount) else amount
     tit = d.get("titoli")
     if not isinstance(tit, list) or not 1 <= len(tit) <= 30:
-        raise ValueError("«titoli»: da 1 a 30 elementi {\"isin\": …, \"peso\": …}.")
+        raise ValueError("«titoli»: da 1 a 30 elementi {\"isin\": …}.")
     visti, righe = set(), []
     for x in tit:
         isin = str(x.get("isin") or "").strip().upper() if isinstance(x, dict) else ""
@@ -328,16 +360,22 @@ def valida_definizione(d):
         if isin in visti:
             raise ValueError(f"ISIN ripetuto: {isin}.")
         visti.add(isin)
-        try:
-            peso = float(x.get("peso"))
-        except (TypeError, ValueError):
-            raise ValueError(f"{isin}: «peso» deve essere un numero (percentuale).")
-        if not 0 <= peso <= 100:
-            raise ValueError(f"{isin}: il peso deve essere tra 0 e 100 (0 per un titolo già venduto, che serve solo alle transazioni).")
+        peso = x.get("peso")  # formato vecchio: il peso scritto nel file; ora non serve più (si calcola dalle quote), ma i file vecchi si leggono ancora
+        if peso is not None:
+            try:
+                peso = float(peso)
+            except (TypeError, ValueError):
+                raise ValueError(f"{isin}: «peso» deve essere un numero (percentuale).")
+            if not 0 <= peso <= 100:
+                raise ValueError(f"{isin}: il peso deve essere tra 0 e 100.")
         righe.append((isin, peso))
-    tot = sum(p for _, p in righe)
-    if abs(tot - 100) > 0.5:
-        raise ValueError(f"I pesi danno {round(tot, 2)}%: devono dare 100%.")
+    legacy = all(p is not None for _, p in righe)  # tutti i titoli con il peso: formato vecchio, usato finché non ci sono quote
+    if legacy:
+        tot = sum(p for _, p in righe)
+        if abs(tot - 100) > 0.5:
+            raise ValueError(f"I pesi danno {round(tot, 2)}%: devono dare 100%.")
+    else:
+        tot = 0
     transazioni = valida_transazioni(d.get("transazioni"), visti)
     obiettivo = valida_obiettivo(d.get("obiettivo"), visti)
     vincoli = None
@@ -362,7 +400,7 @@ def valida_definizione(d):
         if not isinstance(fr, dict) or fr.get("finestra") not in (1, 3, 5) or not isinstance(fr.get("prudente"), bool):
             raise ValueError("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.")
         frontiera = {"finestra": fr["finestra"], "prudente": fr["prudente"]}
-    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe], "vincoli": vincoli, "transazioni": transazioni, "obiettivo": obiettivo, "frontiera": frontiera}
+    return {"nome": nome, "v": v, "descrizione": descrizione, "amount": amount, "pesi": [(i, round(p / tot, 4)) for i, p in righe] if legacy else [(i, round(1 / len(righe), 4)) for i, _ in righe], "vincoli": vincoli, "transazioni": transazioni, "obiettivo": obiettivo, "frontiera": frontiera}
 
 
 def formatta_definizione(d):
@@ -813,6 +851,10 @@ class Portafogli:
                     j += 1
                 col.append(ultimo)
             px[sigla] = col
+        calc = pesi_da_quote(df, {isin: px[sigla_di[isin]][-1] for isin in sigla_di})  # i pesi si calcolano dalle quote; senza quote restano quelli segnaposto (uguali, o quelli del formato vecchio)
+        if calc:
+            for (isin, _w), pw in zip(df["pesi"], calc):
+                next(f for f in fondi if f["s"] == sigla_di[isin])["w"] = pw
         for f in fondi:
             f["p0"] = px[f["s"]][-1]
             f["q0"] = int(amount * f["w"] / f["p0"])
@@ -829,9 +871,9 @@ class Portafogli:
             meta["vincoli"] = {"fondi": {sigla_di[i]: x for i, x in df["vincoli"]["fondi"].items()}, "classi": df["vincoli"]["classi"]}
         if df["transazioni"]:  # i movimenti reali (eseguiti): la pagina li usa al posto degli acquisti d'esempio; quelli solo pianificati vanno in «pianificate»
             conv = lambda t: {"s": sigla_di[t["isin"]], "d": t["data"], "t": "a" if t["tipo"] == "acquisto" else "v", "q": t["quote"], "p": t["prezzo"]}
-            meta["transazioni"] = [conv(t) for t in df["transazioni"] if not t.get("pianificata")]
-            if any(t.get("pianificata") for t in df["transazioni"]):
-                meta["pianificate"] = [conv(t) for t in df["transazioni"] if t.get("pianificata")]
+            meta["transazioni"] = [conv(t) for t in df["transazioni"] if t["pianificata"] != "Y"]
+            if any(t["pianificata"] == "Y" for t in df["transazioni"]):
+                meta["pianificate"] = [conv(t) for t in df["transazioni"] if t["pianificata"] == "Y"]
         if df["obiettivo"]:  # quote del piano proposto: la pagina ne ricava «da investire» e il punto «Piano proposto»
             meta["obiettivo"] = {sigla_di[x["isin"]]: x["quote"] for x in df["obiettivo"]}
         if self.prezzi is not None:
@@ -933,7 +975,7 @@ class Portafogli:
             if i["nome"] == df["nome"] and i["versione"] == versione:
                 raise Esiste(i["file"], f"Esiste già il portafoglio {df['nome']} {versione} ({i['file']}). Cambia la versione nel JSON per crearne uno nuovo.")
         self._scrivi(nuovo, {"nome": df["nome"], "versione": versione, "descrizione": df["descrizione"], "valore": df["amount"],
-                             "titoli": [{"isin": i, "peso": round(w * 100, 2)} for i, w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {}),
+                             "titoli": [{"isin": i} for i, _w in df["pesi"]], **({"vincoli": df["vincoli"]} if df["vincoli"] else {}),
                              **({"transazioni": df["transazioni"]} if df["transazioni"] else {}), **({"obiettivo": df["obiettivo"]} if df["obiettivo"] else {}), **({"frontiera": df["frontiera"]} if df["frontiera"] else {})})
         try:
             return self.prepara(nuovo, avanza)
@@ -945,14 +987,12 @@ class Portafogli:
             raise
 
     def bozza(self, da, titoli, avanza=None, valore=None, transazioni=None, obiettivo=None):
-        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin, peso?}] (peso in %; se manca resta quello di prima, 1 per un titolo nuovo).
-        I pesi vengono riportati a 100; un titolo nuovo senza peso entra all'1% e gli altri si riducono in proporzione. Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
+        """Bozza del portafoglio `da` con i titoli cambiati. `titoli`: [{isin}] (i pesi non si indicano: si calcolano dalle quote). Scarica i dati dei titoli nuovi. Ritorna {token}. Gli acquisti e le vendite restano solo per i titoli rimasti."""
         origine = self.definizione(da)
         if origine is None:
             raise ValueError("Portafoglio di partenza non trovato.")
         if not isinstance(titoli, list) or not 1 <= len(titoli) <= 30:
             raise ValueError("Servono da 1 a 30 titoli.")
-        prima = {t.get("isin"): t.get("peso") for t in origine["titoli"] if isinstance(t, dict)}
         nuovi, visti = [], set()
         for t in titoli:
             isin = str((t or {}).get("isin") or "").strip().upper() if isinstance(t, dict) else ""
@@ -961,32 +1001,7 @@ class Portafogli:
             if isin in visti:
                 raise ValueError(f"{isin}: ISIN ripetuto.")
             visti.add(isin)
-            peso, fisso = t.get("peso"), False
-            if peso in (None, ""):
-                if prima.get(isin) is not None:
-                    peso = prima[isin]
-                else:
-                    peso, fisso = PESO_NUOVO, True  # titolo nuovo senza peso: entra all'1%
-            try:
-                peso = float(peso)
-            except (TypeError, ValueError):
-                raise ValueError(f"{isin}: peso non valido.")
-            if not 0 <= peso <= 100:
-                raise ValueError(f"{isin}: il peso deve essere tra 0 e 100.")
-            nuovi.append([isin, peso, fisso])
-        fissi = sum(p for _, p, f in nuovi if f)
-        altri = sum(p for _, p, f in nuovi if not f)
-        if altri > 0 and fissi < 100:  # gli altri titoli si riducono (o, se ne è stato tolto uno, crescono) in proporzione fino a fare 100
-            for x in nuovi:
-                if not x[2]:
-                    x[1] = x[1] * (100 - fissi) / altri
-        tot = sum(p for _, p, _f in nuovi)
-        if tot <= 0:
-            raise ValueError("Almeno un titolo deve avere un peso maggiore di 0.")
-        for x in nuovi:
-            x[1] = round(x[1] * 100 / tot, 2)
-        resto = round(100 - sum(x[1] for x in nuovi), 2)
-        max(nuovi, key=lambda x: x[1])[1] = round(max(nuovi, key=lambda x: x[1])[1] + resto, 2)
+            nuovi.append(isin)
         if valore in (None, ""):
             valore = origine.get("valore") or 10000
         else:
@@ -998,7 +1013,7 @@ class Portafogli:
                 raise ValueError("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro.")
             valore = int(valore) if valore == int(valore) else valore
         d = {"nome": origine.get("nome"), "versione": origine.get("versione"), "descrizione": origine.get("descrizione") or "bozza",
-             "valore": valore, "titoli": [{"isin": i, "peso": p} for i, p, _f in nuovi],
+             "valore": valore, "titoli": [{"isin": i} for i in nuovi],
              "_da": origine.get("_da") if da.startswith("bozza:") else da}
         if transazioni is not None:  # acquisti e vendite inseriti nella schermata di modifica: sostituiscono quelli di prima
             tr = valida_transazioni(transazioni, visti)
@@ -1078,9 +1093,10 @@ class Portafogli:
         d = self.definizione(nomefile)
         if d is None or str(nomefile).startswith("bozza:"):
             raise ValueError("Portafoglio non trovato.")
-        if not d.get("obiettivo") and not any(isinstance(t, dict) and t.get("pianificata") for t in (d.get("transazioni") or [])):
+        pianif = lambda t: isinstance(t, dict) and str(t.get("pianificata")).upper() in ("Y", "TRUE")
+        if not d.get("obiettivo") and not any(pianif(t) for t in (d.get("transazioni") or [])):
             return self.info(nomefile)  # niente da annullare
-        resto = [t for t in (d.get("transazioni") or []) if not (isinstance(t, dict) and t.get("pianificata"))]  # anche le operazioni solo pianificate sono proposte
+        resto = [t for t in (d.get("transazioni") or []) if not pianif(t)]  # anche le operazioni solo pianificate sono proposte
         nd = {k: v for k, v in d.items() if k not in ("obiettivo", "transazioni")}
         if resto:
             nd["transazioni"] = resto
@@ -1140,7 +1156,7 @@ class Portafogli:
             transazioni = origine.get("transazioni") or []
         tr = valida_transazioni(transazioni, set(sigla_isin.values()))
         con_mov = {t["isin"] for t in tr}  # un titolo già venduto resta nel file con peso 0: serve ai suoi movimenti
-        titoli = [{"isin": sigla_isin[s], "peso": round(x * 100, 1)} for s, x in sorted(w.items(), key=lambda a: -a[1]) if x > 0 or sigla_isin[s] in con_mov]
+        titoli = [{"isin": sigla_isin[s]} for s, x in sorted(w.items(), key=lambda a: -a[1]) if x > 0 or sigla_isin[s] in con_mov]  # niente pesi nel file: si calcolano dalle quote
         nd = {"nome": nome, "versione": versione, "descrizione": descrizione, "valore": amount, "titoli": titoli}
         if tr:
             nd["transazioni"] = tr

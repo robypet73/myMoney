@@ -191,11 +191,15 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
   "descrizione": "Una frase che spiega il portafoglio",
   "valore": 40000,
   "titoli": [
-    { "isin": "IE00B4L5Y983", "peso": 60 },
-    { "isin": "IE00B1FZS798", "peso": 40 }
+    { "isin": "IE00B4L5Y983" },
+    { "isin": "IE00B1FZS798" }
+  ],
+  "transazioni": [
+    { "isin": "IE00B4L5Y983", "data": "2026-11-24", "tipo": "acquisto", "quote": 100, "prezzo": 124.5, "pianificata": "N" },
+    { "isin": "IE00B1FZS798", "data": "2026-11-24", "tipo": "acquisto", "quote": 50, "prezzo": 160, "pianificata": "Y" }
   ]
 }</pre>
-      <ul class="note"><li><b>nome</b>: solo lettere e cifre, niente spazi né simboli (diventa il nome del file).</li><li><b>versione</b>: V1, V2, V3…</li><li><b>titoli</b>: ISIN e peso in percentuale; i pesi devono dare 100.</li><li><b>valore</b>: facoltativo, l'investimento totale in euro da ripartire (se manca: 10.000).</li></ul>
+      <ul class="note"><li><b>nome</b>: solo lettere e cifre, niente spazi né simboli (diventa il nome del file).</li><li><b>versione</b>: V1, V2, V3…</li><li><b>titoli</b>: solo gli ISIN; i pesi non si scrivono, si calcolano dalle quote (transazioni) × prezzo medio.</li><li><b>transazioni</b> (facoltative): acquisti e vendite con data, quote e prezzo; <b>pianificata</b> «Y» = solo pianificata (da investire), «N» = eseguita (investita).</li><li><b>valore</b>: facoltativo, l'investimento totale in euro da ripartire (se manca: 10.000).</li></ul>
     </details>
   </section>
 
@@ -343,17 +347,17 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
 </div></div>
 <div class="ovl" id="modtit" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mt-t" style="max-width:780px">
   <div class="top"><h2 id="mt-t">Modifica il portafoglio</h2><button class="x" id="mt-x" type="button" aria-label="Chiudi">×</button></div>
-  <p class="muted">Aggiungi titoli con l'ISIN, toglili con ✕ e inserisci per ciascuno gli acquisti e le vendite (anche più di uno), con data, quote e prezzo (quello scaricato se non lo cambi). I <b>pesi non si scrivono</b>: si calcolano da soli dalle quote e dal prezzo medio. Salvando crei una nuova versione o un nuovo portafoglio.</p>
+  <div class="nv-top"><label>Nome<input id="mt-n" type="text" maxlength="30" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="Nome del portafoglio"><small>solo lettere e cifre, niente spazi né simboli</small></label><label>Versione<input id="mt-v" type="number" min="1" max="999" step="1" inputmode="numeric" aria-label="Versione"></label></div>
+  <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Descrizione<input id="mt-d" type="text" maxlength="300" autocomplete="off" placeholder="una breve frase"></label>
   <label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);max-width:260px">Valore dell'investimento (€)<input type="number" id="mt-val" min="100" step="100" inputmode="decimal"></label>
   <div id="mt-tab" class="mt-list"></div>
-  <p class="muted" style="font-size:12px;margin:0">Per ogni operazione la spunta <b>«Pianificato»</b> la tiene solo come proposta («da investire», non conta come investito); senza spunta è un acquisto o una vendita eseguiti e conta come investito.</p>
   <p class="muted" id="mt-prop" hidden style="font-size:12px;margin:0"></p>
   <form id="mt-add" novalidate style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">Aggiungi un titolo (ISIN)<input id="mt-isin" type="text" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="per esempio IE00B1FZS798"></label><button class="btn sec small" type="submit">Aggiungi</button><button class="btn sec small" type="button" id="mt-fin" title="Cerca tra gli ETF a zero commissioni di acquisto su Fineco">Lista Fineco gratuiti…</button></form>
   <label class="muted" style="display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer"><input type="checkbox" id="mt-solofin" style="margin-top:2px"><span>Solo ETF a zero commissioni su Fineco (togli la spunta per aggiungere un ISIN che non è nella lista)</span></label>
   <div class="mp" id="mt-pick" hidden><div class="mp-f"><input id="mp-q" type="search" placeholder="Cerca per nome o ISIN (per esempio «gold», «aggregate», «world value»)" autocomplete="off" aria-label="Cerca un ETF"><select id="mp-t" aria-label="Tipo"><option value="">Tutti i tipi</option><option>Azioni</option><option>Obbligazioni</option><option>Materie prime</option><option>Monetario</option><option>Altro</option></select><select id="mp-e" aria-label="Emittente"><option value="">Tutti gli emittenti</option></select></div><div class="muted" style="font-size:12px" id="mp-info"></div><div id="mp-l"></div></div>
   <p class="muted" id="mt-somma"></p>
   <div class="lerr" id="mt-err" role="alert"></div>
-  <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn sec" id="mt-ok" type="button" title="Apre una bozza dove ribilanci i pesi con la frontiera efficiente, poi salvi">Ribilancia…</button><button class="btn" id="mt-salva" type="button">Salva…</button></div>
+  <div class="scar-foot" style="gap:8px;flex-wrap:wrap"><button class="btn sec" id="mt-ann" type="button">Annulla</button><button class="btn sec" id="mt-ok" type="button" title="Apre una bozza dove ribilanci i pesi con la frontiera efficiente, poi salvi">Ribilancia…</button><button class="btn" id="mt-salva" type="button" title="Salva come nuova versione (o come nuovo portafoglio se cambi il nome) e lo apre">Salva</button></div>
 </div></div>
 <div class="ovl" id="salva" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="sv-t" style="max-width:600px">
   <div class="top"><h2 id="sv-t">Salva come nuovo portafoglio</h2><button class="x" id="sv-x" type="button" aria-label="Chiudi">×</button></div>
@@ -518,7 +522,7 @@ function calcolaPiano() {  // proposte: operazioni solo pianificate (spunta «Pi
   const ob = META.obiettivo, pia = {}; (META.pianificate || []).forEach((x) => { pia[x.s] = (pia[x.s] || 0) + (x.t === "a" ? x.q : -x.q); });
   if ((!ob && !META.pianificate) || ST.esempio) return;
   const tq = F.map((f, i) => Math.max(0, f.s in pia ? POS[i].q + pia[f.s] : ob && f.s in ob ? ob[f.s] : POS[i].q));  // un'operazione pianificata su un titolo vale più della quota obiettivo
-  DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 0.5 ? Math.round(d * 100) / 100 : 0; });  // acquisti e vendite eseguiti fanno scendere la differenza; a 0 la proposta di quel titolo non c'è più
+  DI = tq.map((q, i) => { const d = q - POS[i].q; return Math.abs(d) >= 1 - 1e-9 ? Math.round(d * 100) / 100 : 0; });  // un titolo è pianificato se ha almeno una quota ancora da comprare o vendere  // acquisti e vendite eseguiti fanno scendere la differenza; a 0 la proposta di quel titolo non c'è più
   if (!DI.some(Boolean)) return;
   const v = tq.map((q, i) => q * POS[i].prezzo), S = sum(v); if (S > 0) WPROP = v.map((x) => x / S);
 }
@@ -1123,7 +1127,7 @@ $$(".js-carica").forEach((b) => b.addEventListener("click", () => $("#file-json"
 $("#file-json").addEventListener("change", async (e) => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
   let def; try { def = JSON.parse(await f.text()); } catch (er) { stato("Il file non è un JSON valido.", true); return; }
-  if (!def || typeof def !== "object" || !Array.isArray(def.titoli)) { stato("Il JSON non ha la forma attesa: servono nome, versione, descrizione e l'elenco «titoli» con isin e peso.", true); return; }
+  if (!def || typeof def !== "object" || !Array.isArray(def.titoli)) { stato("Il JSON non ha la forma attesa: servono nome, versione, descrizione e l'elenco «titoli» con gli isin.", true); return; }
   if (!PF.server) { stato("Per scaricare i dati dei titoli serve il programma locale: avvia avvia.cmd e apri la pagina da lì.", true); return; }
   creaDaDefinizione(def);
 });
@@ -1139,7 +1143,7 @@ async function creaDaDefinizione(def, apertura) {  // apertura: il JSON c'è gi�
   errore = errore || (ev && ev.testo) || "errore"; $("#scar-cl").setAttribute("class", "clessidra err"); scTesto("#scar-t", apertura ? "Dati non scaricati" : "Portafoglio non creato"); scTesto("#scar-s", errore); scRiga("⚠ " + esc(errore), "w"); $("#scar-foot").hidden = false; $("#scar-x").focus();
 }
 $("#scarica-json").addEventListener("click", () => {  // la definizione minimale del portafoglio aperto
-  const def = { nome: NOMEPF, versione: VERS, descrizione: META.descrizione || "", valore: IMPORTO(), titoli: F.map((f) => ({ isin: f.isin, peso: Math.round(f.w * 10000) / 100 })), ...(movimenti().length ? { transazioni: movimenti() } : {}), vincoli: { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(Object.entries(ST.vinc.classi).map(([c, x]) => [c, [x.min, x.max]])) } };
+  const def = { nome: NOMEPF, versione: VERS, descrizione: META.descrizione || "", valore: IMPORTO(), titoli: F.map((f) => ({ isin: f.isin })), ...(movimenti().length || pianificateFile().length ? { transazioni: movimenti().concat(pianificateFile()) } : {}), vincoli: { fondi: Object.fromEntries(F.map((f) => [f.isin, [ST.vinc.fondi[f.s].min, ST.vinc.fondi[f.s].max]])), classi: Object.fromEntries(Object.entries(ST.vinc.classi).map(([c, x]) => [c, [x.min, x.max]])) } };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(def, null, 2) + "\n"], { type: "application/json" })); a.download = NOMEPF + "_" + VERS + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 });
 
@@ -1204,7 +1208,7 @@ $("#ct-ok").onclick = async () => { const p = $("#ct-path").value.trim(); if (!p
 $("#ct-reset").onclick = async () => { try { await cartellaPost({ cartella: "" }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
 function movimenti() {  // i movimenti inseriti, nel formato del file JSON (solo quelli completi)
   if (ST.esempio) return [];
-  const out = []; F.forEach((f, i) => ST.lots[f.s].forEach((lot, k) => { const x = POS[i] && POS[i].lots[k]; if (x && !x.err) out.push({ isin: f.isin, data: lot.d, tipo: x.tipo === "v" ? "vendita" : "acquisto", quote: x.q, prezzo: Math.round(x.pr * 1e4) / 1e4 }); }));
+  const out = []; F.forEach((f, i) => ST.lots[f.s].forEach((lot, k) => { const x = POS[i] && POS[i].lots[k]; if (x && !x.err) out.push({ isin: f.isin, data: lot.d, tipo: x.tipo === "v" ? "vendita" : "acquisto", quote: x.q, prezzo: Math.round(x.pr * 1e4) / 1e4, pianificata: "N" }); }));
   return out.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
 }
 $("#pf-del").onclick = async () => {
@@ -1238,8 +1242,8 @@ function svEsistenti() {  // «nuova versione di…»: i portafogli già nella c
   const nomi = [...new Set(PF.lista.map((x) => x.nome))].sort((a, b) => a.localeCompare(b)), se = $("#sv-esist");
   se.innerHTML = `<option value="">— nuovo portafoglio —</option>` + nomi.map((n) => `<option value="${esc(n)}"${n === NOMEPF ? " selected" : ""}>${esc(n)} (prossima V${Math.max(...PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione))) + 1})</option>`).join(""); $("#sv-esist-w").hidden = !nomi.length;
 }
-const pianificateFile = () => (META.pianificate || []).map((x) => ({ isin: (F.find((f) => f.s === x.s) || {}).isin, data: x.d, tipo: x.t === "a" ? "acquisto" : "vendita", quote: x.q, prezzo: x.p, pianificata: true })).filter((x) => x.isin);
-const trSalva = () => movimenti().concat(SV.obiettivo && SV.obiettivo.length ? [] : pianificateFile());  // un nuovo ribilanciamento sostituisce le operazioni pianificate  // le transazioni sono solo quelle che hai inserito tu: le operazioni di un ribilanciamento restano «da investire»
+const pianificateFile = () => (META.pianificate || []).map((x) => ({ isin: (F.find((f) => f.s === x.s) || {}).isin, data: x.d, tipo: x.t === "a" ? "acquisto" : "vendita", quote: x.q, prezzo: x.p, pianificata: "Y" })).filter((x) => x.isin);
+const trSalva = () => movimenti().concat(SV.pian && SV.pian.length ? SV.pian : SV.obiettivo && SV.obiettivo.length ? [] : pianificateFile());  // un nuovo ribilanciamento sostituisce le operazioni pianificate  // le transazioni sono solo quelle che hai inserito tu: le operazioni di un ribilanciamento restano «da investire»
 const obiettivoDa = (ops) => { const n = {}; ops.forEach((o) => { n[o.isin] = (n[o.isin] || 0) + o.n; }); return F.map((f, i) => ({ isin: f.isin, quote: Math.max(0, Math.round((POS[i].q + (n[f.isin] || 0)) * 1e6) / 1e6) })).filter((x) => x.quote > 0 || n[x.isin] != null); };  // quote da avere alla fine = quelle che hai + le operazioni proposte
 function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo) che portano i titoli che hai davvero sui pesi `w`, senza nuovi versamenti
   if (ST.esempio || !(VAL > 0)) return [];
@@ -1252,16 +1256,10 @@ function opsRibilancio(w) {  // acquisti e vendite (quote intere, ultimo prezzo)
   });
   return out;
 }
-function apriSalvaTitoli(dati) {  // dalla schermata «Modifica portafoglio»: salva i titoli e i pesi scelti come nuova versione o come nuovo portafoglio
-  SV = { w: null, titoli: dati.titoli, transazioni: dati.transazioni, obiettivo: dati.obiettivo || [], importo: +$("#mt-val").value, tocca: false, opener: $("#mt-salva"), modo: "titoli" };
-  $("#sv-rib-w").hidden = true;
-  const pw = mtPesi(), tot = sum(pw);
-  $("#sv-t").textContent = "Salva il portafoglio modificato"; $("#sv-fl").textContent = "Nuovo file"; $("#sv-ok").textContent = "Salva il portafoglio"; $("#sv-w").hidden = false;
-  $("#sv-w").textContent = "Investimento " + eur(SV.importo) + " · Titoli e pesi: " + MT.map((x, i) => [x, pw[i]]).sort((a, b) => b[1] - a[1]).map(([x, w]) => (x.s || x.isin) + " " + pct(w / tot)).join(" · ") + ". Operazioni inserite: " + dati.transazioni.length + ".";
-  $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi(); svEsistenti();
-  $("#sv-d").value = "Da " + NOMEPF + " " + VERS + ": " + MT.length + " titoli, composizione e operazioni modificate.";
-  $("#sv-err").textContent = ""; $("#sv-f").hidden = false; $("#sv-fatto").hidden = true; svControlla(false);
-  $("#salva").hidden = false; document.body.style.overflow = "hidden"; $("#sv-n").focus(); $("#sv-n").select();
+function opsDaPesi(w, importo) {  // senza acquisti tuoi: i pesi scelti diventano acquisti pianificati (quote intere, ultimo prezzo), perché il file non contiene i pesi
+  const last = DATES.length - 1, out = [];
+  F.forEach((f, i) => { const pr = PX[i][last], q = Math.floor((w[i] * importo) / pr + 1e-9); if (pr > 0 && q >= 1) out.push({ isin: f.isin, s: f.s, n: q, data: DATES[last], tipo: "acquisto", quote: q, prezzo: Math.round(pr * 1e4) / 1e4, pianificata: "Y" }); });
+  return out;
 }
 function apriSalva(w, s, tit, msg = "sv-nosrv", opsFissi = null) {
   if (!PF.server) { const m = $("#" + msg); if (m) m.textContent = "Per salvare un portafoglio serve il programma locale: avvia avvia.cmd e apri la pagina da lì."; return; }
@@ -1270,6 +1268,8 @@ function apriSalva(w, s, tit, msg = "sv-nosrv", opsFissi = null) {
   SV.ops = opsFissi || opsRibilancio(w); SV.obiettivo = SV.ops.length ? obiettivoDa(SV.ops) : []; $("#sv-rib-w").hidden = !SV.ops.length;  // niente transazioni inventate: le quote da comprare e vendere si salvano come «da investire»
   $("#sv-rib-t").textContent = SV.ops.length ? SV.ops.map((o) => (o.n > 0 ? "compra " : "vendi ") + nf(Math.abs(o.n)) + " " + o.s).join(" · ") + ". Nel nuovo portafoglio «Investito» resta quello che hai inserito tu; queste quote compaiono nella colonna «Da investire» e spariscono quando inserisci gli acquisti e le vendite reali (Modifica portafoglio)." : "";
   $("#sv-w").textContent = tit + " · investimento " + eur(SV.importo) + ": rendimento " + pct(s.cagr) + ", rischio " + pct(s.vol) + ". Pesi: " + F.map((f, i) => [f.s, w[i]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0] + " " + pct(x[1])).join(" · ") + ".";
+  SV.pian = !SV.ops.length && (ST.esempio || !(VAL > 0)) ? opsDaPesi(w, SV.importo) : [];
+  if (SV.pian.length) { $("#sv-rib-w").hidden = false; $("#sv-rib-t").textContent = "Il file non contiene i pesi: senza acquisti tuoi i pesi scelti diventano acquisti pianificati («da investire»): " + SV.pian.map((o) => "compra " + nf(o.n) + " " + o.s).join(" · ") + ". Quando li esegui davvero togli la spunta «Pianificato» in Modifica portafoglio."; }
   const zeri = F.filter((f, i) => !(w[i] > 0) && !movimenti().some((m) => m.isin === f.isin)).map((f) => f.s);  // titoli a 0%: nel file non ci sarebbero
   if (zeri.length) $("#sv-w").textContent += " ATTENZIONE: a 0% e quindi NON salvati nel file: " + zeri.join(", ") + ".";
   $("#sv-n").value = NOMEPF; $("#sv-ver").value = ""; svProponi();
@@ -1299,19 +1299,6 @@ $("#sv-d").addEventListener("input", () => svControlla(false));
 $("#sv-f").addEventListener("submit", async (e) => {
   e.preventDefault(); if (!svControlla(true)) return;
   const b = $("#sv-ok"); b.disabled = true; $("#sv-err").textContent = "";
-  if (SV.modo === "titoli") {
-    let ev = null, errore = "";
-    scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
-    try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: SV.titoli, transazioni: SV.transazioni, obiettivo: SV.obiettivo || [], valore: SV.importo, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }, ["salvato_pf", "fallito"]); } catch (er) { errore = er.message || "errore"; }
-    await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden";
-    if (ev && ev.t === "salvato_pf") {
-      chiudiModTit(); document.body.style.overflow = "hidden"; $("#sv-f").hidden = true; $("#sv-fatto").hidden = false;
-      $("#sv-fm").innerHTML = `Creato <b class="num">${esc(ev.file)}</b> nella cartella portafogli. Lo apro per mostrarti il nuovo portafoglio con i titoli modificati…`;
-      $("#sv-apri").onclick = () => { location.href = urlPf(ev.file); }; $("#sv-apri").focus(); caricaPortafogli();
-      setTimeout(() => { location.href = urlPf(ev.file); }, 1200);  // si passa subito al nuovo portafoglio: quello di partenza non cambia
-    } else $("#sv-err").textContent = errore || (ev && ev.testo) || "Non sono riuscito a salvare.";
-    b.disabled = false; return;
-  }
   try {
     if (SV.modo === "modifica") {
       const r = await fetch("/api/modifica", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: PF.file, nome: svNome(), versione: "V" + svVer(), descrizione: $("#sv-d").value }) });
@@ -1376,10 +1363,15 @@ function finLista(pre, dentro) {  // elenco ricercabile della lista Fineco nel p
 function finEmittenti(pre) { if (FIN && $("#" + pre + "-e").options.length < 2) [...new Set(FIN.etf.map((e) => e.emittente))].sort().forEach((x) => $("#" + pre + "-e").insertAdjacentHTML("beforeend", `<option>${esc(x)}</option>`)); }
 function mpDisegna() { const box = $("#mt-pick"); if (box && !box.hidden) finLista("mp", (i) => MT.some((x) => x.isin === i)); }
 function npDisegna() { const box = $("#nv-pick"); if (box && !box.hidden) finLista("np", (i) => NV.some((x) => x.isin === i)); }
+function mtPian(x) {  // il titolo è pianificato se ha almeno una quota ancora da comprare o vendere (operazioni pianificate, o quota obiettivo non ancora raggiunta)
+  let ese = 0, pia = 0, hp = false; x.tr.forEach((r) => { const q = +r.q; if (!(q > 0)) return; const s = r.t === "vendita" ? -q : q; if (r.pi) { pia += s; hp = true; } else ese += s; });
+  if (hp) return Math.abs(pia) >= 1 - 1e-9;
+  const ob = META.obiettivo; return !!(x.s && ob && x.s in ob && Math.abs(ob[x.s] - ese) >= 1 - 1e-9);
+}
 function mtDisegna() {
   const ov = (i, k, f, v, extra) => `data-f="${f}" data-i="${i}" data-k="${k}" value="${esc(v)}" ${extra || ""}`;
   $("#mt-tab").innerHTML = MT.map((x, i) => `<div class="mt-card${x.fuori ? " mt-fuori" : ""}">
-    <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}<div class="fsub num">${esc(x.isin)}${FIN ? (FIN.m[x.isin] ? ' · <span class="up">Fineco 0 €</span>' : ' · <span class="muted">non nella lista Fineco gratuiti</span>') : ""}</div></div>
+    <div class="mt-h"><div class="mt-n">${x.s ? `<b>${esc(x.s)}</b> · ${esc(x.nome || "")}` : `<b>${esc(x.isin)}</b> · nuovo`}${x.fuori ? ' <span class="muted">(venduto)</span>' : ""}${mtPian(x) ? ' <span class="up">(pianificato)</span>' : ""}<div class="fsub num">${esc(x.isin)}${FIN ? (FIN.m[x.isin] ? ' · <span class="up">Fineco 0 €</span>' : ' · <span class="muted">non nella lista Fineco gratuiti</span>') : ""}</div></div>
       <span class="mt-p muted">Peso <b class="num" data-mw="${i}">—</b></span>
       <button class="btn sec small" type="button" data-mt-del="${i}" aria-label="Togli ${esc(x.isin)}" title="Togli dal portafoglio">✕</button></div>
     ${x.tr.map((r, k) => `<div class="mt-r"><input type="date" ${ov(i, k, "d", r.d, 'aria-label="Data"')}><select data-f="t" data-i="${i}" data-k="${k}" aria-label="Tipo"><option value="acquisto"${r.t === "acquisto" ? " selected" : ""}>Acquisto</option><option value="vendita"${r.t === "vendita" ? " selected" : ""}>Vendita</option></select><input type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" ${ov(i, k, "q", r.q, 'aria-label="Quote"')}><input type="number" min="0" step="any" inputmode="decimal" placeholder="${x.s ? "Prezzo del giorno" : "Prezzo €"}" ${ov(i, k, "p", r.p, 'aria-label="Prezzo unitario"')}><label class="mt-pi" title="Spuntata: l'operazione è solo pianificata e non conta come investito; senza spunta è eseguita"><input type="checkbox" data-f="pi" data-i="${i}" data-k="${k}"${r.pi ? " checked" : ""}> Pianificato</label><button class="btn sec small" type="button" data-r-del="${i}:${k}" aria-label="Togli l'operazione" title="Togli l'operazione">✕</button></div>`).join("")}
@@ -1391,7 +1383,7 @@ function apriModTit() {
   const mov = movimenti();
   MT = F.map((f, i) => ({ isin: f.isin, s: f.s, nome: f.name, w: f.w * 100, fuori: !!(POS[i] && POS[i].acq > 0 && POS[i].q <= 1e-9),
     tr: mov.filter((m) => m.isin === f.isin).map((m) => ({ d: m.data, t: m.tipo, q: String(m.quote), p: String(m.prezzo), pi: false })).concat((META.pianificate || []).filter((x) => x.s === f.s).map((x) => ({ d: x.d, t: x.t === "a" ? "acquisto" : "vendita", q: String(x.q), p: String(x.p), pi: true }))) }));
-  $("#mt-val").value = IMPORTO(); $("#mt-err").textContent = ""; $("#mt-isin").value = ""; $("#mt-solofin").checked = finSolo(); $("#mt-pick").hidden = true; { const p = $("#mt-prop"), n = DI.filter(Boolean).length; p.hidden = !n; p.textContent = n ? "Proposte attive su " + n + " titoli (quote da comprare o vendere). Inserendo acquisti e vendite la differenza si ricalcola e, a 0, la proposta di quel titolo sparisce; se cambi i pesi o i titoli le proposte vengono annullate. Spuntando «Pianificato» su un'operazione la tieni solo come proposta, senza contarla come investita." : ""; } mtDisegna(); caricaFin().then((d) => { if (d && !$("#modtit").hidden) mtDisegna(); }); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
+  $("#mt-val").value = IMPORTO(); $("#mt-n").value = NOMEPF; $("#mt-d").value = META.descrizione || ""; MTV.tocca = false; mtProponi(); $("#mt-err").textContent = ""; $("#mt-isin").value = ""; $("#mt-solofin").checked = finSolo(); $("#mt-pick").hidden = true; { const p = $("#mt-prop"), n = DI.filter(Boolean).length; p.hidden = !n; p.textContent = n ? "Proposte attive su " + n + " titoli (quote da comprare o vendere). Inserendo acquisti e vendite la differenza si ricalcola e, a 0, la proposta di quel titolo sparisce; se cambi i pesi o i titoli le proposte vengono annullate. Spuntando «Pianificato» su un'operazione la tieni solo come proposta, senza contarla come investita." : ""; } mtDisegna(); caricaFin().then((d) => { if (d && !$("#modtit").hidden) mtDisegna(); }); $("#modtit").hidden = false; document.body.style.overflow = "hidden"; $("#mt-isin").focus();
 }
 const chiudiModTit = () => { $("#modtit").hidden = true; document.body.style.overflow = ""; };
 $("#imp-annprop").onclick = async () => {  // toglie le proposte dal file
@@ -1481,8 +1473,7 @@ $("#nv-salva").onclick = () => {
   if (!(v >= 1 && v <= 999)) { $("#nv-v").focus(); return no("La versione deve essere un numero da 1 a 999."); }
   if (!NV.length) { $("#nv-isin").focus(); return no("Aggiungi almeno un titolo."); }
   if (FIN && $("#nv-solofin").checked) { const fuori = NV.filter((x) => !FIN.m[x]); if (fuori.length) return no(fuori.join(", ") + (fuori.length > 1 ? " non sono" : " non è") + " nella lista Fineco gratuiti: togli la spunta «Solo ETF a zero commissioni su Fineco» o togli il titolo."); }
-  const w = Math.round(10000 / NV.length) / 100, pesi = NV.map(() => w); pesi[0] = Math.round((pesi[0] + (100 - w * NV.length)) * 100) / 100;  // segnaposto: pesi uguali, poi si calcolano dalle quote
-  const def = { nome, versione: "V" + v, descrizione: $("#nv-d").value.trim() || "Portafoglio " + nome, valore: 10000, titoli: NV.map((isin, i) => ({ isin, peso: pesi[i] })) };
+  const def = { nome, versione: "V" + v, descrizione: $("#nv-d").value.trim() || "Portafoglio " + nome, valore: 10000, titoli: NV.map((isin) => ({ isin })) };
   chiudiNuovo(); creaDaDefinizione(def);  // scarica i dati dei titoli, scrive nome_Vn.json nella cartella e apre il portafoglio
 };
 function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure null (con il motivo in #mt-err) se qualcosa non va
@@ -1498,15 +1489,30 @@ function mtDati() {  // {titoli, transazioni} da mandare al programma, oppure nu
     if (!(+r.q > 0)) return no(nome + ": le quote devono essere maggiori di 0.");
     let p = +r.p;
     if (!(p > 0)) { const pa = prezzoAl(x.isin, r.d); if (pa > 0) p = Math.round(pa * 1e4) / 1e4; else return no(nome + ": scrivi il prezzo unitario (per un titolo nuovo non è noto)."); }
-    transazioni.push({ isin: x.isin, data: r.d, tipo: r.t, quote: +r.q, prezzo: p, ...(r.pi ? { pianificata: true } : {}) });
+    transazioni.push({ isin: x.isin, data: r.d, tipo: r.t, quote: +r.q, prezzo: p, pianificata: r.pi ? "Y" : "N" });
   }
   transazioni.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.tipo === "acquisto" ? -1 : 1));
-  const poss = {}; for (const o of transazioni.filter((x) => !x.pianificata)) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
-  const obiettivo = META.obiettivo ? F.filter((f) => f.s in META.obiettivo && MT.some((x) => x.isin === f.isin) && Math.abs(META.obiettivo[f.s] - (poss[f.isin] || 0)) >= 0.5 && !transazioni.some((o) => o.pianificata && o.isin === f.isin)).map((f) => ({ isin: f.isin, quote: META.obiettivo[f.s] })) : [];  // si salvano solo le differenze ancora aperte: quando le quote che hai pareggiano la proposta, quella proposta sparisce dal file
-  const pesi = mtPesi();  // i pesi si calcolano dalle quote: non si scrivono mai a mano
-  return { titoli: MT.map((x, i) => ({ isin: x.isin, peso: Math.round(pesi[i] * 100) / 100 })), transazioni, obiettivo };
+  const poss = {}; for (const o of transazioni.filter((x) => x.pianificata !== "Y")) { poss[o.isin] = (poss[o.isin] || 0) + (o.tipo === "acquisto" ? o.quote : -o.quote); if (poss[o.isin] < -1e-9) return no("Vendita di " + o.isin + " del " + o.data + ": vendi più quote di quelle che avevi."); }
+  const obiettivo = META.obiettivo ? F.filter((f) => f.s in META.obiettivo && MT.some((x) => x.isin === f.isin) && Math.abs(META.obiettivo[f.s] - (poss[f.isin] || 0)) >= 1 - 1e-9 && !transazioni.some((o) => o.pianificata === "Y" && o.isin === f.isin)).map((f) => ({ isin: f.isin, quote: META.obiettivo[f.s] })) : [];  // si salvano solo le differenze ancora aperte: quando le quote che hai pareggiano la proposta, quella proposta sparisce dal file
+  return { titoli: MT.map((x) => ({ isin: x.isin })), transazioni, obiettivo };
 }
-$("#mt-salva").onclick = () => { const dati = mtDati(); if (dati) apriSalvaTitoli(dati); };
+const MTV = { tocca: false };  // la versione proposta (la successiva) si aggiorna col nome finché non la scrivi tu
+const mtProponi = () => { const n = $("#mt-n").value.trim(), vs = PF.lista.filter((x) => x.nome === n).map((x) => nVers(x.versione)); if (!MTV.tocca) $("#mt-v").value = (vs.length ? Math.max(...vs) : 0) + 1; };
+$("#mt-n").addEventListener("input", mtProponi); $("#mt-v").addEventListener("input", () => { MTV.tocca = true; });
+$("#mt-salva").onclick = async () => {  // salva come nuova versione (o nuovo portafoglio, se cambi il nome) con nome, versione e descrizione scritti qui, poi apre il portafoglio
+  const err = $("#mt-err"), no = (m) => { err.textContent = m; }; err.textContent = "";
+  const dati = mtDati(); if (!dati) return;
+  const n = $("#mt-n").value.trim(), v = parseInt($("#mt-v").value, 10), d = $("#mt-d").value.trim() || META.descrizione || "Portafoglio " + n;
+  if (!/^[A-Za-z0-9]{1,30}$/.test(n)) { $("#mt-n").focus(); return no(n ? "Il nome può avere solo lettere e cifre, senza spazi né simboli." : "Scrivi il nome del portafoglio."); }
+  if (!(v >= 1 && v <= 999)) { $("#mt-v").focus(); return no("La versione deve essere un numero da 1 a 999."); }
+  if (PF.lista.some((x) => x.file === n + "_V" + v + ".json")) { $("#mt-v").focus(); return no("Esiste già " + n + "_V" + v + ".json: scegli una versione più alta."); }
+  const b = $("#mt-salva"); b.disabled = true; let ev = null, errore = "";
+  scApri("Salvo il portafoglio…"); scTesto("#scar-s", "Scarico i dati dei titoli nuovi…");
+  try { ev = await scFlusso("/api/salva-titoli", { da: DA(), titoli: dati.titoli, transazioni: dati.transazioni, obiettivo: dati.obiettivo || [], valore: +$("#mt-val").value, nome: n, versione: "V" + v, descrizione: d }, ["salvato_pf", "fallito"]); } catch (e) { errore = e.message || "errore"; }
+  await scSvuotata(); scChiudi(); document.body.style.overflow = "hidden"; b.disabled = false;
+  if (ev && ev.t === "salvato_pf") { location.href = urlPf(ev.file); return; }  // si passa subito al nuovo portafoglio: quello di partenza non cambia
+  no(errore || (ev && ev.testo) || "Non sono riuscito a salvare.");
+};
 $("#mt-ok").onclick = async () => {
   const dati = mtDati(); if (!dati) return;
   chiudiModTit(); scApri("Preparo la bozza…"); scTesto("#scar-s", "Scarico i dati dei titoli…"); let ev = null, errore = "";

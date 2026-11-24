@@ -195,12 +195,13 @@
       if (x.tipo !== "acquisto" && x.tipo !== "vendita") throw Err("«transazioni» n. " + n + " (" + isin + "): «tipo» deve essere «acquisto» o «vendita».");
       const quote = parseFloat(x.quote), prezzo = parseFloat(x.prezzo);
       if (!(quote > 0 && prezzo > 0)) throw Err("«transazioni» n. " + n + " (" + isin + "): «quote» e «prezzo» devono essere numeri maggiori di 0 (la vendita ha tipo «vendita», non quote negative).");
-      if (x.pianificata !== undefined && x.pianificata !== null && typeof x.pianificata !== "boolean") throw Err("«transazioni» n. " + n + " (" + isin + "): «pianificata» deve essere true o false.");
-      return { isin, data: String(x.data), tipo: x.tipo, quote: Number.isInteger(quote) ? quote : Math.round(quote * 1e6) / 1e6, prezzo: Math.round(prezzo * 1e6) / 1e6, ...(x.pianificata ? { pianificata: true } : {}) };  // pianificata: non conta come investito, compare come «da investire»
+      let pian = x.pianificata; pian = pian === undefined || pian === null || pian === false || pian === "N" || pian === "n" ? "N" : pian === true || pian === "Y" || pian === "y" ? "Y" : null;  // "Y" = solo pianificata, "N" = eseguita (si accettano anche true/false e il campo assente)
+      if (pian === null) throw Err("«transazioni» n. " + n + " (" + isin + "): «pianificata» deve essere \"Y\" o \"N\".");
+      return { isin, data: String(x.data), tipo: x.tipo, quote: Number.isInteger(quote) ? quote : Math.round(quote * 1e6) / 1e6, prezzo: Math.round(prezzo * 1e6) / 1e6, pianificata: pian };  // "Y": non conta come investito, compare come «da investire»
     });
     out.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : (a.tipo === "acquisto" ? 0 : 1) - (b.tipo === "acquisto" ? 0 : 1)));
     const pos = {};
-    out.filter((x) => !x.pianificata).forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
+    out.filter((x) => x.pianificata !== "Y").forEach((x) => { const q = (pos[x.isin] || 0) + (x.tipo === "acquisto" ? x.quote : -x.quote); if (q < -1e-9) throw Err("Vendita di " + x.isin + " del " + x.data + ": stai vendendo più quote di quelle che avevi."); pos[x.isin] = q; });
     return out;
   }
   function validaObiettivo(ob, ammessi) {  // quote obiettivo del piano proposto: [{isin, quote}]; «da investire» = quote obiettivo − quote che hai davvero
@@ -215,6 +216,15 @@
       return { isin, quote: Math.round(q * 1e6) / 1e6 };
     });
   }
+  function pesiDaQuote(df, ultimi) {  // come pesi_da_quote di build.py: quote (eseguite e pianificate; con quota obiettivo e senza pianificate, la quota obiettivo) × prezzo medio d'acquisto; senza quote null
+    const qta = {}, acq = {}, costo = {}, pian = new Set();
+    df.transazioni.forEach((t) => { const i = t.isin; qta[i] = (qta[i] || 0) + (t.tipo === "acquisto" ? t.quote : -t.quote); if (t.tipo === "acquisto") { acq[i] = (acq[i] || 0) + t.quote; costo[i] = (costo[i] || 0) + t.quote * t.prezzo; } if (t.pianificata === "Y") pian.add(i); });
+    const ob = Object.fromEntries(df.obiettivo.map((o) => [o.isin, o.quote]));
+    const val = df.pesi.map(([isin]) => { let q = qta[isin] || 0; if (isin in ob && !pian.has(isin)) q = ob[isin]; const med = acq[isin] ? costo[isin] / acq[isin] : ultimi[isin] || 0; return Math.max(0, q) * med; });
+    const tot = sum(val); if (!(tot > 0)) return null;
+    const zeri = val.filter((v) => !(v > 0)).length, k = (100 - zeri) / tot;
+    return val.map((v) => (v > 0 ? v * k : 1) / 100);
+  }
   function validaDefinizione(d) {
     if (!d || typeof d !== "object" || Array.isArray(d)) throw Err("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.");
     const nome = d.nome; if (typeof nome !== "string" || !NOME_PF.test(nome)) throw Err("«nome»: solo lettere e cifre, niente spazi né simboli, al massimo 30 caratteri.");
@@ -222,17 +232,18 @@
     const descrizione = String(d.descrizione || "").split(/\s+/).filter(Boolean).join(" ");
     if (!descrizione) throw Err("«descrizione»: scrivi una breve descrizione."); if (descrizione.length > 300) throw Err("«descrizione»: al massimo 300 caratteri.");
     let amount = 10000; if (d.valore !== undefined && d.valore !== null) { amount = Math.round(parseFloat(d.valore) * 100) / 100; if (isNaN(amount)) throw Err("«valore»: un numero in euro (facoltativo)."); if (!(amount >= 100 && amount <= 1e9)) throw Err("«valore»: tra 100 e 1.000.000.000 euro."); }
-    const tit = d.titoli; if (!Array.isArray(tit) || tit.length < 1 || tit.length > 30) throw Err("«titoli»: da 1 a 30 elementi {\"isin\": …, \"peso\": …}.");
+    const tit = d.titoli; if (!Array.isArray(tit) || tit.length < 1 || tit.length > 30) throw Err("«titoli»: da 1 a 30 elementi {\"isin\": …}.");
     const visti = new Set(), rr = [];
     tit.forEach((x) => {
       const isin = x && typeof x === "object" ? String(x.isin || "").trim().toUpperCase() : "";
       if (!isinValido(isin)) throw Err("ISIN non valido: «" + (isin || JSON.stringify(x)) + "».");
       if (visti.has(isin)) throw Err("ISIN ripetuto: " + isin + "."); visti.add(isin);
-      const peso = parseFloat(x.peso); if (isNaN(peso)) throw Err(isin + ": «peso» deve essere un numero (percentuale).");
-      if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100 (0 per un titolo già venduto, che serve solo alle transazioni).");
+      let peso = null;  // formato vecchio: il peso scritto nel file; ora non serve più (si calcola dalle quote), ma i file vecchi si leggono ancora
+      if (x.peso !== undefined && x.peso !== null) { peso = parseFloat(x.peso); if (isNaN(peso)) throw Err(isin + ": «peso» deve essere un numero (percentuale)."); if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100."); }
       rr.push([isin, peso]);
     });
-    const tot = sum(rr.map((x) => x[1])); if (Math.abs(tot - 100) > 0.5) throw Err("I pesi danno " + Math.round(tot * 100) / 100 + "%: devono dare 100%.");
+    const legacy = rr.every((x) => x[1] !== null), tot = legacy ? sum(rr.map((x) => x[1])) : 0;
+    if (legacy && Math.abs(tot - 100) > 0.5) throw Err("I pesi danno " + Math.round(tot * 100) / 100 + "%: devono dare 100%.");
     const transazioni = validaTransazioni(d.transazioni, visti), obiettivo = validaObiettivo(d.obiettivo, visti);
     let vincoli = null;
     if (d.vincoli !== undefined && d.vincoli !== null) {
@@ -247,7 +258,7 @@
       const fr = d.frontiera; if (!fr || typeof fr !== "object" || ![1, 3, 5].includes(fr.finestra) || typeof fr.prudente !== "boolean") throw Err("«frontiera»: {\"finestra\": 1, 3 o 5 (anni di storico), \"prudente\": true o false}.");
       frontiera = { finestra: fr.finestra, prudente: fr.prudente };
     }
-    return { nome, v, descrizione, amount, pesi: rr.map(([i, p]) => [i, r4(p / tot)]), vincoli, transazioni, obiettivo, frontiera };
+    return { nome, v, descrizione, amount, pesi: legacy ? rr.map(([i, p]) => [i, r4(p / tot)]) : rr.map(([i]) => [i, r4(1 / rr.length)]), vincoli, transazioni, obiettivo, frontiera };
   }
 
   // ---- dati dei titoli: schede note (con l'app), memoria dell'app, justETF
@@ -287,6 +298,8 @@
     const date = [...set].sort(); if (date.length < 60) throw Err("Lo storico in comune è troppo breve (" + date.length + " giorni, dal " + inizio + " al " + fine + "): togli il titolo più recente.");
     const px = {};
     Object.entries(serieTot).forEach(([sigla, x]) => { const xs = x.slice().sort((a, b) => (a[0] < b[0] ? -1 : 1)); let ult = null, j = 0; px[sigla] = date.map((dd) => { while (j < xs.length && xs[j][0] <= dd) { ult = xs[j][1]; j++; } return ult; }); });
+    const calc = pesiDaQuote(df, Object.fromEntries(Object.entries(siglaDi).map(([isin, s]) => [isin, px[s][px[s].length - 1]])));  // i pesi si calcolano dalle quote; senza quote restano quelli segnaposto
+    if (calc) df.pesi.forEach(([isin], k) => { fondi.find((f) => f.s === siglaDi[isin]).w = calc[k]; });
     fondi.forEach((f) => { f.p0 = px[f.s][px[f.s].length - 1]; f.q0 = Math.floor(df.amount * f.w / f.p0); });
     const meta = { nome: df.nome, versione, descrizione: df.descrizione, chiave: "pf-" + df.nome + "-" + versione, file: nomefile, base: date[date.length - 1], from: date[0], amount: df.amount, rf: 0.02, origine: "json" };
     if (nomefile.startsWith("bozza:")) { meta.chiave += "-bozza-" + nomefile.slice(6); meta.bozza = true; if (d._da) meta.bozza_da = d._da; }  // acquisti e limiti nel browser distinti da quelli del portafoglio di partenza
@@ -294,7 +307,7 @@
     if (df.vincoli) meta.vincoli = { fondi: Object.fromEntries(Object.entries(df.vincoli.fondi).map(([i, x]) => [siglaDi[i], x])), classi: df.vincoli.classi };
     if (df.transazioni.length) {  // movimenti eseguiti: sostituiscono gli acquisti d'esempio; quelli solo pianificati vanno in «pianificate»
       const conv = (x) => ({ s: siglaDi[x.isin], d: x.data, t: x.tipo === "acquisto" ? "a" : "v", q: x.quote, p: x.prezzo });
-      meta.transazioni = df.transazioni.filter((x) => !x.pianificata).map(conv); if (df.transazioni.some((x) => x.pianificata)) meta.pianificate = df.transazioni.filter((x) => x.pianificata).map(conv);
+      meta.transazioni = df.transazioni.filter((x) => x.pianificata !== "Y").map(conv); if (df.transazioni.some((x) => x.pianificata === "Y")) meta.pianificate = df.transazioni.filter((x) => x.pianificata === "Y").map(conv);
     }
     if (df.obiettivo.length) meta.obiettivo = Object.fromEntries(df.obiettivo.map((x) => [siglaDi[x.isin], x.quote]));  // quote del piano proposto: la pagina ne ricava «da investire»
     say({ t: "salvato", n: fondi.length });
@@ -318,27 +331,20 @@
     if (def && typeof def === "object" && Object.keys(def).length === 1 && def.file) { if (!info(def.file)) throw Err("Portafoglio non trovato."); return prepara(def.file, avanza); }
     const df = validaDefinizione(def), versione = "V" + df.v, nuovo = df.nome + "_" + versione + ".json";
     if (info(nuovo)) throw Object.assign(Err("Esiste già il portafoglio " + df.nome + " " + versione + " (" + nuovo + "). Cambia la versione nel JSON per crearne uno nuovo."), { esiste: nuovo });
-    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i, w]) => ({ isin: i, peso: Math.round(w * 1e4) / 100 })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.obiettivo.length ? { obiettivo: df.obiettivo } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
+    scriviLS("mm:pf:" + nuovo, { nome: df.nome, versione, descrizione: df.descrizione, valore: df.amount, titoli: df.pesi.map(([i]) => ({ isin: i })), ...(df.transazioni.length ? { transazioni: df.transazioni } : {}), ...(df.obiettivo.length ? { obiettivo: df.obiettivo } : {}), ...(df.vincoli ? { vincoli: df.vincoli } : {}) });
     let i; try { i = await prepara(nuovo, avanza); } catch (e) { LS.removeItem("mm:pf:" + nuovo); throw e; }
     rispecchia({ write: [scriviFile(nuovo)] }); await specchioOk(); return i;
   }
   async function bozza(da, titoli, avanza, valore, transazioni, obiettivo) {  // portafoglio `da` con i titoli cambiati: [{isin, peso?}] (peso in %, se manca resta quello di prima, 1 per un titolo nuovo); i pesi tornano a 100
     const origine = definizione(da); if (!origine) throw Err("Portafoglio di partenza non trovato.");
     if (!Array.isArray(titoli) || titoli.length < 1 || titoli.length > 30) throw Err("Servono da 1 a 30 titoli.");
-    const prima = Object.fromEntries((origine.titoli || []).map((x) => [x.isin, x.peso])), visti = new Set(), nuovi = [];
+    const visti = new Set(), nuovi = [];
     titoli.forEach((x) => {
       const isin = String((x && x.isin) || "").trim().toUpperCase(); if (!isin) throw Err("C'è un titolo senza ISIN."); if (visti.has(isin)) throw Err(isin + ": ISIN ripetuto."); visti.add(isin);
-      let peso = x.peso, fisso = false; if (peso === undefined || peso === null || peso === "") { if (prima[isin] != null) peso = prima[isin]; else { peso = 1; fisso = true; } } peso = parseFloat(peso);  // titolo nuovo senza peso: entra all'1%
-      if (isNaN(peso)) throw Err(isin + ": peso non valido."); if (!(peso >= 0 && peso <= 100)) throw Err(isin + ": il peso deve essere tra 0 e 100.");
-      nuovi.push([isin, peso, fisso]);
+      nuovi.push(isin);  // i pesi non si indicano: si calcolano dalle quote
     });
-    const fissi = sum(nuovi.filter((x) => x[2]).map((x) => x[1])), altri = sum(nuovi.filter((x) => !x[2]).map((x) => x[1]));
-    if (altri > 0 && fissi < 100) nuovi.forEach((x) => { if (!x[2]) x[1] = x[1] * (100 - fissi) / altri; });  // gli altri si riducono (o crescono, se ne è stato tolto uno) in proporzione fino a fare 100
-    const tot = sum(nuovi.map((x) => x[1])); if (!(tot > 0)) throw Err("Almeno un titolo deve avere un peso maggiore di 0.");
-    nuovi.forEach((x) => { x[1] = Math.round(x[1] * 100 / tot * 100) / 100; });
-    const grande = nuovi.reduce((a, x) => (x[1] > a[1] ? x : a), nuovi[0]); grande[1] = Math.round((grande[1] + (100 - sum(nuovi.map((x) => x[1])))) * 100) / 100;
     let val = origine.valore || 10000; if (valore !== undefined && valore !== null && valore !== "") { val = Math.round(parseFloat(valore) * 100) / 100; if (isNaN(val)) throw Err("Il valore dell'investimento deve essere un numero."); if (!(val >= 100 && val <= 1e9)) throw Err("Il valore dell'investimento deve essere tra 100 e 1.000.000.000 euro."); }
-    const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: val, titoli: nuovi.map(([isin, peso]) => ({ isin, peso })), _da: da.startsWith("bozza:") ? origine._da : da };
+    const d = { nome: origine.nome, versione: origine.versione, descrizione: origine.descrizione || "bozza", valore: val, titoli: nuovi.map((isin) => ({ isin })), _da: da.startsWith("bozza:") ? origine._da : da };
     const tr = transazioni !== undefined && transazioni !== null ? validaTransazioni(transazioni, visti) : (origine.transazioni || []).filter((x) => visti.has(x.isin)); const ob = obiettivo !== undefined && obiettivo !== null ? validaObiettivo(obiettivo, visti) : (origine.obiettivo || []).filter((x) => visti.has(x.isin)); if (ob.length) d.obiettivo = ob;
     if (tr.length) d.transazioni = tr;  // con la schermata di modifica gli acquisti e le vendite inseriti sostituiscono quelli di prima
     validaDefinizione(d);
@@ -372,7 +378,7 @@
     const versioneT = "V" + v, nuovo = nome + "_" + versioneT + ".json";
     if (info(nuovo)) { const libere = Math.max(...elenco().filter((i) => i.nome === nome).map((i) => numVers(i.versione)), v) + 1; throw Err("Esiste già " + nuovo + ": usa la versione V" + libere + "."); }
     const tr = validaTransazioni(transazioni === undefined || transazioni === null ? origine.transazioni : transazioni, new Set(Object.values(siglaIsin))), conMov = new Set(tr.map((x) => x.isin));  // un titolo già venduto resta con peso 0: serve ai suoi movimenti
-    const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([s, x]) => x > 0 || conMov.has(siglaIsin[s])).map(([s, x]) => ({ isin: siglaIsin[s], peso: Math.round(x * 1000) / 10 }));
+    const titoli = Object.entries(w).sort((a, b) => b[1] - a[1]).filter(([s, x]) => x > 0 || conMov.has(siglaIsin[s])).map(([s]) => ({ isin: siglaIsin[s] }));  // niente pesi nel file: si calcolano dalle quote
     const nd = { nome, versione: versioneT, descrizione, valore: amount, titoli };
     if (tr.length) nd.transazioni = tr;
     const ob = validaObiettivo(obiettivo === undefined || obiettivo === null ? (da.startsWith("bozza:") ? origine.obiettivo : []) : obiettivo, new Set(titoli.map((t) => t.isin))); if (ob.length) nd.obiettivo = ob;  // un piano nuovo parte senza «da investire» se la pagina non lo indica
@@ -397,9 +403,9 @@
   }
   function annullaProposte(f) {  // toglie le proposte (quote obiettivo) dal file: stesso file, pesi e transazioni restano
     const d = definizione(f); if (!d || String(f).startsWith("bozza:")) throw Err("Portafoglio non trovato.");
-    const pian = (d.transazioni || []).some((x) => x.pianificata);
+    const isPian = (x) => x.pianificata === true || String(x.pianificata).toUpperCase() === "Y", pian = (d.transazioni || []).some(isPian);
     if ((!d.obiettivo || !d.obiettivo.length) && !pian) return info(f);
-    const nd = { ...d }; delete nd.obiettivo; if (pian) { nd.transazioni = nd.transazioni.filter((x) => !x.pianificata); if (!nd.transazioni.length) delete nd.transazioni; } validaDefinizione(nd);
+    const nd = { ...d }; delete nd.obiettivo; if (pian) { nd.transazioni = nd.transazioni.filter((x) => !isPian(x)); if (!nd.transazioni.length) delete nd.transazioni; } validaDefinizione(nd);
     scriviLS("mm:pf:" + f, nd); rispecchia({ write: [scriviFile(f)] }); return info(f);
   }
   function elimina(f) { if (!info(f)) throw Err("Portafoglio non trovato."); LS.removeItem("mm:pf:" + f); rispecchia({ trash: [f] }); return { eliminato: f, ultimo: ultimo() }; }
