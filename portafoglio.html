@@ -32,7 +32,8 @@ button { cursor: pointer; }
 .val-r { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; } .val-r:first-child { border-top: 0; } .val-d { width: 12px; height: 12px; border-radius: 50%; } .val-d.v { background: var(--good); } .val-d.g { background: var(--warn); } .val-d.r { background: var(--bad); } .val-d.n { background: var(--line); }
 .val-s { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin-top: -2px; } .val-v { font-weight: 600; font-variant-numeric: tabular-nums; } .val-sum { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 8px; } .val-sum b { font-variant-numeric: tabular-nums; }
 .val-ed { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 80px; gap: 6px 8px; align-items: center; font-size: 13px; margin-top: 8px; } .val-ed input { width: 100%; min-width: 0; } .val-ed .h { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
-.btn.nuovo { background: var(--good); color: var(--bg); } .btn.nuovo:hover { filter: brightness(1.08); }  /* «Crea portafoglio»: verde, diverso dagli altri pulsanti */
+.btn.nuovo { background: var(--good); color: var(--bg); } .btn.nuovo:hover { filter: brightness(1.08); }
+.btn.analisi { background: var(--c2); color: var(--bg); } .btn.analisi:hover { filter: brightness(1.08); }  /* «Analisi»: viola */  /* «Crea portafoglio»: verde, diverso dagli altri pulsanti */
 .btn:disabled { opacity: .55; cursor: default; }
 .btn:focus-visible, .seg button:focus-visible, .flink:focus-visible, .pt:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 #stato { font-size: 12px; color: var(--muted); flex-basis: 100%; } #stato:empty { display: none; } #stato.err { color: var(--warn); }
@@ -185,7 +186,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     </div>
     <div class="agg">
       <button class="btn" id="aggiorna" type="button" hidden>Aggiorna i valori</button>
-      <div class="agg-btn"><button class="btn sec" id="btn-analisi" type="button" title="Valutazione del portafoglio con semafori e qualità dei fondi">Analisi</button><button class="btn nuovo js-nuovo" id="pf-nuovo" type="button" hidden title="Nome, versione e titoli con ISIN e peso o valore">Crea portafoglio</button><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
+      <div class="agg-btn"><button class="btn analisi" id="btn-analisi" type="button" title="Valutazione del portafoglio con semafori e qualità dei fondi">Analisi</button><button class="btn nuovo js-nuovo" id="pf-nuovo" type="button" hidden title="Nome, versione e titoli con ISIN e peso o valore">Crea portafoglio</button><button class="btn sec js-carica" type="button">Carica portafoglio (JSON)</button><button class="btn sec" id="scarica-json" type="button">Scarica JSON</button><button class="btn sec" id="report-pdf" type="button" title="Stampa tutto il report e salvalo come PDF">Report PDF</button><input type="file" id="file-json" accept=".json,application/json" hidden></div>
       <div id="stato" role="status"></div>
     </div>
   </header>
@@ -314,7 +315,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
       <div class="scroll"><table id="rb-classi" style="font-size:13px"></table></div>
       <div class="scroll"><table id="rb"></table></div>
       <p class="muted" id="rb-n"></p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn sec" id="rb-analisi" type="button" title="Valutazione e qualità dei fondi sul portafoglio obiettivo del ribilanciamento">Analisi</button><button class="btn" id="rb-crea" type="button">Crea il portafoglio con queste operazioni…</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn analisi" id="rb-analisi" type="button" title="Valutazione e qualità dei fondi sul portafoglio obiettivo del ribilanciamento">Analisi</button><button class="btn" id="rb-crea" type="button">Crea il portafoglio con queste operazioni…</button></div>
     </div>
 </div></div>
 <div class="ovl" id="ordini" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="or-t" style="max-width:760px">
