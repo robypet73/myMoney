@@ -46,6 +46,36 @@ FONTE = "justETF"
 CLASSI = ("Azionario", "Obbligazionario", "Materie prime")
 
 
+def congelato():
+    """True se il programma è l'eseguibile creato con PyInstaller (installer per Windows)."""
+    return bool(getattr(sys, "frozen", False))
+
+
+def cartella_programma():
+    """Dove stanno pagina, schema, elenco Fineco e icone: la cartella del programma, o le risorse dentro l'eseguibile."""
+    if congelato():
+        return getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def cartella_portafogli_predefinita(base):
+    """Cartella dei JSON dei portafogli: «portafogli» accanto al programma; con l'installer, Documenti\\myMoney\\portafogli
+    (la cartella di installazione non si scrive e la disinstallazione non deve portarsi via i portafogli)."""
+    if not congelato():
+        return os.path.join(base, CARTELLA_PF)
+    docs = os.path.join(os.path.expanduser("~"), "Documents")
+    if os.name == "nt":
+        try:  # la cartella Documenti vera (può essere spostata, per esempio su OneDrive)
+            import ctypes
+            from ctypes import wintypes
+            buf = ctypes.create_unicode_buffer(wintypes.MAX_PATH)
+            if ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 0, buf) == 0 and buf.value:
+                docs = buf.value
+        except Exception:
+            pass
+    return os.path.join(docs, NOME, CARTELLA_PF)
+
+
 def cartella_dati():
     """Dove salvare i dati scaricati: cartella dell'utente, così il repository non si sporca."""
     base = os.environ.get("LOCALAPPDATA")
@@ -526,9 +556,17 @@ class Portafogli:
 
     def __init__(self, cartella, file_ultimo, dati=None):
         self.base = cartella
-        self.predefinita = os.path.join(cartella, CARTELLA_PF)
+        self.predefinita = cartella_portafogli_predefinita(cartella)
+        self.schema_pf = os.path.join(cartella, CARTELLA_PF, "schema.json")  # lo schema del programma, da copiare accanto ai JSON
         self.dir = self.predefinita
-        self.semi = os.path.join(self.dir, "titoli")  # schede dei titoli già note, nel repository: composizioni complete
+        if congelato():  # prima apertura dopo l'installazione: crea la cartella dei portafogli e vi copia lo schema
+            try:
+                os.makedirs(self.dir, exist_ok=True)
+                if os.path.exists(self.schema_pf) and not os.path.exists(os.path.join(self.dir, "schema.json")):
+                    shutil.copy2(self.schema_pf, os.path.join(self.dir, "schema.json"))
+            except OSError:
+                pass
+        self.semi = os.path.join(cartella, CARTELLA_PF, "titoli")  # schede dei titoli già note, nel repository: composizioni complete
         self.file_ultimo = file_ultimo
         self.bozze = {}  # token -> definizione di un portafoglio modificato e non ancora salvato
         self.cache = os.path.join(dati or os.path.dirname(file_ultimo), "titoli")  # una scheda JSON per ISIN già scaricato
@@ -572,7 +610,7 @@ class Portafogli:
             for n in os.listdir(self.dir):
                 if FILE_PF.match(n) and n not in presenti:
                     os.remove(self.percorso(n))
-            schema = os.path.join(self.predefinita, "schema.json")
+            schema = self.schema_pf
             if os.path.exists(schema) and not os.path.exists(os.path.join(self.dir, "schema.json")):
                 shutil.copy2(schema, os.path.join(self.dir, "schema.json"))
         self.ultima_lettura = time.time()
@@ -645,7 +683,7 @@ class Portafogli:
                 raise ValueError(f"La cartella «{nuova}» non esiste.")
             if not os.access(nuova, os.R_OK | os.W_OK):
                 raise ValueError(f"Non posso leggere e scrivere in «{nuova}».")
-        schema = os.path.join(self.predefinita, "schema.json")
+        schema = self.schema_pf
         if nuova != self.predefinita and os.path.exists(schema) and not os.path.exists(os.path.join(nuova, "schema.json")):
             try:
                 shutil.copy2(schema, os.path.join(nuova, "schema.json"))  # i JSON puntano a «schema.json» accanto a loro
@@ -1427,7 +1465,7 @@ def avvia_app():
     ap.add_argument("--cartella", help="cartella dei JSON dei portafogli (anche di Google Drive per desktop): viene ricordata; vuota (\"\") per tornare a quella del programma")
     ap.add_argument("--file", help=f"apre questo portafoglio (JSON nella cartella {CARTELLA_PF}) invece dell'ultimo aperto")
     a = ap.parse_args()
-    cartella = os.path.dirname(os.path.abspath(__file__))
+    cartella = cartella_programma()
     dati = cartella_dati()
     pf = Portafogli(cartella, os.path.join(dati, "ultimo.json"), dati=dati)
     if a.cartella is not None:

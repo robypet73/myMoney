@@ -212,12 +212,16 @@ def imposta_avvio(attivo):
     pyw = os.path.join(os.path.dirname(py), "pythonw.exe")
     if os.path.exists(pyw):
         py = pyw
-    here = os.path.dirname(os.path.abspath(__file__))
-    try:  # Windows Script Host: avvia pythonw senza nessuna finestra
+    if build.congelato():  # installato con l'installer: si avvia direttamente l'eseguibile del widget
+        here, comando = os.path.dirname(py), '"""' + py + '""", 0, False'
+    else:
+        here = os.path.dirname(os.path.abspath(__file__))
+        comando = '"""' + py + '"" ""' + os.path.join(here, "widget.py") + '""", 0, False'
+    try:  # Windows Script Host: avvia il widget senza nessuna finestra
         with open(p, "w", encoding="mbcs", newline="\r\n") as fh:
             fh.write('Set s = CreateObject("WScript.Shell")\n')
             fh.write(f's.CurrentDirectory = "{here}"\n')
-            fh.write('s.Run """' + py + '"" ""' + os.path.join(here, "widget.py") + '""", 0, False\n')
+            fh.write('s.Run ' + comando + '\n')
         return True
     except (OSError, UnicodeEncodeError, LookupError):
         return False
@@ -622,7 +626,7 @@ def avvia():
         ok = imposta_avvio(a.avvio == "on")
         print(("Avvio automatico " + ("attivato: il widget partirà all'accesso a Windows." if a.avvio == "on" else "disattivato.")) if ok else "Non sono riuscito a modificare l'avvio automatico.")
         return
-    cartella = os.path.dirname(os.path.abspath(__file__))
+    cartella = build.cartella_programma()
     dati = build.cartella_dati()
     pf = build.Portafogli(cartella, os.path.join(dati, "ultimo.json"), dati=dati)
     imp = Impostazioni(dati)

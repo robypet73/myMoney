@@ -14,6 +14,7 @@ Una sola pagina, **`portafoglio.html`**, da cui si fa tutto. Ogni portafoglio è
 | `portafogli/titoli/` | schede già complete dei titoli noti (caratteristiche e composizione); i prezzi si scaricano sempre |
 | `icons/` | l'icona dell'app: `myMoney.ico` (Windows, per il collegamento sul desktop), `myMoney.icns` (macOS), `myMoney-256.png` (Linux) e le immagini per telefono e web |
 | `crea-collegamento.cmd` | doppio clic su Windows: crea sul Desktop il collegamento «myMoney» con l'icona (altrimenti: tasto destro su `avvia.cmd` → Invia a → Desktop, poi Proprietà → Cambia icona → `icons\myMoney.ico`) |
+| `installer/`, `.github/workflows/windows.yml` | **installer per Windows** (`myMoney-Setup.exe`: programma + widget, senza Python): costruito da GitHub Actions con PyInstaller e Inno Setup |
 
 Serve Python 3.9 o più recente, nient'altro.
 
@@ -108,3 +109,10 @@ Lo schema è in [`portafogli/schema.json`](portafogli/schema.json). Esempio (`po
 - Per un ISIN non presente in `portafogli/titoli/` la composizione viene dalla pagina di justETF, che elenca solo i primi paesi, settori e titoli: la quota restante finisce in «Altro». Aree geografiche e valute sono stimate dai paesi. «Scambi medi a Milano» non è disponibile per questi titoli («n.d.»).
 - Lo storico in comune parte dal titolo con la storia più breve.
 - Analisi tecnica sui dati storici, non consulenza.
+
+## Installer per Windows
+
+Scarica `myMoney-Setup.exe` dalla release [windows-latest](https://github.com/robypet73/myMoney/releases/tag/windows-latest) (si ricostruisce da solo a ogni modifica del programma) e fai doppio clic. Non serve Python né l'amministratore: installa per l'utente corrente, crea in Start «myMoney» (pagina nel browser) e «myMoney widget», a scelta l'icona sul Desktop e l'avvio automatico del widget.
+- I **portafogli** stanno in `Documenti\myMoney\portafogli` (restano anche se disinstalli); i prezzi scaricati in `%LOCALAPPDATA%\myMoney`, come per il programma normale.
+- L'installer non è firmato: Windows SmartScreen può avvisare, «Ulteriori informazioni» → «Esegui comunque».
+- Per ricostruirlo a mano: `pip install pyinstaller tzdata`, `pyinstaller installer/myMoney.spec`, poi Inno Setup su `installer/myMoney.iss`.

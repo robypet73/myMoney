@@ -1,0 +1,85 @@
+name: Windows installer
+
+# Costruisce l'installer di Windows (myMoney-Setup.exe: programma + widget) con PyInstaller e Inno Setup
+# e lo pubblica nella release «windows-latest». Non tocca l'app Android.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [portafoglio.html, portafogli/schema.json, build.py, fonti.py, widget.py, fineco_gratis.json, drive/**, icons/**, installer/**, .github/workflows/windows.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows
+  cancel-in-progress: true
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installa PyInstaller
+        run: python -m pip install pyinstaller tzdata
+      - name: Prova il programma prima di impacchettarlo
+        run: python -c "import build, widget; print('import ok')"
+      - name: Costruisce gli eseguibili
+        run: python -m PyInstaller installer/myMoney.spec --noconfirm
+      - name: Controlla che i due programmi e le risorse ci siano
+        shell: bash
+        run: |
+          ls dist/myMoney
+          test -f dist/myMoney/myMoney.exe
+          test -f dist/myMoney/myMoney-widget.exe
+          test -f dist/myMoney/_internal/portafoglio.html
+          test -f dist/myMoney/_internal/portafogli/schema.json
+          test -f dist/myMoney/_internal/fineco_gratis.json
+      - name: Prova l'eseguibile (parte, risponde, si ferma)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist\myMoney\myMoney.exe -ArgumentList "--no-browser","--porta","8899" -PassThru -WindowStyle Hidden
+          $ok = $false
+          for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Seconds 2
+            try { $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8899/api/fineco -TimeoutSec 5; if ($r.StatusCode -eq 200) { $ok = $true; break } } catch {}
+          }
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          if (-not $ok) { throw "myMoney.exe non risponde" }
+          Write-Host "myMoney.exe risponde"
+      - name: Prova il widget (calcolo senza finestra)
+        shell: pwsh
+        run: |
+          # il widget è «windowed»: senza finestra si controlla solo che l'eseguibile parta e non si blocchi subito
+          $p = Start-Process -FilePath dist\myMoney\myMoney-widget.exe -ArgumentList "--prova" -PassThru -WindowStyle Hidden
+          Start-Sleep -Seconds 8
+          if ($p.HasExited -and $p.ExitCode -ne 0) { throw "myMoney-widget.exe è uscito con errore $($p.ExitCode)" }
+          if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          Write-Host "widget ok"
+      - name: Installa Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Costruisce l'installer
+        shell: pwsh
+        run: |
+          $ver = (Get-Date -Format "yyyy.M.d") + "." + $env:GITHUB_RUN_NUMBER
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DVersione=$ver" installer\myMoney.iss
+          if (-not (Test-Path dist-installer\myMoney-Setup.exe)) { throw "installer non creato" }
+          Get-Item dist-installer\myMoney-Setup.exe | Select-Object Name, Length
+          "VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Pubblica la release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete windows-latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create windows-latest dist-installer/myMoney-Setup.exe --target main --title "Installer Windows ${VER}" --notes "Installer di myMoney per Windows (programma nel browser + widget). Versione ${VER}. Si installa per l'utente corrente senza amministratore; i portafogli stanno in Documenti\\myMoney\\portafogli e restano anche se si disinstalla. Windows SmartScreen può avvisare perché l'installer non è firmato: «Ulteriori informazioni» → «Esegui comunque»."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: myMoney-Setup
+          path: dist-installer/myMoney-Setup.exe
