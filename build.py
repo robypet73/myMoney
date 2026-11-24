@@ -294,7 +294,7 @@ PESO_NUOVO = 1  # peso (%) di un titolo aggiunto senza indicare il peso: gli alt
 
 def pesi_da_quote(df, ultimi):
     """Pesi (0-1, nell'ordine di df["pesi"]) calcolati dalle quote: quantità (eseguite e pianificate; per un titolo con una quota obiettivo e senza operazioni pianificate, la quota obiettivo)
-    × prezzo medio d'acquisto (se non ci sono acquisti, l'ultimo prezzo). Un titolo senza quote pesa l'1%. Senza nessuna quota ritorna None (restano i pesi segnaposto). `ultimi`: {isin: ultimo prezzo}."""
+    × prezzo medio d'acquisto (se non ci sono acquisti, l'ultimo prezzo). Un titolo senza quote né movimenti pesa l'1%, uno già venduto per intero 0. Senza nessuna quota ritorna None (restano i pesi segnaposto). `ultimi`: {isin: ultimo prezzo}."""
     qta, acq, costo, pian = {}, {}, {}, set()
     for t in df["transazioni"]:
         i = t["isin"]
@@ -315,9 +315,10 @@ def pesi_da_quote(df, ultimi):
     tot = sum(val)
     if not tot > 0:
         return None
-    zeri = sum(1 for v in val if not v > 0)
-    k = (100 - zeri) / tot
-    return [(v * k if v > 0 else 1) / 100 for v in val]
+    ha_mov = {t["isin"] for t in df["transazioni"]}
+    segnaposto = [(not v > 0) and isin not in ha_mov for (isin, _w), v in zip(df["pesi"], val)]  # senza quote né movimenti: 1%; un titolo già venduto per intero pesa 0
+    k = (100 - sum(segnaposto)) / tot
+    return [(v * k if v > 0 else (1 if s else 0)) / 100 for v, s in zip(val, segnaposto)]
 
 
 def valida_definizione(d):

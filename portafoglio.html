@@ -1333,8 +1333,8 @@ function mtPesi() {
   });
   if (!n) return [];
   const tot = sum(val); if (!(tot > 0)) return MT.map(() => 100 / n);
-  const zeri = val.filter((v) => !(v > 0)).length, k = (100 - zeri) / tot;
-  return val.map((v) => (v > 0 ? v * k : 1));
+  const seg = MT.map((x, i) => !(val[i] > 0) && !x.tr.some((r) => +r.q > 0)), k = (100 - seg.filter(Boolean).length) / tot;  // senza quote né movimenti: 1%; un titolo già venduto per intero pesa 0
+  return val.map((v, i) => (v > 0 ? v * k : seg[i] ? 1 : 0));
 }
 function prezzoAl(isin, data) {  // chiusura del titolo alla data (ultimo giorno disponibile non dopo la data); null se il titolo è nuovo
   const i = F.findIndex((f) => f.isin === isin); if (i < 0) return null;

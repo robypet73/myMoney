@@ -222,8 +222,8 @@
     const ob = Object.fromEntries(df.obiettivo.map((o) => [o.isin, o.quote]));
     const val = df.pesi.map(([isin]) => { let q = qta[isin] || 0; if (isin in ob && !pian.has(isin)) q = ob[isin]; const med = acq[isin] ? costo[isin] / acq[isin] : ultimi[isin] || 0; return Math.max(0, q) * med; });
     const tot = sum(val); if (!(tot > 0)) return null;
-    const zeri = val.filter((v) => !(v > 0)).length, k = (100 - zeri) / tot;
-    return val.map((v) => (v > 0 ? v * k : 1) / 100);
+    const haMov = new Set(df.transazioni.map((t) => t.isin)), seg = df.pesi.map(([isin], i) => !(val[i] > 0) && !haMov.has(isin)), k = (100 - seg.filter(Boolean).length) / tot;  // senza quote né movimenti: 1%; un titolo già venduto per intero pesa 0
+    return val.map((v, i) => (v > 0 ? v * k : seg[i] ? 1 : 0) / 100);
   }
   function validaDefinizione(d) {
     if (!d || typeof d !== "object" || Array.isArray(d)) throw Err("Il JSON deve essere un oggetto con nome, versione, descrizione e titoli.");
