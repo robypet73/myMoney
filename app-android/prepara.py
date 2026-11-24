@@ -43,13 +43,13 @@ def main():
         '<script>const va = () => location.replace("portafoglio.html"); setTimeout(va, 8000); window.MOTORE.sincronizza().then(va, va);</script>\n')
     pf, titoli = {}, {}
     cart = os.path.join(RADICE, "portafogli")
-    for n in sorted(os.listdir(cart)):
+    for n in sorted(os.listdir(cart) if os.path.isdir(cart) else []):
         if n.endswith(".json") and n != "schema.json":
             d = json.load(open(os.path.join(cart, n), encoding="utf-8"))
             d.pop("$schema", None)
             pf[n] = d
     sd = os.path.join(cart, "titoli")
-    for n in sorted(os.listdir(sd)):
+    for n in sorted(os.listdir(sd) if os.path.isdir(sd) else []):  # senza schede note (cartella assente) l'app le scarica da justETF
         if n.endswith(".json"):
             titoli[n[:-5]] = json.load(open(os.path.join(sd, n), encoding="utf-8"))
     tab = {"PAESI": fonti.PAESI, "EURO": sorted(fonti.EURO), "EUROPA_NO_EURO": sorted(fonti.EUROPA_NO_EURO), "EMERGENTI": sorted(fonti.EMERGENTI), "ALTRI_SVILUPPATI": sorted(fonti.ALTRI_SVILUPPATI),
