@@ -11,12 +11,35 @@ Una sola pagina, **`portafoglio.html`**, da cui si fa tutto. Ogni portafoglio è
 | `portafoglio.html` | **la pagina**: il codice di tutto; i dati del portafoglio scelto vengono inseriti dal programma |
 | `portafogli/` | i portafogli: `nome_V1.json`, `nome_V2.json`… e lo schema |
 | `portafogli/schema.json` | lo **schema JSON** (JSON Schema) del formato di un portafoglio |
-| `portafogli/titoli/` | schede già complete dei titoli noti (caratteristiche e composizione); i prezzi si scaricano sempre |
+| `portafogli/titoli/` | (facoltativa) schede già complete dei titoli noti; se manca si scaricano da justETF |
 | `icons/` | l'icona dell'app: `myMoney.ico` (Windows, per il collegamento sul desktop), `myMoney.icns` (macOS), `myMoney-256.png` (Linux) e le immagini per telefono e web |
 | `crea-collegamento.cmd` | doppio clic su Windows: crea sul Desktop il collegamento «myMoney» con l'icona (altrimenti: tasto destro su `avvia.cmd` → Invia a → Desktop, poi Proprietà → Cambia icona → `icons\myMoney.ico`) |
-| `installer/`, `.github/workflows/windows.yml` | **installer per Windows** (`myMoney-Setup.exe`: programma + widget, senza Python): costruito da GitHub Actions con PyInstaller e Inno Setup |
+| `installer/`, `.github/workflows/windows.yml` | **installer per Windows** (`myMoney-Setup.exe`: programma + widget, senza Python): PyInstaller + Inno Setup, costruito da GitHub Actions o in locale con `installer\costruisci-installer.cmd` |
 
-Serve Python 3.9 o più recente, nient'altro.
+Per usarlo vedi «Installazione» qui sotto (installer per Windows, oppure Python 3.9+ e nient'altro).
+
+## Installazione
+
+### Windows: con l'installer (consigliato, non serve Python)
+1. Scarica **`myMoney-Setup.exe`** dalla release [windows-latest](https://github.com/robypet73/myMoney/releases/tag/windows-latest) (si ricostruisce da sola a ogni modifica del programma) e fai doppio clic.
+2. Windows SmartScreen può avvisare perché l'installer non è firmato: «Ulteriori informazioni» → «Esegui comunque».
+3. Scegli se creare l'icona sul Desktop e se avviare il widget con Windows. Non serve l'amministratore: si installa per il tuo utente (`%LOCALAPPDATA%\Programs\myMoney`).
+4. In Start trovi **myMoney** (la pagina nel browser), **myMoney widget** e la scorciatoia alla cartella dei portafogli.
+
+Come funziona dopo l'installazione:
+- **Nessuna finestra nera**: myMoney lavora in secondo piano e sta nell'area di notifica (accanto all'orologio; se non si vede è sotto la freccia «^»). Doppio clic o clic destro → «Apri myMoney»; «Esci» ferma il programma e lo scarico dei prezzi. Riaprirlo mentre è già attivo riapre solo la pagina. Messaggi ed errori sono in `%LOCALAPPDATA%\myMoney\myMoney.log`.
+- I **portafogli** (i JSON) stanno in `Documenti\myMoney\portafogli`: restano anche se disinstalli o aggiorni. I prezzi scaricati stanno in `%LOCALAPPDATA%\myMoney`.
+- **Aggiornare**: scarica e lancia di nuovo l'ultimo `myMoney-Setup.exe` (sovrascrive il programma, non tocca i portafogli).
+- **Disinstallare**: Impostazioni → App → myMoney (toglie anche l'avvio automatico del widget).
+
+### Windows: costruire l'installer sul proprio PC (senza GitHub)
+Serve solo Python 3.9 o più recente ([python.org](https://www.python.org/downloads/), spunta «Add python.exe to PATH»). Doppio clic su **`installer\costruisci-installer.cmd`**: installa PyInstaller, crea i programmi e, se manca, scarica e installa da solo [Inno Setup 6](https://jrsoftware.org/isdl.php). Alla fine trovi **`dist-installer\myMoney-Setup.exe`**. Se Inno Setup non si installa, restano pronti in `dist\myMoney` i due programmi (`myMoney.exe`, `myMoney-widget.exe`), usabili così. Su GitHub lo stesso lavoro lo fa `.github/workflows/windows.yml` (Actions → «Windows installer» → Run workflow).
+
+### Windows, macOS, Linux: con Python (senza installer)
+Serve Python 3.9 o più recente, nient'altro: `avvia.cmd` (Windows, doppio clic) oppure `python build.py`; il widget con `avvia-widget.cmd` / `python widget.py`. Qui il terminale resta aperto finché il programma gira.
+
+### Android
+Scarica l'APK da [android-latest](https://github.com/robypet73/myMoney/releases/download/android-latest/myMoney-Portafogli.apk) e installalo (consenti l'installazione da questa fonte). Se Android rifiuta l'aggiornamento, disinstalla la versione precedente.
 
 ## Uso
 
@@ -109,11 +132,3 @@ Lo schema è in [`portafogli/schema.json`](portafogli/schema.json). Esempio (`po
 - Per un ISIN non presente in `portafogli/titoli/` la composizione viene dalla pagina di justETF, che elenca solo i primi paesi, settori e titoli: la quota restante finisce in «Altro». Aree geografiche e valute sono stimate dai paesi. «Scambi medi a Milano» non è disponibile per questi titoli («n.d.»).
 - Lo storico in comune parte dal titolo con la storia più breve.
 - Analisi tecnica sui dati storici, non consulenza.
-
-## Installer per Windows
-
-Scarica `myMoney-Setup.exe` dalla release [windows-latest](https://github.com/robypet73/myMoney/releases/tag/windows-latest) (si ricostruisce da solo a ogni modifica del programma) e fai doppio clic. Non serve Python né l'amministratore: installa per l'utente corrente, crea in Start «myMoney» (pagina nel browser) e «myMoney widget», a scelta l'icona sul Desktop e l'avvio automatico del widget.
-- I **portafogli** stanno in `Documenti\myMoney\portafogli` (restano anche se disinstalli); i prezzi scaricati in `%LOCALAPPDATA%\myMoney`, come per il programma normale.
-- **Nessuna finestra nera**: myMoney lavora in secondo piano, con un'icona nell'area di notifica (accanto all'orologio; se non si vede è sotto la freccia «^»): doppio clic o clic destro → «Apri myMoney», «Esci» per fermarlo (e fermare lo scarico dei prezzi). Riaprirlo con il programma già attivo riapre solo la pagina. I messaggi stanno in `%LOCALAPPDATA%\\myMoney\\myMoney.log`.
-- L'installer non è firmato: Windows SmartScreen può avvisare, «Ulteriori informazioni» → «Esegui comunque».
-- **Costruirlo in locale, senza GitHub** (su un PC Windows con Python 3.9+; [Inno Setup 6](https://jrsoftware.org/isdl.php) lo scarica e installa lo script da solo): doppio clic su `installer\costruisci-installer.cmd` → `dist-installer\myMoney-Setup.exe`. Senza Inno Setup crea comunque `dist\myMoney` con i due programmi, usabili così.
