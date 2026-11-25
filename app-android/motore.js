@@ -520,7 +520,10 @@
       const n = v.length, giorno = n > 1 ? v[n - 1] / v[n - 2] - 1 : null, ds = [], vs = [], is = [];
       v.forEach((x, k) => { if (k >= n - 400 || k % 5 === 0 || k === n - 1) { ds.push(DATES[i0 + k]); vs.push(Math.round(x * 100) / 100); if (iv) is.push(Math.round(iv[k] * 100) / 100); } });  // ultimi 400 giorni per intero, prima uno ogni cinque
       vs[vs.length - 1] = Math.round(val * 100) / 100;
-      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, real: Math.round(REAL * 100) / 100, day: giorno, ds, vs, ...(iv ? { is } : {}), pos, at: Date.now() };
+      // acquisti più recenti dell'inizio dello storico: «hd/hv» è l'andamento dei titoli che hai ora (stesse quote) su tutto lo storico, per i periodi (YTD…) che iniziano prima dei tuoi acquisti
+      let hd = null, hv = null;
+      if (i0 > 0 && val > 0) { const h = DATES.map((_, t) => sum(F.map((f, i) => (q(i) > 0 ? q(i) * PX[i][t] : 0)))), fin = h[h.length - 1]; if (fin > 0) { hd = []; hv = []; h.forEach((x, k) => { if (k >= h.length - 400 || k % 5 === 0 || k === h.length - 1) { hd.push(DATES[k]); hv.push(Math.round((x / fin) * val * 100) / 100); } }); } }
+      const d = { name: NOMEPF + " " + VERS, val: Math.round(val * 100) / 100, cost: hasPos && INV > 0 ? Math.round(INV * 100) / 100 : 0, real: Math.round(REAL * 100) / 100, day: giorno, ds, vs, ...(iv ? { is } : {}), ...(hd ? { hd, hv } : {}), pos, at: Date.now() };
       const files = typeof PF !== "undefined" && PF.lista && PF.lista.length ? PF.lista.map((x) => x.file) : null, s = JSON.stringify(d), firma = s + JSON.stringify(files);
       if (firma === ultimoWidget) return; ultimoWidget = firma;
       W.update({ data: s, file: (META && META.file) || "portafoglio", ...(files ? { files } : {}) }).catch(() => {});  // un portafoglio per volta; l'elenco serve a togliere dal widget quelli eliminati

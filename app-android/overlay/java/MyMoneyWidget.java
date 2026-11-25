@@ -391,6 +391,15 @@ public class MyMoneyWidget extends AppWidgetProvider {
                     vs.put(vs.length() - 1, val);
                 }
             }
+            JSONArray hd = d.optJSONArray("hd"), hv = d.optJSONArray("hv");  // andamento dei titoli che hai ora: anche qui l'ultimo punto è il valore di adesso
+            if (hd != null && hv != null && hv.length() > 0 && hv.length() == hd.length()) {
+                if (hd.getString(hd.length() - 1).compareTo(today) < 0) {
+                    hd.put(today);
+                    hv.put(val);
+                } else {
+                    hv.put(hv.length() - 1, val);
+                }
+            }
             d.put("at", System.currentTimeMillis());
             ed.putString(chiave(f), d.toString());
             cambiato = true;
@@ -508,15 +517,21 @@ public class MyMoneyWidget extends AppWidgetProvider {
             int n = ds == null || vs == null ? 0 : Math.min(ds.length(), vs.length());
             // la parte di serie nel periodo scelto
             int from = 0;
+            boolean alt = false;
             if (n > 1 && !per[0].equals("max")) {
                 String ultimaData = ds.getString(n - 1);
                 long cut = per[0].equals("ytd") ? giorni((Integer.parseInt(ultimaData.substring(0, 4)) - 1) + "-12-31") : giorni(ultimaData) - Long.parseLong(per[2]);
+                JSONArray hd = d.optJSONArray("hd"), hv = d.optJSONArray("hv");
+                if (hd != null && hv != null && Math.min(hd.length(), hv.length()) > 1 && giorni(ds.getString(0)) > cut) {
+                    // gli acquisti sono più recenti dell'inizio del periodo: si mostra l'andamento dei titoli che hai ora nel periodo
+                    ds = hd; vs = hv; n = Math.min(hd.length(), hv.length()); alt = true;
+                }
                 while (from < n - 2 && giorni(ds.getString(from)) < cut) from++;
             }
             String[] dd = new String[Math.max(0, n - from)];
             double[] ss = new double[dd.length];
             JSONArray cap = d.optJSONArray("is");
-            boolean conCap = cap != null && cap.length() == ds.length();
+            boolean conCap = !alt && cap != null && cap.length() == ds.length();
             double[] ii = new double[dd.length];
             for (int i = 0; i < dd.length; i++) {
                 dd[i] = ds.getString(from + i);

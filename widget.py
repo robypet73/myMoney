@@ -91,7 +91,12 @@ def dati_widget(doc, definizione):
         if vs[-1] > 0:
             vs = [x / vs[-1] * val for x in vs]
             return {"val": val, "cost": cost, "real": real, "day": (vs[-1] / vs[-2] - 1) if T > 1 and vs[-2] else None, "ds": list(date), "vs": vs, "is_": None}
-    return {"val": val, "cost": cost, "real": real, "day": (vs[-1] / vs[-2] - 1) if len(vs) > 1 and vs[-2] else None, "ds": date[i0:], "vs": vs, "is_": inv}
+    alt = None
+    if i0 > 0 and val > 0:  # gli acquisti non partono dall'inizio dello storico: per i periodi più lunghi dei tuoi acquisti si usa l'andamento dei titoli che hai ora (stesse quote)
+        hv = [sum(q * px[s][t] for s, (q, c) in stato.items() if q > 0) for t in range(T)]
+        if hv[-1] > 0:
+            alt = (list(date), [x / hv[-1] * val for x in hv])
+    return {"val": val, "cost": cost, "real": real, "day": (vs[-1] / vs[-2] - 1) if len(vs) > 1 and vs[-2] else None, "ds": date[i0:], "vs": vs, "is_": inv, "alt": alt}
 
 
 def aggiungi_prezzi_recenti(doc, recenti):
@@ -128,8 +133,10 @@ def applica_live(doc, live):
     return doc
 
 
-def periodo_serie(ds, vs, iv, codice):
-    """Parte della serie nel periodo scelto. Ritorna (giorni, valori, capitale versato o None)."""
+def periodo_serie(ds, vs, iv, codice, alt=None):
+    """Parte della serie nel periodo scelto. Ritorna (giorni, valori, capitale versato o None).
+    alt = (giorni, valori) dei titoli che hai ora su tutto lo storico: se i tuoi acquisti iniziano dopo l'inizio del periodo (per esempio YTD con acquisti di questi giorni)
+    il grafico mostra l'andamento di quei titoli nel periodo invece di una riga di pochi giorni."""
     n = len(ds)
     if n < 2 or codice == "max":
         return ds, vs, iv
@@ -139,6 +146,8 @@ def periodo_serie(ds, vs, iv, codice):
     else:
         giorni = next(p[2] for p in PERIODI if p[0] == codice)
         taglio = ultimo - datetime.timedelta(days=giorni)
+    if alt and len(alt[0]) > 1 and datetime.date.fromisoformat(ds[0]) > taglio:
+        ds, vs, iv, n = alt[0], alt[1], None, len(alt[0])
     k = 0
     while k < n - 2 and datetime.date.fromisoformat(ds[k]) < taglio:
         k += 1
@@ -462,7 +471,7 @@ class Widget:
             return
         w = e["w"]
         c.create_text(12 * s, 44 * s, text=eur(w["val"]), anchor="w", fill=TESTO, font=fo(22, True))
-        ds, vs, iv = periodo_serie(w["ds"], w["vs"], w["is_"], per)
+        ds, vs, iv = periodo_serie(w["ds"], w["vs"], w["is_"], per, w.get("alt"))
         # riga della rendita (sull'investito) a sinistra; periodo e oggi a destra
         if w["cost"] > 0:
             roi, profit, eti = (w["val"] - w["cost"] + w["real"]) / w["cost"], w["val"] - w["cost"] + w["real"], "sull'investito"
@@ -635,7 +644,7 @@ def avvia():
             d = pf.definizione(i["file"])
             doc = pf.costruisci(i["file"], scarica=True)
             w = dati_widget(doc, d)
-            ds, vs, iv = periodo_serie(w["ds"], w["vs"], w["is_"], imp.d["periodo"])
+            ds, vs, iv = periodo_serie(w["ds"], w["vs"], w["is_"], imp.d["periodo"], w.get("alt"))
             rp = rendimento_periodo(vs, iv)
             print(i["file"], eur(w["val"]), "investito", eur(w["cost"]), "oggi", None if w["day"] is None else pct(w["day"]), imp.d["periodo"], None if rp is None else pct(rp))
         return
