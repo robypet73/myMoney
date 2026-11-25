@@ -316,11 +316,12 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="panel" style="display:flex;flex-direction:column;gap:12px">
       <div id="rb-soglie" role="status"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end">
-        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano proposto (investito + da investire)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:200px">Obiettivo<select id="rb-t"><option value="obiettivo">Piano proposto (investito + da investire)</option><option value="sharpe">Massimo Sharpe della frontiera</option><option value="minvar">Rischio minimo della frontiera</option><option value="analisi">Analisi: punto della frontiera con più indicatori verdi</option><option value="sel">Punto scelto sulla frontiera</option></select></label>
         <label style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);width:230px">Totale dell'investimento da raggiungere (€)<button type="button" class="info" data-i="r_totale" aria-label="Spiegazione">i</button> <small id="rb-att" style="font-weight:normal"></small><input type="number" id="rb-tot" min="0" step="100" inputmode="decimal"></label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-a"> Permetti acquisti dei titoli che ho già</label>
         <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="rb-v"> Permetti vendite dei titoli che ho già</label>
       </div>
+      <p class="muted" id="rb-an" hidden style="margin:0"></p>
       <div class="scroll"><table id="rb-classi" style="font-size:13px"></table></div>
       <div class="scroll"><table id="rb"></table></div>
       <p class="muted" id="rb-n"></p>
@@ -495,6 +496,7 @@ const INFO = {
   m_pian: { t: "Pianificato", d: "Se spunti, l'operazione è solo pianificata: non conta come investita e compare come «da investire». Senza spunta è eseguita.", l: "Quando la esegui davvero, togli la spunta: l'importo diventa investito.", v: "Un titolo è pianificato se ha almeno una quota ancora da comprare o vendere." },
   f_corrente: { t: "Portafoglio corrente", d: "Il punto di ciò che hai davvero acquistato (solo investito), con i pesi attuali.", l: "Se sta sotto la curva, a pari rischio un altro portafoglio avrebbe reso di più.", v: "—" },
   f_piano: { t: "Piano proposto", d: "Il punto del portafoglio dopo gli acquisti e le vendite pianificati (investito + da investire).", l: "Mostra dove arriveresti eseguendo il piano.", v: "—" },
+  f_analisi: { t: "Punti che migliorano l'Analisi", d: "Ogni punto della frontiera è valutato con gli stessi indicatori e le stesse soglie del pulsante Analisi. Anello verde pieno: tutti gli indicatori sono verdi. Anello tratteggiato: nessun rosso in più e più verdi del portafoglio corrente.", l: "Sono i punti dove conviene guardare per primi; il criterio «Analisi» del Ribilanciamento sceglie il migliore e più vicino a ciò che hai.", v: "La «distanza dalla frontiera» è sempre verde sulla curva: contano gli altri indicatori. Cambiando le soglie in Analisi cambiano i punti." },
   f_sharpe: { t: "Massimo Sharpe", d: "Il punto della frontiera con il miglior rendimento per unità di rischio.", l: "È il portafoglio «più efficiente», ma calcolato sul passato.", v: "Spesso concentrato sui fondi andati meglio: usalo come riferimento, non come obiettivo." },
   q_pannello: { t: "Qualità dei fondi", d: "Dati di struttura di ciascun fondo: valore gestito, dati storici disponibili, tipo di replica, spread di negoziazione ed emittente.", l: "Un fondo piccolo, giovane o con spread largo può essere chiuso, avere dati poco affidabili o costare di più quando compri e vendi.", v: "Valore gestito sopra 500 mln €, storico di almeno 5 anni, spread sotto 0,25%." },
   q_aum: { t: "Valore gestito (patrimonio)", d: "Il patrimonio totale del fondo, in milioni o miliardi di euro, dalla scheda justETF.", l: "Sotto circa 100 mln € il fondo rischia di essere chiuso dall'emittente (con rimborso, a volte con perdite fiscali o costi); i fondi grandi sono più stabili e liquidi.", v: "Sopra 500 mln € solido; 100–500 mln € da seguire; sotto 100 mln € a rischio chiusura." },
@@ -791,6 +793,7 @@ async function calcolaFrontiera() {
   const prima = FRONT && FRONT.pts ? FRONT.pts.length : 0;
   FRONT = { pts: eff, sharpe: eff.reduce((a, p, i) => (p.sharpe > eff[a].sharpe ? i : a), 0), minvar: 0 }; $("#frstato").textContent = "";
   if (typeof SEL === "number") SEL = prima > 1 ? Math.max(0, Math.min(eff.length - 1, Math.round((SEL / (prima - 1)) * (eff.length - 1)))) : Math.min(SEL, eff.length - 1);  // la curva è cambiata (altri dati o vincoli): si resta nello stesso punto relativo
+  if (ST.rib.t === "analisi") { const A = analisiFrontiera(); if (A && A.best >= 0) SEL = A.best; disegnaFrontiera(); aggiornaRib(); return; }  // criterio «Analisi»: il punto si rivaluta sulla curva nuova
   disegnaFrontiera(); if (SEL !== "tuo") proponi(); else aggiornaRib();
 }
 
@@ -931,7 +934,7 @@ let SEL = "tuo";
 function disegnaFrontiera(dalCursore) {
   setTimeout(disegnaValutazione, 0);  // la distanza dalla frontiera si aggiorna con la curva
   const box = $("#front"), hbox = $("#front-home"); if (!FRONT) return; if (FRONT.err) { box.innerHTML = hbox.innerHTML = `<p class="lerr">${esc(FRONT.err)}</p>`; $("#fcomp").innerHTML = ""; $("#fleg").innerHTML = $("#fleg-home").innerHTML = ""; return; }
-  const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiOrig(), FRI0()), sh = P[FRONT.sharpe], mv = P[0], fx = fissa(), fxp = fx.pts || [];
+  const P = FRONT.pts, tuo = statistiche(WCUR, FRI0()), ob = statistiche(pesiOrig(), FRI0()), sh = P[FRONT.sharpe], mv = P[0], fx = fissa(), fxp = fx.pts || [], ANA = analisiFrontiera();
   const svgDi = (larg) => {
   const W = Math.max(300, Math.round(larg || 640)), H = Math.round(Math.min(360, Math.max(250, W * 0.58))), L = 44, R = 14, T = 16, B = 36;
   const fxc = (fx.curva || []).slice().sort((a, b) => a.vol - b.vol), xs = P.map((p) => p.vol).concat([tuo.vol, ob.vol], fxc.map((p) => p.vol)), ys = P.map((p) => p.ret).concat([tuo.cagr, ob.cagr], fxc.map((p) => p.ret));
@@ -940,13 +943,13 @@ function disegnaFrontiera(dalCursore) {
   for (let v = Math.ceil(y0 * 100); v <= Math.floor(y1 * 100); v++) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v / 100)}" y2="${Y(v / 100)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v / 100) + 4}" font-size="11" fill="var(--muted)" text-anchor="end">${v}%</text>`;
   const line = P.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" "), rombo = (v, r, c, k, tt) => { const x = X(v), y = Y(r); return `<path class="pt" tabindex="0" data-k="${k}" d="M${x} ${y - 9} L${x + 9} ${y} L${x} ${y + 9} L${x - 9} ${y} Z" fill="${c}" stroke="var(--bg)" stroke-width="1.5"><title>${tt}</title></path>`; };
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Frontiera efficiente: rischio e rendimento storico">${g}<text x="${(L + W - R) / 2}" y="${H - 3}" font-size="11" fill="var(--muted)" text-anchor="middle">Rischio (volatilità annua)</text><text x="12" y="${(T + H - B) / 2}" font-size="11" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 12 ${(T + H - B) / 2})">Rendimento annuo</text>
-    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/>${P.map((p, i) => `<circle class="pt" tabindex="0" data-k="${i}" cx="${X(p.vol).toFixed(1)}" cy="${Y(p.ret).toFixed(1)}" r="${SEL === i ? 7 : 4.5}" fill="${SEL === i ? "var(--accent)" : "var(--bg)"}" stroke="var(--accent)" stroke-width="2"><title>Rischio ${pct(p.vol)} · rendimento ${pct(p.ret)}</title></circle>`).join("")}
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/>${P.map((p, i) => `<circle class="pt" tabindex="0" data-k="${i}" cx="${X(p.vol).toFixed(1)}" cy="${Y(p.ret).toFixed(1)}" r="${SEL === i ? 7 : 4.5}" fill="${SEL === i ? "var(--accent)" : "var(--bg)"}" stroke="var(--accent)" stroke-width="2"><title>Rischio ${pct(p.vol)} · rendimento ${pct(p.ret)}${ANA && ANA.pts[i] ? " · Analisi: " + ANA.pts[i].c.v + " verdi, " + ANA.pts[i].c.g + " gialli, " + ANA.pts[i].c.r + " rossi" + (ANA.pts[i].tutto ? " (tutto verde)" : ANA.pts[i].migliora ? " (migliora l'attuale)" : "") : ""}</title></circle>${ANA && ANA.pts[i] && (ANA.pts[i].tutto || ANA.pts[i].migliora) ? `<circle cx="${X(p.vol).toFixed(1)}" cy="${Y(p.ret).toFixed(1)}" r="10" fill="none" stroke="var(--good)" stroke-width="2"${ANA.pts[i].tutto ? "" : ' stroke-dasharray="3 2.5"'} pointer-events="none"/>` : ""}`).join("")}
     <circle class="pt" tabindex="0" data-k="sharpe" cx="${X(sh.vol).toFixed(1)}" cy="${Y(sh.ret).toFixed(1)}" r="8" fill="none" stroke="var(--warn)" stroke-width="2.5"><title>Massimo Sharpe</title></circle>
     ${fxc.length ? `<path d="${fxc.map((p, i) => (i ? "L" : "M") + X(p.vol).toFixed(1) + " " + Y(p.ret).toFixed(1)).join(" ")}" fill="none" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="5 4"/>` : ""}${fxp.map((p) => { const x = X(p.vol), y = Y(p.ret), sel = SEL === p.k; return `<path class="pt" tabindex="0" data-k="${p.k}" d="M${x.toFixed(1)} ${(y - 9).toFixed(1)} L${(x + 9).toFixed(1)} ${(y + 7).toFixed(1)} L${(x - 9).toFixed(1)} ${(y + 7).toFixed(1)} Z" fill="var(--c4)" stroke="${sel ? "var(--fg)" : "var(--bg)"}" stroke-width="${sel ? 2.5 : 1.5}" stroke-linejoin="round"><title>${p.nome}</title></path><text x="${x.toFixed(1)}" y="${(y - 14).toFixed(1)}" font-size="11" font-weight="600" fill="var(--c4)" text-anchor="middle">${p.k === "fmin" ? "min" : "max"}</text>`; }).join("")}${rombo(ob.vol, ob.cagr, "var(--c2)", "obiettivo", WPROP ? "Piano proposto" : "Piano di partenza")}${rombo(tuo.vol, tuo.cagr, "var(--good)", "tuo", "Portafoglio corrente")}
     <text x="${X(tuo.vol) + 12}" y="${Y(tuo.cagr) + 18}" font-size="12" font-weight="600" fill="var(--good)">Corrente</text><text x="${X(ob.vol) + 12}" y="${Y(ob.cagr) + (Math.abs(X(ob.vol) - X(tuo.vol)) < 60 && Math.abs(Y(ob.cagr) - Y(tuo.cagr)) < 24 ? -12 : 18)}" font-size="12" font-weight="600" fill="var(--c2)">${WPROP ? "Proposto" : "Piano"}</text></svg>`;
   };
   box.innerHTML = svgDi(box.clientWidth); hbox.innerHTML = svgDi(hbox.clientWidth);
-  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>portafoglio corrente (solo investito)${inf("f_corrente")}</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>${WPROP ? "piano proposto (investito + da investire)" : "piano di partenza"}${inf("f_piano")}</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe${inf("f_sharpe")}</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
+  const legHtml = `<span><i style="background:var(--good);transform:rotate(45deg) scale(.85)"></i>portafoglio corrente (solo investito)${inf("f_corrente")}</span><span><i style="background:var(--c2);transform:rotate(45deg) scale(.85)"></i>${WPROP ? "piano proposto (investito + da investire)" : "piano di partenza"}${inf("f_piano")}</span><span><i style="background:none;border:2px solid var(--warn);border-radius:50%"></i>massimo Sharpe${inf("f_sharpe")}</span><span><i style="background:var(--accent);border-radius:50%"></i>frontiera</span>${ANA && ANA.nTutto ? `<span><i style="background:none;border:2px solid var(--good);border-radius:50%"></i>tutto verde in Analisi (${ANA.nTutto} punti)${inf("f_analisi")}</span>` : ""}${ANA && ANA.nMigl ? `<span><i style="background:none;border:2px dashed var(--good);border-radius:50%"></i>migliora l'Analisi attuale (${ANA.nMigl} punti)${inf("f_analisi")}</span>` : ""}${fxp.length ? `<span><i style="background:var(--c4);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0"></i>frontiera a stessa composizione per classe (min = rischio minimo, max = rendimento massimo)</span>` : ""}`;
   $("#fleg").innerHTML = legHtml; $("#fleg-home").innerHTML = legHtml;
   $$(".pt", hbox).forEach((e) => { const k = e.dataset.k; e.addEventListener("click", () => { SEL = /^\d+$/.test(k) ? +k : k; proponi(); apriRib(); }); });  // dalla home: il punto scelto diventa l'obiettivo e si apre il Ribilanciamento
   $$(".pt", box).forEach((e) => { const k = e.dataset.k; const f = () => { SEL = /^\d+$/.test(k) ? +k : k; disegnaFrontiera(); proponi(); }; e.addEventListener("click", f); e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }); });
@@ -997,7 +1000,20 @@ function apriRib() { aggiornaRib(); disegnaBlocchi(); $("#rib").hidden = false; 
 const chiudiRib = () => { $("#rib").hidden = true; document.body.style.overflow = ""; };
 $("#apririb").onclick = apriRib; $("#rib-x").onclick = chiudiRib; $("#rib").addEventListener("mousedown", (e) => { if (e.target.id === "rib") chiudiRib(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#rib").hidden) chiudiRib(); });
-function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
+/* Analisi di ogni punto della frontiera: quali portano tutti gli indicatori in verde (anello verde pieno) e quali migliorano quelli del portafoglio corrente (anello verde tratteggiato).
+   Il punto scelto come criterio di ribilanciamento è, tra i «tutto verde» (se non ce ne sono, tra quelli che migliorano), quello con meno rossi e gialli e, a parità, più vicino ai pesi attuali (meno da comprare e vendere; senza acquisti, il Sharpe più alto). */
+let ANF = null;
+function analisiFrontiera() {
+  const P = FRONT && !FRONT.err && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (!P) return null;
+  const wc = valPesi("corrente"), key = P.length + "|" + P[0].vol + "|" + P[P.length - 1].ret + "|" + JSON.stringify(ST.val || {}) + "|" + wc.map((x) => x.toFixed(3)).join();
+  if (ANF && ANF.key === key) return ANF;
+  const spec = VAL_SPEC.map(valSoglia), conta = (w) => { const d = valDati(w), c = { v: 0, g: 0, r: 0 }; spec.forEach((s) => { const st = valStato(s, d[s.k]); if (st !== "n") c[st]++; }); return c; };
+  const cur = conta(wc), pts = P.map((p) => { const c = conta(p.w), tutto = c.v > 0 && c.g === 0 && c.r === 0, migliora = !tutto && c.r <= cur.r && c.v >= cur.v && (c.r < cur.r || c.v > cur.v); return { c, tutto, migliora, giro: VAL > 0 ? sum(p.w.map((x, i) => Math.abs(x - wc[i]))) : 0 }; });
+  const ok = pts.some((x) => x.tutto) ? (x) => x.tutto : (x) => x.migliora; let best = -1;
+  pts.forEach((x, i) => { if (!ok(x)) return; const b = best < 0 ? null : pts[best]; if (!b || x.c.r < b.c.r || (x.c.r === b.c.r && (x.c.g < b.c.g || (x.c.g === b.c.g && (VAL > 0 ? x.giro < b.giro - 1e-9 : P[i].sharpe > P[best].sharpe))))) best = i; });
+  return (ANF = { key, cur, pts, best, nTutto: pts.filter((x) => x.tutto).length, nMigl: pts.filter((x) => x.migliora).length, tot: cur.v + cur.g + cur.r });
+}
+function pesiObiettivo() { const t = ST.rib.t, P = FRONT && FRONT.pts && FRONT.pts.length ? FRONT.pts : null; if (t === "analisi" && P) { const A = analisiFrontiera(); if (A && A.best >= 0) return P[A.best].w; } if (t === "sharpe" && P) return P[FRONT.sharpe].w; if (t === "minvar" && P) return P[0].w; if (t === "sel" && ST.rib.w && ST.rib.w.length === NF) return ST.rib.w; return pesiPiano(); }
 /* ---------- controllo della deriva: regola 5/25 ---------- */
 const SOGLIA_ASS = 0.05, SOGLIA_REL = 0.25, SOGLIA_MIN = 0.02;
 const fondoFuori = (i) => { const d = Math.abs(WCUR[i] - F[i].w); return d >= SOGLIA_ASS || (d >= SOGLIA_MIN && d >= SOGLIA_REL * F[i].w); };
@@ -1073,6 +1089,8 @@ function disegnaClassi(R) {
 function aggiornaRib() {
   disegnaSoglie();
   const acq = ST.rib.a !== false, vend = !!ST.rib.v;
+  { const an = $("#rb-an"), A = ST.rib.t === "analisi" ? analisiFrontiera() : null; an.hidden = !A && ST.rib.t !== "analisi";
+    if (!an.hidden) { const P = FRONT && FRONT.pts; an.textContent = !A ? "Frontiera non disponibile: uso il piano proposto." : A.best < 0 ? `Nessun punto della frontiera migliora l'Analisi attuale (${A.cur.v} verdi su ${A.tot}): uso il piano proposto.` : `Punto scelto: ${A.pts[A.best].c.v} indicatori verdi su ${A.tot}${A.pts[A.best].tutto ? " (tutto verde)" : " (ora " + A.cur.v + ")"}, rischio ${pct(P[A.best].vol)}, rendimento ${pct(P[A.best].ret)}. ${A.pts[A.best].tutto ? A.nTutto + " punti della frontiera sono tutto verde; è il più vicino ai pesi attuali." : A.nMigl + " punti migliorano l'Analisi; è il migliore e il più vicino ai pesi attuali."}`; } }
   $("#rb-t").value = ST.rib.t; if (document.activeElement !== $("#rb-tot")) $("#rb-tot").value = Math.round(totaleRib() * 100) / 100; $("#rb-v").checked = vend; $("#rb-a").checked = acq;
   $("#rb-att").textContent = "· ora hai " + eur(VAL);
   const R = calcolaRib();
@@ -1209,7 +1227,7 @@ $("#prud").onchange = (e) => { ST.prud = e.target.checked; salva(); richiediFron
 let tg = null; const aggiornaSubito = () => { calcolaPos(); disegnaKpi(); disegnaValutazione(); disegnaBarraClassi(); disegnaTabella(); disegnaMix(); disegnaAndamento(); disegnaStorici(); if (FRONT && !FRONT.err) disegnaFrontiera(); aggiornaRib(); };
 const aggiorna = () => { clearTimeout(tg); aggiornaSubito(); };
 const aggiornaRitardo = () => { clearTimeout(tg); tg = setTimeout(aggiornaSubito, 250); };
-$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; if (ST.rib.t === "sharpe") SEL = "sharpe"; else if (ST.rib.t === "minvar") SEL = 0; else if (ST.rib.t === "obiettivo") SEL = "obiettivo"; salva(); disegnaFrontiera(); aggiornaRib(); }; $("#rb-tot").oninput = (e) => { ST.rib.tot = +e.target.value > 0 ? +e.target.value : 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
+$("#rb-t").onchange = (e) => { ST.rib.t = e.target.value; if (ST.rib.t === "sharpe") SEL = "sharpe"; else if (ST.rib.t === "minvar") SEL = 0; else if (ST.rib.t === "analisi") { const A = analisiFrontiera(); if (A && A.best >= 0) SEL = A.best; } else if (ST.rib.t === "obiettivo") SEL = "obiettivo"; salva(); disegnaFrontiera(); aggiornaRib(); }; $("#rb-tot").oninput = (e) => { ST.rib.tot = +e.target.value > 0 ? +e.target.value : 0; salva(); aggiornaRib(); }; $("#rb-crea").onclick = creaDaRib; $("#rb-a").onchange = (e) => { ST.rib.a = e.target.checked; salva(); aggiornaRib(); }; $("#rb-v").onchange = (e) => { ST.rib.v = e.target.checked; salva(); aggiornaRib(); };
 costruisciPer();
 let rz = null, lw = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const w = document.documentElement.clientWidth; if (w === lw) return; lw = w; disegnaStorici(); disegnaAndamento(); disegnaFrontiera(); }, 200); });
 
@@ -1756,9 +1774,9 @@ $("#val-ed").addEventListener("input", (e) => {
   const el = e.target, k = el.dataset.vk; if (!k) return; const v = parseFloat(String(el.value).replace(",", ".")); if (!isFinite(v)) return;
   const base = VAL_SPEC.find((s) => s.k === k), cur = { ...((ST.val || {})[k] || {}) }; ST.val = { ...(ST.val || {}) };
   if (base.dir === "intervallo") { const ok = cur.ok ? cur.ok.slice() : base.ok.slice(); if (el.dataset.vf === "lo") ok[0] = v; else if (el.dataset.vf === "hi") ok[1] = v; else cur.ko = v; cur.ok = ok; } else cur[el.dataset.vf] = v;
-  ST.val[k] = cur; salva(); disegnaValutazione();
+  ST.val[k] = cur; salva(); disegnaValutazione(); if (FRONT && FRONT.pts) { disegnaFrontiera(); aggiornaRib(); }
 });
-$("#val-reset").addEventListener("click", () => { ST.val = {}; salva(); valEditor(); disegnaValutazione(); });
+$("#val-reset").addEventListener("click", () => { ST.val = {}; salva(); valEditor(); disegnaValutazione(); if (FRONT && FRONT.pts) { disegnaFrontiera(); aggiornaRib(); } });
 valEditor();
 /* ---------- avvio ---------- */
 if (!VUOTO) { costruisci(); disegnaVincoli(); disegnaBlocchi(); disegnaAnagrafica(); aggiornaSubito(); $("#rb-t").value = ST.rib.t; calcolaFrontiera(); }
