@@ -664,7 +664,17 @@ class Portafogli:
             raise ValueError(f"Cartella scelta ma non memorizzata: {e}")
 
     def cartella_info(self):
-        return {"cartella": "Google Drive (online)" if self.remoto else self.dir, "remoto": bool(self.remoto), "predefinita": self.predefinita, "personalizzata": bool(self.remoto) or os.path.abspath(self.dir) != os.path.abspath(self.predefinita), "suggerite": cartelle_suggerite(), "copiati": self.copiati}
+        sugg = cartelle_suggerite()
+        pers = bool(self.remoto) or os.path.abspath(self.dir) != os.path.abspath(self.predefinita)
+        if self.remoto:
+            tipo = "online"
+        elif not pers:
+            tipo = "predefinita"
+        else:  # la cartella scelta sta dentro Google Drive per desktop?
+            me = os.path.normcase(os.path.abspath(self.dir))
+            drive = [os.path.normcase(os.path.dirname(s["percorso"])) for s in sugg if s["tipo"] == "drive"]
+            tipo = "drive" if any(me == d or me.startswith(d + os.sep) for d in drive) else "computer"
+        return {"cartella": "Google Drive (online)" if self.remoto else self.dir, "remoto": bool(self.remoto), "tipo": tipo, "predefinita": self.predefinita, "personalizzata": pers, "suggerite": [s for s in sugg if s["tipo"] == "drive"], "copiati": self.copiati}
 
     def imposta_cartella(self, percorso, crea=False):
         """Sceglie la cartella dei JSON dei portafogli (percorso del computer, per esempio quello di Google Drive per desktop). Vuoto = quella del programma.

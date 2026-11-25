@@ -64,15 +64,17 @@
     throw Err("Salvato nell'app, ma NON nella cartella" + (c ? " «" + c.label + "»" : "") + ": " + (e.message || e) + ". Resta nell'app: riapri l'app per riprovare a scriverlo nella cartella.");
   }
   const scriviFile = (f) => ({ name: f, text: formatta(definizione(f)) });
-  async function sincronizza() {  // all'avvio: i portafogli della cartella diventano quelli dell'app; una cartella vuota riceve quelli dell'app
-    const F = plug("MyMoneyFolder"); if (!F) return;
+  async function sincronizza(opz) {  // all'avvio: i portafogli della cartella diventano quelli dell'app; una cartella vuota riceve quelli dell'app. opz: {drive, cambio} quando la cartella è appena stata scelta
+    const F = plug("MyMoneyFolder"); if (!F) return; opz = opz || {};
     let i; try { i = await F.info(); } catch (e) { return; }
     if (!i || !i.uri) { LS.removeItem("mm:cartella"); return; }
-    scriviLS("mm:cartella", { label: i.label || "cartella" });
+    const prima = cartellaAttiva(); scriviLS("mm:cartella", { label: i.label || "cartella", drive: opz.drive != null ? !!opz.drive : !!(prima && prima.drive) });
     let l; try { l = await F.list(); } catch (e) { return; }  // cartella non raggiungibile: restano i portafogli già nell'app
     const nella = (l.files || []).filter((f) => FILE_PF.test(f.name));
     if (!nella.length) { try { await F.apply({ write: [...files().map(scriviFile), { name: "schema.json", text: SEED.schema || "{}" }] }); } catch (e) {} return; }
-    const inCartella = new Set(nella.map((f) => f.name)), soloApp = files().filter((f) => !inCartella.has(f));  // creati nell'app e non ancora arrivati nella cartella: non vanno persi
+    const inCartella = new Set(nella.map((f) => f.name));
+    if (opz.cambio) files().filter((f) => !inCartella.has(f)).forEach((f) => LS.removeItem("mm:pf:" + f));  // da una cartella a un'altra: una sola cartella, quelli della precedente non si mescolano
+    const soloApp = files().filter((f) => !inCartella.has(f));  // creati nell'app e non ancora arrivati nella cartella: non vanno persi
     files().filter((f) => inCartella.has(f)).forEach((f) => LS.removeItem("mm:pf:" + f));
     nella.forEach((f) => { try { const d = JSON.parse(f.text); if (d && Array.isArray(d.titoli)) { delete d.$schema; scriviLS("mm:pf:" + f.name, d); } } catch (e) {} });
     if (soloApp.length) { try { await F.apply({ write: soloApp.map(scriviFile) }); } catch (e) { console.error("portafogli non scritti nella cartella:", e && e.message); } }
@@ -81,10 +83,10 @@
     const F = plug("MyMoneyFolder"); if (!F) return null;
     if (r && r.azione) {
       if (r.azione === "reset") { try { await F.forget(); } catch (e) {} LS.removeItem("mm:cartella"); }
-      else { let i = {}; try { i = await F.pick({ drive: r.azione === "drive" }); } catch (e) { throw Err("Selezione della cartella non riuscita: " + (e && e.message)); } if (i && i.uri) await sincronizza(); }
+      else { const cambio = !!cartellaAttiva(); let i = {}; try { i = await F.pick({ drive: r.azione === "drive" }); } catch (e) { throw Err("Selezione della cartella non riuscita: " + (e && e.message)); } if (i && i.uri) await sincronizza({ drive: r.azione === "drive", cambio }); }
     }
     const c = cartellaAttiva();
-    return { cartella: c ? c.label : "memoria dell'app", predefinita: "memoria dell'app", personalizzata: !!c, nativo: true, ultimo: ultimo(), lista: elenco() };
+    return { cartella: c ? c.label : "memoria dell'app", predefinita: "memoria dell'app", personalizzata: !!c, tipo: c ? (c.drive ? "drive" : "computer") : "predefinita", nativo: true, ultimo: ultimo(), lista: elenco() };
   }
 
   // ---- rete

@@ -124,6 +124,7 @@ pre.fmt { margin: 0 0 10px; background: var(--bg); border: 1px solid var(--line)
 .mt-pi { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; } .mt-pi input { width: auto; margin: 0; }
 .mt-r { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 6px; align-items: center; } .mt-r button { justify-self: end; } .mt-card .mt-add-tr { align-self: flex-start; }
 .ct-web { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; } .ct-web summary { cursor: pointer; } .ct-prime { display: flex; flex-direction: column; gap: 8px; } .ct-big { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--fg); cursor: pointer; } .ct-big[hidden] { display: none; } .ct-big:hover, .ct-big:focus-visible { border-color: var(--accent); } .ct-big span { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ct-big small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; } .ct-ic { flex: none; }
+.ct-col { display: flex; flex-direction: column; gap: 10px; } .ct-col[hidden] { display: none; }
 .ct-s { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer; } .ct-s:hover, .ct-s:focus-visible { border-color: var(--accent); } .ct-s span { color: var(--muted); word-break: break-all; }
 .solo-stampa { display: none; }
 @media print {
@@ -338,19 +339,30 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0;
     <div class="scar-foot" style="gap:8px"><button class="btn sec" id="or-chiudi" type="button">Chiudi</button><button class="btn" id="or-uso" type="button">Usa come miei acquisti</button></div>
   </div>
 </div></div>
-<div class="ovl" id="cart" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ct-t" style="max-width:640px">
+<div class="ovl" id="cart" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="ct-t" style="max-width:600px">
   <div class="top"><h2 id="ct-t">Cartella dei portafogli</h2><button class="x" id="ct-x" type="button" aria-label="Chiudi">×</button></div>
-  <div style="display:flex;flex-direction:column;gap:12px">
-    <p class="muted" id="ct-att"></p>
-    <div class="ct-prime"><button type="button" class="ct-big" id="ct-drive"><svg class="ct-ic" viewBox="0 0 87.3 78" width="26" height="23" aria-hidden="true"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0-1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg><span><b>Google Drive</b><small id="ct-drive-s"></small></span></button><button type="button" class="ct-big" id="ct-tel" hidden><svg class="ct-ic" viewBox="0 0 24 24" width="26" height="23" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span><b>Telefono o scheda SD</b><small>sceglie una cartella con il selettore di Android</small></span></button><button type="button" class="ct-big" id="ct-mem" hidden><svg class="ct-ic" viewBox="0 0 24 24" width="26" height="23" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span><b>Memoria dell'app</b><small>scollega la cartella: i file nella cartella restano dove sono</small></span></button></div>
-    <div id="ct-pc"><details id="ct-web" class="ct-web"><summary><b>Google Drive online</b>, senza sincronizzarlo sul computer</summary>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <p class="muted" style="margin:0">I portafogli stanno in <b>una sola cartella</b>: sul <span class="ct-loc">computer</span> oppure su Google Drive. Se ne scegli un'altra, la precedente non viene più usata (i suoi file restano dove sono).</p>
+    <div class="ct-web" id="ct-att" role="status"></div>
+    <div class="seg" id="ct-tipo" role="group" aria-label="Dove tenere i portafogli" style="align-self:flex-start"><button type="button" data-t="computer" id="ct-b-pc">Computer</button><button type="button" data-t="drive">Google Drive</button></div>
+    <div id="ct-p-pc">
+      <div id="ct-pc-pc"><label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Cartella del computer<span style="display:flex;gap:8px"><input id="ct-path" type="text" spellcheck="false" autocomplete="off" placeholder="per esempio D:\myMoney\portafogli" style="flex:1"><button class="btn sec" id="ct-sfoglia" type="button">Sfoglia…</button></span><small>se non esiste viene creata</small></label>
+        <div class="scar-foot" style="margin-top:10px"><button class="btn" id="ct-ok" type="button">Usa questa cartella</button></div></div>
+      <div id="ct-pc-tel" hidden><p class="muted" style="margin:0 0 10px">Si apre il selettore di Android: scegli (o crea) una cartella nella memoria del telefono o nella scheda SD.</p><button class="btn" id="ct-tel" type="button">Scegli la cartella del telefono…</button></div>
+    </div>
+    <div id="ct-p-drive" hidden>
+      <div id="ct-dr-tel" hidden><p class="muted" style="margin:0 0 10px">Si apre il selettore di Android su Google Drive: scegli (o crea) la cartella dei portafogli.</p><button class="btn" id="ct-drive" type="button">Scegli la cartella su Google Drive…</button></div>
+      <div id="ct-dr-pc" class="ct-col">
+        <div id="ct-dr-trovato"></div>
+        <details id="ct-web" class="ct-web"><summary><b>Google Drive online</b>, senza installare Google Drive sul computer</summary>
       <p class="muted" style="font-size:12px;margin-top:8px">Una piccola web app di Google (Apps Script) legge e scrive direttamente la cartella online. Si prepara una volta sola:</p>
       <ol class="note" style="font-size:12px"><li>Apri <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a> → Nuovo progetto, cancella il testo e incolla lo script (pulsante «Copia lo script»); cambia la CHIAVE con una frase segreta tua.</li><li><b>Distribuisci → Nuova distribuzione → App web</b>; Esegui come: <b>Me</b>, Chi ha accesso: <b>Chiunque</b>; autorizza l'accesso a Drive.</li><li>Copia l'indirizzo della web app, aggiungi in fondo <b>?key=</b> e la tua chiave, e incollalo qui sotto.</li></ol>
       <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Indirizzo della web app con la chiave<input id="ct-url" type="text" spellcheck="false" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec?key=la-tua-chiave"></label>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sec" id="ct-copia" type="button">Copia lo script</button><button class="btn" id="ct-collega" type="button">Collega Google Drive</button></div>
-      <p class="muted" style="font-size:12px;margin-top:6px">I portafogli restano in una cartella «myMoneyPortafogli» di Drive; sul computer ne tengo una copia di lavoro e ogni salvataggio va online. Chi conosce l'indirizzo con la chiave può leggere e modificare i portafogli.</p></details><div id="ct-sugg" style="display:flex;flex-direction:column;gap:6px"></div>
-    <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)">Percorso della cartella<span style="display:flex;gap:8px"><input id="ct-path" type="text" spellcheck="false" autocomplete="off" placeholder="per esempio G:\Il mio Drive\portafogli" style="flex:1"><button class="btn sec" id="ct-sfoglia" type="button">Sfoglia…</button></span><small>con Google Drive per desktop è la cartella sincronizzata; se non esiste viene creata</small></label>
-    <div class="scar-foot" style="gap:8px"><button class="btn sec" id="ct-reset" type="button">Cartella del programma</button><button class="btn" id="ct-ok" type="button">Usa questa cartella</button></div></div>
+      <p class="muted" style="font-size:12px;margin-top:6px">I portafogli restano in una cartella «myMoneyPortafogli» di Drive; sul computer ne tengo una copia di lavoro e ogni salvataggio va online. Chi conosce l'indirizzo con la chiave può leggere e modificare i portafogli.</p></details>
+      </div>
+    </div>
+    <div class="scar-foot"><button class="btn sec" id="ct-reset" type="button">Cartella predefinita</button></div>
     <div class="lerr" id="ct-err" role="alert"></div>
   </div>
 </div></div>
@@ -1416,19 +1428,25 @@ $("#pf-cartella").onclick = async () => {  // cartella dei JSON: del computer o 
   const c = PF.cartella || {};
   apriCartella();  // PC e app: finestra con Google Drive (icona), e nell'app telefono/SD e memoria dell'app
 };
-async function apriCartella() {  // PC: cartelle suggerite (Google Drive per desktop, Documenti), «Sfoglia…» con la finestra del sistema, oppure il percorso scritto a mano
+const CT_TIPO = { predefinita: "cartella predefinita del programma", computer: "cartella del computer", drive: "Google Drive (cartella sincronizzata)", online: "Google Drive online" };
+function ctTab(k) { $$("#ct-tipo button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.t === k))); $("#ct-p-pc").hidden = k !== "computer"; $("#ct-p-drive").hidden = k !== "drive"; $("#ct-err").textContent = ""; }
+$("#ct-tipo").addEventListener("click", (e) => { const b = e.target.closest("[data-t]"); if (b) ctTab(b.dataset.t); });
+async function apriCartella() {  // una sola cartella, sul computer/telefono o su Google Drive
   let j = PF.cartella || {};
   try { const r = await fetch("/api/cartella", { cache: "no-store" }); if (r.ok) j = PF.cartella = await r.json(); } catch (e) {}
-  $("#ct-att").textContent = "Attuale: " + (j.cartella || "") + (j.personalizzata || j.nativo ? "" : " (cartella del programma)");
-  const sg = j.suggerite || [], nat = !!j.nativo, dr = sg.findIndex((x) => x.tipo === "drive");
-  $("#ct-pc").hidden = nat; $("#ct-tel").hidden = $("#ct-mem").hidden = !nat; $("#ct-mem").hidden = !nat || !j.personalizzata;
-  $("#ct-drive-s").textContent = nat ? "apre il selettore di Android su Google Drive: scegli o crea la cartella dei portafogli" : dr >= 0 ? sg[dr].percorso : "Drive per desktop non trovato: collega la cartella online, qui sotto";
-  $("#ct-drive").onclick = () => { if (nat) { cartellaApp("drive"); return; } if (dr >= 0) { $("#ct-path").value = sg[dr].percorso; $("#ct-err").textContent = ""; $("#ct-ok").focus(); } else { $("#ct-web").open = true; $("#ct-url").focus(); $("#ct-err").textContent = "Collega la cartella online qui sotto (si prepara una volta sola)."; $("#ct-path").focus(); } };
+  const nat = !!j.nativo, tipo = j.tipo || (j.remoto ? "online" : j.personalizzata ? "computer" : "predefinita"), dr = (j.suggerite || []).find((x) => x.tipo === "drive");
+  const nome = nat ? { predefinita: "memoria dell'app", computer: "cartella del telefono", drive: "Google Drive" }[tipo] || "" : CT_TIPO[tipo] || "";
+  $("#ct-att").innerHTML = `<b>In uso</b> · ${esc(nome)}<br><span class="num" style="word-break:break-all">${esc(j.cartella || "")}</span>`;
+  $$(".ct-loc").forEach((e) => (e.textContent = nat ? "telefono" : "computer")); $("#ct-b-pc").textContent = nat ? "Telefono" : "Computer";
+  $("#ct-pc-pc").hidden = nat; $("#ct-pc-tel").hidden = !nat; $("#ct-dr-pc").hidden = nat; $("#ct-dr-tel").hidden = !nat;
+  $("#ct-tel").onclick = () => cartellaApp("scegli"); $("#ct-drive").onclick = () => cartellaApp("drive");
+  $("#ct-dr-trovato").innerHTML = dr ? `<div class="ct-web"><b>Google Drive per desktop trovato</b><br><span class="num" style="word-break:break-all">${esc(dr.percorso)}</span><div style="margin-top:8px"><button class="btn" id="ct-dr-usa" type="button">Usa questa cartella</button></div></div>` : '<p class="muted" style="margin:0">Google Drive per desktop non è installato su questo computer: collega la cartella online qui sotto, oppure installalo.</p>';
+  if (dr) $("#ct-dr-usa").onclick = async () => { try { await cartellaPost({ cartella: dr.percorso, crea: true }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
   $("#ct-web").open = !nat && !!j.remoto;
-  $("#ct-tel").onclick = () => cartellaApp("scegli"); $("#ct-mem").onclick = () => cartellaApp("reset");
-  $("#ct-sugg").innerHTML = sg.length ? sg.map((x, i) => `<button type="button" class="ct-s" data-i="${i}"><b>${x.tipo === "drive" ? "Google Drive" : "Documenti"}</b><span class="num">${esc(x.percorso)}</span></button>`).join("") : '<p class="muted">Google Drive per desktop non trovato su questo computer: scrivi il percorso della cartella sincronizzata, oppure usa «Sfoglia…».</p>';
-  $$("#ct-sugg .ct-s").forEach((b) => (b.onclick = () => { $("#ct-path").value = sg[+b.dataset.i].percorso; $("#ct-err").textContent = ""; $("#ct-ok").focus(); }));
-  $("#ct-path").value = j.personalizzata && !nat ? j.cartella : ""; $("#ct-err").textContent = ""; $("#cart").hidden = false; document.body.style.overflow = "hidden"; (nat ? $("#ct-drive") : $("#ct-path")).focus();
+  const rst = $("#ct-reset"); rst.hidden = tipo === "predefinita"; rst.textContent = nat ? "Usa la memoria dell'app" : "Torna alla cartella predefinita";
+  rst.onclick = nat ? () => cartellaApp("reset") : async () => { try { await cartellaPost({ cartella: "" }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
+  $("#ct-path").value = tipo === "computer" && !nat ? j.cartella : ""; ctTab(tipo === "drive" || tipo === "online" ? "drive" : "computer");
+  $("#cart").hidden = false; document.body.style.overflow = "hidden";
 }
 $("#ct-collega").onclick = async () => { const u = $("#ct-url").value.trim(); if (!u) { $("#ct-err").textContent = "Incolla l'indirizzo della web app con ?key=…"; return; } const b = $("#ct-collega"); b.disabled = true; $("#ct-err").textContent = "Mi collego a Google Drive…"; try { await cartellaPost({ remoto: u }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } b.disabled = false; };
 $("#ct-copia").onclick = async () => { try { const r = await fetch("/api/drive-script", { cache: "no-store" }); if (!r.ok) throw 0; await navigator.clipboard.writeText(await r.text()); $("#ct-err").textContent = "Script copiato: incollalo in script.google.com."; } catch (e) { window.open("/api/drive-script", "_blank"); $("#ct-err").textContent = "Non riesco a copiare: si è aperto lo script, copialo da lì."; } };
@@ -1440,8 +1458,7 @@ async function cartellaPost(corpo) {
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.errore || "HTTP " + r.status); return j;
 }
 $("#ct-sfoglia").onclick = async () => { const b = $("#ct-sfoglia"); b.disabled = true; $("#ct-err").textContent = ""; try { const j = await cartellaPost({ sfoglia: true, iniziale: $("#ct-path").value.trim() }); if (j.scelta) $("#ct-path").value = j.scelta; } catch (e) { $("#ct-err").textContent = e.message; } b.disabled = false; };
-$("#ct-ok").onclick = async () => { const p = $("#ct-path").value.trim(); if (!p) { $("#ct-err").textContent = "Scrivi il percorso, scegli una cartella suggerita o usa «Sfoglia…»."; return; } try { await cartellaPost({ cartella: p, crea: true }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
-$("#ct-reset").onclick = async () => { try { await cartellaPost({ cartella: "" }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
+$("#ct-ok").onclick = async () => { const p = $("#ct-path").value.trim(); if (!p) { $("#ct-err").textContent = "Scrivi il percorso della cartella o usa «Sfoglia…»."; return; } try { await cartellaPost({ cartella: p, crea: true }); location.href = "/"; } catch (e) { $("#ct-err").textContent = e.message; } };
 function movimenti() {  // i movimenti inseriti, nel formato del file JSON (solo quelli completi)
   if (ST.esempio) return [];
   const out = []; F.forEach((f, i) => ST.lots[f.s].forEach((lot, k) => { const x = POS[i] && POS[i].lots[k]; if (x && !x.err) out.push({ isin: f.isin, data: lot.d, tipo: x.tipo === "v" ? "vendita" : "acquisto", quote: x.q, prezzo: Math.round(x.pr * 1e4) / 1e4, pianificata: "N" }); }));
